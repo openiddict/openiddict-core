@@ -57,7 +57,7 @@ public static partial class OpenIddictServerHandlers
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
                     .AddFilter<RequireUserInfoRequest>()
-                    .UseScopedHandler<ExtractUserInfoRequest>()
+                    .UseSingletonHandler<ExtractUserInfoRequest>()
                     .SetOrder(100_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
@@ -116,7 +116,7 @@ public static partial class OpenIddictServerHandlers
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
                     .AddFilter<RequireUserInfoRequest>()
-                    .UseScopedHandler<ValidateUserInfoRequest>()
+                    .UseSingletonHandler<ValidateUserInfoRequest>()
                     .SetOrder(ExtractUserInfoRequest.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
@@ -174,7 +174,7 @@ public static partial class OpenIddictServerHandlers
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
                     .AddFilter<RequireUserInfoRequest>()
-                    .UseScopedHandler<HandleUserInfoRequest>()
+                    .UseSingletonHandler<HandleUserInfoRequest>()
                     .SetOrder(ValidateUserInfoRequest.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
@@ -263,7 +263,7 @@ public static partial class OpenIddictServerHandlers
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<TContext>()
                     .AddFilter<RequireUserInfoRequest>()
-                    .UseScopedHandler<ApplyUserInfoResponse<TContext>>()
+                    .UseSingletonHandler<ApplyUserInfoResponse<TContext>>()
                     .SetOrder(500_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
@@ -343,7 +343,7 @@ public static partial class OpenIddictServerHandlers
             /// </summary>
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateUserInfoRequestContext>()
-                    .UseScopedHandler<ValidateAuthentication>()
+                    .UseSingletonHandler<ValidateAuthentication>()
                     .SetOrder(ValidateAccessTokenParameter.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();

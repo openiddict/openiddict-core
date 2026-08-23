@@ -574,7 +574,7 @@ public static partial class OpenIddictValidationHandlers
         public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
             = OpenIddictValidationHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                 .AddFilter<RequireClientAssertionGenerated>()
-                .UseScopedHandler<GenerateClientAssertion>()
+                .UseSingletonHandler<GenerateClientAssertion>()
                 .SetOrder(PrepareClientAssertionPrincipal.Descriptor.Order + 1_000)
                 .SetType(OpenIddictValidationHandlerType.BuiltIn)
                 .Build();
@@ -960,7 +960,7 @@ public static partial class OpenIddictValidationHandlers
         public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
             = OpenIddictValidationHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                 .AddFilter<RequireAccessTokenValidated>()
-                .UseScopedHandler<ValidateAccessToken>()
+                .UseSingletonHandler<ValidateAccessToken>()
                 .SetOrder(ValidateIntrospectedTokenProofOfPossession.Descriptor.Order + 1_000)
                 .SetType(OpenIddictValidationHandlerType.BuiltIn)
                 .Build();

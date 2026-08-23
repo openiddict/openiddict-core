@@ -56,7 +56,7 @@ public static partial class OpenIddictClientHandlers
             /// </summary>
             public static OpenIddictClientHandlerDescriptor Descriptor { get; }
                 = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessSignOutContext>()
-                    .UseScopedHandler<PrepareEndSessionRequest>()
+                    .UseSingletonHandler<PrepareEndSessionRequest>()
                     .SetOrder(int.MaxValue - 100_000)
                     .Build();
 
@@ -97,7 +97,7 @@ public static partial class OpenIddictClientHandlers
             /// </summary>
             public static OpenIddictClientHandlerDescriptor Descriptor { get; }
                 = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessSignOutContext>()
-                    .UseScopedHandler<ApplyEndSessionRequest>()
+                    .UseSingletonHandler<ApplyEndSessionRequest>()
                     .SetOrder(PrepareEndSessionRequest.Descriptor.Order + 1_000)
                     .Build();
 
@@ -192,7 +192,7 @@ public static partial class OpenIddictClientHandlers
             public static OpenIddictClientHandlerDescriptor Descriptor { get; }
                 = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
                     .AddFilter<RequirePostLogoutRedirectionRequest>()
-                    .UseScopedHandler<ExtractPostLogoutRedirectionRequest>()
+                    .UseSingletonHandler<ExtractPostLogoutRedirectionRequest>()
                     .SetOrder(100_000)
                     .Build();
 
@@ -250,7 +250,7 @@ public static partial class OpenIddictClientHandlers
             public static OpenIddictClientHandlerDescriptor Descriptor { get; }
                 = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
                     .AddFilter<RequirePostLogoutRedirectionRequest>()
-                    .UseScopedHandler<ValidatePostLogoutRedirectionRequest>()
+                    .UseSingletonHandler<ValidatePostLogoutRedirectionRequest>()
                     .SetOrder(ExtractPostLogoutRedirectionRequest.Descriptor.Order + 1_000)
                     .SetType(OpenIddictClientHandlerType.BuiltIn)
                     .Build();
@@ -304,7 +304,7 @@ public static partial class OpenIddictClientHandlers
             public static OpenIddictClientHandlerDescriptor Descriptor { get; }
                 = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
                     .AddFilter<RequirePostLogoutRedirectionRequest>()
-                    .UseScopedHandler<HandlePostLogoutRedirectionRequest>()
+                    .UseSingletonHandler<HandlePostLogoutRedirectionRequest>()
                     .SetOrder(ValidatePostLogoutRedirectionRequest.Descriptor.Order + 1_000)
                     .Build();
 
@@ -357,7 +357,7 @@ public static partial class OpenIddictClientHandlers
             public static OpenIddictClientHandlerDescriptor Descriptor { get; }
                 = OpenIddictClientHandlerDescriptor.CreateBuilder<TContext>()
                     .AddFilter<RequirePostLogoutRedirectionRequest>()
-                    .UseScopedHandler<ApplyPostLogoutRedirectionResponse<TContext>>()
+                    .UseSingletonHandler<ApplyPostLogoutRedirectionResponse<TContext>>()
                     .SetOrder(500_000)
                     .SetType(OpenIddictClientHandlerType.BuiltIn)
                     .Build();
@@ -402,7 +402,7 @@ public static partial class OpenIddictClientHandlers
             /// </summary>
             public static OpenIddictClientHandlerDescriptor Descriptor { get; }
                 = OpenIddictClientHandlerDescriptor.CreateBuilder<ValidatePostLogoutRedirectionRequestContext>()
-                    .UseScopedHandler<ValidateTokens>()
+                    .UseSingletonHandler<ValidateTokens>()
                     .SetOrder(int.MinValue + 100_000)
                     .SetType(OpenIddictClientHandlerType.BuiltIn)
                     .Build();

@@ -623,7 +623,7 @@ public static partial class OpenIddictServerHandlers
         public static OpenIddictServerHandlerDescriptor Descriptor { get; }
             = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                 .AddFilter<RequireClientAssertionValidated>()
-                .UseScopedHandler<ValidateClientAssertion>()
+                .UseSingletonHandler<ValidateClientAssertion>()
                 .SetOrder(ValidateRequiredTokens.Descriptor.Order + 1_000)
                 .SetType(OpenIddictServerHandlerType.BuiltIn)
                 .Build();
@@ -1514,7 +1514,7 @@ public static partial class OpenIddictServerHandlers
         public static OpenIddictServerHandlerDescriptor Descriptor { get; }
             = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                 .AddFilter<RequireRequestTokenValidated>()
-                .UseScopedHandler<ValidateRequestToken>()
+                .UseSingletonHandler<ValidateRequestToken>()
                 .SetOrder(ValidateClientCertificate.Descriptor.Order + 1_000)
                 .SetType(OpenIddictServerHandlerType.BuiltIn)
                 .Build();
@@ -1634,7 +1634,7 @@ public static partial class OpenIddictServerHandlers
         public static OpenIddictServerHandlerDescriptor Descriptor { get; }
             = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                 .AddFilter<RequireAccessTokenValidated>()
-                .UseScopedHandler<ValidateAccessToken>()
+                .UseSingletonHandler<ValidateAccessToken>()
                 .SetOrder(ValidateRequestTokenType.Descriptor.Order + 1_000)
                 .SetType(OpenIddictServerHandlerType.BuiltIn)
                 .Build();
@@ -1707,7 +1707,7 @@ public static partial class OpenIddictServerHandlers
         public static OpenIddictServerHandlerDescriptor Descriptor { get; }
             = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                 .AddFilter<RequireAuthorizationCodeValidated>()
-                .UseScopedHandler<ValidateAuthorizationCode>()
+                .UseSingletonHandler<ValidateAuthorizationCode>()
                 .SetOrder(ValidateAccessToken.Descriptor.Order + 1_000)
                 .SetType(OpenIddictServerHandlerType.BuiltIn)
                 .Build();
@@ -1786,7 +1786,7 @@ public static partial class OpenIddictServerHandlers
         public static OpenIddictServerHandlerDescriptor Descriptor { get; }
             = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                 .AddFilter<RequireDeviceCodeValidated>()
-                .UseScopedHandler<ValidateDeviceCode>()
+                .UseSingletonHandler<ValidateDeviceCode>()
                 .SetOrder(ValidateAuthorizationCode.Descriptor.Order + 1_000)
                 .SetType(OpenIddictServerHandlerType.BuiltIn)
                 .Build();
@@ -1865,7 +1865,7 @@ public static partial class OpenIddictServerHandlers
         public static OpenIddictServerHandlerDescriptor Descriptor { get; }
             = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                 .AddFilter<RequireGenericTokenValidated>()
-                .UseScopedHandler<ValidateGenericToken>()
+                .UseSingletonHandler<ValidateGenericToken>()
                 .SetOrder(ValidateDeviceCode.Descriptor.Order + 1_000)
                 .SetType(OpenIddictServerHandlerType.BuiltIn)
                 .Build();
@@ -1961,7 +1961,7 @@ public static partial class OpenIddictServerHandlers
         public static OpenIddictServerHandlerDescriptor Descriptor { get; }
             = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                 .AddFilter<RequireIdentityTokenValidated>()
-                .UseScopedHandler<ValidateIdentityToken>()
+                .UseSingletonHandler<ValidateIdentityToken>()
                 .SetOrder(ValidateGenericToken.Descriptor.Order + 1_000)
                 .SetType(OpenIddictServerHandlerType.BuiltIn)
                 .Build();
@@ -2047,7 +2047,7 @@ public static partial class OpenIddictServerHandlers
         public static OpenIddictServerHandlerDescriptor Descriptor { get; }
             = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                 .AddFilter<RequireRefreshTokenValidated>()
-                .UseScopedHandler<ValidateRefreshToken>()
+                .UseSingletonHandler<ValidateRefreshToken>()
                 .SetOrder(ValidateIdentityToken.Descriptor.Order + 1_000)
                 .SetType(OpenIddictServerHandlerType.BuiltIn)
                 .Build();
@@ -2126,7 +2126,7 @@ public static partial class OpenIddictServerHandlers
         public static OpenIddictServerHandlerDescriptor Descriptor { get; }
             = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                 .AddFilter<RequireSubjectTokenValidated>()
-                .UseScopedHandler<ValidateSubjectToken>()
+                .UseSingletonHandler<ValidateSubjectToken>()
                 .SetOrder(ValidateRefreshToken.Descriptor.Order + 1_000)
                 .SetType(OpenIddictServerHandlerType.BuiltIn)
                 .Build();
@@ -2232,7 +2232,7 @@ public static partial class OpenIddictServerHandlers
         public static OpenIddictServerHandlerDescriptor Descriptor { get; }
             = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                 .AddFilter<RequireActorTokenValidated>()
-                .UseScopedHandler<ValidateActorToken>()
+                .UseSingletonHandler<ValidateActorToken>()
                 .SetOrder(ValidateSubjectToken.Descriptor.Order + 1_000)
                 .SetType(OpenIddictServerHandlerType.BuiltIn)
                 .Build();
@@ -2338,7 +2338,7 @@ public static partial class OpenIddictServerHandlers
         public static OpenIddictServerHandlerDescriptor Descriptor { get; }
             = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                 .AddFilter<RequireUserCodeValidated>()
-                .UseScopedHandler<ValidateUserCode>()
+                .UseSingletonHandler<ValidateUserCode>()
                 .SetOrder(ValidateActorToken.Descriptor.Order + 1_000)
                 .SetType(OpenIddictServerHandlerType.BuiltIn)
                 .Build();
@@ -2461,7 +2461,7 @@ public static partial class OpenIddictServerHandlers
         /// </summary>
         public static OpenIddictServerHandlerDescriptor Descriptor { get; }
             = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
-                .UseScopedHandler<ReformatValidatedTokens>()
+                .UseSingletonHandler<ReformatValidatedTokens>()
                 .SetOrder(int.MaxValue - 100_000)
                 .SetType(OpenIddictServerHandlerType.BuiltIn)
                 .Build();
@@ -4776,7 +4776,7 @@ public static partial class OpenIddictServerHandlers
         public static OpenIddictServerHandlerDescriptor Descriptor { get; }
             = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
                 .AddFilter<RequireAccessTokenGenerated>()
-                .UseScopedHandler<GenerateAccessToken>()
+                .UseSingletonHandler<GenerateAccessToken>()
                 .SetOrder(100_000)
                 .SetType(OpenIddictServerHandlerType.BuiltIn)
                 .Build();
@@ -4842,7 +4842,7 @@ public static partial class OpenIddictServerHandlers
         public static OpenIddictServerHandlerDescriptor Descriptor { get; }
             = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
                 .AddFilter<RequireAuthorizationCodeGenerated>()
-                .UseScopedHandler<GenerateAuthorizationCode>()
+                .UseSingletonHandler<GenerateAuthorizationCode>()
                 .SetOrder(GenerateAccessToken.Descriptor.Order + 1_000)
                 .SetType(OpenIddictServerHandlerType.BuiltIn)
                 .Build();
@@ -4906,7 +4906,7 @@ public static partial class OpenIddictServerHandlers
         public static OpenIddictServerHandlerDescriptor Descriptor { get; }
             = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
                 .AddFilter<RequireDeviceCodeGenerated>()
-                .UseScopedHandler<GenerateDeviceCode>()
+                .UseSingletonHandler<GenerateDeviceCode>()
                 .SetOrder(GenerateAuthorizationCode.Descriptor.Order + 1_000)
                 .SetType(OpenIddictServerHandlerType.BuiltIn)
                 .Build();
@@ -4984,7 +4984,7 @@ public static partial class OpenIddictServerHandlers
         public static OpenIddictServerHandlerDescriptor Descriptor { get; }
             = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
                 .AddFilter<RequireIssuedTokenGenerated>()
-                .UseScopedHandler<GenerateIssuedToken>()
+                .UseSingletonHandler<GenerateIssuedToken>()
                 .SetOrder(GenerateDeviceCode.Descriptor.Order + 1_000)
                 .SetType(OpenIddictServerHandlerType.BuiltIn)
                 .Build();
@@ -5060,7 +5060,7 @@ public static partial class OpenIddictServerHandlers
         public static OpenIddictServerHandlerDescriptor Descriptor { get; }
             = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
                 .AddFilter<RequireRequestTokenGenerated>()
-                .UseScopedHandler<GenerateRequestToken>()
+                .UseSingletonHandler<GenerateRequestToken>()
                 .SetOrder(GenerateIssuedToken.Descriptor.Order + 1_000)
                 .SetType(OpenIddictServerHandlerType.BuiltIn)
                 .Build();
@@ -5124,7 +5124,7 @@ public static partial class OpenIddictServerHandlers
         public static OpenIddictServerHandlerDescriptor Descriptor { get; }
             = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
                 .AddFilter<RequireRefreshTokenGenerated>()
-                .UseScopedHandler<GenerateRefreshToken>()
+                .UseSingletonHandler<GenerateRefreshToken>()
                 .SetOrder(GenerateRequestToken.Descriptor.Order + 1_000)
                 .SetType(OpenIddictServerHandlerType.BuiltIn)
                 .Build();
@@ -5407,7 +5407,7 @@ public static partial class OpenIddictServerHandlers
         public static OpenIddictServerHandlerDescriptor Descriptor { get; }
             = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
                 .AddFilter<RequireUserCodeGenerated>()
-                .UseScopedHandler<GenerateUserCode>()
+                .UseSingletonHandler<GenerateUserCode>()
                 .SetOrder(AttachTokenDigests.Descriptor.Order + 1_000)
                 .SetType(OpenIddictServerHandlerType.BuiltIn)
                 .Build();
@@ -5471,7 +5471,7 @@ public static partial class OpenIddictServerHandlers
         public static OpenIddictServerHandlerDescriptor Descriptor { get; }
             = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
                 .AddFilter<RequireIdentityTokenGenerated>()
-                .UseScopedHandler<GenerateIdentityToken>()
+                .UseSingletonHandler<GenerateIdentityToken>()
                 .SetOrder(GenerateUserCode.Descriptor.Order + 1_000)
                 .SetType(OpenIddictServerHandlerType.BuiltIn)
                 .Build();

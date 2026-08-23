@@ -71,7 +71,7 @@ public static partial class OpenIddictClientHandlers
             public static OpenIddictClientHandlerDescriptor Descriptor { get; }
                 = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
                     .AddFilter<RequireInteractiveGrantType>()
-                    .UseScopedHandler<PrepareAuthorizationRequest>()
+                    .UseSingletonHandler<PrepareAuthorizationRequest>()
                     .SetOrder(int.MaxValue - 100_000)
                     .Build();
 
@@ -113,7 +113,7 @@ public static partial class OpenIddictClientHandlers
             public static OpenIddictClientHandlerDescriptor Descriptor { get; }
                 = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
                     .AddFilter<RequireInteractiveGrantType>()
-                    .UseScopedHandler<ApplyAuthorizationRequest>()
+                    .UseSingletonHandler<ApplyAuthorizationRequest>()
                     .SetOrder(PrepareAuthorizationRequest.Descriptor.Order + 1_000)
                     .Build();
 
@@ -401,7 +401,7 @@ public static partial class OpenIddictClientHandlers
             public static OpenIddictClientHandlerDescriptor Descriptor { get; }
                 = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
                     .AddFilter<RequireRedirectionRequest>()
-                    .UseScopedHandler<ExtractRedirectionRequest>()
+                    .UseSingletonHandler<ExtractRedirectionRequest>()
                     .SetOrder(100_000)
                     .Build();
 
@@ -459,7 +459,7 @@ public static partial class OpenIddictClientHandlers
             public static OpenIddictClientHandlerDescriptor Descriptor { get; }
                 = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
                     .AddFilter<RequireRedirectionRequest>()
-                    .UseScopedHandler<ValidateRedirectionRequest>()
+                    .UseSingletonHandler<ValidateRedirectionRequest>()
                     .SetOrder(ExtractRedirectionRequest.Descriptor.Order + 1_000)
                     .SetType(OpenIddictClientHandlerType.BuiltIn)
                     .Build();
@@ -513,7 +513,7 @@ public static partial class OpenIddictClientHandlers
             public static OpenIddictClientHandlerDescriptor Descriptor { get; }
                 = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
                     .AddFilter<RequireRedirectionRequest>()
-                    .UseScopedHandler<HandleRedirectionRequest>()
+                    .UseSingletonHandler<HandleRedirectionRequest>()
                     .SetOrder(ValidateRedirectionRequest.Descriptor.Order + 1_000)
                     .Build();
 
@@ -566,7 +566,7 @@ public static partial class OpenIddictClientHandlers
             public static OpenIddictClientHandlerDescriptor Descriptor { get; }
                 = OpenIddictClientHandlerDescriptor.CreateBuilder<TContext>()
                     .AddFilter<RequireRedirectionRequest>()
-                    .UseScopedHandler<ApplyRedirectionResponse<TContext>>()
+                    .UseSingletonHandler<ApplyRedirectionResponse<TContext>>()
                     .SetOrder(500_000)
                     .SetType(OpenIddictClientHandlerType.BuiltIn)
                     .Build();
@@ -653,7 +653,7 @@ public static partial class OpenIddictClientHandlers
             /// </summary>
             public static OpenIddictClientHandlerDescriptor Descriptor { get; }
                 = OpenIddictClientHandlerDescriptor.CreateBuilder<ValidateRedirectionRequestContext>()
-                    .UseScopedHandler<ValidateTokens>()
+                    .UseSingletonHandler<ValidateTokens>()
                     .SetOrder(int.MinValue + 100_000)
                     .SetType(OpenIddictClientHandlerType.BuiltIn)
                     .Build();

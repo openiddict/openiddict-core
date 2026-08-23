@@ -682,7 +682,7 @@ public static partial class OpenIddictClientHandlers
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                 .AddFilter<RequireStateTokenValidated>()
-                .UseScopedHandler<ValidateStateToken>()
+                .UseSingletonHandler<ValidateStateToken>()
                 .SetOrder(ValidateRequiredStateToken.Descriptor.Order + 1_000)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
                 .Build();
@@ -1594,7 +1594,7 @@ public static partial class OpenIddictClientHandlers
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                 .AddFilter<RequireFrontchannelIdentityTokenValidated>()
-                .UseScopedHandler<ValidateFrontchannelIdentityToken>()
+                .UseSingletonHandler<ValidateFrontchannelIdentityToken>()
                 .SetOrder(ValidateRequiredFrontchannelTokens.Descriptor.Order + 1_000)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
                 .Build();
@@ -2122,7 +2122,7 @@ public static partial class OpenIddictClientHandlers
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                 .AddFilter<RequireFrontchannelAccessTokenValidated>()
-                .UseScopedHandler<ValidateFrontchannelAccessToken>()
+                .UseSingletonHandler<ValidateFrontchannelAccessToken>()
                 .SetOrder(ValidateFrontchannelTokenDigests.Descriptor.Order + 1_000)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
                 .Build();
@@ -2193,7 +2193,7 @@ public static partial class OpenIddictClientHandlers
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                 .AddFilter<RequireAuthorizationCodeValidated>()
-                .UseScopedHandler<ValidateAuthorizationCode>()
+                .UseSingletonHandler<ValidateAuthorizationCode>()
                 .SetOrder(ValidateFrontchannelAccessToken.Descriptor.Order + 1_000)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
                 .Build();
@@ -2881,7 +2881,7 @@ public static partial class OpenIddictClientHandlers
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                 .AddFilter<RequireClientAssertionGenerated>()
-                .UseScopedHandler<GenerateClientAssertion>()
+                .UseSingletonHandler<GenerateClientAssertion>()
                 .SetOrder(PrepareClientAssertionPrincipal.Descriptor.Order + 1_000)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
                 .Build();
@@ -3332,7 +3332,7 @@ public static partial class OpenIddictClientHandlers
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                 .AddFilter<RequireBackchannelIdentityTokenValidated>()
-                .UseScopedHandler<ValidateBackchannelIdentityToken>()
+                .UseSingletonHandler<ValidateBackchannelIdentityToken>()
                 .SetOrder(ValidateRequiredBackchannelTokens.Descriptor.Order + 1_000)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
                 .Build();
@@ -3824,7 +3824,7 @@ public static partial class OpenIddictClientHandlers
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                 .AddFilter<RequireBackchannelAccessTokenValidated>()
-                .UseScopedHandler<ValidateBackchannelAccessToken>()
+                .UseSingletonHandler<ValidateBackchannelAccessToken>()
                 .SetOrder(ValidateBackchannelTokenDigests.Descriptor.Order + 1_000)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
                 .Build();
@@ -3893,7 +3893,7 @@ public static partial class OpenIddictClientHandlers
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                 .AddFilter<RequireIssuedTokenValidated>()
-                .UseScopedHandler<ValidateIssuedToken>()
+                .UseSingletonHandler<ValidateIssuedToken>()
                 .SetOrder(ValidateBackchannelAccessToken.Descriptor.Order + 1_000)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
                 .Build();
@@ -3964,7 +3964,7 @@ public static partial class OpenIddictClientHandlers
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                 .AddFilter<RequireRefreshTokenValidated>()
-                .UseScopedHandler<ValidateRefreshToken>()
+                .UseSingletonHandler<ValidateRefreshToken>()
                 .SetOrder(ValidateIssuedToken.Descriptor.Order + 1_000)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
                 .Build();
@@ -4466,7 +4466,7 @@ public static partial class OpenIddictClientHandlers
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                 .AddFilter<RequireUserInfoTokenExtracted>()
-                .UseScopedHandler<ValidateUserInfoToken>()
+                .UseSingletonHandler<ValidateUserInfoToken>()
                 .SetOrder(ValidateRequiredUserInfoToken.Descriptor.Order + 1_000)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
                 .Build();
@@ -5822,7 +5822,7 @@ public static partial class OpenIddictClientHandlers
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
                 .AddFilter<RequireLoginStateTokenGenerated>()
-                .UseScopedHandler<GenerateLoginStateToken>()
+                .UseSingletonHandler<GenerateLoginStateToken>()
                 .SetOrder(100_000)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
                 .Build();
@@ -6711,7 +6711,7 @@ public static partial class OpenIddictClientHandlers
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
                 .AddFilter<RequireChallengeClientAssertionGenerated>()
-                .UseScopedHandler<GenerateChallengeClientAssertion>()
+                .UseSingletonHandler<GenerateChallengeClientAssertion>()
                 .SetOrder(PrepareChallengeClientAssertionPrincipal.Descriptor.Order + 1_000)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
                 .Build();
@@ -7874,7 +7874,7 @@ public static partial class OpenIddictClientHandlers
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessIntrospectionContext>()
                 .AddFilter<RequireIntrospectionClientAssertionGenerated>()
-                .UseScopedHandler<GenerateIntrospectionClientAssertion>()
+                .UseSingletonHandler<GenerateIntrospectionClientAssertion>()
                 .SetOrder(PrepareIntrospectionClientAssertionPrincipal.Descriptor.Order + 1_000)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
                 .Build();
@@ -8679,7 +8679,7 @@ public static partial class OpenIddictClientHandlers
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessRevocationContext>()
                 .AddFilter<RequireRevocationClientAssertionGenerated>()
-                .UseScopedHandler<GenerateRevocationClientAssertion>()
+                .UseSingletonHandler<GenerateRevocationClientAssertion>()
                 .SetOrder(PrepareRevocationClientAssertionPrincipal.Descriptor.Order + 1_000)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
                 .Build();
@@ -9332,7 +9332,7 @@ public static partial class OpenIddictClientHandlers
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessSignOutContext>()
                 .AddFilter<RequireLogoutStateTokenGenerated>()
-                .UseScopedHandler<GenerateLogoutStateToken>()
+                .UseSingletonHandler<GenerateLogoutStateToken>()
                 .SetOrder(100_000)
                 .SetType(OpenIddictClientHandlerType.BuiltIn)
                 .Build();

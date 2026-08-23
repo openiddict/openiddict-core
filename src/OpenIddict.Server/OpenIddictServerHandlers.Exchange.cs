@@ -91,7 +91,7 @@ public static partial class OpenIddictServerHandlers
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
                     .AddFilter<RequireTokenRequest>()
-                    .UseScopedHandler<ExtractTokenRequest>()
+                    .UseSingletonHandler<ExtractTokenRequest>()
                     .SetOrder(100_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
@@ -150,7 +150,7 @@ public static partial class OpenIddictServerHandlers
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
                     .AddFilter<RequireTokenRequest>()
-                    .UseScopedHandler<ValidateTokenRequest>()
+                    .UseSingletonHandler<ValidateTokenRequest>()
                     .SetOrder(ExtractTokenRequest.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
@@ -208,7 +208,7 @@ public static partial class OpenIddictServerHandlers
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
                     .AddFilter<RequireTokenRequest>()
-                    .UseScopedHandler<HandleTokenRequest>()
+                    .UseSingletonHandler<HandleTokenRequest>()
                     .SetOrder(ValidateTokenRequest.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
@@ -302,7 +302,7 @@ public static partial class OpenIddictServerHandlers
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<TContext>()
                     .AddFilter<RequireTokenRequest>()
-                    .UseScopedHandler<ApplyTokenResponse<TContext>>()
+                    .UseSingletonHandler<ApplyTokenResponse<TContext>>()
                     .SetOrder(500_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
@@ -1203,7 +1203,7 @@ public static partial class OpenIddictServerHandlers
             /// </summary>
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateTokenRequestContext>()
-                    .UseScopedHandler<ValidateAuthentication>()
+                    .UseSingletonHandler<ValidateAuthentication>()
                     .SetOrder(ValidateResources.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();

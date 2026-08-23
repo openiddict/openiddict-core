@@ -71,7 +71,7 @@ public static partial class OpenIddictServerHandlers
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
                     .AddFilter<RequireEndSessionRequest>()
-                    .UseScopedHandler<ExtractEndSessionRequest>()
+                    .UseSingletonHandler<ExtractEndSessionRequest>()
                     .SetOrder(100_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
@@ -130,7 +130,7 @@ public static partial class OpenIddictServerHandlers
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
                     .AddFilter<RequireEndSessionRequest>()
-                    .UseScopedHandler<ValidateEndSessionRequest>()
+                    .UseSingletonHandler<ValidateEndSessionRequest>()
                     .SetOrder(ExtractEndSessionRequest.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
@@ -188,7 +188,7 @@ public static partial class OpenIddictServerHandlers
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
                     .AddFilter<RequireEndSessionRequest>()
-                    .UseScopedHandler<HandleEndSessionRequest>()
+                    .UseSingletonHandler<HandleEndSessionRequest>()
                     .SetOrder(ValidateEndSessionRequest.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
@@ -322,7 +322,7 @@ public static partial class OpenIddictServerHandlers
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<TContext>()
                     .AddFilter<RequireEndSessionRequest>()
-                    .UseScopedHandler<ApplyEndSessionResponse<TContext>>()
+                    .UseSingletonHandler<ApplyEndSessionResponse<TContext>>()
                     .SetOrder(500_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
@@ -465,7 +465,7 @@ public static partial class OpenIddictServerHandlers
             /// </summary>
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateEndSessionRequestContext>()
-                    .UseScopedHandler<ValidateAuthentication>()
+                    .UseSingletonHandler<ValidateAuthentication>()
                     .SetOrder(ValidatePostLogoutRedirectUriParameter.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();

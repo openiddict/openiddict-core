@@ -72,7 +72,7 @@ public static partial class OpenIddictServerHandlers
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
                     .AddFilter<RequireIntrospectionRequest>()
-                    .UseScopedHandler<ExtractIntrospectionRequest>()
+                    .UseSingletonHandler<ExtractIntrospectionRequest>()
                     .SetOrder(100_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
@@ -131,7 +131,7 @@ public static partial class OpenIddictServerHandlers
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
                     .AddFilter<RequireIntrospectionRequest>()
-                    .UseScopedHandler<ValidateIntrospectionRequest>()
+                    .UseSingletonHandler<ValidateIntrospectionRequest>()
                     .SetOrder(ExtractIntrospectionRequest.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
@@ -189,7 +189,7 @@ public static partial class OpenIddictServerHandlers
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
                     .AddFilter<RequireIntrospectionRequest>()
-                    .UseScopedHandler<HandleIntrospectionRequest>()
+                    .UseSingletonHandler<HandleIntrospectionRequest>()
                     .SetOrder(ValidateIntrospectionRequest.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
@@ -294,7 +294,7 @@ public static partial class OpenIddictServerHandlers
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<TContext>()
                     .AddFilter<RequireIntrospectionRequest>()
-                    .UseScopedHandler<ApplyIntrospectionResponse<TContext>>()
+                    .UseSingletonHandler<ApplyIntrospectionResponse<TContext>>()
                     .SetOrder(500_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
@@ -451,7 +451,7 @@ public static partial class OpenIddictServerHandlers
             /// </summary>
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateIntrospectionRequestContext>()
-                    .UseScopedHandler<ValidateAuthentication>()
+                    .UseSingletonHandler<ValidateAuthentication>()
                     .SetOrder(ValidateClientCredentialsParameters.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
