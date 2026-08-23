@@ -80,7 +80,7 @@ public static partial class OpenIddictServerHandlers
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
                     .AddFilter<RequireConfigurationRequest>()
-                    .UseScopedHandler<ExtractConfigurationRequest>()
+                    .UseSingletonHandler<ExtractConfigurationRequest>()
                     .SetOrder(100_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
@@ -139,7 +139,7 @@ public static partial class OpenIddictServerHandlers
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
                     .AddFilter<RequireConfigurationRequest>()
-                    .UseScopedHandler<ValidateConfigurationRequest>()
+                    .UseSingletonHandler<ValidateConfigurationRequest>()
                     .SetOrder(ExtractConfigurationRequest.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
@@ -193,7 +193,7 @@ public static partial class OpenIddictServerHandlers
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
                     .AddFilter<RequireConfigurationRequest>()
-                    .UseScopedHandler<HandleConfigurationRequest>()
+                    .UseSingletonHandler<HandleConfigurationRequest>()
                     .SetOrder(ValidateConfigurationRequest.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
@@ -320,7 +320,7 @@ public static partial class OpenIddictServerHandlers
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<TContext>()
                     .AddFilter<RequireConfigurationRequest>()
-                    .UseScopedHandler<ApplyConfigurationResponse<TContext>>()
+                    .UseSingletonHandler<ApplyConfigurationResponse<TContext>>()
                     .SetOrder(500_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
@@ -883,7 +883,7 @@ public static partial class OpenIddictServerHandlers
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
                     .AddFilter<RequireJsonWebKeySetRequest>()
-                    .UseScopedHandler<ExtractJsonWebKeySetRequest>()
+                    .UseSingletonHandler<ExtractJsonWebKeySetRequest>()
                     .SetOrder(100_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
@@ -942,7 +942,7 @@ public static partial class OpenIddictServerHandlers
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
                     .AddFilter<RequireJsonWebKeySetRequest>()
-                    .UseScopedHandler<ValidateJsonWebKeySetRequest>()
+                    .UseSingletonHandler<ValidateJsonWebKeySetRequest>()
                     .SetOrder(ExtractJsonWebKeySetRequest.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
@@ -996,7 +996,7 @@ public static partial class OpenIddictServerHandlers
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
                     .AddFilter<RequireJsonWebKeySetRequest>()
-                    .UseScopedHandler<HandleJsonWebKeySetRequest>()
+                    .UseSingletonHandler<HandleJsonWebKeySetRequest>()
                     .SetOrder(ValidateJsonWebKeySetRequest.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
@@ -1147,7 +1147,7 @@ public static partial class OpenIddictServerHandlers
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<TContext>()
                     .AddFilter<RequireJsonWebKeySetRequest>()
-                    .UseScopedHandler<ApplyJsonWebKeySetResponse<TContext>>()
+                    .UseSingletonHandler<ApplyJsonWebKeySetResponse<TContext>>()
                     .SetOrder(500_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();

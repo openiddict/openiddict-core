@@ -79,7 +79,7 @@ public static partial class OpenIddictServerHandlers
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
                     .AddFilter<RequireDeviceAuthorizationRequest>()
-                    .UseScopedHandler<ExtractDeviceAuthorizationRequest>()
+                    .UseSingletonHandler<ExtractDeviceAuthorizationRequest>()
                     .SetOrder(100_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
@@ -138,7 +138,7 @@ public static partial class OpenIddictServerHandlers
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
                     .AddFilter<RequireDeviceAuthorizationRequest>()
-                    .UseScopedHandler<ValidateDeviceAuthorizationRequest>()
+                    .UseSingletonHandler<ValidateDeviceAuthorizationRequest>()
                     .SetOrder(ExtractDeviceAuthorizationRequest.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
@@ -192,7 +192,7 @@ public static partial class OpenIddictServerHandlers
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
                     .AddFilter<RequireDeviceAuthorizationRequest>()
-                    .UseScopedHandler<HandleDeviceAuthorizationRequest>()
+                    .UseSingletonHandler<HandleDeviceAuthorizationRequest>()
                     .SetOrder(ValidateDeviceAuthorizationRequest.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
@@ -290,7 +290,7 @@ public static partial class OpenIddictServerHandlers
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<TContext>()
                     .AddFilter<RequireDeviceAuthorizationRequest>()
-                    .UseScopedHandler<ApplyDeviceAuthorizationResponse<TContext>>()
+                    .UseSingletonHandler<ApplyDeviceAuthorizationResponse<TContext>>()
                     .SetOrder(500_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
@@ -521,7 +521,7 @@ public static partial class OpenIddictServerHandlers
             /// </summary>
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateDeviceAuthorizationRequestContext>()
-                    .UseScopedHandler<ValidateDeviceAuthentication>()
+                    .UseSingletonHandler<ValidateDeviceAuthentication>()
                     .SetOrder(ValidateScopes.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
@@ -759,7 +759,7 @@ public static partial class OpenIddictServerHandlers
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
                     .AddFilter<RequireEndUserVerificationRequest>()
-                    .UseScopedHandler<ExtractEndUserVerificationRequest>()
+                    .UseSingletonHandler<ExtractEndUserVerificationRequest>()
                     .SetOrder(100_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
@@ -818,7 +818,7 @@ public static partial class OpenIddictServerHandlers
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
                     .AddFilter<RequireEndUserVerificationRequest>()
-                    .UseScopedHandler<ValidateEndUserVerificationRequest>()
+                    .UseSingletonHandler<ValidateEndUserVerificationRequest>()
                     .SetOrder(ExtractEndUserVerificationRequest.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
@@ -876,7 +876,7 @@ public static partial class OpenIddictServerHandlers
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
                     .AddFilter<RequireEndUserVerificationRequest>()
-                    .UseScopedHandler<HandleEndUserVerificationRequest>()
+                    .UseSingletonHandler<HandleEndUserVerificationRequest>()
                     .SetOrder(ValidateEndUserVerificationRequest.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
@@ -970,7 +970,7 @@ public static partial class OpenIddictServerHandlers
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<TContext>()
                     .AddFilter<RequireEndUserVerificationRequest>()
-                    .UseScopedHandler<ApplyEndUserVerificationResponse<TContext>>()
+                    .UseSingletonHandler<ApplyEndUserVerificationResponse<TContext>>()
                     .SetOrder(500_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
@@ -1014,7 +1014,7 @@ public static partial class OpenIddictServerHandlers
             /// </summary>
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateEndUserVerificationRequestContext>()
-                    .UseScopedHandler<ValidateVerificationAuthentication>()
+                    .UseSingletonHandler<ValidateVerificationAuthentication>()
                     .SetOrder(int.MinValue + 100_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
