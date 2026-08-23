@@ -69,7 +69,7 @@ public sealed class OpenIddictMongoDbBuilder
         Services.Replace(ServiceDescriptor.Scoped<IOpenIddictApplicationManager>(static provider =>
             provider.GetRequiredService<OpenIddictApplicationManager<TApplication>>()));
 
-        Services.Replace(ServiceDescriptor.Scoped<
+        Services.Replace(ServiceDescriptor.Singleton<
             IOpenIddictApplicationStore<TApplication>, OpenIddictMongoDbApplicationStore<TApplication>>());
 
         return this;
@@ -86,7 +86,7 @@ public sealed class OpenIddictMongoDbBuilder
         Services.Replace(ServiceDescriptor.Scoped<IOpenIddictAuthorizationManager>(static provider =>
             provider.GetRequiredService<OpenIddictAuthorizationManager<TAuthorization>>()));
 
-        Services.Replace(ServiceDescriptor.Scoped<
+        Services.Replace(ServiceDescriptor.Singleton<
             IOpenIddictAuthorizationStore<TAuthorization>, OpenIddictMongoDbAuthorizationStore<TAuthorization>>());
 
         return this;
@@ -103,7 +103,7 @@ public sealed class OpenIddictMongoDbBuilder
         Services.Replace(ServiceDescriptor.Scoped<IOpenIddictResourceManager>(static provider =>
             provider.GetRequiredService<OpenIddictResourceManager<TResource>>()));
 
-        Services.Replace(ServiceDescriptor.Scoped<
+        Services.Replace(ServiceDescriptor.Singleton<
             IOpenIddictResourceStore<TResource>, OpenIddictMongoDbResourceStore<TResource>>());
 
         return this;
@@ -120,7 +120,7 @@ public sealed class OpenIddictMongoDbBuilder
         Services.Replace(ServiceDescriptor.Scoped<IOpenIddictScopeManager>(static provider =>
             provider.GetRequiredService<OpenIddictScopeManager<TScope>>()));
 
-        Services.Replace(ServiceDescriptor.Scoped<
+        Services.Replace(ServiceDescriptor.Singleton<
             IOpenIddictScopeStore<TScope>, OpenIddictMongoDbScopeStore<TScope>>());
 
         return this;
@@ -137,7 +137,7 @@ public sealed class OpenIddictMongoDbBuilder
         Services.Replace(ServiceDescriptor.Scoped<IOpenIddictSessionManager>(static provider =>
             provider.GetRequiredService<OpenIddictSessionManager<TSession>>()));
 
-        Services.Replace(ServiceDescriptor.Scoped<
+        Services.Replace(ServiceDescriptor.Singleton<
             IOpenIddictSessionStore<TSession>, OpenIddictMongoDbSessionStore<TSession>>());
 
         return this;
@@ -154,7 +154,7 @@ public sealed class OpenIddictMongoDbBuilder
         Services.Replace(ServiceDescriptor.Scoped<IOpenIddictTokenManager>(static provider =>
             provider.GetRequiredService<OpenIddictTokenManager<TToken>>()));
 
-        Services.Replace(ServiceDescriptor.Scoped<
+        Services.Replace(ServiceDescriptor.Singleton<
             IOpenIddictTokenStore<TToken>, OpenIddictMongoDbTokenStore<TToken>>());
 
         return this;
