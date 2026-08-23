@@ -436,28 +436,13 @@ public static partial class OpenIddictServerHandlers
         /// </summary>
         public sealed class ValidateScopes : IOpenIddictServerHandler<ValidateDeviceAuthorizationRequestContext>
         {
-            private readonly IOpenIddictScopeManager? _scopeManager;
-
-            public ValidateScopes(IOpenIddictScopeManager? scopeManager = null)
-                => _scopeManager = scopeManager;
-
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateDeviceAuthorizationRequestContext>()
                     .AddFilter<RequireScopeValidationEnabled>()
-                    .UseScopedHandler(static provider =>
-                    {
-                        // Note: the scope manager is only resolved if the degraded mode was not enabled to ensure
-                        // invalid core configuration exceptions are not thrown even if the managers were registered.
-                        var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictServerOptions>>().CurrentValue;
-
-                        return options.EnableDegradedMode
-                            ? new ValidateScopes()
-                            : new ValidateScopes(provider.GetService<IOpenIddictScopeManager>()
-                                ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0016)));
-                    })
+                    .UseSingletonHandler<ValidateScopes>()
                     .SetOrder(ValidateClientCredentialsParameters.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
@@ -476,14 +461,12 @@ public static partial class OpenIddictServerHandlers
                 // even if the service was registered and resolved from the dependency injection container.
                 if (scopes.Count is not 0 && !context.Options.EnableDegradedMode)
                 {
-                    if (_scopeManager is null)
-                    {
-                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
-                    }
+                    var manager = context.ServiceProvider.GetService<IOpenIddictScopeManager>()
+                        ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
 
-                    await foreach (var scope in _scopeManager.FindByNamesAsync([.. scopes], context.CancellationToken))
+                    await foreach (var scope in manager.FindByNamesAsync([.. scopes], context.CancellationToken))
                     {
-                        var name = await _scopeManager.GetNameAsync(scope, context.CancellationToken);
+                        var name = await manager.GetNameAsync(scope, context.CancellationToken);
                         if (!string.IsNullOrEmpty(name))
                         {
                             scopes.Remove(name);
@@ -568,13 +551,6 @@ public static partial class OpenIddictServerHandlers
         /// </summary>
         public sealed class ValidateEndpointPermissions : IOpenIddictServerHandler<ValidateDeviceAuthorizationRequestContext>
         {
-            private readonly IOpenIddictApplicationManager _applicationManager;
-
-            public ValidateEndpointPermissions() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
-
-            public ValidateEndpointPermissions(IOpenIddictApplicationManager applicationManager)
-                => _applicationManager = applicationManager ?? throw new ArgumentNullException(nameof(applicationManager));
-
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
@@ -583,7 +559,7 @@ public static partial class OpenIddictServerHandlers
                     .AddFilter<RequireClientIdParameter>()
                     .AddFilter<RequireDegradedModeDisabled>()
                     .AddFilter<RequireEndpointPermissionsEnabled>()
-                    .UseScopedHandler<ValidateEndpointPermissions>()
+                    .UseSingletonHandler<ValidateEndpointPermissions>()
                     .SetOrder(ValidateDeviceAuthentication.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
@@ -595,14 +571,17 @@ public static partial class OpenIddictServerHandlers
 
                 Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
 
-                var application = await _applicationManager.FindByClientIdAsync(context.ClientId, context.CancellationToken)
+                var manager = context.ServiceProvider.GetService<IOpenIddictApplicationManager>()
+                    ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
+
+                var application = await manager.FindByClientIdAsync(context.ClientId, context.CancellationToken)
                     ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
 
                 // Reject the request if the application is not allowed to use the device authorization endpoint.
                 //
                 // Note: the legacy "ept:device" permission is still allowed for backward compatibility.
-                if (!await _applicationManager.HasPermissionAsync(application, Permissions.Endpoints.DeviceAuthorization, context.CancellationToken) &&
-                    !await _applicationManager.HasPermissionAsync(application, "ept:device", context.CancellationToken))
+                if (!await manager.HasPermissionAsync(application, Permissions.Endpoints.DeviceAuthorization, context.CancellationToken) &&
+                    !await manager.HasPermissionAsync(application, "ept:device", context.CancellationToken))
                 {
                     context.Logger.LogInformation(6062, SR.GetResourceString(SR.ID6062), context.ClientId);
 
@@ -622,13 +601,6 @@ public static partial class OpenIddictServerHandlers
         /// </summary>
         public sealed class ValidateGrantTypePermissions : IOpenIddictServerHandler<ValidateDeviceAuthorizationRequestContext>
         {
-            private readonly IOpenIddictApplicationManager _applicationManager;
-
-            public ValidateGrantTypePermissions() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
-
-            public ValidateGrantTypePermissions(IOpenIddictApplicationManager applicationManager)
-                => _applicationManager = applicationManager ?? throw new ArgumentNullException(nameof(applicationManager));
-
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
@@ -636,7 +608,7 @@ public static partial class OpenIddictServerHandlers
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateDeviceAuthorizationRequestContext>()
                     .AddFilter<RequireGrantTypePermissionsEnabled>()
                     .AddFilter<RequireDegradedModeDisabled>()
-                    .UseScopedHandler<ValidateGrantTypePermissions>()
+                    .UseSingletonHandler<ValidateGrantTypePermissions>()
                     .SetOrder(ValidateEndpointPermissions.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
@@ -648,11 +620,14 @@ public static partial class OpenIddictServerHandlers
 
                 Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
 
-                var application = await _applicationManager.FindByClientIdAsync(context.ClientId, context.CancellationToken)
+                var manager = context.ServiceProvider.GetService<IOpenIddictApplicationManager>()
+                    ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
+
+                var application = await manager.FindByClientIdAsync(context.ClientId, context.CancellationToken)
                     ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
 
                 // Reject the request if the application is not allowed to use the device code grant.
-                if (!await _applicationManager.HasPermissionAsync(application, Permissions.GrantTypes.DeviceCode, context.CancellationToken))
+                if (!await manager.HasPermissionAsync(application, Permissions.GrantTypes.DeviceCode, context.CancellationToken))
                 {
                     context.Logger.LogInformation(6118, SR.GetResourceString(SR.ID6118), context.ClientId);
 
@@ -667,7 +642,7 @@ public static partial class OpenIddictServerHandlers
                 // Reject the request if the offline_access scope was request and
                 // if the application is not allowed to use the refresh token grant.
                 if (context.Request.HasScope(Scopes.OfflineAccess) &&
-                   !await _applicationManager.HasPermissionAsync(application, Permissions.GrantTypes.RefreshToken, context.CancellationToken))
+                   !await manager.HasPermissionAsync(application, Permissions.GrantTypes.RefreshToken, context.CancellationToken))
                 {
                     context.Logger.LogInformation(6120, SR.GetResourceString(SR.ID6120), context.ClientId, Scopes.OfflineAccess);
 
@@ -688,13 +663,6 @@ public static partial class OpenIddictServerHandlers
         /// </summary>
         public sealed class ValidateScopePermissions : IOpenIddictServerHandler<ValidateDeviceAuthorizationRequestContext>
         {
-            private readonly IOpenIddictApplicationManager _applicationManager;
-
-            public ValidateScopePermissions() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
-
-            public ValidateScopePermissions(IOpenIddictApplicationManager applicationManager)
-                => _applicationManager = applicationManager ?? throw new ArgumentNullException(nameof(applicationManager));
-
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
@@ -703,7 +671,7 @@ public static partial class OpenIddictServerHandlers
                     .AddFilter<RequireClientIdParameter>()
                     .AddFilter<RequireDegradedModeDisabled>()
                     .AddFilter<RequireScopePermissionsEnabled>()
-                    .UseScopedHandler<ValidateScopePermissions>()
+                    .UseSingletonHandler<ValidateScopePermissions>()
                     .SetOrder(ValidateGrantTypePermissions.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
@@ -715,7 +683,10 @@ public static partial class OpenIddictServerHandlers
 
                 Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
 
-                var application = await _applicationManager.FindByClientIdAsync(context.ClientId, context.CancellationToken)
+                var manager = context.ServiceProvider.GetService<IOpenIddictApplicationManager>()
+                    ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
+
+                var application = await manager.FindByClientIdAsync(context.ClientId, context.CancellationToken)
                     ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
 
                 foreach (var scope in context.Request.GetScopes())
@@ -728,7 +699,7 @@ public static partial class OpenIddictServerHandlers
                     }
 
                     // Reject the request if the application is not allowed to use the iterated scope.
-                    if (!await _applicationManager.HasPermissionAsync(application, Permissions.Prefixes.Scope + scope, context.CancellationToken))
+                    if (!await manager.HasPermissionAsync(application, Permissions.Prefixes.Scope + scope, context.CancellationToken))
                     {
                         context.Logger.LogInformation(6063, SR.GetResourceString(SR.ID6063), context.ClientId, scope);
 

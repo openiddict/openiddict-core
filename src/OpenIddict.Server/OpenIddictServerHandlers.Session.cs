@@ -11,7 +11,6 @@ using System.Security.Claims;
 using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 namespace OpenIddict.Server;
 
@@ -555,13 +554,6 @@ public static partial class OpenIddictServerHandlers
         /// </summary>
         public sealed class ValidateClientPostLogoutRedirectUri : IOpenIddictServerHandler<ValidateEndSessionRequestContext>
         {
-            private readonly IOpenIddictApplicationManager _applicationManager;
-
-            public ValidateClientPostLogoutRedirectUri() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
-
-            public ValidateClientPostLogoutRedirectUri(IOpenIddictApplicationManager applicationManager)
-                => _applicationManager = applicationManager ?? throw new ArgumentNullException(nameof(applicationManager));
-
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
@@ -569,7 +561,7 @@ public static partial class OpenIddictServerHandlers
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateEndSessionRequestContext>()
                     .AddFilter<RequireDegradedModeDisabled>()
                     .AddFilter<RequirePostLogoutRedirectUriParameter>()
-                    .UseScopedHandler<ValidateClientPostLogoutRedirectUri>()
+                    .UseSingletonHandler<ValidateClientPostLogoutRedirectUri>()
                     .SetOrder(RestorePushedAuthorizationRequestParameters.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
@@ -597,12 +589,15 @@ public static partial class OpenIddictServerHandlers
                 //
                 // Since the first method is more efficient, it's always used if a client_is was specified.
 
+                var manager = context.ServiceProvider.GetService<IOpenIddictApplicationManager>()
+                    ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
+
                 if (!string.IsNullOrEmpty(context.ClientId))
                 {
-                    var application = await _applicationManager.FindByClientIdAsync(context.ClientId, context.CancellationToken)
+                    var application = await manager.FindByClientIdAsync(context.ClientId, context.CancellationToken)
                         ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
 
-                    if (!await _applicationManager.ValidatePostLogoutRedirectUriAsync(application, context.PostLogoutRedirectUri, context.CancellationToken))
+                    if (!await manager.ValidatePostLogoutRedirectUriAsync(application, context.PostLogoutRedirectUri, context.CancellationToken))
                     {
                         context.Logger.LogInformation(6128, SR.GetResourceString(SR.ID6128), context.PostLogoutRedirectUri);
 
@@ -634,17 +629,17 @@ public static partial class OpenIddictServerHandlers
                     // To be considered valid, a post_logout_redirect_uri must correspond to an existing client application
                     // that was granted the ept:logout permission, unless endpoint permissions checking was explicitly disabled.
 
-                    await foreach (var application in _applicationManager.FindByPostLogoutRedirectUriAsync(uri, context.CancellationToken))
+                    await foreach (var application in manager.FindByPostLogoutRedirectUriAsync(uri, context.CancellationToken))
                     {
                         // Note: the legacy "ept:logout" permission is still allowed for backward compatibility.
                         if (!context.Options.IgnoreEndpointPermissions &&
-                            !await _applicationManager.HasPermissionAsync(application, Permissions.Endpoints.EndSession, context.CancellationToken) &&
-                            !await _applicationManager.HasPermissionAsync(application, "ept:logout", context.CancellationToken))
+                            !await manager.HasPermissionAsync(application, Permissions.Endpoints.EndSession, context.CancellationToken) &&
+                            !await manager.HasPermissionAsync(application, "ept:logout", context.CancellationToken))
                         {
                             continue;
                         }
 
-                        if (await _applicationManager.ValidatePostLogoutRedirectUriAsync(application, uri, context.CancellationToken))
+                        if (await manager.ValidatePostLogoutRedirectUriAsync(application, uri, context.CancellationToken))
                         {
                             return true;
                         }
@@ -666,19 +661,19 @@ public static partial class OpenIddictServerHandlers
                        (string.Equals(value.Scheme, Uri.UriSchemeHttp,  StringComparison.OrdinalIgnoreCase) ||
                         string.Equals(value.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase)))
                     {
-                        await foreach (var application in _applicationManager.FindByPostLogoutRedirectUriAsync(
+                        await foreach (var application in manager.FindByPostLogoutRedirectUriAsync(
                             uri: new UriBuilder(value) { Port = -1 }.Uri.AbsoluteUri, context.CancellationToken))
                         {
                             // Note: the legacy "ept:logout" permission is still allowed for backward compatibility.
                             if (!context.Options.IgnoreEndpointPermissions &&
-                                !await _applicationManager.HasPermissionAsync(application, Permissions.Endpoints.EndSession, context.CancellationToken) &&
-                                !await _applicationManager.HasPermissionAsync(application, "ept:logout", context.CancellationToken))
+                                !await manager.HasPermissionAsync(application, Permissions.Endpoints.EndSession, context.CancellationToken) &&
+                                !await manager.HasPermissionAsync(application, "ept:logout", context.CancellationToken))
                             {
                                 continue;
                             }
 
-                            if (await _applicationManager.HasApplicationTypeAsync(application, ApplicationTypes.Native, context.CancellationToken) &&
-                                await _applicationManager.ValidatePostLogoutRedirectUriAsync(application, uri, context.CancellationToken))
+                            if (await manager.HasApplicationTypeAsync(application, ApplicationTypes.Native, context.CancellationToken) &&
+                                await manager.ValidatePostLogoutRedirectUriAsync(application, uri, context.CancellationToken))
                             {
                                 return true;
                             }
@@ -696,13 +691,6 @@ public static partial class OpenIddictServerHandlers
         /// </summary>
         public sealed class ValidateEndpointPermissions : IOpenIddictServerHandler<ValidateEndSessionRequestContext>
         {
-            private readonly IOpenIddictApplicationManager _applicationManager;
-
-            public ValidateEndpointPermissions() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
-
-            public ValidateEndpointPermissions(IOpenIddictApplicationManager applicationManager)
-                => _applicationManager = applicationManager ?? throw new ArgumentNullException(nameof(applicationManager));
-
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
@@ -717,7 +705,7 @@ public static partial class OpenIddictServerHandlers
                     // Note: if only post_logout_redirect_uri was specified, client permissions are expected to be
                     // enforced by the ValidateClientPostLogoutRedirectUri handler when finding matching clients.
                     .AddFilter<RequireClientIdParameter>()
-                    .UseScopedHandler<ValidateEndpointPermissions>()
+                    .UseSingletonHandler<ValidateEndpointPermissions>()
                     .SetOrder(ValidateClientPostLogoutRedirectUri.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
@@ -729,14 +717,17 @@ public static partial class OpenIddictServerHandlers
 
                 Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
 
-                var application = await _applicationManager.FindByClientIdAsync(context.ClientId, context.CancellationToken)
+                var manager = context.ServiceProvider.GetService<IOpenIddictApplicationManager>()
+                    ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
+
+                var application = await manager.FindByClientIdAsync(context.ClientId, context.CancellationToken)
                     ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
 
                 // Reject the request if the application is not allowed to use the end session endpoint.
                 //
                 // Note: the legacy "ept:logout" permission is still allowed for backward compatibility.
-                if (!await _applicationManager.HasPermissionAsync(application, Permissions.Endpoints.EndSession, context.CancellationToken) &&
-                    !await _applicationManager.HasPermissionAsync(application, "ept:logout", context.CancellationToken))
+                if (!await manager.HasPermissionAsync(application, Permissions.Endpoints.EndSession, context.CancellationToken) &&
+                    !await manager.HasPermissionAsync(application, "ept:logout", context.CancellationToken))
                 {
                     context.Logger.LogInformation(6048, SR.GetResourceString(SR.ID6048), context.ClientId);
 
@@ -756,27 +747,12 @@ public static partial class OpenIddictServerHandlers
         /// </summary>
         public sealed class ValidateAuthorizedParty : IOpenIddictServerHandler<ValidateEndSessionRequestContext>
         {
-            private readonly IOpenIddictApplicationManager? _applicationManager;
-
-            public ValidateAuthorizedParty(IOpenIddictApplicationManager? applicationManager = null)
-                => _applicationManager = applicationManager;
-
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateEndSessionRequestContext>()
-                    .UseScopedHandler(static provider =>
-                    {
-                        // Note: the application manager is only resolved if the degraded mode was not enabled to ensure
-                        // invalid core configuration exceptions are not thrown even if the managers were registered.
-                        var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictServerOptions>>().CurrentValue;
-
-                        return options.EnableDegradedMode
-                            ? new ValidateAuthorizedParty()
-                            : new ValidateAuthorizedParty(provider.GetService<IOpenIddictApplicationManager>()
-                                ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0016)));
-                    })
+                    .UseSingletonHandler<ValidateAuthorizedParty>()
                     .SetOrder(ValidateEndpointPermissions.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
@@ -826,10 +802,8 @@ public static partial class OpenIddictServerHandlers
 
                 if (!context.Options.EnableDegradedMode && !string.IsNullOrEmpty(context.PostLogoutRedirectUri))
                 {
-                    if (_applicationManager is null)
-                    {
-                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
-                    }
+                    var manager = context.ServiceProvider.GetService<IOpenIddictApplicationManager>()
+                        ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
 
                     if (!await ValidateAuthorizedPartyAsync(context.IdentityTokenHintPrincipal,
                         context.PostLogoutRedirectUri, context.CancellationToken))
@@ -845,41 +819,41 @@ public static partial class OpenIddictServerHandlers
                     }
 
                     return;
-                }
 
-                async ValueTask<bool> ValidateAuthorizedPartyAsync(ClaimsPrincipal principal,
-                    [StringSyntax(StringSyntaxAttribute.Uri)] string uri, CancellationToken cancellationToken)
-                {
-                    // To be considered valid, the specified post_logout_redirect_uri must
-                    // be considered valid for one of the listed audiences/presenters.
-
-                    var identifiers = new HashSet<string>(StringComparer.Ordinal);
-                    identifiers.UnionWith(principal.GetAudiences());
-                    identifiers.UnionWith(principal.GetPresenters());
-
-                    foreach (var identifier in identifiers)
+                    async ValueTask<bool> ValidateAuthorizedPartyAsync(ClaimsPrincipal principal,
+                        [StringSyntax(StringSyntaxAttribute.Uri)] string uri, CancellationToken cancellationToken)
                     {
-                        var application = await _applicationManager.FindByClientIdAsync(identifier, cancellationToken);
-                        if (application is null)
+                        // To be considered valid, the specified post_logout_redirect_uri must
+                        // be considered valid for one of the listed audiences/presenters.
+
+                        var identifiers = new HashSet<string>(StringComparer.Ordinal);
+                        identifiers.UnionWith(principal.GetAudiences());
+                        identifiers.UnionWith(principal.GetPresenters());
+
+                        foreach (var identifier in identifiers)
                         {
-                            continue;
+                            var application = await manager.FindByClientIdAsync(identifier, cancellationToken);
+                            if (application is null)
+                            {
+                                continue;
+                            }
+
+                            // Note: the legacy "ept:logout" permission is still allowed for backward compatibility.
+                            if (!context.Options.IgnoreEndpointPermissions &&
+                                !await manager.HasPermissionAsync(application, Permissions.Endpoints.EndSession, cancellationToken) &&
+                                !await manager.HasPermissionAsync(application, "ept:logout", cancellationToken))
+                            {
+                                continue;
+                            }
+
+                            if (await manager.ValidatePostLogoutRedirectUriAsync(application, uri, cancellationToken))
+                            {
+                                return true;
+                            }
                         }
 
-                        // Note: the legacy "ept:logout" permission is still allowed for backward compatibility.
-                        if (!context.Options.IgnoreEndpointPermissions &&
-                            !await _applicationManager.HasPermissionAsync(application, Permissions.Endpoints.EndSession, cancellationToken) &&
-                            !await _applicationManager.HasPermissionAsync(application, "ept:logout", cancellationToken))
-                        {
-                            continue;
-                        }
-
-                        if (await _applicationManager.ValidatePostLogoutRedirectUriAsync(application, uri, cancellationToken))
-                        {
-                            return true;
-                        }
+                        return false;
                     }
-
-                    return false;
                 }
             }
         }

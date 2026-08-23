@@ -15,6 +15,7 @@ using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Text.Json;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 using Microsoft.IdentityModel.JsonWebTokens;
@@ -817,13 +818,6 @@ public static partial class OpenIddictClientHandlers
     /// </summary>
     public sealed class RedeemStateTokenEntry : IOpenIddictClientHandler<ProcessAuthenticationContext>
     {
-        private readonly IOpenIddictTokenManager _tokenManager;
-
-        public RedeemStateTokenEntry() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0318));
-
-        public RedeemStateTokenEntry(IOpenIddictTokenManager tokenManager)
-            => _tokenManager = tokenManager ?? throw new ArgumentNullException(nameof(tokenManager));
-
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
         /// </summary>
@@ -833,7 +827,7 @@ public static partial class OpenIddictClientHandlers
                 .AddFilter<RequireStateTokenPrincipal>()
                 .AddFilter<RequireStateTokenRedeemed>()
                 .AddFilter<RequireStateTokenValidated>()
-                .UseScopedHandler<RedeemStateTokenEntry>()
+                .UseSingletonHandler<RedeemStateTokenEntry>()
                 // Note: this handler is deliberately executed early in the pipeline to ensure that
                 // the state token entry is always marked as redeemed even if the authentication
                 // demand is rejected later in the pipeline (e.g because an error was returned).
@@ -856,9 +850,12 @@ public static partial class OpenIddictClientHandlers
                 return;
             }
 
+            var manager = context.ServiceProvider.GetService<IOpenIddictTokenManager>()
+                ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0318));
+
             // Mark the token as redeemed to prevent future reuses.
-            var token = await _tokenManager.FindByIdAsync(identifier, context.CancellationToken);
-            if (token is not null && !await _tokenManager.TryRedeemAsync(token, context.CancellationToken))
+            var token = await manager.FindByIdAsync(identifier, context.CancellationToken);
+            if (token is not null && !await manager.TryRedeemAsync(token, context.CancellationToken))
             {
                 context.Reject(
                     error: Errors.InvalidToken,

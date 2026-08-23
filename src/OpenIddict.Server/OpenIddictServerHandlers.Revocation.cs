@@ -7,6 +7,7 @@
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Security.Claims;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace OpenIddict.Server;
@@ -442,13 +443,6 @@ public static partial class OpenIddictServerHandlers
         /// </summary>
         public sealed class ValidateEndpointPermissions : IOpenIddictServerHandler<ValidateRevocationRequestContext>
         {
-            private readonly IOpenIddictApplicationManager _applicationManager;
-
-            public ValidateEndpointPermissions() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
-
-            public ValidateEndpointPermissions(IOpenIddictApplicationManager applicationManager)
-                => _applicationManager = applicationManager ?? throw new ArgumentNullException(nameof(applicationManager));
-
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
@@ -457,7 +451,7 @@ public static partial class OpenIddictServerHandlers
                     .AddFilter<RequireClientIdParameter>()
                     .AddFilter<RequireDegradedModeDisabled>()
                     .AddFilter<RequireEndpointPermissionsEnabled>()
-                    .UseScopedHandler<ValidateEndpointPermissions>()
+                    .UseSingletonHandler<ValidateEndpointPermissions>()
                     .SetOrder(ValidateAuthentication.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
@@ -469,11 +463,14 @@ public static partial class OpenIddictServerHandlers
 
                 Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
 
-                var application = await _applicationManager.FindByClientIdAsync(context.ClientId, context.CancellationToken)
+                var manager = context.ServiceProvider.GetService<IOpenIddictApplicationManager>()
+                    ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
+
+                var application = await manager.FindByClientIdAsync(context.ClientId, context.CancellationToken)
                     ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
 
                 // Reject the request if the application is not allowed to use the revocation endpoint.
-                if (!await _applicationManager.HasPermissionAsync(application, Permissions.Endpoints.Revocation, context.CancellationToken))
+                if (!await manager.HasPermissionAsync(application, Permissions.Endpoints.Revocation, context.CancellationToken))
                 {
                     context.Logger.LogInformation(6116, SR.GetResourceString(SR.ID6116), context.ClientId);
 
@@ -632,20 +629,13 @@ public static partial class OpenIddictServerHandlers
         /// </summary>
         public sealed class RevokeToken : IOpenIddictServerHandler<HandleRevocationRequestContext>
         {
-            private readonly IOpenIddictTokenManager _tokenManager;
-
-            public RevokeToken() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
-
-            public RevokeToken(IOpenIddictTokenManager tokenManager)
-                => _tokenManager = tokenManager ?? throw new ArgumentNullException(nameof(tokenManager));
-
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<HandleRevocationRequestContext>()
                     .AddFilter<RequireDegradedModeDisabled>()
-                    .UseScopedHandler<RevokeToken>()
+                    .UseSingletonHandler<RevokeToken>()
                     .SetOrder(AttachPrincipal.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
@@ -671,7 +661,10 @@ public static partial class OpenIddictServerHandlers
                     return;
                 }
 
-                var token = await _tokenManager.FindByIdAsync(identifier, context.CancellationToken);
+                var manager = context.ServiceProvider.GetService<IOpenIddictTokenManager>()
+                    ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
+
+                var token = await manager.FindByIdAsync(identifier, context.CancellationToken);
                 if (token is null)
                 {
                     context.Logger.LogInformation(6123, SR.GetResourceString(SR.ID6123), identifier);
@@ -685,7 +678,7 @@ public static partial class OpenIddictServerHandlers
                 }
 
                 // Try to revoke the token. If an error occurs, return an error.
-                if (!await _tokenManager.TryRevokeAsync(token, context.CancellationToken))
+                if (!await manager.TryRevokeAsync(token, context.CancellationToken))
                 {
                     context.Reject(
                         error: Errors.UnsupportedTokenType,

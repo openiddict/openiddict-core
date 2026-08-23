@@ -962,27 +962,12 @@ public static partial class OpenIddictServerHandlers
     /// </summary>
     public sealed class ValidateClientId : IOpenIddictServerHandler<ProcessAuthenticationContext>
     {
-        private readonly IOpenIddictApplicationManager? _applicationManager;
-
-        public ValidateClientId(IOpenIddictApplicationManager? applicationManager = null)
-            => _applicationManager = applicationManager;
-
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
         /// </summary>
         public static OpenIddictServerHandlerDescriptor Descriptor { get; }
             = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
-                .UseScopedHandler(static provider =>
-                {
-                    // Note: the application manager is only resolved if the degraded mode was not enabled to ensure
-                    // invalid core configuration exceptions are not thrown even if the managers were registered.
-                    var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictServerOptions>>().CurrentValue;
-
-                    return options.EnableDegradedMode
-                        ? new ValidateClientId()
-                        : new ValidateClientId(provider.GetService<IOpenIddictApplicationManager>()
-                            ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0016)));
-                })
+                .UseSingletonHandler<ValidateClientId>()
                 .SetOrder(ValidateClientAssertionAudience.Descriptor.Order + 1_000)
                 .SetType(OpenIddictServerHandlerType.BuiltIn)
                 .Build();
@@ -1039,14 +1024,12 @@ public static partial class OpenIddictServerHandlers
 
             if (!context.Options.EnableDegradedMode)
             {
-                if (_applicationManager is null)
-                {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
-                }
+                var manager = context.ServiceProvider.GetService<IOpenIddictApplicationManager>()
+                    ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
 
                 // Retrieve the application details corresponding to the requested client_id.
                 // If no entity can be found, this likely indicates that the client_id is invalid.
-                var application = await _applicationManager.FindByClientIdAsync(context.ClientId, context.CancellationToken);
+                var application = await manager.FindByClientIdAsync(context.ClientId, context.CancellationToken);
                 if (application is null)
                 {
                     context.Logger.LogInformation(6221, SR.GetResourceString(SR.ID6221), context.ClientId);
@@ -1078,13 +1061,6 @@ public static partial class OpenIddictServerHandlers
     /// </summary>
     public sealed class ValidateClientType : IOpenIddictServerHandler<ProcessAuthenticationContext>
     {
-        private readonly IOpenIddictApplicationManager _applicationManager;
-
-        public ValidateClientType() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
-
-        public ValidateClientType(IOpenIddictApplicationManager applicationManager)
-            => _applicationManager = applicationManager ?? throw new ArgumentNullException(nameof(applicationManager));
-
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
         /// </summary>
@@ -1092,7 +1068,7 @@ public static partial class OpenIddictServerHandlers
             = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                 .AddFilter<RequireClientIdParameter>()
                 .AddFilter<RequireDegradedModeDisabled>()
-                .UseScopedHandler<ValidateClientType>()
+                .UseSingletonHandler<ValidateClientType>()
                 .SetOrder(ValidateClientId.Descriptor.Order + 1_000)
                 .SetType(OpenIddictServerHandlerType.BuiltIn)
                 .Build();
@@ -1113,10 +1089,13 @@ public static partial class OpenIddictServerHandlers
                 return;
             }
 
-            var application = await _applicationManager.FindByClientIdAsync(context.ClientId, context.CancellationToken)
+            var manager = context.ServiceProvider.GetService<IOpenIddictApplicationManager>()
+                ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
+
+            var application = await manager.FindByClientIdAsync(context.ClientId, context.CancellationToken)
                 ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
 
-            if (await _applicationManager.HasClientTypeAsync(application, ClientTypes.Public, context.CancellationToken))
+            if (await manager.HasClientTypeAsync(application, ClientTypes.Public, context.CancellationToken))
             {
                 // Reject grant_type=client_credentials token requests if the application is a public client.
                 if (context.EndpointType is OpenIddictServerEndpointType.Token &&
@@ -1187,13 +1166,6 @@ public static partial class OpenIddictServerHandlers
     /// </summary>
     public sealed class ValidateClientSecret : IOpenIddictServerHandler<ProcessAuthenticationContext>
     {
-        private readonly IOpenIddictApplicationManager _applicationManager;
-
-        public ValidateClientSecret() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
-
-        public ValidateClientSecret(IOpenIddictApplicationManager applicationManager)
-            => _applicationManager = applicationManager ?? throw new ArgumentNullException(nameof(applicationManager));
-
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
         /// </summary>
@@ -1202,7 +1174,7 @@ public static partial class OpenIddictServerHandlers
                 .AddFilter<RequireClientIdParameter>()
                 .AddFilter<RequireClientSecretParameter>()
                 .AddFilter<RequireDegradedModeDisabled>()
-                .UseScopedHandler<ValidateClientSecret>()
+                .UseSingletonHandler<ValidateClientSecret>()
                 .SetOrder(ValidateClientType.Descriptor.Order + 1_000)
                 .SetType(OpenIddictServerHandlerType.BuiltIn)
                 .Build();
@@ -1224,16 +1196,19 @@ public static partial class OpenIddictServerHandlers
                 return;
             }
 
-            var application = await _applicationManager.FindByClientIdAsync(context.ClientId, context.CancellationToken)
+            var manager = context.ServiceProvider.GetService<IOpenIddictApplicationManager>()
+                ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
+
+            var application = await manager.FindByClientIdAsync(context.ClientId, context.CancellationToken)
                 ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
 
             // If the application is a public client, don't validate the client secret.
-            if (await _applicationManager.HasClientTypeAsync(application, ClientTypes.Public, context.CancellationToken))
+            if (await manager.HasClientTypeAsync(application, ClientTypes.Public, context.CancellationToken))
             {
                 return;
             }
 
-            if (!await _applicationManager.ValidateClientSecretAsync(application, context.ClientSecret, context.CancellationToken))
+            if (!await manager.ValidateClientSecretAsync(application, context.ClientSecret, context.CancellationToken))
             {
                 context.Logger.LogInformation(6225, SR.GetResourceString(SR.ID6225), context.ClientId);
 
@@ -1253,31 +1228,13 @@ public static partial class OpenIddictServerHandlers
     /// </summary>
     public sealed class ValidateClientCertificate : IOpenIddictServerHandler<ProcessAuthenticationContext>
     {
-        private readonly IOpenIddictApplicationManager? _applicationManager;
-
-        public ValidateClientCertificate() { }
-
-        public ValidateClientCertificate(IOpenIddictApplicationManager applicationManager)
-            => _applicationManager = applicationManager ?? throw new ArgumentNullException(nameof(applicationManager));
-
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
         /// </summary>
         public static OpenIddictServerHandlerDescriptor Descriptor { get; }
             = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                 .AddFilter<RequireClientCertificate>()
-                .UseScopedHandler(static provider =>
-                {
-                    // Note: the application manager is only resolved if the degraded mode was not enabled to ensure
-                    // invalid core configuration exceptions are not thrown even if the managers were registered.
-                    var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictServerOptions>>().CurrentValue;
-
-                    return options.EnableDegradedMode
-                        ? new ValidateClientCertificate()
-                        : new ValidateClientCertificate(provider.GetService<IOpenIddictApplicationManager>()
-                            ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0016)));
-                })
-                .UseScopedHandler<ValidateClientCertificate>()
+                .UseSingletonHandler<ValidateClientCertificate>()
                 .SetOrder(ValidateClientSecret.Descriptor.Order + 1_000)
                 .SetType(OpenIddictServerHandlerType.BuiltIn)
                 .Build();
@@ -1393,12 +1350,10 @@ public static partial class OpenIddictServerHandlers
                 return;
             }
 
-            if (_applicationManager is null)
-            {
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
-            }
+            var manager = context.ServiceProvider.GetService<IOpenIddictApplicationManager>()
+                ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
 
-            var application = await _applicationManager.FindByClientIdAsync(context.ClientId, context.CancellationToken)
+            var application = await manager.FindByClientIdAsync(context.ClientId, context.CancellationToken)
                 ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
 
             // Note: to avoid building and introspecting a X.509 certificate chain and reduce the cost
@@ -1420,7 +1375,7 @@ public static partial class OpenIddictServerHandlers
                     return;
                 }
 
-                if (await _applicationManager.GetSelfSignedTlsClientAuthenticationPolicyAsync(
+                if (await manager.GetSelfSignedTlsClientAuthenticationPolicyAsync(
                     application, context.Options.SelfSignedTlsClientAuthenticationPolicy, context.CancellationToken) is not X509ChainPolicy policy)
                 {
                     context.Logger.LogInformation(6283, SR.GetResourceString(SR.ID6283), context.ClientId);
@@ -1442,7 +1397,7 @@ public static partial class OpenIddictServerHandlers
                 // To allow validating such certificates, the chain policy is amended to consider the specified
                 // self-signed certificate as a trusted root and basically disable chain validation while still
                 // validating the other aspects of the certificate (e.g expiration date, key usage, etc).
-                if (await _applicationManager.HasClientTypeAsync(application, ClientTypes.Public, context.CancellationToken))
+                if (await manager.HasClientTypeAsync(application, ClientTypes.Public, context.CancellationToken))
                 {
                     // Always clone the X.509 chain policy to ensure the original instance is never mutated.
                     policy = policy.Clone();
@@ -1454,7 +1409,7 @@ public static partial class OpenIddictServerHandlers
 #endif
                 }
 
-                if (!await _applicationManager.ValidateSelfSignedTlsClientCertificateAsync(
+                if (!await manager.ValidateSelfSignedTlsClientCertificateAsync(
                     application, context.Transaction.RemoteCertificate, policy, context.CancellationToken))
                 {
                     context.Logger.LogInformation(6283, SR.GetResourceString(SR.ID6283), context.ClientId);
@@ -1480,9 +1435,9 @@ public static partial class OpenIddictServerHandlers
                     return;
                 }
 
-                if (await _applicationManager.GetPublicKeyInfrastructureTlsClientAuthenticationPolicyAsync(
+                if (await manager.GetPublicKeyInfrastructureTlsClientAuthenticationPolicyAsync(
                     application, context.Options.PublicKeyInfrastructureTlsClientAuthenticationPolicy, context.CancellationToken) is not X509ChainPolicy policy ||
-                   !await _applicationManager.ValidatePublicKeyInfrastructureTlsClientCertificateAsync(
+                   !await manager.ValidatePublicKeyInfrastructureTlsClientCertificateAsync(
                     application, context.Transaction.RemoteCertificate, policy, context.CancellationToken))
                 {
                     context.Logger.LogInformation(6284, SR.GetResourceString(SR.ID6284), context.ClientId);
@@ -2621,13 +2576,6 @@ public static partial class OpenIddictServerHandlers
     /// </summary>
     public sealed class RejectDeviceCodeEntry : IOpenIddictServerHandler<ProcessChallengeContext>
     {
-        private readonly IOpenIddictTokenManager _tokenManager;
-
-        public RejectDeviceCodeEntry() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
-
-        public RejectDeviceCodeEntry(IOpenIddictTokenManager tokenManager)
-            => _tokenManager = tokenManager ?? throw new ArgumentNullException(nameof(tokenManager));
-
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
         /// </summary>
@@ -2635,7 +2583,7 @@ public static partial class OpenIddictServerHandlers
             = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
                 .AddFilter<RequireDegradedModeDisabled>()
                 .AddFilter<RequireTokenStorageEnabled>()
-                .UseScopedHandler<RejectDeviceCodeEntry>()
+                .UseSingletonHandler<RejectDeviceCodeEntry>()
                 .SetOrder(AttachDefaultChallengeError.Descriptor.Order + 1_000)
                 .SetType(OpenIddictServerHandlerType.BuiltIn)
                 .Build();
@@ -2663,10 +2611,13 @@ public static partial class OpenIddictServerHandlers
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0008));
             }
 
-            var token = await _tokenManager.FindByIdAsync(identifier, context.CancellationToken);
+            var manager = context.ServiceProvider.GetService<IOpenIddictTokenManager>()
+                ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
+
+            var token = await manager.FindByIdAsync(identifier, context.CancellationToken);
             if (token is not null)
             {
-                await _tokenManager.TryRejectAsync(token, context.CancellationToken);
+                await manager.TryRejectAsync(token, context.CancellationToken);
             }
         }
     }
@@ -2677,13 +2628,6 @@ public static partial class OpenIddictServerHandlers
     /// </summary>
     public sealed class RejectUserCodeEntry : IOpenIddictServerHandler<ProcessChallengeContext>
     {
-        private readonly IOpenIddictTokenManager _tokenManager;
-
-        public RejectUserCodeEntry() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
-
-        public RejectUserCodeEntry(IOpenIddictTokenManager tokenManager)
-            => _tokenManager = tokenManager ?? throw new ArgumentNullException(nameof(tokenManager));
-
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
         /// </summary>
@@ -2691,7 +2635,7 @@ public static partial class OpenIddictServerHandlers
             = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
                 .AddFilter<RequireDegradedModeDisabled>()
                 .AddFilter<RequireTokenStorageEnabled>()
-                .UseScopedHandler<RejectUserCodeEntry>()
+                .UseSingletonHandler<RejectUserCodeEntry>()
                 .SetOrder(RejectDeviceCodeEntry.Descriptor.Order + 1_000)
                 .SetType(OpenIddictServerHandlerType.BuiltIn)
                 .Build();
@@ -2719,10 +2663,13 @@ public static partial class OpenIddictServerHandlers
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0009));
             }
 
-            var token = await _tokenManager.FindByIdAsync(identifier, context.CancellationToken);
+            var manager = context.ServiceProvider.GetService<IOpenIddictTokenManager>()
+                ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
+
+            var token = await manager.FindByIdAsync(identifier, context.CancellationToken);
             if (token is not null)
             {
-                await _tokenManager.TryRejectAsync(token, context.CancellationToken);
+                await manager.TryRejectAsync(token, context.CancellationToken);
             }
         }
     }
@@ -2913,13 +2860,6 @@ public static partial class OpenIddictServerHandlers
     /// </summary>
     public sealed class RedeemTokenEntry : IOpenIddictServerHandler<ProcessSignInContext>
     {
-        private readonly IOpenIddictTokenManager _tokenManager;
-
-        public RedeemTokenEntry() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
-
-        public RedeemTokenEntry(IOpenIddictTokenManager tokenManager)
-            => _tokenManager = tokenManager ?? throw new ArgumentNullException(nameof(tokenManager));
-
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
         /// </summary>
@@ -2927,7 +2867,7 @@ public static partial class OpenIddictServerHandlers
             = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
                 .AddFilter<RequireDegradedModeDisabled>()
                 .AddFilter<RequireTokenStorageEnabled>()
-                .UseScopedHandler<RedeemTokenEntry>()
+                .UseSingletonHandler<RedeemTokenEntry>()
                 // Note: this handler is deliberately executed early in the pipeline to ensure
                 // that the token database entry is always marked as redeemed even if the sign-in
                 // demand is rejected later in the pipeline (e.g because an error was returned).
@@ -2988,7 +2928,10 @@ public static partial class OpenIddictServerHandlers
                 return;
             }
 
-            var token = await _tokenManager.FindByIdAsync(identifier, context.CancellationToken);
+            var manager = context.ServiceProvider.GetService<IOpenIddictTokenManager>()
+                ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
+
+            var token = await manager.FindByIdAsync(identifier, context.CancellationToken);
             if (token is null)
             {
                 return;
@@ -2998,10 +2941,10 @@ public static partial class OpenIddictServerHandlers
             // errors returned while trying to mark the entry as redeemed (that may be caused by concurrent requests).
             if (context.EndpointType is OpenIddictServerEndpointType.Token && context.Request.IsRefreshTokenGrantType())
             {
-                await _tokenManager.TryRedeemAsync(token, context.CancellationToken);
+                await manager.TryRedeemAsync(token, context.CancellationToken);
             }
 
-            else if (!await _tokenManager.TryRedeemAsync(token, context.CancellationToken))
+            else if (!await manager.TryRedeemAsync(token, context.CancellationToken))
             {
                 context.Reject(
                     error: Errors.InvalidToken,
@@ -3423,19 +3366,6 @@ public static partial class OpenIddictServerHandlers
     /// </summary>
     public sealed class AttachAuthorization : IOpenIddictServerHandler<ProcessSignInContext>
     {
-        private readonly IOpenIddictApplicationManager _applicationManager;
-        private readonly IOpenIddictAuthorizationManager _authorizationManager;
-
-        public AttachAuthorization() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
-
-        public AttachAuthorization(
-            IOpenIddictApplicationManager applicationManager,
-            IOpenIddictAuthorizationManager authorizationManager)
-        {
-            _applicationManager = applicationManager ?? throw new ArgumentNullException(nameof(applicationManager));
-            _authorizationManager = authorizationManager ?? throw new ArgumentNullException(nameof(authorizationManager));
-        }
-
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
         /// </summary>
@@ -3443,7 +3373,7 @@ public static partial class OpenIddictServerHandlers
             = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
                 .AddFilter<RequireDegradedModeDisabled>()
                 .AddFilter<RequireAuthorizationStorageEnabled>()
-                .UseScopedHandler<AttachAuthorization>()
+                .UseSingletonHandler<AttachAuthorization>()
                 .SetOrder(EvaluateGeneratedTokens.Descriptor.Order + 1_000)
                 .SetType(OpenIddictServerHandlerType.BuiltIn)
                 .Build();
@@ -3483,16 +3413,22 @@ public static partial class OpenIddictServerHandlers
             // If the client application is known, associate it to the authorization.
             if (!string.IsNullOrEmpty(context.Request.ClientId))
             {
-                var application = await _applicationManager.FindByClientIdAsync(context.Request.ClientId, context.CancellationToken)
+                var applicationManager = context.ServiceProvider.GetService<IOpenIddictApplicationManager>()
+                    ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
+
+                var application = await applicationManager.FindByClientIdAsync(context.Request.ClientId, context.CancellationToken)
                     ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0017));
 
-                descriptor.ApplicationId = await _applicationManager.GetIdAsync(application, context.CancellationToken);
+                descriptor.ApplicationId = await applicationManager.GetIdAsync(application, context.CancellationToken);
             }
 
-            var authorization = await _authorizationManager.CreateAsync(descriptor, context.CancellationToken)
+            var authorizationManager = context.ServiceProvider.GetService<IOpenIddictAuthorizationManager>()
+                ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
+
+            var authorization = await authorizationManager.CreateAsync(descriptor, context.CancellationToken)
                 ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0018));
 
-            var identifier = await _authorizationManager.GetIdAsync(authorization, context.CancellationToken);
+            var identifier = await authorizationManager.GetIdAsync(authorization, context.CancellationToken);
 
             if (string.IsNullOrEmpty(context.Request.ClientId))
             {
@@ -3516,28 +3452,13 @@ public static partial class OpenIddictServerHandlers
     /// </summary>
     public sealed class PrepareAccessTokenPrincipal : IOpenIddictServerHandler<ProcessSignInContext>
     {
-        private readonly IOpenIddictApplicationManager? _applicationManager;
-
-        public PrepareAccessTokenPrincipal(IOpenIddictApplicationManager? applicationManager = null)
-            => _applicationManager = applicationManager;
-
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
         /// </summary>
         public static OpenIddictServerHandlerDescriptor Descriptor { get; }
             = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
                 .AddFilter<RequireAccessTokenGenerated>()
-                .UseScopedHandler(static provider =>
-                {
-                    // Note: the application manager is only resolved if the degraded mode was not enabled to ensure
-                    // invalid core configuration exceptions are not thrown even if the managers were registered.
-                    var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictServerOptions>>().CurrentValue;
-
-                    return options.EnableDegradedMode
-                        ? new PrepareAccessTokenPrincipal()
-                        : new PrepareAccessTokenPrincipal(provider.GetService<IOpenIddictApplicationManager>()
-                            ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0016)));
-                })
+                .UseSingletonHandler<PrepareAccessTokenPrincipal>()
                 .SetOrder(AttachAuthorization.Descriptor.Order + 1_000)
                 .SetType(OpenIddictServerHandlerType.BuiltIn)
                 .Build();
@@ -3606,15 +3527,13 @@ public static partial class OpenIddictServerHandlers
             // If the client to which the token is returned is known, use the attached setting if available.
             if (lifetime is null && !context.Options.EnableDegradedMode && !string.IsNullOrEmpty(context.ClientId))
             {
-                if (_applicationManager is null)
-                {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
-                }
+                var manager = context.ServiceProvider.GetService<IOpenIddictApplicationManager>()
+                    ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
 
-                var application = await _applicationManager.FindByClientIdAsync(context.ClientId, context.CancellationToken)
+                var application = await manager.FindByClientIdAsync(context.ClientId, context.CancellationToken)
                     ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0017));
 
-                var settings = await _applicationManager.GetSettingsAsync(application, context.CancellationToken);
+                var settings = await manager.GetSettingsAsync(application, context.CancellationToken);
                 if (settings.TryGetValue(Settings.TokenLifetimes.AccessToken, out string? setting) &&
                     TimeSpan.TryParse(setting, CultureInfo.InvariantCulture, out var value))
                 {
@@ -3680,28 +3599,13 @@ public static partial class OpenIddictServerHandlers
     /// </summary>
     public sealed class PrepareAuthorizationCodePrincipal : IOpenIddictServerHandler<ProcessSignInContext>
     {
-        private readonly IOpenIddictApplicationManager? _applicationManager;
-
-        public PrepareAuthorizationCodePrincipal(IOpenIddictApplicationManager? applicationManager = null)
-            => _applicationManager = applicationManager;
-
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
         /// </summary>
         public static OpenIddictServerHandlerDescriptor Descriptor { get; }
             = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
                 .AddFilter<RequireAuthorizationCodeGenerated>()
-                .UseScopedHandler(static provider =>
-                {
-                    // Note: the application manager is only resolved if the degraded mode was not enabled to ensure
-                    // invalid core configuration exceptions are not thrown even if the managers were registered.
-                    var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictServerOptions>>().CurrentValue;
-
-                    return options.EnableDegradedMode
-                        ? new PrepareAuthorizationCodePrincipal()
-                        : new PrepareAuthorizationCodePrincipal(provider.GetService<IOpenIddictApplicationManager>()
-                            ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0016)));
-                })
+                .UseSingletonHandler<PrepareAuthorizationCodePrincipal>()
                 .SetOrder(PrepareAccessTokenPrincipal.Descriptor.Order + 1_000)
                 .SetType(OpenIddictServerHandlerType.BuiltIn)
                 .Build();
@@ -3740,15 +3644,13 @@ public static partial class OpenIddictServerHandlers
             // If the client to which the token is returned is known, use the attached setting if available.
             if (lifetime is null && !context.Options.EnableDegradedMode && !string.IsNullOrEmpty(context.ClientId))
             {
-                if (_applicationManager is null)
-                {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
-                }
+                var manager = context.ServiceProvider.GetService<IOpenIddictApplicationManager>()
+                    ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
 
-                var application = await _applicationManager.FindByClientIdAsync(context.ClientId, context.CancellationToken)
+                var application = await manager.FindByClientIdAsync(context.ClientId, context.CancellationToken)
                     ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0017));
 
-                var settings = await _applicationManager.GetSettingsAsync(application, context.CancellationToken);
+                var settings = await manager.GetSettingsAsync(application, context.CancellationToken);
                 if (settings.TryGetValue(Settings.TokenLifetimes.AuthorizationCode, out string? setting) &&
                     TimeSpan.TryParse(setting, CultureInfo.InvariantCulture, out var value))
                 {
@@ -3804,28 +3706,13 @@ public static partial class OpenIddictServerHandlers
     /// </summary>
     public sealed class PrepareDeviceCodePrincipal : IOpenIddictServerHandler<ProcessSignInContext>
     {
-        private readonly IOpenIddictApplicationManager? _applicationManager;
-
-        public PrepareDeviceCodePrincipal(IOpenIddictApplicationManager? applicationManager = null)
-            => _applicationManager = applicationManager;
-
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
         /// </summary>
         public static OpenIddictServerHandlerDescriptor Descriptor { get; }
             = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
                 .AddFilter<RequireDeviceCodeGenerated>()
-                .UseScopedHandler(static provider =>
-                {
-                    // Note: the application manager is only resolved if the degraded mode was not enabled to ensure
-                    // invalid core configuration exceptions are not thrown even if the managers were registered.
-                    var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictServerOptions>>().CurrentValue;
-
-                    return options.EnableDegradedMode
-                        ? new PrepareDeviceCodePrincipal()
-                        : new PrepareDeviceCodePrincipal(provider.GetService<IOpenIddictApplicationManager>()
-                            ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0016)));
-                })
+                .UseSingletonHandler<PrepareDeviceCodePrincipal>()
                 .SetOrder(PrepareAuthorizationCodePrincipal.Descriptor.Order + 1_000)
                 .SetType(OpenIddictServerHandlerType.BuiltIn)
                 .Build();
@@ -3864,15 +3751,13 @@ public static partial class OpenIddictServerHandlers
             // If the client to which the token is returned is known, use the attached setting if available.
             if (lifetime is null && !context.Options.EnableDegradedMode && !string.IsNullOrEmpty(context.ClientId))
             {
-                if (_applicationManager is null)
-                {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
-                }
+                var manager = context.ServiceProvider.GetService<IOpenIddictApplicationManager>()
+                    ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
 
-                var application = await _applicationManager.FindByClientIdAsync(context.ClientId, context.CancellationToken)
+                var application = await manager.FindByClientIdAsync(context.ClientId, context.CancellationToken)
                     ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0017));
 
-                var settings = await _applicationManager.GetSettingsAsync(application, context.CancellationToken);
+                var settings = await manager.GetSettingsAsync(application, context.CancellationToken);
                 if (settings.TryGetValue(Settings.TokenLifetimes.DeviceCode, out string? setting) &&
                     TimeSpan.TryParse(setting, CultureInfo.InvariantCulture, out var value))
                 {
@@ -3914,28 +3799,13 @@ public static partial class OpenIddictServerHandlers
     /// </summary>
     public sealed class PrepareIssuedTokenPrincipal : IOpenIddictServerHandler<ProcessSignInContext>
     {
-        private readonly IOpenIddictApplicationManager? _applicationManager;
-
-        public PrepareIssuedTokenPrincipal(IOpenIddictApplicationManager? applicationManager = null)
-            => _applicationManager = applicationManager;
-
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
         /// </summary>
         public static OpenIddictServerHandlerDescriptor Descriptor { get; }
             = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
                 .AddFilter<RequireIssuedTokenGenerated>()
-                .UseScopedHandler(static provider =>
-                {
-                    // Note: the application manager is only resolved if the degraded mode was not enabled to ensure
-                    // invalid core configuration exceptions are not thrown even if the managers were registered.
-                    var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictServerOptions>>().CurrentValue;
-
-                    return options.EnableDegradedMode
-                        ? new PrepareIssuedTokenPrincipal()
-                        : new PrepareIssuedTokenPrincipal(provider.GetService<IOpenIddictApplicationManager>()
-                            ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0016)));
-                })
+                .UseSingletonHandler<PrepareIssuedTokenPrincipal>()
                 .SetOrder(PrepareDeviceCodePrincipal.Descriptor.Order + 1_000)
                 .SetType(OpenIddictServerHandlerType.BuiltIn)
                 .Build();
@@ -4082,12 +3952,10 @@ public static partial class OpenIddictServerHandlers
             // If the client to which the token is returned is known, use the attached setting if available.
             if (lifetime is null && !context.Options.EnableDegradedMode && !string.IsNullOrEmpty(context.ClientId))
             {
-                if (_applicationManager is null)
-                {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
-                }
+                var manager = context.ServiceProvider.GetService<IOpenIddictApplicationManager>()
+                    ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
 
-                var application = await _applicationManager.FindByClientIdAsync(context.ClientId, context.CancellationToken)
+                var application = await manager.FindByClientIdAsync(context.ClientId, context.CancellationToken)
                     ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0017));
 
                 var name = context.IssuedTokenType switch
@@ -4099,7 +3967,7 @@ public static partial class OpenIddictServerHandlers
                     _ => Settings.TokenLifetimes.IssuedToken
                 };
 
-                var settings = await _applicationManager.GetSettingsAsync(application, context.CancellationToken);
+                var settings = await manager.GetSettingsAsync(application, context.CancellationToken);
                 if (settings.TryGetValue(name, out string? setting) &&
                     TimeSpan.TryParse(setting, CultureInfo.InvariantCulture, out var value))
                 {
@@ -4176,12 +4044,10 @@ public static partial class OpenIddictServerHandlers
 
                     else
                     {
-                        if (_applicationManager is null)
-                        {
-                            throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
-                        }
+                        var manager = context.ServiceProvider.GetService<IOpenIddictApplicationManager>()
+                            ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
 
-                        var application = await _applicationManager.FindByClientIdAsync(context.ClientId, context.CancellationToken)
+                        var application = await manager.FindByClientIdAsync(context.ClientId, context.CancellationToken)
                             ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0017));
 
                         // Note: refresh tokens are only bound to the provided certificate when the client
@@ -4189,7 +4055,7 @@ public static partial class OpenIddictServerHandlers
                         // are already sender-constrained via standard client authentication, which is more
                         // flexible than certificate-based token binding, as rotating client credentials is
                         // easier in that case (specially when using PKI-based mTLS client authentication).
-                        if (await _applicationManager.HasClientTypeAsync(application, ClientTypes.Public, context.CancellationToken))
+                        if (await manager.HasClientTypeAsync(application, ClientTypes.Public, context.CancellationToken))
                         {
                             principal.SetClaim(Claims.Confirmation, CreateConfirmationClaim(certificate));
                         }
@@ -4212,28 +4078,13 @@ public static partial class OpenIddictServerHandlers
     /// </summary>
     public sealed class PrepareRequestTokenPrincipal : IOpenIddictServerHandler<ProcessSignInContext>
     {
-        private readonly IOpenIddictApplicationManager? _applicationManager;
-
-        public PrepareRequestTokenPrincipal(IOpenIddictApplicationManager? applicationManager = null)
-            => _applicationManager = applicationManager;
-
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
         /// </summary>
         public static OpenIddictServerHandlerDescriptor Descriptor { get; }
             = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
                 .AddFilter<RequireRequestTokenGenerated>()
-                .UseScopedHandler(static provider =>
-                {
-                    // Note: the application manager is only resolved if the degraded mode was not enabled to ensure
-                    // invalid core configuration exceptions are not thrown even if the managers were registered.
-                    var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictServerOptions>>().CurrentValue;
-
-                    return options.EnableDegradedMode
-                        ? new PrepareRequestTokenPrincipal()
-                        : new PrepareRequestTokenPrincipal(provider.GetService<IOpenIddictApplicationManager>()
-                            ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0016)));
-                })
+                .UseSingletonHandler<PrepareRequestTokenPrincipal>()
                 .SetOrder(PrepareDeviceCodePrincipal.Descriptor.Order + 1_000)
                 .SetType(OpenIddictServerHandlerType.BuiltIn)
                 .Build();
@@ -4272,15 +4123,13 @@ public static partial class OpenIddictServerHandlers
             // If the client to which the token is returned is known, use the attached setting if available.
             if (lifetime is null && !context.Options.EnableDegradedMode && !string.IsNullOrEmpty(context.ClientId))
             {
-                if (_applicationManager is null)
-                {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
-                }
+                var manager = context.ServiceProvider.GetService<IOpenIddictApplicationManager>()
+                    ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
 
-                var application = await _applicationManager.FindByClientIdAsync(context.ClientId, context.CancellationToken)
+                var application = await manager.FindByClientIdAsync(context.ClientId, context.CancellationToken)
                     ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0017));
 
-                var settings = await _applicationManager.GetSettingsAsync(application, context.CancellationToken);
+                var settings = await manager.GetSettingsAsync(application, context.CancellationToken);
                 if (settings.TryGetValue(Settings.TokenLifetimes.RequestToken, out string? setting) &&
                     TimeSpan.TryParse(setting, CultureInfo.InvariantCulture, out var value))
                 {
@@ -4340,28 +4189,13 @@ public static partial class OpenIddictServerHandlers
     /// </summary>
     public sealed class PrepareRefreshTokenPrincipal : IOpenIddictServerHandler<ProcessSignInContext>
     {
-        private readonly IOpenIddictApplicationManager? _applicationManager;
-
-        public PrepareRefreshTokenPrincipal(IOpenIddictApplicationManager? applicationManager = null)
-            => _applicationManager = applicationManager;
-
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
         /// </summary>
         public static OpenIddictServerHandlerDescriptor Descriptor { get; }
             = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
                 .AddFilter<RequireRefreshTokenGenerated>()
-                .UseScopedHandler(static provider =>
-                {
-                    // Note: the application manager is only resolved if the degraded mode was not enabled to ensure
-                    // invalid core configuration exceptions are not thrown even if the managers were registered.
-                    var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictServerOptions>>().CurrentValue;
-
-                    return options.EnableDegradedMode
-                        ? new PrepareRefreshTokenPrincipal()
-                        : new PrepareRefreshTokenPrincipal(provider.GetService<IOpenIddictApplicationManager>()
-                            ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0016)));
-                })
+                .UseSingletonHandler<PrepareRefreshTokenPrincipal>()
                 .SetOrder(PrepareRequestTokenPrincipal.Descriptor.Order + 1_000)
                 .SetType(OpenIddictServerHandlerType.BuiltIn)
                 .Build();
@@ -4417,15 +4251,13 @@ public static partial class OpenIddictServerHandlers
                 // If the client to which the token is returned is known, use the attached setting if available.
                 if (lifetime is null && !context.Options.EnableDegradedMode && !string.IsNullOrEmpty(context.ClientId))
                 {
-                    if (_applicationManager is null)
-                    {
-                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
-                    }
+                    var manager = context.ServiceProvider.GetService<IOpenIddictApplicationManager>()
+                        ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
 
-                    var application = await _applicationManager.FindByClientIdAsync(context.ClientId, context.CancellationToken)
+                    var application = await manager.FindByClientIdAsync(context.ClientId, context.CancellationToken)
                         ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0017));
 
-                    var settings = await _applicationManager.GetSettingsAsync(application, context.CancellationToken);
+                    var settings = await manager.GetSettingsAsync(application, context.CancellationToken);
                     if (settings.TryGetValue(Settings.TokenLifetimes.RefreshToken, out string? setting) &&
                         TimeSpan.TryParse(setting, CultureInfo.InvariantCulture, out var value))
                     {
@@ -4470,12 +4302,10 @@ public static partial class OpenIddictServerHandlers
 
                 else
                 {
-                    if (_applicationManager is null)
-                    {
-                        throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
-                    }
+                    var manager = context.ServiceProvider.GetService<IOpenIddictApplicationManager>()
+                        ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
 
-                    var application = await _applicationManager.FindByClientIdAsync(context.ClientId, context.CancellationToken)
+                    var application = await manager.FindByClientIdAsync(context.ClientId, context.CancellationToken)
                         ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0017));
 
                     // Note: refresh tokens are only bound to the provided certificate when the client
@@ -4483,7 +4313,7 @@ public static partial class OpenIddictServerHandlers
                     // are already sender-constrained via standard client authentication, which is more
                     // flexible than certificate-based token binding, as rotating client credentials is
                     // easier in that case (specially when using PKI-based mTLS client authentication).
-                    if (await _applicationManager.HasClientTypeAsync(application, ClientTypes.Public, context.CancellationToken))
+                    if (await manager.HasClientTypeAsync(application, ClientTypes.Public, context.CancellationToken))
                     {
                         principal.SetClaim(Claims.Confirmation, CreateConfirmationClaim(certificate));
                     }
@@ -4505,28 +4335,13 @@ public static partial class OpenIddictServerHandlers
     /// </summary>
     public sealed class PrepareIdentityTokenPrincipal : IOpenIddictServerHandler<ProcessSignInContext>
     {
-        private readonly IOpenIddictApplicationManager? _applicationManager;
-
-        public PrepareIdentityTokenPrincipal(IOpenIddictApplicationManager? applicationManager = null)
-            => _applicationManager = applicationManager;
-
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
         /// </summary>
         public static OpenIddictServerHandlerDescriptor Descriptor { get; }
             = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
                 .AddFilter<RequireIdentityTokenGenerated>()
-                .UseScopedHandler(static provider =>
-                {
-                    // Note: the application manager is only resolved if the degraded mode was not enabled to ensure
-                    // invalid core configuration exceptions are not thrown even if the managers were registered.
-                    var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictServerOptions>>().CurrentValue;
-
-                    return options.EnableDegradedMode
-                        ? new PrepareIdentityTokenPrincipal()
-                        : new PrepareIdentityTokenPrincipal(provider.GetService<IOpenIddictApplicationManager>()
-                            ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0016)));
-                })
+                .UseSingletonHandler<PrepareIdentityTokenPrincipal>()
                 .SetOrder(PrepareRefreshTokenPrincipal.Descriptor.Order + 1_000)
                 .SetType(OpenIddictServerHandlerType.BuiltIn)
                 .Build();
@@ -4593,15 +4408,13 @@ public static partial class OpenIddictServerHandlers
             // If the client to which the token is returned is known, use the attached setting if available.
             if (lifetime is null && !context.Options.EnableDegradedMode && !string.IsNullOrEmpty(context.ClientId))
             {
-                if (_applicationManager is null)
-                {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
-                }
+                var manager = context.ServiceProvider.GetService<IOpenIddictApplicationManager>()
+                    ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
 
-                var application = await _applicationManager.FindByClientIdAsync(context.ClientId, context.CancellationToken)
+                var application = await manager.FindByClientIdAsync(context.ClientId, context.CancellationToken)
                     ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0017));
 
-                var settings = await _applicationManager.GetSettingsAsync(application, context.CancellationToken);
+                var settings = await manager.GetSettingsAsync(application, context.CancellationToken);
                 if (settings.TryGetValue(Settings.TokenLifetimes.IdentityToken, out string? setting) &&
                     TimeSpan.TryParse(setting, CultureInfo.InvariantCulture, out var value))
                 {
@@ -4660,28 +4473,13 @@ public static partial class OpenIddictServerHandlers
     /// </summary>
     public sealed class PrepareUserCodePrincipal : IOpenIddictServerHandler<ProcessSignInContext>
     {
-        private readonly IOpenIddictApplicationManager? _applicationManager;
-
-        public PrepareUserCodePrincipal(IOpenIddictApplicationManager? applicationManager = null)
-            => _applicationManager = applicationManager;
-
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
         /// </summary>
         public static OpenIddictServerHandlerDescriptor Descriptor { get; }
             = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
                 .AddFilter<RequireUserCodeGenerated>()
-                .UseScopedHandler(static provider =>
-                {
-                    // Note: the application manager is only resolved if the degraded mode was not enabled to ensure
-                    // invalid core configuration exceptions are not thrown even if the managers were registered.
-                    var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictServerOptions>>().CurrentValue;
-
-                    return options.EnableDegradedMode
-                        ? new PrepareUserCodePrincipal()
-                        : new PrepareUserCodePrincipal(provider.GetService<IOpenIddictApplicationManager>()
-                            ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0016)));
-                })
+                .UseSingletonHandler<PrepareUserCodePrincipal>()
                 .SetOrder(PrepareIdentityTokenPrincipal.Descriptor.Order + 1_000)
                 .SetType(OpenIddictServerHandlerType.BuiltIn)
                 .Build();
@@ -4720,15 +4518,13 @@ public static partial class OpenIddictServerHandlers
             // If the client to which the token is returned is known, use the attached setting if available.
             if (lifetime is null && !context.Options.EnableDegradedMode && !string.IsNullOrEmpty(context.ClientId))
             {
-                if (_applicationManager is null)
-                {
-                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
-                }
+                var manager = context.ServiceProvider.GetService<IOpenIddictApplicationManager>()
+                    ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
 
-                var application = await _applicationManager.FindByClientIdAsync(context.ClientId, context.CancellationToken)
+                var application = await manager.FindByClientIdAsync(context.ClientId, context.CancellationToken)
                     ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0017));
 
-                var settings = await _applicationManager.GetSettingsAsync(application, context.CancellationToken);
+                var settings = await manager.GetSettingsAsync(application, context.CancellationToken);
                 if (settings.TryGetValue(Settings.TokenLifetimes.UserCode, out string? setting) &&
                     TimeSpan.TryParse(setting, CultureInfo.InvariantCulture, out var value))
                 {
@@ -5217,13 +5013,6 @@ public static partial class OpenIddictServerHandlers
     /// </summary>
     public sealed class UpdateReferenceDeviceCodeEntry : IOpenIddictServerHandler<ProcessSignInContext>
     {
-        private readonly IOpenIddictTokenManager _tokenManager;
-
-        public UpdateReferenceDeviceCodeEntry() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
-
-        public UpdateReferenceDeviceCodeEntry(IOpenIddictTokenManager tokenManager)
-            => _tokenManager = tokenManager ?? throw new ArgumentNullException(nameof(tokenManager));
-
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
         /// </summary>
@@ -5232,7 +5021,7 @@ public static partial class OpenIddictServerHandlers
                 .AddFilter<RequireDegradedModeDisabled>()
                 .AddFilter<RequireTokenStorageEnabled>()
                 .AddFilter<RequireDeviceCodeGenerated>()
-                .UseScopedHandler<UpdateReferenceDeviceCodeEntry>()
+                .UseSingletonHandler<UpdateReferenceDeviceCodeEntry>()
                 .SetOrder(AttachDeviceCodeIdentifier.Descriptor.Order + 1_000)
                 .SetType(OpenIddictServerHandlerType.BuiltIn)
                 .Build();
@@ -5262,13 +5051,16 @@ public static partial class OpenIddictServerHandlers
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0008));
             }
 
-            var token = await _tokenManager.FindByIdAsync(identifier, context.CancellationToken)
+            var manager = context.ServiceProvider.GetService<IOpenIddictTokenManager>()
+                ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
+
+            var token = await manager.FindByIdAsync(identifier, context.CancellationToken)
                 ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0265));
 
             // Replace the device code details by the payload derived from the new device code principal,
             // that includes all the user claims populated by the application after authenticating the user.
             var descriptor = new OpenIddictTokenDescriptor();
-            await _tokenManager.PopulateAsync(descriptor, token, context.CancellationToken);
+            await manager.PopulateAsync(descriptor, token, context.CancellationToken);
 
             // Note: the lifetime is deliberately extended to give more time to the client to redeem the code.
             descriptor.ExpirationDate = context.DeviceCodePrincipal.GetExpirationDate();
@@ -5277,9 +5069,9 @@ public static partial class OpenIddictServerHandlers
             descriptor.Status = Statuses.Valid;
             descriptor.Subject = context.DeviceCodePrincipal.GetClaim(Claims.Subject);
 
-            await _tokenManager.UpdateAsync(token, descriptor, context.CancellationToken);
+            await manager.UpdateAsync(token, descriptor, context.CancellationToken);
 
-            context.Logger.LogTrace(6021, SR.GetResourceString(SR.ID6021), await _tokenManager.GetIdAsync(token, context.CancellationToken));
+            context.Logger.LogTrace(6021, SR.GetResourceString(SR.ID6021), await manager.GetIdAsync(token, context.CancellationToken));
         }
     }
 
@@ -5811,13 +5603,6 @@ public static partial class OpenIddictServerHandlers
     /// </summary>
     public sealed class RedeemLogoutTokenEntry : IOpenIddictServerHandler<ProcessSignOutContext>
     {
-        private readonly IOpenIddictTokenManager _tokenManager;
-
-        public RedeemLogoutTokenEntry() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
-
-        public RedeemLogoutTokenEntry(IOpenIddictTokenManager tokenManager)
-            => _tokenManager = tokenManager ?? throw new ArgumentNullException(nameof(tokenManager));
-
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
         /// </summary>
@@ -5826,7 +5611,7 @@ public static partial class OpenIddictServerHandlers
                 .AddFilter<RequireEndSessionRequest>()
                 .AddFilter<RequireDegradedModeDisabled>()
                 .AddFilter<RequireTokenStorageEnabled>()
-                .UseScopedHandler<RedeemLogoutTokenEntry>()
+                .UseSingletonHandler<RedeemLogoutTokenEntry>()
                 // Note: this handler is deliberately executed early in the pipeline to ensure
                 // that the token database entry is always marked as redeemed even if the sign-out
                 // demand is rejected later in the pipeline (e.g because an error was returned).
@@ -5857,14 +5642,17 @@ public static partial class OpenIddictServerHandlers
                 return;
             }
 
-            var token = await _tokenManager.FindByIdAsync(identifier, context.CancellationToken);
+            var manager = context.ServiceProvider.GetService<IOpenIddictTokenManager>()
+                ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
+
+            var token = await manager.FindByIdAsync(identifier, context.CancellationToken);
             if (token is null)
             {
                 return;
             }
 
             // Mark the token as redeemed to prevent future reuses.
-            await _tokenManager.TryRedeemAsync(token, context.CancellationToken);
+            await manager.TryRedeemAsync(token, context.CancellationToken);
         }
     }
 
