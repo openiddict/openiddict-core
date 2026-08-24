@@ -93,12 +93,12 @@ public sealed class OpenIddictEntityFrameworkCoreBuilder
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TSession,
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TToken,
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TKey>()
-        where TApplication : OpenIddictEntityFrameworkCoreApplication<TKey, TAuthorization, TToken>
-        where TAuthorization : OpenIddictEntityFrameworkCoreAuthorization<TKey, TApplication, TToken>
+        where TApplication : OpenIddictEntityFrameworkCoreApplication<TKey, TAuthorization, TSession, TToken>
+        where TAuthorization : OpenIddictEntityFrameworkCoreAuthorization<TKey, TApplication, TSession, TToken>
         where TResource : OpenIddictEntityFrameworkCoreResource<TKey>
         where TScope : OpenIddictEntityFrameworkCoreScope<TKey>
-        where TSession : OpenIddictEntityFrameworkCoreSession<TKey, TApplication, TAuthorization>
-        where TToken : OpenIddictEntityFrameworkCoreToken<TKey, TApplication, TAuthorization>
+        where TSession : OpenIddictEntityFrameworkCoreSession<TKey, TApplication, TAuthorization, TToken>
+        where TToken : OpenIddictEntityFrameworkCoreToken<TKey, TApplication, TAuthorization, TSession>
         where TKey : notnull, IEquatable<TKey>
     {
         // If the specified key type isn't a string (which is special-cased by the stores to avoid having to resolve
@@ -123,9 +123,9 @@ public sealed class OpenIddictEntityFrameworkCoreBuilder
             provider.GetRequiredService<OpenIddictTokenManager<TToken>>()));
 
         Services.Replace(ServiceDescriptor.Scoped<IOpenIddictApplicationStore<TApplication>,
-            OpenIddictEntityFrameworkCoreApplicationStore<TApplication, TAuthorization, TToken, TKey>>());
+            OpenIddictEntityFrameworkCoreApplicationStore<TApplication, TAuthorization, TSession, TToken, TKey>>());
         Services.Replace(ServiceDescriptor.Scoped<IOpenIddictAuthorizationStore<TAuthorization>,
-            OpenIddictEntityFrameworkCoreAuthorizationStore<TAuthorization, TApplication, TToken, TKey>>());
+            OpenIddictEntityFrameworkCoreAuthorizationStore<TAuthorization, TApplication, TSession, TToken, TKey>>());
         Services.Replace(ServiceDescriptor.Scoped<IOpenIddictResourceStore<TResource>,
             OpenIddictEntityFrameworkCoreResourceStore<TResource, TKey>>());
         Services.Replace(ServiceDescriptor.Scoped<IOpenIddictScopeStore<TScope>,
@@ -133,7 +133,7 @@ public sealed class OpenIddictEntityFrameworkCoreBuilder
         Services.Replace(ServiceDescriptor.Scoped<IOpenIddictSessionStore<TSession>,
             OpenIddictEntityFrameworkCoreSessionStore<TSession, TApplication, TAuthorization, TToken, TKey>>());
         Services.Replace(ServiceDescriptor.Scoped<IOpenIddictTokenStore<TToken>,
-            OpenIddictEntityFrameworkCoreTokenStore<TToken, TApplication, TAuthorization, TKey>>());
+            OpenIddictEntityFrameworkCoreTokenStore<TToken, TApplication, TAuthorization, TSession, TKey>>());
 
         return this;
     }

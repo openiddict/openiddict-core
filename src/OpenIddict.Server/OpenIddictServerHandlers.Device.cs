@@ -9,7 +9,6 @@ using System.Diagnostics;
 using System.Security.Claims;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 namespace OpenIddict.Server;
 

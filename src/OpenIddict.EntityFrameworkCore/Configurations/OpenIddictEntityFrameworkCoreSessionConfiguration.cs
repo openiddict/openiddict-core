@@ -28,10 +28,10 @@ public sealed class OpenIddictEntityFrameworkCoreSessionConfiguration<
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TAuthorization,
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TToken,
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TKey> : IEntityTypeConfiguration<TSession>
-    where TSession : OpenIddictEntityFrameworkCoreSession<TKey, TApplication, TAuthorization>
-    where TApplication : OpenIddictEntityFrameworkCoreApplication<TKey, TAuthorization, TToken>
-    where TAuthorization : OpenIddictEntityFrameworkCoreAuthorization<TKey, TApplication, TToken>
-    where TToken : OpenIddictEntityFrameworkCoreToken<TKey, TApplication, TAuthorization>
+    where TSession : OpenIddictEntityFrameworkCoreSession<TKey, TApplication, TAuthorization, TToken>
+    where TApplication : OpenIddictEntityFrameworkCoreApplication<TKey, TAuthorization, TSession, TToken>
+    where TAuthorization : OpenIddictEntityFrameworkCoreAuthorization<TKey, TApplication, TSession, TToken>
+    where TToken : OpenIddictEntityFrameworkCoreToken<TKey, TApplication, TAuthorization, TSession>
     where TKey : notnull, IEquatable<TKey>
 {
     public void Configure(EntityTypeBuilder<TSession> builder)
@@ -73,6 +73,12 @@ public sealed class OpenIddictEntityFrameworkCoreSessionConfiguration<
                    static value => JsonSerializer.Serialize(value, OpenIddictSerializer.Default.IDictionaryStringJsonElement),
                    static value => JsonSerializer.Deserialize(value, OpenIddictSerializer.Default.IDictionaryStringJsonElement),
                    CreateDictionaryComparer<JsonElement>());
+
+        builder.HasMany(static session => session.Tokens)
+               .WithOne(static token => token.Session!)
+               .HasForeignKey(nameof(OpenIddictEntityFrameworkCoreToken.Session) +
+                              nameof(OpenIddictEntityFrameworkCoreSession.Id))
+               .IsRequired(required: false);
 
         builder.ToTable("OpenIddictSessions");
 

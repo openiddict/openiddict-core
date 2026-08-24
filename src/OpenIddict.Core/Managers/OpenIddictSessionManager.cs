@@ -217,7 +217,7 @@ public class OpenIddictSessionManager<TSession> : IOpenIddictSessionManager wher
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>The sessions corresponding to the criteria.</returns>
     public virtual IAsyncEnumerable<TSession> FindAsync(
-        (string? Subject, string? LoginId, string? ApplicationId, string? Status) query,
+        (string? Subject, string? LoginId, string? ApplicationId, string? AuthorizationId, string? Status) query,
         CancellationToken cancellationToken = default)
     {
         var sessions = Options.CurrentValue.DisableEntityCaching
@@ -700,6 +700,19 @@ public class OpenIddictSessionManager<TSession> : IOpenIddictSessionManager wher
     }
 
     /// <summary>
+    /// Removes the sessions that are marked as invalid and don't have any token attached.
+    /// Only sessions created before the specified <paramref name="threshold"/> are removed.
+    /// </summary>
+    /// <remarks>
+    /// Since sessions with tokens still attached are not deleted, tokens should always be pruned first.
+    /// </remarks>
+    /// <param name="threshold">The date before which sessions are not pruned.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns>The number of sessions that were removed.</returns>
+    public virtual ValueTask<long> PruneAsync(DateTimeOffset threshold, CancellationToken cancellationToken)
+        => Store.PruneAsync(threshold, cancellationToken);
+
+    /// <summary>
     /// Updates an existing session.
     /// </summary>
     /// <param name="session">The session to update.</param>
@@ -822,7 +835,7 @@ public class OpenIddictSessionManager<TSession> : IOpenIddictSessionManager wher
         => DeleteAsync((TSession) session, cancellationToken);
 
     /// <inheritdoc/>
-    IAsyncEnumerable<object> IOpenIddictSessionManager.FindAsync((string? Subject, string? LoginId, string? ApplicationId, string? Status) query, CancellationToken cancellationToken)
+    IAsyncEnumerable<object> IOpenIddictSessionManager.FindAsync((string? Subject, string? LoginId, string? ApplicationId, string? AuthorizationId, string? Status) query, CancellationToken cancellationToken)
         => FindAsync(query, cancellationToken);
 
     /// <inheritdoc/>
@@ -904,6 +917,10 @@ public class OpenIddictSessionManager<TSession> : IOpenIddictSessionManager wher
     /// <inheritdoc/>
     ValueTask IOpenIddictSessionManager.PopulateAsync(object session, OpenIddictSessionDescriptor descriptor, CancellationToken cancellationToken)
         => PopulateAsync((TSession) session, descriptor, cancellationToken);
+
+    /// <inheritdoc/>
+    ValueTask<long> IOpenIddictSessionManager.PruneAsync(DateTimeOffset threshold, CancellationToken cancellationToken)
+        => PruneAsync(threshold, cancellationToken);
 
     /// <inheritdoc/>
     ValueTask IOpenIddictSessionManager.UpdateAsync(object session, CancellationToken cancellationToken)

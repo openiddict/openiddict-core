@@ -64,7 +64,7 @@ public interface IOpenIddictSessionStore<TSession> where TSession : class
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>The sessions corresponding to the criteria.</returns>
     IAsyncEnumerable<TSession> FindAsync(
-        (string? Subject, string? LoginId, string? ApplicationId, string? Status) query, CancellationToken cancellationToken);
+        (string? Subject, string? LoginId, string? ApplicationId, string? AuthorizationId, string? Status) query, CancellationToken cancellationToken);
 
     /// <summary>
     /// Retrieves the list of sessions corresponding to the specified application identifier.
@@ -244,6 +244,18 @@ public interface IOpenIddictSessionStore<TSession> where TSession : class
     IAsyncEnumerable<TResult> ListAsync<TState, TResult>(
         Func<IQueryable<TSession>, TState, IQueryable<TResult>> query,
         TState state, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Removes the sessions that are marked as invalid and don't have any token attached.
+    /// Only sessions created before the specified <paramref name="threshold"/> are removed.
+    /// </summary>
+    /// <remarks>
+    /// Since sessions with tokens still attached are not deleted, tokens should always be pruned first.
+    /// </remarks>
+    /// <param name="threshold">The date before which sessions are not pruned.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns>The number of sessions that were removed.</returns>
+    ValueTask<long> PruneAsync(DateTimeOffset threshold, CancellationToken cancellationToken);
 
     /// <summary>
     /// Sets the application identifier associated with a session.

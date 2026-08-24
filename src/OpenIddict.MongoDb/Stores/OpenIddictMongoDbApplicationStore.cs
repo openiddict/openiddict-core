@@ -109,6 +109,10 @@ public class OpenIddictMongoDbApplicationStore<
         await database.GetCollection<OpenIddictMongoDbAuthorization>(Options.CurrentValue.AuthorizationsCollectionName)
             .DeleteManyAsync(authorization => authorization.ApplicationId == application.Id, cancellationToken);
 
+        // Delete the sessions associated with the application.
+        await database.GetCollection<OpenIddictMongoDbSession>(Options.CurrentValue.SessionsCollectionName)
+            .DeleteManyAsync(session => session.ApplicationId == application.Id, cancellationToken);
+
         // Delete the tokens associated with the application.
         await database.GetCollection<OpenIddictMongoDbToken>(Options.CurrentValue.TokensCollectionName)
             .DeleteManyAsync(token => token.ApplicationId == application.Id, cancellationToken);

@@ -19,16 +19,19 @@ namespace OpenIddict.EntityFrameworkCore;
 /// <typeparam name="TToken">The type of the token entity.</typeparam>
 /// <typeparam name="TApplication">The type of the application entity.</typeparam>
 /// <typeparam name="TAuthorization">The type of the authorization entity.</typeparam>
+/// <typeparam name="TSession">The type of the session entity.</typeparam>
 /// <typeparam name="TKey">The type of the primary key.</typeparam>
 [EditorBrowsable(EditorBrowsableState.Never)]
 public sealed class OpenIddictEntityFrameworkCoreTokenConfiguration<
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TToken,
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TApplication,
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TAuthorization,
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TSession,
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TKey> : IEntityTypeConfiguration<TToken>
-    where TToken : OpenIddictEntityFrameworkCoreToken<TKey, TApplication, TAuthorization>
-    where TApplication : OpenIddictEntityFrameworkCoreApplication<TKey, TAuthorization, TToken>
-    where TAuthorization : OpenIddictEntityFrameworkCoreAuthorization<TKey, TApplication, TToken>
+    where TToken : OpenIddictEntityFrameworkCoreToken<TKey, TApplication, TAuthorization, TSession>
+    where TApplication : OpenIddictEntityFrameworkCoreApplication<TKey, TAuthorization, TSession, TToken>
+    where TAuthorization : OpenIddictEntityFrameworkCoreAuthorization<TKey, TApplication, TSession, TToken>
+    where TSession : OpenIddictEntityFrameworkCoreSession<TKey, TApplication, TAuthorization, TToken>
     where TKey : notnull, IEquatable<TKey>
 {
     public void Configure(EntityTypeBuilder<TToken> builder)

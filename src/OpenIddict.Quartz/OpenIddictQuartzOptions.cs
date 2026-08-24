@@ -17,6 +17,11 @@ public sealed class OpenIddictQuartzOptions
     public bool DisableAuthorizationPruning { get; set; }
 
     /// <summary>
+    /// Gets or sets a boolean indicating whether sessions pruning should be disabled.
+    /// </summary>
+    public bool DisableSessionPruning { get; set; }
+
+    /// <summary>
     /// Gets or sets a boolean indicating whether tokens pruning should be disabled.
     /// </summary>
     public bool DisableTokenPruning { get; set; }
@@ -32,6 +37,12 @@ public sealed class OpenIddictQuartzOptions
     /// By default, this value is set to 14 days and cannot be less than 10 minutes.
     /// </summary>
     public TimeSpan MinimumAuthorizationLifespan { get; set; } = TimeSpan.FromDays(14);
+
+    /// <summary>
+    /// Gets or sets the minimum lifespan sessions must have to be pruned.
+    /// By default, this value is set to 14 days and cannot be less than 10 minutes.
+    /// </summary>
+    public TimeSpan MinimumSessionLifespan { get; set; } = TimeSpan.FromDays(14);
 
     /// <summary>
     /// Gets or sets the minimum lifespan tokens must have to be pruned.

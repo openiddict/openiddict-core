@@ -146,6 +146,54 @@ public sealed class OpenIddictQuartzJob : IJob
             }
         }
 
+        // Important: since sessions that still have tokens attached are never
+        // pruned, the tokens MUST be deleted before deleting the sessions.
+
+        if (!_options.CurrentValue.DisableSessionPruning)
+        {
+            var manager = scope.ServiceProvider.GetService<IOpenIddictSessionManager>()
+                ?? throw new JobExecutionException(new InvalidOperationException(SR.GetResourceString(SR.ID0278)))
+                {
+                    RefireImmediately = false,
+                    UnscheduleAllTriggers = true,
+                    UnscheduleFiringTrigger = true
+                };
+
+            var threshold = _options.CurrentValue.TimeProvider.GetUtcNow() - _options.CurrentValue.MinimumSessionLifespan;
+
+            try
+            {
+                await manager.PruneAsync(threshold, context.CancellationToken);
+            }
+
+            // OperationCanceledExceptions are typically thrown when the host is about to shut down.
+            // To allow the host to shut down as fast as possible, this exception type is special-cased
+            // to prevent further processing in this job and inform Quartz.NET it shouldn't be refired.
+            catch (OperationCanceledException exception) when (context.CancellationToken.IsCancellationRequested)
+            {
+                throw new JobExecutionException(exception)
+                {
+                    RefireImmediately = false
+                };
+            }
+
+            // AggregateExceptions are generally thrown by the manager itself when one or multiple exception(s)
+            // occurred while trying to prune the entities. In this case, add the inner exceptions to the collection.
+            catch (AggregateException exception) when (!OpenIddictHelpers.IsFatal(exception))
+            {
+                exceptions ??= new List<Exception>(capacity: exception.InnerExceptions.Count);
+                exceptions.AddRange(exception.InnerExceptions);
+            }
+
+            // Other non-fatal exceptions are assumed to be transient and are added to the exceptions collection
+            // to be re-thrown later (typically, at the very end of this job, as an AggregateException).
+            catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
+            {
+                exceptions ??= new List<Exception>(capacity: 1);
+                exceptions.Add(exception);
+            }
+        }
+
         if (exceptions is { Count: > 0 })
         {
             throw new JobExecutionException(new AggregateException(exceptions))

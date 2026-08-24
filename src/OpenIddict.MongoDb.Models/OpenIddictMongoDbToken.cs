@@ -83,6 +83,12 @@ public class OpenIddictMongoDbToken
     public virtual string? ReferenceId { get; set; }
 
     /// <summary>
+    /// Gets or sets the identifier of the session associated with the token.
+    /// </summary>
+    [BsonElement("session_id"), BsonIgnoreIfDefault]
+    public virtual ObjectId SessionId { get; set; }
+
+    /// <summary>
     /// Gets or sets the status of the token.
     /// </summary>
     [BsonElement("status"), BsonIgnoreIfNull]

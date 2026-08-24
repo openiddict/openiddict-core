@@ -16,6 +16,7 @@ namespace OpenIddict.EntityFrameworkCore.Models;
 public class OpenIddictEntityFrameworkCoreApplication :
     OpenIddictEntityFrameworkCoreApplication<string,
                                              OpenIddictEntityFrameworkCoreAuthorization,
+                                             OpenIddictEntityFrameworkCoreSession,
                                              OpenIddictEntityFrameworkCoreToken>
 {
     public OpenIddictEntityFrameworkCoreApplication() => Id = Guid.NewGuid().ToString();
@@ -27,6 +28,7 @@ public class OpenIddictEntityFrameworkCoreApplication :
 public class OpenIddictEntityFrameworkCoreApplication<TKey> :
     OpenIddictEntityFrameworkCoreApplication<TKey,
                                              OpenIddictEntityFrameworkCoreAuthorization<TKey>,
+                                             OpenIddictEntityFrameworkCoreSession<TKey>,
                                              OpenIddictEntityFrameworkCoreToken<TKey>>
     where TKey : notnull, IEquatable<TKey>;
 
@@ -34,9 +36,10 @@ public class OpenIddictEntityFrameworkCoreApplication<TKey> :
 /// Represents an OpenIddict application.
 /// </summary>
 [DebuggerDisplay("Id = {Id.ToString(),nq} ; ClientId = {ClientId,nq} ; ClientType = {ClientType,nq}")]
-public class OpenIddictEntityFrameworkCoreApplication<TKey, TAuthorization, TToken>
+public class OpenIddictEntityFrameworkCoreApplication<TKey, TAuthorization, TSession, TToken>
     where TKey : notnull, IEquatable<TKey>
     where TAuthorization : class
+    where TSession : class
     where TToken : class
 {
     /// <summary>
@@ -135,6 +138,11 @@ public class OpenIddictEntityFrameworkCoreApplication<TKey, TAuthorization, TTok
     /// Gets or sets the settings of the application.
     /// </summary>
     public virtual IDictionary<string, string>? Settings { get; set; }
+
+    /// <summary>
+    /// Gets the list of the sessions associated with the application.
+    /// </summary>
+    public virtual ICollection<TSession> Sessions { get; } = new HashSet<TSession>();
 
     /// <summary>
     /// Gets the list of the tokens associated with the application.

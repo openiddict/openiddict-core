@@ -15,7 +15,8 @@ namespace OpenIddict.EntityFrameworkCore.Models;
 public class OpenIddictEntityFrameworkCoreSession :
     OpenIddictEntityFrameworkCoreSession<string,
                                          OpenIddictEntityFrameworkCoreApplication,
-                                         OpenIddictEntityFrameworkCoreAuthorization>
+                                         OpenIddictEntityFrameworkCoreAuthorization,
+                                         OpenIddictEntityFrameworkCoreToken>
 {
     public OpenIddictEntityFrameworkCoreSession() => Id = Guid.NewGuid().ToString();
 }
@@ -26,17 +27,19 @@ public class OpenIddictEntityFrameworkCoreSession :
 public class OpenIddictEntityFrameworkCoreSession<TKey> :
     OpenIddictEntityFrameworkCoreSession<TKey,
                                          OpenIddictEntityFrameworkCoreApplication<TKey>,
-                                         OpenIddictEntityFrameworkCoreAuthorization<TKey>>
+                                         OpenIddictEntityFrameworkCoreAuthorization<TKey>,
+                                         OpenIddictEntityFrameworkCoreToken<TKey>>
     where TKey : notnull, IEquatable<TKey>;
 
 /// <summary>
 /// Represents an OpenIddict session.
 /// </summary>
 [DebuggerDisplay("Id = {Id.ToString(),nq} ; Subject = {Subject,nq} ; LoginId = {LoginId,nq} ; Status = {Status,nq}")]
-public class OpenIddictEntityFrameworkCoreSession<TKey, TApplication, TAuthorization>
+public class OpenIddictEntityFrameworkCoreSession<TKey, TApplication, TAuthorization, TToken>
     where TKey : notnull, IEquatable<TKey>
     where TApplication : class
     where TAuthorization : class
+    where TToken : class
 {
     /// <summary>
     /// Gets or sets the application associated with the session.
@@ -82,4 +85,9 @@ public class OpenIddictEntityFrameworkCoreSession<TKey, TApplication, TAuthoriza
     /// Gets or sets the subject of the session.
     /// </summary>
     public virtual string? Subject { get; set; }
+
+    /// <summary>
+    /// Gets the list of the tokens associated with the session.
+    /// </summary>
+    public virtual ICollection<TToken> Tokens { get; } = new HashSet<TToken>();
 }

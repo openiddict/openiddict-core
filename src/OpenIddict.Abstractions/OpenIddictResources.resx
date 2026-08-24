@@ -855,14 +855,8 @@ Reload the entity from the database and retry the operation.</value>
     <value>An error occurred while trying to create a new entity instance.
 Make sure that the entity is not abstract and has a public parameterless constructor or create a custom store that overrides 'InstantiateAsync()' to use a custom factory.</value>
   </data>
-  <data name="ID0243" xml:space="preserve">
-    <value>An error occurred while pruning authorizations.</value>
-  </data>
   <data name="ID0244" xml:space="preserve">
     <value>The application matching the specified identifier cannot be found in the change tracker or in the database.</value>
-  </data>
-  <data name="ID0249" xml:space="preserve">
-    <value>An error occurred while pruning tokens.</value>
   </data>
   <data name="ID0251" xml:space="preserve">
     <value>The authorization matching the specified identifier cannot be found in the change tracker or in the database.</value>

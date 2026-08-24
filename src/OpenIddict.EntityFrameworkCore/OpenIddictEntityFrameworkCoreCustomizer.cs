@@ -23,12 +23,12 @@ public sealed class OpenIddictEntityFrameworkCoreCustomizer<
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TSession,
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TToken,
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TKey> : RelationalModelCustomizer
-    where TApplication : OpenIddictEntityFrameworkCoreApplication<TKey, TAuthorization, TToken>
-    where TAuthorization : OpenIddictEntityFrameworkCoreAuthorization<TKey, TApplication, TToken>
+    where TApplication : OpenIddictEntityFrameworkCoreApplication<TKey, TAuthorization, TSession, TToken>
+    where TAuthorization : OpenIddictEntityFrameworkCoreAuthorization<TKey, TApplication, TSession, TToken>
     where TResource : OpenIddictEntityFrameworkCoreResource<TKey>
     where TScope : OpenIddictEntityFrameworkCoreScope<TKey>
-    where TSession : OpenIddictEntityFrameworkCoreSession<TKey, TApplication, TAuthorization>
-    where TToken : OpenIddictEntityFrameworkCoreToken<TKey, TApplication, TAuthorization>
+    where TSession : OpenIddictEntityFrameworkCoreSession<TKey, TApplication, TAuthorization, TToken>
+    where TToken : OpenIddictEntityFrameworkCoreToken<TKey, TApplication, TAuthorization, TSession>
     where TKey : notnull, IEquatable<TKey>
 {
     public OpenIddictEntityFrameworkCoreCustomizer(ModelCustomizerDependencies dependencies)

@@ -423,7 +423,7 @@ public class OpenIddictMongoDbTokenStore<
                    where token.CreationDate < threshold.UtcDateTime
                    where (token.Status != Statuses.Inactive && token.Status != Statuses.Valid) ||
                           token.ExpirationDate < DateTime.UtcNow ||
-                          authorizations.Any(token => token.Status != Statuses.Valid)
+                          authorizations.Any(static authorization => authorization.Status != Statuses.Valid)
                    select token.Id).ToListAsync(cancellationToken);
 
         // Note: to avoid generating delete requests with very large filters, chunking is used here and the

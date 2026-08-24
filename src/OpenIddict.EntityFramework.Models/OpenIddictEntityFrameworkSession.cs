@@ -15,7 +15,8 @@ namespace OpenIddict.EntityFramework.Models;
 public class OpenIddictEntityFrameworkSession :
     OpenIddictEntityFrameworkSession<string,
                                      OpenIddictEntityFrameworkApplication,
-                                     OpenIddictEntityFrameworkAuthorization>
+                                     OpenIddictEntityFrameworkAuthorization,
+                                     OpenIddictEntityFrameworkToken>
 {
     public OpenIddictEntityFrameworkSession() => Id = Guid.NewGuid().ToString();
 }
@@ -24,10 +25,11 @@ public class OpenIddictEntityFrameworkSession :
 /// Represents an OpenIddict session.
 /// </summary>
 [DebuggerDisplay("Id = {Id.ToString(),nq} ; Subject = {Subject,nq} ; LoginId = {LoginId,nq} ; Status = {Status,nq}")]
-public class OpenIddictEntityFrameworkSession<TKey, TApplication, TAuthorization>
+public class OpenIddictEntityFrameworkSession<TKey, TApplication, TAuthorization, TToken>
     where TKey : notnull, IEquatable<TKey>
     where TApplication : class
     where TAuthorization : class
+    where TToken : class
 {
     /// <summary>
     /// Gets or sets the application associated with the session.
@@ -74,4 +76,9 @@ public class OpenIddictEntityFrameworkSession<TKey, TApplication, TAuthorization
     /// Gets or sets the subject of the session.
     /// </summary>
     public virtual string? Subject { get; set; }
+
+    /// <summary>
+    /// Gets the list of the tokens associated with the session.
+    /// </summary>
+    public virtual ICollection<TToken> Tokens { get; } = new HashSet<TToken>();
 }
