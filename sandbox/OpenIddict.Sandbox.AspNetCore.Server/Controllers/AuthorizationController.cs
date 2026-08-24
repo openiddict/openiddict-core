@@ -233,14 +233,16 @@ public class AuthorizationController : Controller
                 {
                     var sessions = await _sessionManager.FindAsync(
                         query: (
-                            Subject      : await _userManager.GetUserIdAsync(user),
-                            LoginId      : result.Principal.GetClaim("login_id"),
-                            ApplicationId: await _applicationManager.GetIdAsync(application),
-                            Status       : Statuses.Valid)).ToListAsync();
+                            Subject        : await _userManager.GetUserIdAsync(user),
+                            LoginId        : result.Principal.GetClaim("login_id"),
+                            ApplicationId  : await _applicationManager.GetIdAsync(application),
+                            AuthorizationId: await _authorizationManager.GetIdAsync(authorization),
+                            Status         : Statuses.Valid)).ToListAsync();
 
                     var session = sessions.LastOrDefault() ?? await _sessionManager.CreateAsync(new()
                     {
                         ApplicationId = await _applicationManager.GetIdAsync(application),
+                        AuthorizationId = await _authorizationManager.GetIdAsync(authorization),
                         LoginId = result.Principal.GetClaim("login_id"),
                         Subject = await _userManager.GetUserIdAsync(user)
                     });
@@ -365,14 +367,16 @@ public class AuthorizationController : Controller
         {
             var sessions = await _sessionManager.FindAsync(
                 query: (
-                    Subject      : await _userManager.GetUserIdAsync(user),
-                    LoginId      : User.GetClaim("login_id"),
-                    ApplicationId: await _applicationManager.GetIdAsync(application),
-                    Status       : Statuses.Valid)).ToListAsync();
+                    Subject        : await _userManager.GetUserIdAsync(user),
+                    LoginId        : User.GetClaim("login_id"),
+                    ApplicationId  : await _applicationManager.GetIdAsync(application),
+                    AuthorizationId: await _authorizationManager.GetIdAsync(authorization),
+                    Status         : Statuses.Valid)).ToListAsync();
 
             var session = sessions.LastOrDefault() ?? await _sessionManager.CreateAsync(new()
             {
                 ApplicationId = await _applicationManager.GetIdAsync(application),
+                AuthorizationId = await _authorizationManager.GetIdAsync(authorization),
                 LoginId = User.GetClaim("login_id"),
                 Subject = await _userManager.GetUserIdAsync(user)
             });

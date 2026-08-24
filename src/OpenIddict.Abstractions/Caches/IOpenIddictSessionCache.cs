@@ -27,7 +27,7 @@ public interface IOpenIddictSessionCache<TSession> where TSession : class
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>The sessions corresponding to the criteria.</returns>
     IAsyncEnumerable<TSession> FindAsync(
-        (string? Subject, string? LoginId, string? ApplicationId, string? Status) query, CancellationToken cancellationToken);
+        (string? Subject, string? LoginId, string? ApplicationId, string? AuthorizationId, string? Status) query, CancellationToken cancellationToken);
 
     /// <summary>
     /// Retrieves the list of sessions corresponding to the specified application identifier.

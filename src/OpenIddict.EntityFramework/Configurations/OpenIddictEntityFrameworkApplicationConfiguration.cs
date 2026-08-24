@@ -17,17 +17,20 @@ namespace OpenIddict.EntityFramework;
 /// </summary>
 /// <typeparam name="TApplication">The type of the application entity.</typeparam>
 /// <typeparam name="TAuthorization">The type of the authorization entity.</typeparam>
+/// <typeparam name="TSession">The type of the session entity.</typeparam>
 /// <typeparam name="TToken">The type of the token entity.</typeparam>
 /// <typeparam name="TKey">The type of the primary key.</typeparam>
 [EditorBrowsable(EditorBrowsableState.Never)]
 public sealed class OpenIddictEntityFrameworkApplicationConfiguration<
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TApplication,
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TAuthorization,
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TSession,
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TToken,
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TKey> : EntityTypeConfiguration<TApplication>
-    where TApplication : OpenIddictEntityFrameworkApplication<TKey, TAuthorization, TToken>
-    where TAuthorization : OpenIddictEntityFrameworkAuthorization<TKey, TApplication, TToken>
-    where TToken : OpenIddictEntityFrameworkToken<TKey, TApplication, TAuthorization>
+    where TApplication : OpenIddictEntityFrameworkApplication<TKey, TAuthorization, TSession, TToken>
+    where TAuthorization : OpenIddictEntityFrameworkAuthorization<TKey, TApplication, TSession, TToken>
+    where TSession : OpenIddictEntityFrameworkSession<TKey, TApplication, TAuthorization, TToken>
+    where TToken : OpenIddictEntityFrameworkToken<TKey, TApplication, TAuthorization, TSession>
     where TKey : notnull, IEquatable<TKey>
 {
     public OpenIddictEntityFrameworkApplicationConfiguration()
@@ -74,6 +77,14 @@ public sealed class OpenIddictEntityFrameworkApplicationConfiguration<
 
             Property(lambda).HasMaxLength(100);
         }
+
+        HasMany(static application => application.Sessions)
+            .WithOptional(static session => session.Application!)
+            .Map(static association =>
+            {
+                association.MapKey(nameof(OpenIddictEntityFrameworkSession.Application) +
+                                   nameof(OpenIddictEntityFrameworkApplication.Id));
+            });
 
         HasMany(static application => application.Tokens)
             .WithOptional(static token => token.Application!)

@@ -48,23 +48,23 @@ public static class OpenIddictEntityFrameworkHelpers
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TSession,
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TToken,
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TKey>(this DbModelBuilder builder)
-        where TApplication : OpenIddictEntityFrameworkApplication<TKey, TAuthorization, TToken>
-        where TAuthorization : OpenIddictEntityFrameworkAuthorization<TKey, TApplication, TToken>
+        where TApplication : OpenIddictEntityFrameworkApplication<TKey, TAuthorization, TSession, TToken>
+        where TAuthorization : OpenIddictEntityFrameworkAuthorization<TKey, TApplication, TSession, TToken>
         where TResource : OpenIddictEntityFrameworkResource<TKey>
         where TScope : OpenIddictEntityFrameworkScope<TKey>
-        where TSession : OpenIddictEntityFrameworkSession<TKey, TApplication, TAuthorization>
-        where TToken : OpenIddictEntityFrameworkToken<TKey, TApplication, TAuthorization>
+        where TSession : OpenIddictEntityFrameworkSession<TKey, TApplication, TAuthorization, TToken>
+        where TToken : OpenIddictEntityFrameworkToken<TKey, TApplication, TAuthorization, TSession>
         where TKey : notnull, IEquatable<TKey>
     {
         ArgumentNullException.ThrowIfNull(builder);
 
         builder.Configurations
-            .Add(new OpenIddictEntityFrameworkApplicationConfiguration<TApplication, TAuthorization, TToken, TKey>())
-            .Add(new OpenIddictEntityFrameworkAuthorizationConfiguration<TAuthorization, TApplication, TToken, TKey>())
+            .Add(new OpenIddictEntityFrameworkApplicationConfiguration<TApplication, TAuthorization, TSession, TToken, TKey>())
+            .Add(new OpenIddictEntityFrameworkAuthorizationConfiguration<TAuthorization, TApplication, TSession, TToken, TKey>())
             .Add(new OpenIddictEntityFrameworkResourceConfiguration<TResource, TKey>())
             .Add(new OpenIddictEntityFrameworkScopeConfiguration<TScope, TKey>())
             .Add(new OpenIddictEntityFrameworkSessionConfiguration<TSession, TApplication, TAuthorization, TToken, TKey>())
-            .Add(new OpenIddictEntityFrameworkTokenConfiguration<TToken, TApplication, TAuthorization, TKey>());
+            .Add(new OpenIddictEntityFrameworkTokenConfiguration<TToken, TApplication, TAuthorization, TSession, TKey>());
 
         return builder;
     }

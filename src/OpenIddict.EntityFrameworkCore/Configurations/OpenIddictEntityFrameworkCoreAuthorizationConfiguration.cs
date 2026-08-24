@@ -18,17 +18,20 @@ namespace OpenIddict.EntityFrameworkCore;
 /// </summary>
 /// <typeparam name="TAuthorization">The type of the authorization entity.</typeparam>
 /// <typeparam name="TApplication">The type of the application entity.</typeparam>
+/// <typeparam name="TSession">The type of the session entity.</typeparam>
 /// <typeparam name="TToken">The type of the token entity.</typeparam>
 /// <typeparam name="TKey">The type of the primary key.</typeparam>
 [EditorBrowsable(EditorBrowsableState.Never)]
 public sealed class OpenIddictEntityFrameworkCoreAuthorizationConfiguration<
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TAuthorization,
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TApplication,
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TSession,
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TToken,
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TKey> : IEntityTypeConfiguration<TAuthorization>
-    where TAuthorization : OpenIddictEntityFrameworkCoreAuthorization<TKey, TApplication, TToken>
-    where TApplication : OpenIddictEntityFrameworkCoreApplication<TKey, TAuthorization, TToken>
-    where TToken : OpenIddictEntityFrameworkCoreToken<TKey, TApplication, TAuthorization>
+    where TAuthorization : OpenIddictEntityFrameworkCoreAuthorization<TKey, TApplication, TSession, TToken>
+    where TApplication : OpenIddictEntityFrameworkCoreApplication<TKey, TAuthorization, TSession, TToken>
+    where TSession : OpenIddictEntityFrameworkCoreSession<TKey, TApplication, TAuthorization, TToken>
+    where TToken : OpenIddictEntityFrameworkCoreToken<TKey, TApplication, TAuthorization, TSession>
     where TKey : notnull, IEquatable<TKey>
 {
     public void Configure(EntityTypeBuilder<TAuthorization> builder)
@@ -65,6 +68,12 @@ public sealed class OpenIddictEntityFrameworkCoreAuthorizationConfiguration<
                    static value => JsonSerializer.Serialize(value, OpenIddictSerializer.Default.IDictionaryStringJsonElement),
                    static value => JsonSerializer.Deserialize(value, OpenIddictSerializer.Default.IDictionaryStringJsonElement),
                    CreateDictionaryComparer<JsonElement>());
+
+        builder.HasMany(static authorization => authorization.Sessions)
+               .WithOne(static session => session.Authorization!)
+               .HasForeignKey(nameof(OpenIddictEntityFrameworkCoreSession.Authorization) +
+                              nameof(OpenIddictEntityFrameworkCoreAuthorization.Id))
+               .IsRequired(required: false);
 
         builder.Property(static authorization => authorization.Status)
                .HasMaxLength(50);

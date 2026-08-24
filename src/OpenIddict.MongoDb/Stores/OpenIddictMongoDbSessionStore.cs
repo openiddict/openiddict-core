@@ -102,11 +102,15 @@ public class OpenIddictMongoDbSessionStore<
         {
             throw new ConcurrencyException(SR.GetResourceString(SR.ID0239));
         }
+
+        // Delete the tokens associated with the session.
+        await database.GetCollection<OpenIddictMongoDbToken>(Options.CurrentValue.TokensCollectionName)
+            .DeleteManyAsync(token => token.SessionId == session.Id, cancellationToken);
     }
 
     /// <inheritdoc/>
     public virtual async IAsyncEnumerable<TSession> FindAsync(
-        (string? Subject, string? LoginId, string? ApplicationId, string? Status) query,
+        (string? Subject, string? LoginId, string? ApplicationId, string? AuthorizationId, string? Status) query,
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         var database = await Context.GetDatabaseAsync(cancellationToken);
@@ -122,6 +126,11 @@ public class OpenIddictMongoDbSessionStore<
         if (!string.IsNullOrEmpty(query.ApplicationId))
         {
             sessions = sessions.Where(session => session.ApplicationId == ObjectId.Parse(query.ApplicationId));
+        }
+
+        if (!string.IsNullOrEmpty(query.AuthorizationId))
+        {
+            sessions = sessions.Where(session => session.AuthorizationId == ObjectId.Parse(query.AuthorizationId));
         }
 
         if (!string.IsNullOrEmpty(query.LoginId))
@@ -378,6 +387,37 @@ public class OpenIddictMongoDbSessionStore<
                 yield return element;
             }
         }
+    }
+
+    /// <inheritdoc/>
+    public virtual async ValueTask<long> PruneAsync(DateTimeOffset threshold, CancellationToken cancellationToken)
+    {
+        var database = await Context.GetDatabaseAsync(cancellationToken);
+        var collection = database.GetCollection<TSession>(Options.CurrentValue.SessionsCollectionName);
+
+        var result = 0L;
+
+        // Note: directly deleting the resulting set of an aggregate query is not supported by MongoDB.
+        // To work around this limitation, the session identifiers are stored in an intermediate
+        // list and delete requests are sent to remove the documents corresponding to these identifiers.
+
+        var identifiers =
+            await (from session in collection.AsQueryable()
+                   join token in database.GetCollection<OpenIddictMongoDbToken>(Options.CurrentValue.TokensCollectionName).AsQueryable()
+                              on session.Id equals token.SessionId into tokens
+                   where session.CreationDate < threshold.UtcDateTime
+                   where session.Status != Statuses.Valid
+                   where !tokens.Any()
+                   select session.Id).ToListAsync(cancellationToken);
+
+        // Note: to avoid generating delete requests with very large filters, chunking is used here and the
+        // maximum number of elements that can be removed by a single call to PruneAsync() is deliberately limited.
+        foreach (var chunk in identifiers.Take(1_000_000).Chunk(1_000))
+        {
+            result += (await collection.DeleteManyAsync(session => chunk.Contains(session.Id), cancellationToken)).DeletedCount;
+        }
+
+        return result;
     }
 
     /// <inheritdoc/>

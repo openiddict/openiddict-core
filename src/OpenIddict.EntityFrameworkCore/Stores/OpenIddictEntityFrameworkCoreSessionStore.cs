@@ -6,6 +6,7 @@
 
 using System.Collections.Immutable;
 using System.ComponentModel;
+using System.Data;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
@@ -66,10 +67,10 @@ public class OpenIddictEntityFrameworkCoreSessionStore<
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TAuthorization,
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TToken,
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TKey> : IOpenIddictSessionStore<TSession>
-    where TSession : OpenIddictEntityFrameworkCoreSession<TKey, TApplication, TAuthorization>
-    where TApplication : OpenIddictEntityFrameworkCoreApplication<TKey, TAuthorization, TToken>
-    where TAuthorization : OpenIddictEntityFrameworkCoreAuthorization<TKey, TApplication, TToken>
-    where TToken : OpenIddictEntityFrameworkCoreToken<TKey, TApplication, TAuthorization>
+    where TSession : OpenIddictEntityFrameworkCoreSession<TKey, TApplication, TAuthorization, TToken>
+    where TApplication : OpenIddictEntityFrameworkCoreApplication<TKey, TAuthorization, TSession, TToken>
+    where TAuthorization : OpenIddictEntityFrameworkCoreAuthorization<TKey, TApplication, TSession, TToken>
+    where TToken : OpenIddictEntityFrameworkCoreToken<TKey, TApplication, TAuthorization, TSession>
     where TKey : notnull, IEquatable<TKey>
 {
     public OpenIddictEntityFrameworkCoreSessionStore(
@@ -129,6 +130,24 @@ public class OpenIddictEntityFrameworkCoreSessionStore<
 
         var context = await Context.GetDbContextAsync(cancellationToken);
 
+        // To prevent an SQL exception from being thrown if a new associated entity is
+        // created after the existing entries have been listed, the following logic is
+        // executed in a serializable transaction, that will lock the affected tables.
+        using var transaction = await CreateTransactionAsync(context,
+            IsolationLevel.Serializable, cancellationToken);
+
+        // Remove all the tokens associated with the session.
+        var tokens = await
+            (from token in context.Set<TToken>()
+             where token.Authorization == null
+             where token.Session!.Id!.Equals(session.Id)
+             select token).ToListAsync(cancellationToken);
+
+        foreach (var token in tokens)
+        {
+            context.Remove(token);
+        }
+
         context.Remove(session);
 
         try
@@ -138,7 +157,7 @@ public class OpenIddictEntityFrameworkCoreSessionStore<
 
         catch (DbUpdateConcurrencyException exception)
         {
-            // Reset the state of the entity to prevents future calls to SaveChangesAsync() from failing.
+            // Reset the state of the updated entities to prevents future calls from failing.
             context.Entry(session).State = EntityState.Unchanged;
 
             throw new ConcurrencyException(SR.GetResourceString(SR.ID0239), exception);
@@ -147,7 +166,7 @@ public class OpenIddictEntityFrameworkCoreSessionStore<
 
     /// <inheritdoc/>
     public virtual async IAsyncEnumerable<TSession> FindAsync(
-        (string? Subject, string? LoginId, string? ApplicationId, string? Status) query,
+        (string? Subject, string? LoginId, string? ApplicationId, string? AuthorizationId, string? Status) query,
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         var context = await Context.GetDbContextAsync(cancellationToken);
@@ -166,6 +185,12 @@ public class OpenIddictEntityFrameworkCoreSessionStore<
         {
             var key = ConvertIdentifierFromString(query.ApplicationId);
             sessions = sessions.Where(session => session.Application!.Id!.Equals(key));
+        }
+
+        if (!string.IsNullOrEmpty(query.AuthorizationId))
+        {
+            var key = ConvertIdentifierFromString(query.AuthorizationId);
+            sessions = sessions.Where(session => session.Authorization!.Id!.Equals(key));
         }
 
         if (!string.IsNullOrEmpty(query.LoginId))
@@ -467,6 +492,124 @@ public class OpenIddictEntityFrameworkCoreSessionStore<
     }
 
     /// <inheritdoc/>
+    public virtual async ValueTask<long> PruneAsync(DateTimeOffset threshold, CancellationToken cancellationToken)
+    {
+        var context = await Context.GetDbContextAsync(cancellationToken);
+
+        List<Exception>? exceptions = null;
+
+        var result = 0L;
+
+        // Note: the Oracle MySQL provider doesn't support DateTimeOffset and is unable
+        // to create a SQL query with an expression calling DateTimeOffset.UtcDateTime.
+        // To work around this limitation, the threshold represented as a DateTimeOffset
+        // instance is manually converted to a UTC DateTime instance outside the query.
+        var date = threshold.UtcDateTime;
+
+        // Note: to avoid sending too many queries, the maximum number of elements
+        // that can be removed by a single call to PruneAsync() is deliberately limited.
+        for (var index = 0; index < 1_000; index++)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            if (!Options.CurrentValue.DisableBulkOperations)
+            {
+                try
+                {
+                    var count = await
+                        (from session in context.Set<TSession>()
+                         where session.CreationDate < date
+                         where session.Status != Statuses.Valid
+                         where !session.Tokens.Any()
+                         orderby session.Id
+                         select session).Take(1_000).ExecuteDeleteAsync(cancellationToken);
+
+                    if (count is 0)
+                    {
+                        break;
+                    }
+
+                    // Note: calling DbContext.SaveChangesAsync() is not necessary
+                    // with bulk delete operations as they are executed immediately.
+
+                    result += count;
+                }
+
+                catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
+                {
+                    exceptions ??= new List<Exception>(capacity: 1);
+                    exceptions.Add(exception);
+                }
+            }
+
+            else
+            {
+                var strategy = context.Database.CreateExecutionStrategy();
+                var count = await strategy.ExecuteAsync(async () =>
+                {
+                    // To prevent concurrency exceptions from being thrown if an entry is modified
+                    // after it was retrieved from the database, the following logic is executed in
+                    // a repeatable read transaction, that will put a lock on the retrieved entries
+                    // and thus prevent them from being concurrently modified outside this block.
+                    await using var transaction = await CreateTransactionAsync(context,
+                        IsolationLevel.RepeatableRead, cancellationToken);
+
+                    var sessions = await
+                        (from session in context.Set<TSession>()
+                            .Include(static session => session.Tokens)
+                            .AsTracking()
+                         where session.CreationDate < date
+                         where session.Status != Statuses.Valid
+                         where !session.Tokens.Any()
+                         orderby session.Id
+                         select session).Take(1_000).ToListAsync(cancellationToken);
+
+                    if (sessions.Count is not 0)
+                    {
+                        // Note: new tokens may be attached after the sessions were retrieved
+                        // from the database since the transaction level is deliberately limited to
+                        // repeatable read instead of serializable for performance reasons). In this
+                        // case, the operation will fail, which is considered an acceptable risk.
+                        context.RemoveRange(sessions);
+
+                        try
+                        {
+                            await context.SaveChangesAsync(cancellationToken);
+
+                            if (transaction is not null)
+                            {
+                                await transaction.CommitAsync(cancellationToken);
+                            }
+                        }
+
+                        catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
+                        {
+                            exceptions ??= new List<Exception>(capacity: 1);
+                            exceptions.Add(exception);
+                        }
+                    }
+
+                    return sessions.Count;
+                });
+
+                if (count is 0)
+                {
+                    break;
+                }
+
+                result += count;
+            }
+        }
+
+        if (exceptions is { Count: > 0 })
+        {
+            throw new AggregateException(exceptions);
+        }
+
+        return result;
+    }
+
+    /// <inheritdoc/>
     public virtual async ValueTask SetApplicationIdAsync(TSession session, string? identifier, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(session);
@@ -607,7 +750,7 @@ public class OpenIddictEntityFrameworkCoreSessionStore<
 
         catch (DbUpdateConcurrencyException exception)
         {
-            // Reset the state of the entity to prevents future calls to SaveChangesAsync() from failing.
+            // Reset the state of the updated entities to prevents future calls from failing.
             context.Entry(session).State = EntityState.Unchanged;
 
             throw new ConcurrencyException(SR.GetResourceString(SR.ID0239), exception);
@@ -658,5 +801,38 @@ public class OpenIddictEntityFrameworkCoreSessionStore<
         var converter = TypeDescriptor.GetConverterFromRegisteredType(typeof(TKey));
 
         return converter.ConvertToInvariantString(identifier);
+    }
+
+    /// <summary>
+    /// Tries to create a new <see cref="IDbContextTransaction"/> with the specified <paramref name="level"/>.
+    /// </summary>
+    /// <param name="context">The Entity Framework Core context.</param>
+    /// <param name="level">The desired level of isolation.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns>The <see cref="IDbContextTransaction"/> if it could be created, <see langword="null"/> otherwise.</returns>
+    protected virtual async ValueTask<IDbContextTransaction?> CreateTransactionAsync(
+        DbContext context, IsolationLevel level, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(context);
+
+        // Note: transactions that specify an explicit isolation level are only supported by
+        // relational providers and trying to use them with a different provider results in
+        // an invalid operation exception being thrown at runtime. To prevent that, a manual
+        // check is made to ensure the underlying transaction manager is relational.
+        var manager = context.GetService<IDbContextTransactionManager>();
+        if (manager is IRelationalTransactionManager)
+        {
+            try
+            {
+                return await context.Database.BeginTransactionAsync(level, cancellationToken);
+            }
+
+            catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
+            {
+                return null;
+            }
+        }
+
+        return null;
     }
 }

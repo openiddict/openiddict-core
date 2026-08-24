@@ -96,7 +96,7 @@ public sealed class OpenIddictSessionCache<TSession> : IOpenIddictSessionCache<T
 
     /// <inheritdoc/>
     public async IAsyncEnumerable<TSession> FindAsync(
-        (string? Subject, string? LoginId, string? ApplicationId, string? Status) query,
+        (string? Subject, string? LoginId, string? ApplicationId, string? AuthorizationId, string? Status) query,
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         // Note: this method is only partially cached.

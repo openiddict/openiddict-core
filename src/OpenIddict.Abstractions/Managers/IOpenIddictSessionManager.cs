@@ -95,7 +95,7 @@ public interface IOpenIddictSessionManager
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>The sessions corresponding to the criteria.</returns>
     IAsyncEnumerable<object> FindAsync(
-        (string? Subject, string? LoginId, string? ApplicationId, string? Status) query,
+        (string? Subject, string? LoginId, string? ApplicationId, string? AuthorizationId, string? Status) query,
         CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -312,6 +312,18 @@ public interface IOpenIddictSessionManager
     /// A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.
     /// </returns>
     ValueTask PopulateAsync(object session, OpenIddictSessionDescriptor descriptor, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Removes the sessions that are marked as invalid and don't have any token attached.
+    /// Only sessions created before the specified <paramref name="threshold"/> are removed.
+    /// </summary>
+    /// <remarks>
+    /// Since sessions with tokens still attached are not deleted, tokens should always be pruned first.
+    /// </remarks>
+    /// <param name="threshold">The date before which sessions are not pruned.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns>The number of sessions that were removed.</returns>
+    ValueTask<long> PruneAsync(DateTimeOffset threshold, CancellationToken cancellationToken);
 
     /// <summary>
     /// Updates an existing session.

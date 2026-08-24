@@ -15,6 +15,7 @@ namespace OpenIddict.EntityFramework.Models;
 public class OpenIddictEntityFrameworkApplication :
     OpenIddictEntityFrameworkApplication<string,
                                          OpenIddictEntityFrameworkAuthorization,
+                                         OpenIddictEntityFrameworkSession,
                                          OpenIddictEntityFrameworkToken>
 {
     public OpenIddictEntityFrameworkApplication() => Id = Guid.NewGuid().ToString();
@@ -24,9 +25,10 @@ public class OpenIddictEntityFrameworkApplication :
 /// Represents an OpenIddict application.
 /// </summary>
 [DebuggerDisplay("Id = {Id.ToString(),nq} ; ClientId = {ClientId,nq} ; ClientType = {ClientType,nq}")]
-public class OpenIddictEntityFrameworkApplication<TKey, TAuthorization, TToken>
+public class OpenIddictEntityFrameworkApplication<TKey, TAuthorization, TSession, TToken>
     where TKey : notnull, IEquatable<TKey>
     where TAuthorization : class
+    where TSession : class
     where TToken : class
 {
     /// <summary>
@@ -133,6 +135,11 @@ public class OpenIddictEntityFrameworkApplication<TKey, TAuthorization, TToken>
     /// </summary>
     [StringSyntax(StringSyntaxAttribute.Json)]
     public virtual string? Settings { get; set; }
+
+    /// <summary>
+    /// Gets the list of the sessions associated with the application.
+    /// </summary>
+    public virtual ICollection<TSession> Sessions { get; } = new HashSet<TSession>();
 
     /// <summary>
     /// Gets the list of the tokens associated with the application.

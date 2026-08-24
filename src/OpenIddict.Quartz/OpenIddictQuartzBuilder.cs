@@ -63,6 +63,13 @@ public sealed class OpenIddictQuartzBuilder
         => Configure(options => options.DisableAuthorizationPruning = true);
 
     /// <summary>
+    /// Disables sessions pruning.
+    /// </summary>
+    /// <returns>The <see cref="OpenIddictQuartzBuilder"/> instance.</returns>
+    public OpenIddictQuartzBuilder DisableSessionPruning()
+        => Configure(options => options.DisableSessionPruning = true);
+
+    /// <summary>
     /// Disables tokens pruning.
     /// </summary>
     /// <returns>The <see cref="OpenIddictQuartzBuilder"/> instance.</returns>
@@ -91,6 +98,18 @@ public sealed class OpenIddictQuartzBuilder
         ArgumentOutOfRangeException.ThrowIfLessThan(lifespan, TimeSpan.FromMinutes(10));
 
         return Configure(options => options.MinimumAuthorizationLifespan = lifespan);
+    }
+
+    /// <summary>
+    /// Sets the minimum lifespan sessions must have to be pruned.
+    /// </summary>
+    /// <param name="lifespan">The minimum lifespan sessions must have to be pruned.</param>
+    /// <returns>The <see cref="OpenIddictQuartzBuilder"/> instance.</returns>
+    public OpenIddictQuartzBuilder SetMinimumSessionLifespan(TimeSpan lifespan)
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThan(lifespan, TimeSpan.FromMinutes(10));
+
+        return Configure(options => options.MinimumSessionLifespan = lifespan);
     }
 
     /// <summary>

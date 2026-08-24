@@ -27,10 +27,10 @@ public sealed class OpenIddictEntityFrameworkSessionConfiguration<
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TAuthorization,
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TToken,
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TKey> : EntityTypeConfiguration<TSession>
-    where TSession : OpenIddictEntityFrameworkSession<TKey, TApplication, TAuthorization>
-    where TApplication : OpenIddictEntityFrameworkApplication<TKey, TAuthorization, TToken>
-    where TAuthorization : OpenIddictEntityFrameworkAuthorization<TKey, TApplication, TToken>
-    where TToken : OpenIddictEntityFrameworkToken<TKey, TApplication, TAuthorization>
+    where TSession : OpenIddictEntityFrameworkSession<TKey, TApplication, TAuthorization, TToken>
+    where TApplication : OpenIddictEntityFrameworkApplication<TKey, TAuthorization, TSession, TToken>
+    where TAuthorization : OpenIddictEntityFrameworkAuthorization<TKey, TApplication, TSession, TToken>
+    where TToken : OpenIddictEntityFrameworkToken<TKey, TApplication, TAuthorization, TSession>
     where TKey : notnull, IEquatable<TKey>
 {
     public OpenIddictEntityFrameworkSessionConfiguration()
@@ -65,6 +65,14 @@ public sealed class OpenIddictEntityFrameworkSessionConfiguration<
 
         Property(static session => session.Subject)
             .HasMaxLength(400);
+
+        HasMany(static session => session.Tokens)
+            .WithOptional(static token => token.Session!)
+            .Map(static association =>
+            {
+                association.MapKey(nameof(OpenIddictEntityFrameworkToken.Session) +
+                                   nameof(OpenIddictEntityFrameworkSession.Id));
+            });
 
         ToTable("OpenIddictSessions");
     }

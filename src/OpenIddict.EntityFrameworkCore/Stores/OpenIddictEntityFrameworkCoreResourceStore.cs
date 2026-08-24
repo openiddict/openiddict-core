@@ -124,7 +124,7 @@ public class OpenIddictEntityFrameworkCoreResourceStore<
 
         catch (DbUpdateConcurrencyException exception)
         {
-            // Reset the state of the entity to prevents future calls to SaveChangesAsync() from failing.
+            // Reset the state of the updated entities to prevents future calls from failing.
             context.Entry(resource).State = EntityState.Unchanged;
 
             throw new ConcurrencyException(SR.GetResourceString(SR.ID0239), exception);
@@ -406,7 +406,7 @@ public class OpenIddictEntityFrameworkCoreResourceStore<
 
         catch (DbUpdateConcurrencyException exception)
         {
-            // Reset the state of the entity to prevents future calls to SaveChangesAsync() from failing.
+            // Reset the state of the updated entities to prevents future calls from failing.
             context.Entry(resource).State = EntityState.Unchanged;
 
             throw new ConcurrencyException(SR.GetResourceString(SR.ID0239), exception);

@@ -15,6 +15,7 @@ namespace OpenIddict.EntityFramework.Models;
 public class OpenIddictEntityFrameworkAuthorization :
     OpenIddictEntityFrameworkAuthorization<string,
                                            OpenIddictEntityFrameworkApplication,
+                                           OpenIddictEntityFrameworkSession,
                                            OpenIddictEntityFrameworkToken>
 {
     public OpenIddictEntityFrameworkAuthorization() => Id = Guid.NewGuid().ToString();
@@ -24,9 +25,10 @@ public class OpenIddictEntityFrameworkAuthorization :
 /// Represents an OpenIddict authorization.
 /// </summary>
 [DebuggerDisplay("Id = {Id.ToString(),nq} ; Subject = {Subject,nq} ; Type = {Type,nq} ; Status = {Status,nq}")]
-public class OpenIddictEntityFrameworkAuthorization<TKey, TApplication, TToken>
+public class OpenIddictEntityFrameworkAuthorization<TKey, TApplication, TSession, TToken>
     where TKey : notnull, IEquatable<TKey>
     where TApplication : class
+    where TSession : class
     where TToken : class
 {
     /// <summary>
@@ -60,6 +62,11 @@ public class OpenIddictEntityFrameworkAuthorization<TKey, TApplication, TToken>
     /// </summary>
     [StringSyntax(StringSyntaxAttribute.Json)]
     public virtual string? Scopes { get; set; }
+
+    /// <summary>
+    /// Gets the list of the sessions associated with the authorization.
+    /// </summary>
+    public virtual ICollection<TSession> Sessions { get; } = new HashSet<TSession>();
 
     /// <summary>
     /// Gets or sets the status of the authorization.

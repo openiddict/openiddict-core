@@ -64,6 +64,22 @@ public class OpenIddictQuartzBuilderTests
     }
 
     [Fact]
+    public void DisableSessionPruning_SessionPruningIsDisabled()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act
+        builder.DisableSessionPruning();
+
+        var options = GetOptions(services);
+
+        // Assert
+        Assert.True(options.DisableSessionPruning);
+    }
+
+    [Fact]
     public void DisableTokenPruning_TokenPruningIsDisabled()
     {
         // Arrange
@@ -135,6 +151,35 @@ public class OpenIddictQuartzBuilderTests
 
         // Assert
         Assert.Equal(42, options.MinimumAuthorizationLifespan.TotalDays);
+    }
+
+    [Fact]
+    public void SetMinimumSessionLifespan_ThrowsAnExceptionForNegativeLifespan()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentOutOfRangeException>(() => builder.SetMinimumSessionLifespan(TimeSpan.FromSeconds(-1)));
+
+        Assert.Equal("lifespan", exception.ParamName);
+    }
+
+    [Fact]
+    public void SetMinimumSessionLifespan_MinimumSessionLifespanIsSet()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act
+        builder.SetMinimumSessionLifespan(TimeSpan.FromDays(42));
+
+        var options = GetOptions(services);
+
+        // Assert
+        Assert.Equal(42, options.MinimumSessionLifespan.TotalDays);
     }
 
     [Fact]

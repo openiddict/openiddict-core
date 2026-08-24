@@ -103,6 +103,10 @@ public class OpenIddictMongoDbAuthorizationStore<
             throw new ConcurrencyException(SR.GetResourceString(SR.ID0239));
         }
 
+        // Delete the sessions associated with the authorization.
+        await database.GetCollection<OpenIddictMongoDbSession>(Options.CurrentValue.SessionsCollectionName)
+            .DeleteManyAsync(session => session.AuthorizationId == authorization.Id, cancellationToken);
+
         // Delete the tokens associated with the authorization.
         await database.GetCollection<OpenIddictMongoDbToken>(Options.CurrentValue.TokensCollectionName)
             .DeleteManyAsync(token => token.AuthorizationId == authorization.Id, cancellationToken);

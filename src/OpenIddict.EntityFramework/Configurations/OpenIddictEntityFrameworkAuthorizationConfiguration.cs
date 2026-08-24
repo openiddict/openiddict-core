@@ -17,17 +17,20 @@ namespace OpenIddict.EntityFramework;
 /// </summary>
 /// <typeparam name="TAuthorization">The type of the authorization entity.</typeparam>
 /// <typeparam name="TApplication">The type of the application entity.</typeparam>
+/// <typeparam name="TSession">The type of the session entity.</typeparam>
 /// <typeparam name="TToken">The type of the token entity.</typeparam>
 /// <typeparam name="TKey">The type of the primary key.</typeparam>
 [EditorBrowsable(EditorBrowsableState.Never)]
 public sealed class OpenIddictEntityFrameworkAuthorizationConfiguration<
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TAuthorization,
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TApplication,
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TSession,
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TToken,
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TKey> : EntityTypeConfiguration<TAuthorization>
-    where TAuthorization : OpenIddictEntityFrameworkAuthorization<TKey, TApplication, TToken>
-    where TApplication : OpenIddictEntityFrameworkApplication<TKey, TAuthorization, TToken>
-    where TToken : OpenIddictEntityFrameworkToken<TKey, TApplication, TAuthorization>
+    where TAuthorization : OpenIddictEntityFrameworkAuthorization<TKey, TApplication, TSession, TToken>
+    where TApplication : OpenIddictEntityFrameworkApplication<TKey, TAuthorization, TSession, TToken>
+    where TSession : OpenIddictEntityFrameworkSession<TKey, TApplication, TAuthorization, TToken>
+    where TToken : OpenIddictEntityFrameworkToken<TKey, TApplication, TAuthorization, TSession>
     where TKey : notnull, IEquatable<TKey>
 {
     public OpenIddictEntityFrameworkAuthorizationConfiguration()
@@ -51,6 +54,12 @@ public sealed class OpenIddictEntityFrameworkAuthorizationConfiguration<
 
             Property(lambda).HasMaxLength(100);
         }
+
+        HasMany(static authorization => authorization.Sessions)
+            .WithOptional(static session => session.Authorization!)
+            .Map(static association => association.MapKey(nameof(OpenIddictEntityFrameworkSession.Authorization) +
+                                                          nameof(OpenIddictEntityFrameworkAuthorization.Id)))
+            .WillCascadeOnDelete();
 
         Property(static authorization => authorization.Status)
             .HasMaxLength(50);

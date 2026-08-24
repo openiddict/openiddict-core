@@ -15,7 +15,8 @@ namespace OpenIddict.EntityFrameworkCore.Models;
 public class OpenIddictEntityFrameworkCoreToken :
     OpenIddictEntityFrameworkCoreToken<string,
                                        OpenIddictEntityFrameworkCoreApplication,
-                                       OpenIddictEntityFrameworkCoreAuthorization>
+                                       OpenIddictEntityFrameworkCoreAuthorization,
+                                       OpenIddictEntityFrameworkCoreSession>
 {
     public OpenIddictEntityFrameworkCoreToken() => Id = Guid.NewGuid().ToString();
 }
@@ -26,17 +27,19 @@ public class OpenIddictEntityFrameworkCoreToken :
 public class OpenIddictEntityFrameworkCoreToken<TKey> :
     OpenIddictEntityFrameworkCoreToken<TKey,
                                        OpenIddictEntityFrameworkCoreApplication<TKey>,
-                                       OpenIddictEntityFrameworkCoreAuthorization<TKey>>
+                                       OpenIddictEntityFrameworkCoreAuthorization<TKey>,
+                                       OpenIddictEntityFrameworkCoreSession<TKey>>
     where TKey : notnull, IEquatable<TKey>;
 
 /// <summary>
 /// Represents an OpenIddict token.
 /// </summary>
 [DebuggerDisplay("Id = {Id.ToString(),nq} ; Subject = {Subject,nq} ; Type = {Type,nq} ; Status = {Status,nq}")]
-public class OpenIddictEntityFrameworkCoreToken<TKey, TApplication, TAuthorization>
+public class OpenIddictEntityFrameworkCoreToken<TKey, TApplication, TAuthorization, TSession>
     where TKey : notnull, IEquatable<TKey>
     where TApplication : class
     where TAuthorization : class
+    where TSession : class
 {
     /// <summary>
     /// Gets or sets the application associated with the token.
@@ -95,6 +98,11 @@ public class OpenIddictEntityFrameworkCoreToken<TKey, TApplication, TAuthorizati
     /// and may be hashed or encrypted for security reasons.
     /// </remarks>
     public virtual string? ReferenceId { get; set; }
+
+    /// <summary>
+    /// Gets or sets the session associated with the token.
+    /// </summary>
+    public virtual TSession? Session { get; set; }
 
     /// <summary>
     /// Gets or sets the status of the token.

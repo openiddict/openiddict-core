@@ -26,6 +26,7 @@ namespace OpenIddict.EntityFramework;
 public class OpenIddictEntityFrameworkAuthorizationStore :
     OpenIddictEntityFrameworkAuthorizationStore<OpenIddictEntityFrameworkAuthorization,
                                                 OpenIddictEntityFrameworkApplication,
+                                                OpenIddictEntityFrameworkSession,
                                                 OpenIddictEntityFrameworkToken, string>
 {
     public OpenIddictEntityFrameworkAuthorizationStore(
@@ -42,16 +43,19 @@ public class OpenIddictEntityFrameworkAuthorizationStore :
 /// </summary>
 /// <typeparam name="TAuthorization">The type of the authorization entity.</typeparam>
 /// <typeparam name="TApplication">The type of the application entity.</typeparam>
+/// <typeparam name="TSession">The type of the session entity.</typeparam>
 /// <typeparam name="TToken">The type of the token entity.</typeparam>
 /// <typeparam name="TKey">The type of the entity primary keys.</typeparam>
 public class OpenIddictEntityFrameworkAuthorizationStore<
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TAuthorization,
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TApplication,
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TSession,
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TToken,
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TKey> : IOpenIddictAuthorizationStore<TAuthorization>
-    where TAuthorization : OpenIddictEntityFrameworkAuthorization<TKey, TApplication, TToken>
-    where TApplication : OpenIddictEntityFrameworkApplication<TKey, TAuthorization, TToken>
-    where TToken : OpenIddictEntityFrameworkToken<TKey, TApplication, TAuthorization>
+    where TAuthorization : OpenIddictEntityFrameworkAuthorization<TKey, TApplication, TSession, TToken>
+    where TApplication : OpenIddictEntityFrameworkApplication<TKey, TAuthorization, TSession, TToken>
+    where TToken : OpenIddictEntityFrameworkToken<TKey, TApplication, TAuthorization, TSession>
+    where TSession : OpenIddictEntityFrameworkSession<TKey, TApplication, TAuthorization, TToken>
     where TKey : notnull, IEquatable<TKey>
 {
     public OpenIddictEntityFrameworkAuthorizationStore(
@@ -118,21 +122,47 @@ public class OpenIddictEntityFrameworkAuthorizationStore<
 
         var context = await Context.GetDbContextAsync(cancellationToken);
 
-        Task<List<TToken>> ListTokensAsync()
-            => (from token in context.Set<TToken>()
-                where token.Authorization!.Id!.Equals(authorization.Id)
-                select token).ToListAsync(cancellationToken);
-
         // To prevent an SQL exception from being thrown if a new associated entity is
         // created after the existing entries have been listed, the following logic is
         // executed in a serializable transaction, that will lock the affected tables.
         using var transaction = CreateTransaction(context, IsolationLevel.Serializable);
 
         // Remove all the tokens associated with the authorization.
-        var tokens = await ListTokensAsync();
+        var tokens = await
+            (from token in context.Set<TToken>()
+             where token.Authorization!.Id!.Equals(authorization.Id)
+             select token).ToListAsync(cancellationToken);
+
         foreach (var token in tokens)
         {
             context.Set<TToken>().Remove(token);
+        }
+
+        // Remove all the sessions associated with the authorization
+        // and the tokens attached to these authorizations and sessions.
+        var sessions = await
+            (from session in context.Set<TSession>().Include(static session => session.Tokens)
+             where session.Authorization!.Id!.Equals(authorization.Id)
+             select session).ToListAsync(cancellationToken);
+
+        foreach (var session in sessions)
+        {
+            if (session.Authorization is not null)
+            {
+                foreach (var token in session.Authorization.Tokens)
+                {
+                    context.Set<TToken>().Remove(token);
+                }
+
+                context.Set<TAuthorization>().Remove(session.Authorization);
+            }
+
+            foreach (var token in session.Tokens)
+            {
+                context.Set<TToken>().Remove(token);
+            }
+
+            context.Set<TSession>().Remove(session);
         }
 
         context.Set<TAuthorization>().Remove(authorization);
@@ -145,8 +175,28 @@ public class OpenIddictEntityFrameworkAuthorizationStore<
 
         catch (DbUpdateConcurrencyException exception)
         {
-            // Reset the state of the entity to prevents future calls to SaveChangesAsync() from failing.
+            // Reset the state of the updated entities to prevents future calls from failing.
             context.Entry(authorization).State = EntityState.Unchanged;
+
+            foreach (var session in sessions)
+            {
+                context.Entry(session).State = EntityState.Unchanged;
+
+                if (session.Authorization is not null)
+                {
+                    context.Entry(session.Authorization).State = EntityState.Unchanged;
+
+                    foreach (var token in session.Authorization.Tokens)
+                    {
+                        context.Entry(token).State = EntityState.Unchanged;
+                    }
+                }
+
+                foreach (var token in session.Tokens)
+                {
+                    context.Entry(token).State = EntityState.Unchanged;
+                }
+            }
 
             foreach (var token in tokens)
             {
@@ -554,7 +604,7 @@ public class OpenIddictEntityFrameworkAuthorizationStore<
 
         if (exceptions is { Count: > 0 })
         {
-            throw new AggregateException(SR.GetResourceString(SR.ID0243), exceptions);
+            throw new AggregateException(exceptions);
         }
 
         return result;
@@ -605,7 +655,7 @@ public class OpenIddictEntityFrameworkAuthorizationStore<
 
             catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
             {
-                // Reset the state of the entity to prevents future calls to SaveChangesAsync() from failing.
+                // Reset the state of the updated entities to prevents future calls from failing.
                 context.Entry(authorization).State = EntityState.Unchanged;
 
                 exceptions ??= new List<Exception>(capacity: 1);
@@ -619,7 +669,7 @@ public class OpenIddictEntityFrameworkAuthorizationStore<
 
         if (exceptions is { Count: > 0 })
         {
-            throw new AggregateException(SR.GetResourceString(SR.ID0249), exceptions);
+            throw new AggregateException(exceptions);
         }
 
         return result;
@@ -651,7 +701,7 @@ public class OpenIddictEntityFrameworkAuthorizationStore<
 
             catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
             {
-                // Reset the state of the entity to prevents future calls to SaveChangesAsync() from failing.
+                // Reset the state of the updated entities to prevents future calls from failing.
                 context.Entry(authorization).State = EntityState.Unchanged;
 
                 exceptions ??= new List<Exception>(capacity: 1);
@@ -665,7 +715,7 @@ public class OpenIddictEntityFrameworkAuthorizationStore<
 
         if (exceptions is { Count: > 0 })
         {
-            throw new AggregateException(SR.GetResourceString(SR.ID0249), exceptions);
+            throw new AggregateException(exceptions);
         }
 
         return result;
@@ -696,7 +746,7 @@ public class OpenIddictEntityFrameworkAuthorizationStore<
 
             catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
             {
-                // Reset the state of the entity to prevents future calls to SaveChangesAsync() from failing.
+                // Reset the state of the updated entities to prevents future calls from failing.
                 context.Entry(authorization).State = EntityState.Unchanged;
 
                 exceptions ??= new List<Exception>(capacity: 1);
@@ -710,7 +760,7 @@ public class OpenIddictEntityFrameworkAuthorizationStore<
 
         if (exceptions is { Count: > 0 })
         {
-            throw new AggregateException(SR.GetResourceString(SR.ID0249), exceptions);
+            throw new AggregateException(exceptions);
         }
 
         return result;
@@ -885,7 +935,7 @@ public class OpenIddictEntityFrameworkAuthorizationStore<
 
         catch (DbUpdateConcurrencyException exception)
         {
-            // Reset the state of the entity to prevents future calls to SaveChangesAsync() from failing.
+            // Reset the state of the updated entities to prevents future calls from failing.
             context.Entry(authorization).State = EntityState.Unchanged;
 
             throw new ConcurrencyException(SR.GetResourceString(SR.ID0239), exception);

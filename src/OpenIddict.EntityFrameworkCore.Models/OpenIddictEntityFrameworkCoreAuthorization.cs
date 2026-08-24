@@ -15,6 +15,7 @@ namespace OpenIddict.EntityFrameworkCore.Models;
 public class OpenIddictEntityFrameworkCoreAuthorization :
     OpenIddictEntityFrameworkCoreAuthorization<string,
                                                OpenIddictEntityFrameworkCoreApplication,
+                                               OpenIddictEntityFrameworkCoreSession,
                                                OpenIddictEntityFrameworkCoreToken>
 {
     public OpenIddictEntityFrameworkCoreAuthorization() => Id = Guid.NewGuid().ToString();
@@ -26,6 +27,7 @@ public class OpenIddictEntityFrameworkCoreAuthorization :
 public class OpenIddictEntityFrameworkCoreAuthorization<TKey> :
     OpenIddictEntityFrameworkCoreAuthorization<TKey,
                                                OpenIddictEntityFrameworkCoreApplication<TKey>,
+                                               OpenIddictEntityFrameworkCoreSession<TKey>,
                                                OpenIddictEntityFrameworkCoreToken<TKey>>
     where TKey : notnull, IEquatable<TKey>;
 
@@ -33,13 +35,14 @@ public class OpenIddictEntityFrameworkCoreAuthorization<TKey> :
 /// Represents an OpenIddict authorization.
 /// </summary>
 [DebuggerDisplay("Id = {Id.ToString(),nq} ; Subject = {Subject,nq} ; Type = {Type,nq} ; Status = {Status,nq}")]
-public class OpenIddictEntityFrameworkCoreAuthorization<TKey, TApplication, TToken>
+public class OpenIddictEntityFrameworkCoreAuthorization<TKey, TApplication, TSession, TToken>
     where TKey : notnull, IEquatable<TKey>
     where TApplication : class
+    where TSession : class
     where TToken : class
 {
     /// <summary>
-    /// Gets or sets the application of the authorization.
+    /// Gets or sets the application associated with the authorization.
     /// </summary>
     public virtual TApplication? Application { get; set; }
 
@@ -67,6 +70,11 @@ public class OpenIddictEntityFrameworkCoreAuthorization<TKey, TApplication, TTok
     /// Gets or sets the scopes of the authorization.
     /// </summary>
     public virtual string[]? Scopes { get; set; }
+
+    /// <summary>
+    /// Gets the list of the sessions associated with the authorization.
+    /// </summary>
+    public virtual ICollection<TSession> Sessions { get; } = new HashSet<TSession>();
 
     /// <summary>
     /// Gets or sets the status of the authorization.

@@ -102,12 +102,12 @@ public static class OpenIddictEntityFrameworkCoreHelpers
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TToken,
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TKey>(
         this DbContextOptionsBuilder builder)
-        where TApplication : OpenIddictEntityFrameworkCoreApplication<TKey, TAuthorization, TToken>
-        where TAuthorization : OpenIddictEntityFrameworkCoreAuthorization<TKey, TApplication, TToken>
+        where TApplication : OpenIddictEntityFrameworkCoreApplication<TKey, TAuthorization, TSession, TToken>
+        where TAuthorization : OpenIddictEntityFrameworkCoreAuthorization<TKey, TApplication, TSession, TToken>
         where TResource : OpenIddictEntityFrameworkCoreResource<TKey>
         where TScope : OpenIddictEntityFrameworkCoreScope<TKey>
-        where TSession : OpenIddictEntityFrameworkCoreSession<TKey, TApplication, TAuthorization>
-        where TToken : OpenIddictEntityFrameworkCoreToken<TKey, TApplication, TAuthorization>
+        where TSession : OpenIddictEntityFrameworkCoreSession<TKey, TApplication, TAuthorization, TToken>
+        where TToken : OpenIddictEntityFrameworkCoreToken<TKey, TApplication, TAuthorization, TSession>
         where TKey : notnull, IEquatable<TKey>
     {
         ArgumentNullException.ThrowIfNull(builder);
@@ -142,12 +142,12 @@ public static class OpenIddictEntityFrameworkCoreHelpers
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TKey,
         TContext>(
         this DbContextOptionsBuilder<TContext> builder)
-        where TApplication : OpenIddictEntityFrameworkCoreApplication<TKey, TAuthorization, TToken>
-        where TAuthorization : OpenIddictEntityFrameworkCoreAuthorization<TKey, TApplication, TToken>
+        where TApplication : OpenIddictEntityFrameworkCoreApplication<TKey, TAuthorization, TSession, TToken>
+        where TAuthorization : OpenIddictEntityFrameworkCoreAuthorization<TKey, TApplication, TSession, TToken>
         where TResource : OpenIddictEntityFrameworkCoreResource<TKey>
         where TScope : OpenIddictEntityFrameworkCoreScope<TKey>
-        where TSession : OpenIddictEntityFrameworkCoreSession<TKey, TApplication, TAuthorization>
-        where TToken : OpenIddictEntityFrameworkCoreToken<TKey, TApplication, TAuthorization>
+        where TSession : OpenIddictEntityFrameworkCoreSession<TKey, TApplication, TAuthorization, TToken>
+        where TToken : OpenIddictEntityFrameworkCoreToken<TKey, TApplication, TAuthorization, TSession>
         where TKey : notnull, IEquatable<TKey>
         where TContext : DbContext
     {
@@ -206,22 +206,22 @@ public static class OpenIddictEntityFrameworkCoreHelpers
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TSession,
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TToken,
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TKey>(this ModelBuilder builder)
-        where TApplication : OpenIddictEntityFrameworkCoreApplication<TKey, TAuthorization, TToken>
-        where TAuthorization : OpenIddictEntityFrameworkCoreAuthorization<TKey, TApplication, TToken>
+        where TApplication : OpenIddictEntityFrameworkCoreApplication<TKey, TAuthorization, TSession, TToken>
+        where TAuthorization : OpenIddictEntityFrameworkCoreAuthorization<TKey, TApplication, TSession, TToken>
         where TResource : OpenIddictEntityFrameworkCoreResource<TKey>
         where TScope : OpenIddictEntityFrameworkCoreScope<TKey>
-        where TSession : OpenIddictEntityFrameworkCoreSession<TKey, TApplication, TAuthorization>
-        where TToken : OpenIddictEntityFrameworkCoreToken<TKey, TApplication, TAuthorization>
+        where TSession : OpenIddictEntityFrameworkCoreSession<TKey, TApplication, TAuthorization, TToken>
+        where TToken : OpenIddictEntityFrameworkCoreToken<TKey, TApplication, TAuthorization, TSession>
         where TKey : notnull, IEquatable<TKey>
     {
         ArgumentNullException.ThrowIfNull(builder);
 
         return builder
-            .ApplyConfiguration(new OpenIddictEntityFrameworkCoreApplicationConfiguration<TApplication, TAuthorization, TToken, TKey>())
-            .ApplyConfiguration(new OpenIddictEntityFrameworkCoreAuthorizationConfiguration<TAuthorization, TApplication, TToken, TKey>())
+            .ApplyConfiguration(new OpenIddictEntityFrameworkCoreApplicationConfiguration<TApplication, TAuthorization, TSession, TToken, TKey>())
+            .ApplyConfiguration(new OpenIddictEntityFrameworkCoreAuthorizationConfiguration<TAuthorization, TApplication, TSession, TToken, TKey>())
             .ApplyConfiguration(new OpenIddictEntityFrameworkCoreResourceConfiguration<TResource, TKey>())
             .ApplyConfiguration(new OpenIddictEntityFrameworkCoreScopeConfiguration<TScope, TKey>())
             .ApplyConfiguration(new OpenIddictEntityFrameworkCoreSessionConfiguration<TSession, TApplication, TAuthorization, TToken, TKey>())
-            .ApplyConfiguration(new OpenIddictEntityFrameworkCoreTokenConfiguration<TToken, TApplication, TAuthorization, TKey>());
+            .ApplyConfiguration(new OpenIddictEntityFrameworkCoreTokenConfiguration<TToken, TApplication, TAuthorization, TSession, TKey>());
     }
 }
