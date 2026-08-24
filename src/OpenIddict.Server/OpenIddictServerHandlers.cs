@@ -1271,7 +1271,6 @@ public static partial class OpenIddictServerHandlers
                         new ValidateClientCertificate(provider.GetService<IOpenIddictApplicationManager>() ??
                             throw new InvalidOperationException(SR.GetResourceString(SR.ID0016)));
                 })
-                .UseScopedHandler<ValidateClientCertificate>()
                 .SetOrder(ValidateClientSecret.Descriptor.Order + 1_000)
                 .SetType(OpenIddictServerHandlerType.BuiltIn)
                 .Build();
