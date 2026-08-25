@@ -320,6 +320,14 @@ public class OpenIddictMongoDbTokenStore<
     }
 
     /// <inheritdoc/>
+    public virtual ValueTask<string?> GetSessionIdAsync(TToken token, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(token);
+
+        return new(token.SessionId != ObjectId.Empty ? token.SessionId.ToString() : null);
+    }
+
+    /// <inheritdoc/>
     public virtual ValueTask<string?> GetStatusAsync(TToken token, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(token);
@@ -618,6 +626,16 @@ public class OpenIddictMongoDbTokenStore<
         ArgumentNullException.ThrowIfNull(token);
 
         token.ReferenceId = identifier;
+
+        return ValueTask.CompletedTask;
+    }
+
+    /// <inheritdoc/>
+    public virtual ValueTask SetSessionIdAsync(TToken token, string? identifier, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(token);
+
+        token.SessionId = !string.IsNullOrEmpty(identifier) ? ObjectId.Parse(identifier) : ObjectId.Empty;
 
         return ValueTask.CompletedTask;
     }

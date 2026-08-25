@@ -419,6 +419,33 @@ public class OpenIddictEntityFrameworkCoreTokenStore<
     }
 
     /// <inheritdoc/>
+    public virtual async ValueTask<string?> GetSessionIdAsync(TToken token, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(token);
+
+        // If the session is not attached to the token, try to load it manually.
+        if (token.Session is null)
+        {
+            var context = await Context.GetDbContextAsync(cancellationToken);
+
+            var reference = context.Entry(token).Reference(static entry => entry.Session);
+            if (reference.EntityEntry.State is EntityState.Detached)
+            {
+                return null;
+            }
+
+            await reference.LoadAsync(cancellationToken);
+        }
+
+        if (token.Session is null)
+        {
+            return null;
+        }
+
+        return ConvertIdentifierToString(token.Session.Id);
+    }
+
+    /// <inheritdoc/>
     public virtual ValueTask<string?> GetStatusAsync(TToken token, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(token);
@@ -927,7 +954,7 @@ public class OpenIddictEntityFrameworkCoreTokenStore<
 
             token.Authorization = await context.Set<TAuthorization>()
                 .FindAsync([ConvertIdentifierFromString(identifier)], cancellationToken)
-                ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0251));
+                ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0244));
         }
 
         else
@@ -947,6 +974,40 @@ public class OpenIddictEntityFrameworkCoreTokenStore<
             }
 
             token.Authorization = null;
+        }
+    }
+
+    /// <inheritdoc/>
+    public virtual async ValueTask SetSessionIdAsync(TToken token, string? identifier, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(token);
+
+        if (!string.IsNullOrEmpty(identifier))
+        {
+            var context = await Context.GetDbContextAsync(cancellationToken);
+
+            token.Session = await context.Set<TSession>()
+                .FindAsync([ConvertIdentifierFromString(identifier)], cancellationToken)
+                ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0244));
+        }
+
+        else
+        {
+            // If the session is not attached to the token, try to load it manually.
+            if (token.Session is null)
+            {
+                var context = await Context.GetDbContextAsync(cancellationToken);
+
+                var reference = context.Entry(token).Reference(static entry => entry.Session);
+                if (reference.EntityEntry.State is EntityState.Detached)
+                {
+                    return;
+                }
+
+                await reference.LoadAsync(cancellationToken);
+            }
+
+            token.Session = null;
         }
     }
 

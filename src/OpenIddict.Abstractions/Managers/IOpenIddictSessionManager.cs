@@ -259,6 +259,15 @@ public interface IOpenIddictSessionManager
     ValueTask<string?> GetSubjectAsync(object session, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Determines whether a given session has the specified status.
+    /// </summary>
+    /// <param name="session">The session.</param>
+    /// <param name="status">The expected status.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns><see langword="true"/> if the session has the specified status, <see langword="false"/> otherwise.</returns>
+    ValueTask<bool> HasStatusAsync(object session, string status, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Executes the specified query and returns all the corresponding elements.
     /// </summary>
     /// <param name="count">The number of results to return.</param>

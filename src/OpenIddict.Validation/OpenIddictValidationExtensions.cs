@@ -45,6 +45,8 @@ public static class OpenIddictValidationExtensions
         builder.Services.TryAddSingleton<RequireIntrospectionRequest>();
         builder.Services.TryAddSingleton<RequireJsonWebTokenFormat>();
         builder.Services.TryAddSingleton<RequireLocalValidation>();
+        builder.Services.TryAddSingleton<RequireSessionEntryValidationEnabled>();
+        builder.Services.TryAddSingleton<RequireSessionIdResolved>();
         builder.Services.TryAddSingleton<RequireTokenAudienceValidationEnabled>();
         builder.Services.TryAddSingleton<RequireTokenEntryValidationEnabled>();
         builder.Services.TryAddSingleton<RequireTokenIdResolved>();

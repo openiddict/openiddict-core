@@ -44,6 +44,7 @@ public static partial class OpenIddictServerHandlers
             ValidateProofOfPossession.Descriptor,
             ValidateTokenEntry.Descriptor,
             ValidateAuthorizationEntry.Descriptor,
+            ValidateSessionEntry.Descriptor,
 
             /*
              * Token generation:
@@ -832,6 +833,7 @@ public static partial class OpenIddictServerHandlers
                     .SetCreationDate(await manager.GetCreationDateAsync(token, context.CancellationToken))
                     .SetExpirationDate(await manager.GetExpirationDateAsync(token, context.CancellationToken))
                     .SetAuthorizationId(context.AuthorizationId = await manager.GetAuthorizationIdAsync(token, context.CancellationToken))
+                    .SetSessionId(context.SessionId = await manager.GetSessionIdAsync(token, context.CancellationToken))
                     .SetTokenId(context.TokenId = await manager.GetIdAsync(token, context.CancellationToken))
                     .SetTokenType(await manager.GetTypeAsync(token, context.CancellationToken));
             }
@@ -1414,6 +1416,50 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
+        /// Contains the logic responsible for rejecting tokens whose
+        /// associated session entry is no longer valid (e.g was revoked).
+        /// Note: this handler is not used when the degraded mode is enabled.
+        /// </summary>
+        public sealed class ValidateSessionEntry : IOpenIddictServerHandler<ValidateTokenContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateTokenContext>()
+                    .AddFilter<RequireDegradedModeDisabled>()
+                    .AddFilter<RequireSessionIdResolved>()
+                    .UseSingletonHandler<ValidateSessionEntry>()
+                    .SetOrder(ValidateAuthorizationEntry.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
+                    .Build();
+
+            public async ValueTask HandleAsync(ValidateTokenContext context)
+            {
+                ArgumentNullException.ThrowIfNull(context);
+
+                Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
+                Debug.Assert(!string.IsNullOrEmpty(context.SessionId), SR.GetResourceString(SR.ID4022));
+
+                var manager = context.ServiceProvider.GetService<IOpenIddictSessionManager>()
+                    ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
+
+                var session = await manager.FindByIdAsync(context.SessionId, context.CancellationToken);
+                if (session is null || !await manager.HasStatusAsync(session, Statuses.Valid, context.CancellationToken))
+                {
+                    context.Logger.LogInformation(6297, SR.GetResourceString(SR.ID6297), context.SessionId);
+
+                    context.Reject(
+                        error: Errors.InvalidToken,
+                        description: SR.GetResourceString(SR.ID2210),
+                        uri: SR.FormatID8000(SR.ID2210));
+
+                    return;
+                }
+            }
+        }
+
+        /// <summary>
         /// Contains the logic responsible for resolving the signing and encryption credentials used to protect tokens.
         /// </summary>
         public sealed class AttachSecurityCredentials : IOpenIddictServerHandler<GenerateTokenContext>
@@ -1488,6 +1534,7 @@ public static partial class OpenIddictServerHandlers
                     CreationDate = context.Principal.GetCreationDate(),
                     ExpirationDate = context.Principal.GetExpirationDate(),
                     Principal = context.Principal,
+                    SessionId = context.Principal.GetSessionId(),
                     Type = context.TokenType
                 };
 

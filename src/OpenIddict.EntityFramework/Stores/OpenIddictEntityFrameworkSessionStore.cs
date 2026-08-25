@@ -644,7 +644,7 @@ public class OpenIddictEntityFrameworkSessionStore<
 
             session.Authorization = await context.Set<TAuthorization>().FindAsync(
                 cancellationToken, ConvertIdentifierFromString(identifier))
-                ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0251));
+                ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0244));
         }
 
         else

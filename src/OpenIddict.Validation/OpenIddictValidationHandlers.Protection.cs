@@ -42,6 +42,7 @@ public static partial class OpenIddictValidationHandlers
             ValidateProofOfPossession.Descriptor,
             ValidateTokenEntry.Descriptor,
             ValidateAuthorizationEntry.Descriptor,
+            ValidateSessionEntry.Descriptor,
 
             /*
              * Token generation:
@@ -586,6 +587,7 @@ public static partial class OpenIddictValidationHandlers
                     .SetCreationDate(await manager.GetCreationDateAsync(token, context.CancellationToken))
                     .SetExpirationDate(await manager.GetExpirationDateAsync(token, context.CancellationToken))
                     .SetAuthorizationId(context.AuthorizationId = await manager.GetAuthorizationIdAsync(token, context.CancellationToken))
+                    .SetSessionId(context.SessionId = await manager.GetSessionIdAsync(token, context.CancellationToken))
                     .SetTokenId(context.TokenId = await manager.GetIdAsync(token, context.CancellationToken))
                     .SetTokenType(await manager.GetTypeAsync(token, context.CancellationToken));
             }
@@ -955,7 +957,7 @@ public static partial class OpenIddictValidationHandlers
                 Debug.Assert(!string.IsNullOrEmpty(context.AuthorizationId), SR.GetResourceString(SR.ID4018));
 
                 var manager = context.ServiceProvider.GetService<IOpenIddictAuthorizationManager>()
-                    ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0142));
+                    ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0139));
 
                 var authorization = await manager.FindByIdAsync(context.AuthorizationId, context.CancellationToken);
                 if (authorization is null || !await manager.HasStatusAsync(authorization, Statuses.Valid, context.CancellationToken))
@@ -966,6 +968,50 @@ public static partial class OpenIddictValidationHandlers
                         error: Errors.InvalidToken,
                         description: SR.GetResourceString(SR.ID2023),
                         uri: SR.FormatID8000(SR.ID2023));
+
+                    return;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Contains the logic responsible for rejecting tokens whose
+        /// associated session entry is no longer valid (e.g was revoked).
+        /// </summary>
+        public sealed class ValidateSessionEntry : IOpenIddictValidationHandler<ValidateTokenContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
+                = OpenIddictValidationHandlerDescriptor.CreateBuilder<ValidateTokenContext>()
+                    .AddFilter<RequireSessionEntryValidationEnabled>()
+                    .AddFilter<RequireSessionIdResolved>()
+                    .UseSingletonHandler<ValidateSessionEntry>()
+                    .SetOrder(ValidateAuthorizationEntry.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictValidationHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public async ValueTask HandleAsync(ValidateTokenContext context)
+            {
+                ArgumentNullException.ThrowIfNull(context);
+
+                Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
+                Debug.Assert(!string.IsNullOrEmpty(context.SessionId), SR.GetResourceString(SR.ID4022));
+
+                var manager = context.ServiceProvider.GetService<IOpenIddictSessionManager>()
+                    ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0139));
+
+                var session = await manager.FindByIdAsync(context.SessionId, context.CancellationToken);
+                if (session is null || !await manager.HasStatusAsync(session, Statuses.Valid, context.CancellationToken))
+                {
+                    context.Logger.LogInformation(6297, SR.GetResourceString(SR.ID6297), context.SessionId);
+
+                    context.Reject(
+                        error: Errors.InvalidToken,
+                        description: SR.GetResourceString(SR.ID2210),
+                        uri: SR.FormatID8000(SR.ID2210));
 
                     return;
                 }

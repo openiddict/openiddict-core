@@ -537,10 +537,7 @@ Reference the 'OpenIddict.Validation.SystemNetHttp' package and call 'services.A
     <value>The client secret cannot be null or empty when using introspection. Alternatively, one or multiple signing credentials can be registered and used as TLS client certificates or to produce client assertions if the authorization server supports it.</value>
   </data>
   <data name="ID0133" xml:space="preserve">
-    <value>Authorization entry validation cannot be enabled when using introspection.</value>
-  </data>
-  <data name="ID0134" xml:space="preserve">
-    <value>Token entry validation cannot be enabled when using introspection.</value>
+    <value>Authorization entry, session entry and token entry validation cannot be enabled when using introspection.</value>
   </data>
   <data name="ID0135" xml:space="preserve">
     <value>A discovery client must be registered when using server discovery.
@@ -557,7 +554,7 @@ Reference the 'OpenIddict.Validation.SystemNetHttp' package and call 'services.A
 This may indicate that it was not properly registered in the dependency injection container. To register an event handler, use 'services.AddOpenIddict().AddValidation().AddEventHandler()'.</value>
   </data>
   <data name="ID0139" xml:space="preserve">
-    <value>The core services must be registered when enabling token entry validation.
+    <value>The core services must be registered when enabling authorization entry, session entry or token entry validation.
 To register the OpenIddict core services, reference the 'OpenIddict.Core' package and call 'services.AddOpenIddict().AddCore()' from 'ConfigureServices'.</value>
   </data>
   <data name="ID0140" xml:space="preserve">
@@ -565,10 +562,6 @@ To register the OpenIddict core services, reference the 'OpenIddict.Core' packag
   </data>
   <data name="ID0141" xml:space="preserve">
     <value>An unknown error occurred while introspecting the access token.</value>
-  </data>
-  <data name="ID0142" xml:space="preserve">
-    <value>The core services must be registered when enabling authorization entry validation.
-To register the OpenIddict core services, reference the 'OpenIddict.Core' package and call 'services.AddOpenIddict().AddCore()' from 'ConfigureServices'.</value>
   </data>
   <data name="ID0143" xml:space="preserve">
     <value>The URI cannot be null or empty.</value>
@@ -856,10 +849,7 @@ Reload the entity from the database and retry the operation.</value>
 Make sure that the entity is not abstract and has a public parameterless constructor or create a custom store that overrides 'InstantiateAsync()' to use a custom factory.</value>
   </data>
   <data name="ID0244" xml:space="preserve">
-    <value>The application matching the specified identifier cannot be found in the change tracker or in the database.</value>
-  </data>
-  <data name="ID0251" xml:space="preserve">
-    <value>The authorization matching the specified identifier cannot be found in the change tracker or in the database.</value>
+    <value>The entity matching the specified identifier cannot be found in the change tracker or in the database.</value>
   </data>
   <data name="ID0253" xml:space="preserve">
     <value>No Entity Framework Core context was configured to be used with OpenIddict.
@@ -2430,6 +2420,9 @@ To use a custom policy relying on the system store, set 'OpenIddictServerOptions
   <data name="ID2209" xml:space="preserve">
     <value>The login identifier cannot be null or empty and must match the value used to represent the user session.</value>
   </data>
+  <data name="ID2210" xml:space="preserve">
+    <value>The session associated with the token is no longer valid.</value>
+  </data>
   <data name="ID4000" xml:space="preserve">
     <value>The '{0}' parameter shouldn't be null or empty at this point.</value>
   </data>
@@ -2495,6 +2488,9 @@ To use a custom policy relying on the system store, set 'OpenIddictServerOptions
   </data>
   <data name="ID4021" xml:space="preserve">
     <value>The length of the memory span ({0}) doesn't match the expected value ({1}).</value>
+  </data>
+  <data name="ID4022" xml:space="preserve">
+    <value>The session identifier shouldn't be null or empty at this point.</value>
   </data>
   <data name="ID6000" xml:space="preserve">
     <value>An error occurred while validating the token '{Token}'.</value>
@@ -3287,6 +3283,9 @@ This may indicate that the hashed entry is corrupted or malformed.</value>
   </data>
   <data name="ID6296" xml:space="preserve">
     <value>A signing key of type '{Type}' was ignored because its ML-DSA public key couldn't be extracted.</value>
+  </data>
+  <data name="ID6297" xml:space="preserve">
+    <value>The session '{Identifier}' was no longer valid.</value>
   </data>
   <data name="ID8000" xml:space="preserve">
     <value>https://documentation.openiddict.com/errors/{0}</value>

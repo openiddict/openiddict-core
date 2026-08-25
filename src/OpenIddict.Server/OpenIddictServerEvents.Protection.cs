@@ -190,6 +190,11 @@ public static partial class OpenIddictServerEvents
         public string? AuthorizationId { get; set; }
 
         /// <summary>
+        /// Gets or sets the session entry identifier associated with the token, if applicable.
+        /// </summary>
+        public string? SessionId { get; set; }
+
+        /// <summary>
         /// Gets or sets the token entry identifier associated with the token, if applicable.
         /// </summary>
         public string? TokenId { get; set; }

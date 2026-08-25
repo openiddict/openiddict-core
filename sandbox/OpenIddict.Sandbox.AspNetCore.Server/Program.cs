@@ -320,10 +320,11 @@ builder.Services.AddOpenIddict()
         // For applications that need immediate access token or authorization
         // revocation, the database entry of the received tokens and their
         // associated authorizations can be validated for each API call.
-        // Enabling these options may have a negative impact on performance.
         //
-        // options.EnableAuthorizationEntryValidation();
-        // options.EnableTokenEntryValidation();
+        // Note: enabling these options may have a negative impact on performance.
+        options.EnableAuthorizationEntryValidation()
+               .EnableSessionEntryValidation()
+               .EnableTokenEntryValidation();
     });
 
 builder.Services.AddTransient<IEmailSender, AuthMessageSender>();

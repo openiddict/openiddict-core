@@ -278,6 +278,17 @@ public interface IOpenIddictTokenManager
     ValueTask<string?> GetReferenceIdAsync(object token, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Retrieves the optional session identifier associated with a token.
+    /// </summary>
+    /// <param name="token">The token.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns>
+    /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
+    /// whose result returns the session identifier associated with the token.
+    /// </returns>
+    ValueTask<string?> GetSessionIdAsync(object token, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Retrieves the status associated with a token.
     /// </summary>
     /// <param name="token">The token.</param>
