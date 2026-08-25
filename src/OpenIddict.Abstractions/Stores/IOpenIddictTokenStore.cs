@@ -233,6 +233,17 @@ public interface IOpenIddictTokenStore<TToken> where TToken : class
     ValueTask<string?> GetReferenceIdAsync(TToken token, CancellationToken cancellationToken);
 
     /// <summary>
+    /// Retrieves the optional session identifier associated with a token.
+    /// </summary>
+    /// <param name="token">The token.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns>
+    /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
+    /// whose result returns the session identifier associated with the token.
+    /// </returns>
+    ValueTask<string?> GetSessionIdAsync(TToken token, CancellationToken cancellationToken);
+
+    /// <summary>
     /// Retrieves the status associated with a token.
     /// </summary>
     /// <param name="token">The token.</param>
@@ -358,6 +369,15 @@ public interface IOpenIddictTokenStore<TToken> where TToken : class
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
     ValueTask SetAuthorizationIdAsync(TToken token, string? identifier, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Sets the session identifier associated with a token.
+    /// </summary>
+    /// <param name="token">The token.</param>
+    /// <param name="identifier">The unique identifier associated with the token.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
+    ValueTask SetSessionIdAsync(TToken token, string? identifier, CancellationToken cancellationToken);
 
     /// <summary>
     /// Sets the creation date associated with a token.

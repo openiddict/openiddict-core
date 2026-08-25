@@ -132,6 +132,12 @@ public class OpenIddictSessionManager<TSession> : IOpenIddictSessionManager wher
             await Store.SetStatusAsync(session, Statuses.Valid, cancellationToken);
         }
 
+        // If no creation date was explicitly specified, set it to the current time.
+        if (await Store.GetCreationDateAsync(session, cancellationToken) is null)
+        {
+            await Store.SetCreationDateAsync(session, Options.CurrentValue.TimeProvider.GetUtcNow(), cancellationToken);
+        }
+
         var results = await GetValidationResultsAsync(session, cancellationToken);
         if (results.Any(static result => result != ValidationResult.Success))
         {
@@ -602,6 +608,21 @@ public class OpenIddictSessionManager<TSession> : IOpenIddictSessionManager wher
     }
 
     /// <summary>
+    /// Determines whether a given session has the specified status.
+    /// </summary>
+    /// <param name="session">The session.</param>
+    /// <param name="status">The expected status.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns><see langword="true"/> if the session has the specified status, <see langword="false"/> otherwise.</returns>
+    public virtual async ValueTask<bool> HasStatusAsync(TSession session, string status, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(session);
+        ArgumentException.ThrowIfNullOrEmpty(status);
+
+        return string.Equals(await GetStatusAsync(session, cancellationToken), status, StringComparison.Ordinal);
+    }
+
+    /// <summary>
     /// Executes the specified query and returns all the corresponding elements.
     /// </summary>
     /// <param name="count">The number of results to return.</param>
@@ -897,6 +918,10 @@ public class OpenIddictSessionManager<TSession> : IOpenIddictSessionManager wher
     /// <inheritdoc/>
     ValueTask<string?> IOpenIddictSessionManager.GetSubjectAsync(object session, CancellationToken cancellationToken)
         => GetSubjectAsync((TSession) session, cancellationToken);
+
+    /// <inheritdoc/>
+    ValueTask<bool> IOpenIddictSessionManager.HasStatusAsync(object session, string status, CancellationToken cancellationToken)
+        => HasStatusAsync((TSession) session, status, cancellationToken);
 
     /// <inheritdoc/>
     IAsyncEnumerable<object> IOpenIddictSessionManager.ListAsync(int? count, int? offset, CancellationToken cancellationToken)

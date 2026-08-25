@@ -308,7 +308,7 @@ public class OpenIddictValidationConfigurationTests
     }
 
     [Fact]
-    public void Validate_ReturnsAnErrorWhenAuthorizationOrTokenEntryValidationIsEnabledInIntrospectionMode()
+    public void Validate_ReturnsAnErrorWhenAuthorizationEntryValidationIsEnabledInIntrospectionMode()
     {
         // Arrange
         var configuration = new OpenIddictValidationConfiguration(new ServiceCollection().BuildServiceProvider());
@@ -320,6 +320,49 @@ public class OpenIddictValidationConfigurationTests
         options.ClientId = "client_id";
         options.ClientSecret = "client_secret";
         options.EnableAuthorizationEntryValidation = true;
+        options.ConfigurationManager = new StaticConfigurationManager<OpenIddictConfiguration>(new OpenIddictConfiguration());
+
+        // Act
+        var result = configuration.Validate(name: null, options);
+
+        // Assert
+        Assert.Contains(SR.GetResourceString(SR.ID0133), result.Failures!, StringComparer.Ordinal);
+    }
+
+    [Fact]
+    public void Validate_ReturnsAnErrorWhenSessionEntryValidationIsEnabledInIntrospectionMode()
+    {
+        // Arrange
+        var configuration = new OpenIddictValidationConfiguration(new ServiceCollection().BuildServiceProvider());
+        var options = CreateBaseOptions();
+
+        options.ValidationType = OpenIddictValidationType.Introspection;
+        options.Issuer = new Uri("https://www.contoso.com/");
+        options.ConfigurationEndpoint = new Uri("https://www.contoso.com/.well-known/openid-configuration");
+        options.ClientId = "client_id";
+        options.ClientSecret = "client_secret";
+        options.EnableSessionEntryValidation = true;
+        options.ConfigurationManager = new StaticConfigurationManager<OpenIddictConfiguration>(new OpenIddictConfiguration());
+
+        // Act
+        var result = configuration.Validate(name: null, options);
+
+        // Assert
+        Assert.Contains(SR.GetResourceString(SR.ID0133), result.Failures!, StringComparer.Ordinal);
+    }
+
+    [Fact]
+    public void Validate_ReturnsAnErrorWhenTokenEntryValidationIsEnabledInIntrospectionMode()
+    {
+        // Arrange
+        var configuration = new OpenIddictValidationConfiguration(new ServiceCollection().BuildServiceProvider());
+        var options = CreateBaseOptions();
+
+        options.ValidationType = OpenIddictValidationType.Introspection;
+        options.Issuer = new Uri("https://www.contoso.com/");
+        options.ConfigurationEndpoint = new Uri("https://www.contoso.com/.well-known/openid-configuration");
+        options.ClientId = "client_id";
+        options.ClientSecret = "client_secret";
         options.EnableTokenEntryValidation = true;
         options.ConfigurationManager = new StaticConfigurationManager<OpenIddictConfiguration>(new OpenIddictConfiguration());
 
@@ -328,7 +371,6 @@ public class OpenIddictValidationConfigurationTests
 
         // Assert
         Assert.Contains(SR.GetResourceString(SR.ID0133), result.Failures!, StringComparer.Ordinal);
-        Assert.Contains(SR.GetResourceString(SR.ID0134), result.Failures!, StringComparer.Ordinal);
     }
 
     [Fact]

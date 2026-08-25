@@ -5203,12 +5203,14 @@ public abstract partial class OpenIddictServerIntegrationTests
                        .SetDefaultAuthorizationEntity<OpenIddictAuthorization>()
                        .SetDefaultResourceEntity<OpenIddictResource>()
                        .SetDefaultScopeEntity<OpenIddictScope>()
+                       .SetDefaultSessionEntity<OpenIddictSession>()
                        .SetDefaultTokenEntity<OpenIddictToken>();
 
                 options.Services.AddSingleton(CreateApplicationManager())
                                 .AddSingleton(CreateAuthorizationManager())
                                 .AddSingleton(CreateResourceManager())
                                 .AddSingleton(CreateScopeManager())
+                                .AddSingleton(CreateSessionManager())
                                 .AddSingleton(CreateTokenManager());
             })
 
@@ -5343,6 +5345,20 @@ public abstract partial class OpenIddictServerIntegrationTests
         return manager.Object;
     }
 
+    protected OpenIddictSessionManager<OpenIddictSession> CreateSessionManager(
+        Action<Mock<OpenIddictSessionManager<OpenIddictSession>>>? configuration = null)
+    {
+        var manager = new Mock<OpenIddictSessionManager<OpenIddictSession>>(
+            Mock.Of<IOpenIddictSessionCache<OpenIddictSession>>(),
+            OutputHelper.ToLogger<OpenIddictSessionManager<OpenIddictSession>>(),
+            Mock.Of<IOptionsMonitor<OpenIddictCoreOptions>>(),
+            Mock.Of<IOpenIddictSessionStore<OpenIddictSession>>());
+
+        configuration?.Invoke(manager);
+
+        return manager.Object;
+    }
+
     protected OpenIddictTokenManager<OpenIddictToken> CreateTokenManager(
         Action<Mock<OpenIddictTokenManager<OpenIddictToken>>>? configuration = null)
     {
@@ -5361,5 +5377,6 @@ public abstract partial class OpenIddictServerIntegrationTests
     public class OpenIddictAuthorization;
     public class OpenIddictResource;
     public class OpenIddictScope;
+    public class OpenIddictSession;
     public class OpenIddictToken;
 }

@@ -656,6 +656,20 @@ public static class OpenIddictServerHandlerFilters
     }
 
     /// <summary>
+    /// Represents a filter that excludes the associated handlers if no session identifier is resolved from the token.
+    /// </summary>
+    public sealed class RequireSessionIdResolved : IOpenIddictServerHandlerFilter<ValidateTokenContext>
+    {
+        /// <inheritdoc/>
+        public ValueTask<bool> IsActiveAsync(ValidateTokenContext context)
+        {
+            ArgumentNullException.ThrowIfNull(context);
+
+            return new(!string.IsNullOrEmpty(context.SessionId));
+        }
+    }
+
+    /// <summary>
     /// Represents a filter that excludes the associated handlers if sliding refresh token expiration was disabled.
     /// </summary>
     public sealed class RequireSlidingRefreshTokenExpirationEnabled : IOpenIddictServerHandlerFilter<BaseContext>

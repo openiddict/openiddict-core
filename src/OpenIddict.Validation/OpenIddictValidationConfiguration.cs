@@ -172,14 +172,10 @@ public sealed class OpenIddictValidationConfiguration : IPostConfigureOptions<Op
                 builder.AddError(SR.GetResourceString(SR.ID0132));
             }
 
-            if (options.EnableAuthorizationEntryValidation)
+            if (options.EnableAuthorizationEntryValidation ||
+                options.EnableSessionEntryValidation || options.EnableTokenEntryValidation)
             {
                 builder.AddError(SR.GetResourceString(SR.ID0133));
-            }
-
-            if (options.EnableTokenEntryValidation)
-            {
-                builder.AddError(SR.GetResourceString(SR.ID0134));
             }
         }
 

@@ -124,6 +124,34 @@ public static class OpenIddictValidationHandlerFilters
     }
 
     /// <summary>
+    /// Represents a filter that excludes the associated handlers if session validation was not enabled.
+    /// </summary>
+    public sealed class RequireSessionEntryValidationEnabled : IOpenIddictValidationHandlerFilter<BaseContext>
+    {
+        /// <inheritdoc/>
+        public ValueTask<bool> IsActiveAsync(BaseContext context)
+        {
+            ArgumentNullException.ThrowIfNull(context);
+
+            return new(context.Options.EnableSessionEntryValidation);
+        }
+    }
+
+    /// <summary>
+    /// Represents a filter that excludes the associated handlers if no session identifier is resolved from the token.
+    /// </summary>
+    public sealed class RequireSessionIdResolved : IOpenIddictValidationHandlerFilter<ValidateTokenContext>
+    {
+        /// <inheritdoc/>
+        public ValueTask<bool> IsActiveAsync(ValidateTokenContext context)
+        {
+            ArgumentNullException.ThrowIfNull(context);
+
+            return new(!string.IsNullOrEmpty(context.SessionId));
+        }
+    }
+
+    /// <summary>
     /// Represents a filter that excludes the associated handlers if token audience validation was disabled.
     /// </summary>
     public sealed class RequireTokenAudienceValidationEnabled : IOpenIddictValidationHandlerFilter<ValidateTokenContext>

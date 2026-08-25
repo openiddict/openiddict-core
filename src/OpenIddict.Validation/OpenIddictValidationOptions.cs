@@ -103,6 +103,14 @@ public sealed class OpenIddictValidationOptions
 
     /// <summary>
     /// Gets or sets a boolean indicating whether a database call is made
+    /// to validate the session entry associated with the received tokens.
+    /// Note: enabling this option may have an impact on performance and
+    /// can only be used with an OpenIddict-based authorization server.
+    /// </summary>
+    public bool EnableSessionEntryValidation { get; set; }
+
+    /// <summary>
+    /// Gets or sets a boolean indicating whether a database call is made
     /// to validate the token entry associated with the received tokens.
     /// Note: enabling this option may have an impact on performance but
     /// is required when the OpenIddict server emits reference tokens.

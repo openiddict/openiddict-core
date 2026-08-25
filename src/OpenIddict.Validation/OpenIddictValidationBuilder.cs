@@ -593,6 +593,16 @@ public sealed class OpenIddictValidationBuilder
         => Configure(options => options.EnableAuthorizationEntryValidation = true);
 
     /// <summary>
+    /// Enables session validation so that a database call is made for each API request
+    /// to ensure the session associated with the access token is still valid.
+    /// Note: enabling this option may have an impact on performance and
+    /// can only be used with an OpenIddict-based authorization server.
+    /// </summary>
+    /// <returns>The <see cref="OpenIddictValidationBuilder"/> instance.</returns>
+    public OpenIddictValidationBuilder EnableSessionEntryValidation()
+        => Configure(options => options.EnableSessionEntryValidation = true);
+
+    /// <summary>
     /// Enables token validation so that a database call is made for each API request
     /// to ensure the token entry associated with the access token is still valid.
     /// Note: enabling this option may have an impact on performance but is required

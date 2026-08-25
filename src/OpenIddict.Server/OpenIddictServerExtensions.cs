@@ -82,6 +82,7 @@ public static class OpenIddictServerExtensions
         builder.Services.TryAddSingleton<RequireRevocationRequest>();
         builder.Services.TryAddSingleton<RequireScopePermissionsEnabled>();
         builder.Services.TryAddSingleton<RequireScopeValidationEnabled>();
+        builder.Services.TryAddSingleton<RequireSessionIdResolved>();
         builder.Services.TryAddSingleton<RequireSlidingRefreshTokenExpirationEnabled>();
         builder.Services.TryAddSingleton<RequireSubjectTokenValidated>();
         builder.Services.TryAddSingleton<RequireTokenAudienceValidationEnabled>();

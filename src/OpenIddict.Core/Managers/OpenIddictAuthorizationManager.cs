@@ -133,6 +133,12 @@ public class OpenIddictAuthorizationManager<TAuthorization> : IOpenIddictAuthori
             await Store.SetStatusAsync(authorization, Statuses.Valid, cancellationToken);
         }
 
+        // If no creation date was explicitly specified, set it to the current time.
+        if (await Store.GetCreationDateAsync(authorization, cancellationToken) is null)
+        {
+            await Store.SetCreationDateAsync(authorization, Options.CurrentValue.TimeProvider.GetUtcNow(), cancellationToken);
+        }
+
         var results = await GetValidationResultsAsync(authorization, cancellationToken);
         if (results.Any(static result => result != ValidationResult.Success))
         {

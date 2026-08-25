@@ -134,6 +134,12 @@ public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TTok
             await Store.SetStatusAsync(token, Statuses.Valid, cancellationToken);
         }
 
+        // If no creation date was explicitly specified, set it to the current time.
+        if (await Store.GetCreationDateAsync(token, cancellationToken) is null)
+        {
+            await Store.SetCreationDateAsync(token, Options.CurrentValue.TimeProvider.GetUtcNow(), cancellationToken);
+        }
+
         // If a reference identifier was set, obfuscate it.
         var identifier = await Store.GetReferenceIdAsync(token, cancellationToken);
         if (!string.IsNullOrEmpty(identifier))
@@ -633,6 +639,22 @@ public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TTok
     }
 
     /// <summary>
+    /// Retrieves the optional session identifier associated with a token.
+    /// </summary>
+    /// <param name="token">The token.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns>
+    /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
+    /// whose result returns the session identifier associated with the token.
+    /// </returns>
+    public virtual ValueTask<string?> GetSessionIdAsync(TToken token, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(token);
+
+        return Store.GetSessionIdAsync(token, cancellationToken);
+    }
+
+    /// <summary>
     /// Retrieves the status associated with a token.
     /// </summary>
     /// <param name="token">The token.</param>
@@ -820,6 +842,7 @@ public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TTok
         await Store.SetPropertiesAsync(token, descriptor.Properties.ToImmutableDictionary(), cancellationToken);
         await Store.SetRedemptionDateAsync(token, descriptor.RedemptionDate, cancellationToken);
         await Store.SetReferenceIdAsync(token, descriptor.ReferenceId, cancellationToken);
+        await Store.SetSessionIdAsync(token, descriptor.SessionId, cancellationToken);
         await Store.SetStatusAsync(token, descriptor.Status, cancellationToken);
         await Store.SetSubjectAsync(token, descriptor.Subject, cancellationToken);
         await Store.SetTypeAsync(token, descriptor.Type, cancellationToken);
@@ -848,6 +871,7 @@ public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TTok
         descriptor.Payload = await Store.GetPayloadAsync(token, cancellationToken);
         descriptor.RedemptionDate = await Store.GetRedemptionDateAsync(token, cancellationToken);
         descriptor.ReferenceId = await Store.GetReferenceIdAsync(token, cancellationToken);
+        descriptor.SessionId = await Store.GetSessionIdAsync(token, cancellationToken);
         descriptor.Status = await Store.GetStatusAsync(token, cancellationToken);
         descriptor.Subject = await Store.GetSubjectAsync(token, cancellationToken);
         descriptor.Type = await Store.GetTypeAsync(token, cancellationToken);
@@ -1271,6 +1295,10 @@ public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TTok
     /// <inheritdoc/>
     ValueTask<string?> IOpenIddictTokenManager.GetReferenceIdAsync(object token, CancellationToken cancellationToken)
         => GetReferenceIdAsync((TToken) token, cancellationToken);
+
+    /// <inheritdoc/>
+    ValueTask<string?> IOpenIddictTokenManager.GetSessionIdAsync(object token, CancellationToken cancellationToken)
+        => GetSessionIdAsync((TToken) token, cancellationToken);
 
     /// <inheritdoc/>
     ValueTask<string?> IOpenIddictTokenManager.GetStatusAsync(object token, CancellationToken cancellationToken)

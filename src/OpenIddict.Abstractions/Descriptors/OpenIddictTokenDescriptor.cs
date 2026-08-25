@@ -61,6 +61,11 @@ public class OpenIddictTokenDescriptor
     public string? ReferenceId { get; set; }
 
     /// <summary>
+    /// Gets or sets the identifier of the session associated with the token.
+    /// </summary>
+    public string? SessionId { get; set; }
+
+    /// <summary>
     /// Gets or sets the status of the token.
     /// </summary>
     public string? Status { get; set; }

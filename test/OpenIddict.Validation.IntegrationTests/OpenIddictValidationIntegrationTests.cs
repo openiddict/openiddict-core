@@ -385,9 +385,11 @@ public abstract class OpenIddictValidationIntegrationTests
             .AddCore(options =>
             {
                 options.SetDefaultAuthorizationEntity<OpenIddictAuthorization>()
+                       .SetDefaultSessionEntity<OpenIddictSession>()
                        .SetDefaultTokenEntity<OpenIddictToken>();
 
                 options.Services.AddSingleton(CreateAuthorizationManager())
+                                .AddSingleton(CreateSessionManager())
                                 .AddSingleton(CreateTokenManager());
             })
 
@@ -435,6 +437,20 @@ public abstract class OpenIddictValidationIntegrationTests
         return manager.Object;
     }
 
+    protected OpenIddictSessionManager<OpenIddictSession> CreateSessionManager(
+        Action<Mock<OpenIddictSessionManager<OpenIddictSession>>>? configuration = null)
+    {
+        var manager = new Mock<OpenIddictSessionManager<OpenIddictSession>>(
+            Mock.Of<IOpenIddictSessionCache<OpenIddictSession>>(),
+            OutputHelper.ToLogger<OpenIddictSessionManager<OpenIddictSession>>(),
+            Mock.Of<IOptionsMonitor<OpenIddictCoreOptions>>(),
+            Mock.Of<IOpenIddictSessionStore<OpenIddictSession>>());
+
+        configuration?.Invoke(manager);
+
+        return manager.Object;
+    }
+
     protected OpenIddictTokenManager<OpenIddictToken> CreateTokenManager(
         Action<Mock<OpenIddictTokenManager<OpenIddictToken>>>? configuration = null)
     {
@@ -450,5 +466,6 @@ public abstract class OpenIddictValidationIntegrationTests
     }
 
     public class OpenIddictAuthorization;
+    public class OpenIddictSession;
     public class OpenIddictToken;
 }
