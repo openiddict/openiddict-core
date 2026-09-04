@@ -1,6 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using Quartz;
 using Xunit;
 
 namespace OpenIddict.Quartz.Tests;
@@ -43,9 +42,15 @@ public class OpenIddictQuartzExtensionsTests
         builder.UseQuartz();
 
         // Assert
+#if NET
+        Assert.Contains(services, service => service.ServiceType == typeof(OpenIddictQuartzJob) &&
+            service.ImplementationType == typeof(OpenIddictQuartzJob) &&
+            service.Lifetime is ServiceLifetime.Scoped);
+#else
         Assert.Contains(services, service => service.ServiceType == typeof(OpenIddictQuartzJob) &&
             service.ImplementationType == typeof(OpenIddictQuartzJob) &&
             service.Lifetime is ServiceLifetime.Transient);
+#endif
     }
 
     [Fact]
@@ -62,11 +67,9 @@ public class OpenIddictQuartzExtensionsTests
 
         // Assert
         Assert.Single(services, service => service.ServiceType == typeof(OpenIddictQuartzJob) &&
-            service.ImplementationType == typeof(OpenIddictQuartzJob) &&
-            service.Lifetime is ServiceLifetime.Transient);
+            service.ImplementationType == typeof(OpenIddictQuartzJob));
 
-        Assert.Single(services, service => service.ServiceType == typeof(IConfigureOptions<QuartzOptions>) &&
-            service.ImplementationType == typeof(OpenIddictQuartzConfiguration) &&
-            service.Lifetime is ServiceLifetime.Singleton);
+        Assert.Single(services, service => service.ServiceType == typeof(IPostConfigureOptions<OpenIddictQuartzOptions>) &&
+            service.ImplementationType == typeof(OpenIddictQuartzConfiguration));
     }
 }

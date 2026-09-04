@@ -8,34 +8,37 @@ namespace OpenIddict.Quartz.Tests;
 
 public class OpenIddictQuartzJobTests
 {
+#if !NET
     [Fact]
-    public void Constructor_ThrowsAnException()
+    public void Constructor_ThrowsAnExceptionWhenServiceProviderCannotBeResolved()
     {
         // Arrange, act and assert
         var exception = Assert.Throws<InvalidOperationException>(() => new OpenIddictQuartzJob());
 
         Assert.Equal(SR.GetResourceString(SR.ID0082), exception.Message);
     }
+#endif
 
     [Fact]
     public async Task Execute_UsesServiceScope()
     {
         // Arrange
-        var provider = Mock.Of<IServiceProvider>(provider =>
-            provider.GetService(typeof(IOpenIddictAuthorizationManager)) == Mock.Of<IOpenIddictAuthorizationManager>() &&
-            provider.GetService(typeof(IOpenIddictSessionManager)) == Mock.Of<IOpenIddictSessionManager>() &&
-            provider.GetService(typeof(IOpenIddictTokenManager)) == Mock.Of<IOpenIddictTokenManager>());
-
-        var scope = Mock.Of<IServiceScope>(scope => scope.ServiceProvider == provider);
-        var factory = Mock.Of<IServiceScopeFactory>(factory => factory.CreateScope() == scope);
         var monitor = Mock.Of<IOptionsMonitor<OpenIddictQuartzOptions>>(
             monitor => monitor.CurrentValue == new OpenIddictQuartzOptions
             {
                 TimeProvider = TimeProvider.System
             });
 
-        var job = new OpenIddictQuartzJob(monitor,
-            Mock.Of<IServiceProvider>(provider => provider.GetService(typeof(IServiceScopeFactory)) == factory));
+        var provider = Mock.Of<IServiceProvider>(provider =>
+            provider.GetService(typeof(IOpenIddictAuthorizationManager)) == Mock.Of<IOpenIddictAuthorizationManager>() &&
+            provider.GetService(typeof(IOpenIddictSessionManager)) == Mock.Of<IOpenIddictSessionManager>() &&
+            provider.GetService(typeof(IOpenIddictTokenManager)) == Mock.Of<IOpenIddictTokenManager>() &&
+            provider.GetService(typeof(IOptionsMonitor<OpenIddictQuartzOptions>)) == monitor);
+
+        var scope = Mock.Of<IServiceScope>(scope => scope.ServiceProvider == provider);
+        var factory = Mock.Of<IServiceScopeFactory>(factory => factory.CreateScope() == scope);
+
+        var job = new OpenIddictQuartzJob(Mock.Of<IServiceProvider>(provider => provider.GetService(typeof(IServiceScopeFactory)) == factory));
 
         // Act
         await job.Execute(Mock.Of<IJobExecutionContext>());
@@ -48,15 +51,22 @@ public class OpenIddictQuartzJobTests
     public async Task Execute_IgnoresPruningWhenTokenPruningIsDisabled()
     {
         // Arrange
+        var monitor = Mock.Of<IOptionsMonitor<OpenIddictQuartzOptions>>(
+            monitor => monitor.CurrentValue == new OpenIddictQuartzOptions
+            {
+                DisableTokenPruning = true,
+                TimeProvider = TimeProvider.System
+            });
 
         var manager = new Mock<IOpenIddictAuthorizationManager>();
 
         var provider = Mock.Of<IServiceProvider>(provider =>
             provider.GetService(typeof(IOpenIddictAuthorizationManager)) == Mock.Of<IOpenIddictAuthorizationManager>() &&
             provider.GetService(typeof(IOpenIddictSessionManager)) == Mock.Of<IOpenIddictSessionManager>() &&
-            provider.GetService(typeof(IOpenIddictTokenManager)) == manager.Object);
+            provider.GetService(typeof(IOpenIddictTokenManager)) == manager.Object &&
+            provider.GetService(typeof(IOptionsMonitor<OpenIddictQuartzOptions>)) == monitor);
 
-        var job = CreateJob(provider, options => options.DisableTokenPruning = true);
+        var job = CreateJob(provider);
 
         // Act
         await job.Execute(Mock.Of<IJobExecutionContext>());
@@ -69,15 +79,22 @@ public class OpenIddictQuartzJobTests
     public async Task Execute_IgnoresPruningWhenAuthorizationPruningIsDisabled()
     {
         // Arrange
+        var monitor = Mock.Of<IOptionsMonitor<OpenIddictQuartzOptions>>(
+            monitor => monitor.CurrentValue == new OpenIddictQuartzOptions
+            {
+                DisableAuthorizationPruning = true,
+                TimeProvider = TimeProvider.System
+            });
 
         var manager = new Mock<IOpenIddictAuthorizationManager>();
 
         var provider = Mock.Of<IServiceProvider>(provider =>
             provider.GetService(typeof(IOpenIddictAuthorizationManager)) == manager.Object &&
             provider.GetService(typeof(IOpenIddictSessionManager)) == Mock.Of<IOpenIddictSessionManager>() &&
-            provider.GetService(typeof(IOpenIddictTokenManager)) == Mock.Of<IOpenIddictTokenManager>());
+            provider.GetService(typeof(IOpenIddictTokenManager)) == Mock.Of<IOpenIddictTokenManager>() &&
+            provider.GetService(typeof(IOptionsMonitor<OpenIddictQuartzOptions>)) == monitor);
 
-        var job = CreateJob(provider, options => options.DisableAuthorizationPruning = true);
+        var job = CreateJob(provider);
 
         // Act
         await job.Execute(Mock.Of<IJobExecutionContext>());
@@ -90,15 +107,22 @@ public class OpenIddictQuartzJobTests
     public async Task Execute_IgnoresPruningWhenSessionPruningIsDisabled()
     {
         // Arrange
+        var monitor = Mock.Of<IOptionsMonitor<OpenIddictQuartzOptions>>(
+            monitor => monitor.CurrentValue == new OpenIddictQuartzOptions
+            {
+                DisableSessionPruning = true,
+                TimeProvider = TimeProvider.System
+            });
 
         var manager = new Mock<IOpenIddictSessionManager>();
 
         var provider = Mock.Of<IServiceProvider>(provider =>
             provider.GetService(typeof(IOpenIddictAuthorizationManager)) == Mock.Of<IOpenIddictAuthorizationManager>() &&
             provider.GetService(typeof(IOpenIddictSessionManager)) == manager.Object &&
-            provider.GetService(typeof(IOpenIddictTokenManager)) == Mock.Of<IOpenIddictTokenManager>());
+            provider.GetService(typeof(IOpenIddictTokenManager)) == Mock.Of<IOpenIddictTokenManager>() &&
+            provider.GetService(typeof(IOptionsMonitor<OpenIddictQuartzOptions>)) == monitor);
 
-        var job = CreateJob(provider, options => options.DisableSessionPruning = true);
+        var job = CreateJob(provider);
 
         // Act
         await job.Execute(Mock.Of<IJobExecutionContext>());
@@ -111,15 +135,23 @@ public class OpenIddictQuartzJobTests
     public async Task Execute_UnschedulesTriggersWhenTokenManagerIsMissing()
     {
         // Arrange
+        var monitor = Mock.Of<IOptionsMonitor<OpenIddictQuartzOptions>>(
+            monitor => monitor.CurrentValue == new OpenIddictQuartzOptions
+            {
+                TimeProvider = TimeProvider.System
+            });
+
         var provider = Mock.Of<IServiceProvider>(provider =>
             provider.GetService(typeof(IOpenIddictAuthorizationManager)) == Mock.Of<IOpenIddictAuthorizationManager>() &&
             provider.GetService(typeof(IOpenIddictSessionManager)) == Mock.Of<IOpenIddictSessionManager>() &&
-            provider.GetService(typeof(IOpenIddictTokenManager)) == null);
+            provider.GetService(typeof(IOpenIddictTokenManager)) == null &&
+            provider.GetService(typeof(IOptionsMonitor<OpenIddictQuartzOptions>)) == monitor);
 
         var job = CreateJob(provider);
 
         // Act and assert
-        var exception = await Assert.ThrowsAsync<JobExecutionException>(() => job.Execute(Mock.Of<IJobExecutionContext>()));
+        var exception = await Assert.ThrowsAsync<JobExecutionException>(async () =>
+            await job.Execute(Mock.Of<IJobExecutionContext>()));
 
         Assert.False(exception.RefireImmediately);
         Assert.True(exception.UnscheduleAllTriggers);
@@ -133,13 +165,21 @@ public class OpenIddictQuartzJobTests
     public async Task Execute_UnschedulesTriggersWhenAuthorizationManagerIsMissing()
     {
         // Arrange
+        var monitor = Mock.Of<IOptionsMonitor<OpenIddictQuartzOptions>>(
+            monitor => monitor.CurrentValue == new OpenIddictQuartzOptions
+            {
+                TimeProvider = TimeProvider.System
+            });
+
         var provider = Mock.Of<IServiceProvider>(provider =>
-            provider.GetService(typeof(IOpenIddictAuthorizationManager)) == null);
+            provider.GetService(typeof(IOpenIddictAuthorizationManager)) == null &&
+            provider.GetService(typeof(IOptionsMonitor<OpenIddictQuartzOptions>)) == monitor);
 
         var job = CreateJob(provider);
 
         // Act and assert
-        var exception = await Assert.ThrowsAsync<JobExecutionException>(() => job.Execute(Mock.Of<IJobExecutionContext>()));
+        var exception = await Assert.ThrowsAsync<JobExecutionException>(async () =>
+            await job.Execute(Mock.Of<IJobExecutionContext>()));
 
         Assert.False(exception.RefireImmediately);
         Assert.True(exception.UnscheduleAllTriggers);
@@ -153,13 +193,21 @@ public class OpenIddictQuartzJobTests
     public async Task Execute_UnschedulesTriggersWhenSessionManagerIsMissing()
     {
         // Arrange
+        var monitor = Mock.Of<IOptionsMonitor<OpenIddictQuartzOptions>>(
+            monitor => monitor.CurrentValue == new OpenIddictQuartzOptions
+            {
+                TimeProvider = TimeProvider.System
+            });
+
         var provider = Mock.Of<IServiceProvider>(provider =>
-            provider.GetService(typeof(IOpenIddictSessionManager)) == null);
+            provider.GetService(typeof(IOpenIddictSessionManager)) == null &&
+            provider.GetService(typeof(IOptionsMonitor<OpenIddictQuartzOptions>)) == monitor);
 
         var job = CreateJob(provider);
 
         // Act and assert
-        var exception = await Assert.ThrowsAsync<JobExecutionException>(() => job.Execute(Mock.Of<IJobExecutionContext>()));
+        var exception = await Assert.ThrowsAsync<JobExecutionException>(async () =>
+            await job.Execute(Mock.Of<IJobExecutionContext>()));
 
         Assert.False(exception.RefireImmediately);
         Assert.True(exception.UnscheduleAllTriggers);
@@ -173,42 +221,62 @@ public class OpenIddictQuartzJobTests
     public async Task Execute_RethrowsOutOfMemoryExceptionsThrownDuringTokenPruning()
     {
         // Arrange
+        var monitor = Mock.Of<IOptionsMonitor<OpenIddictQuartzOptions>>(
+            monitor => monitor.CurrentValue == new OpenIddictQuartzOptions
+            {
+                TimeProvider = TimeProvider.System
+            });
+
         var manager = new Mock<IOpenIddictTokenManager>();
         manager.Setup(manager => manager.PruneAsync(It.IsAny<DateTimeOffset>(), It.IsAny<CancellationToken>()))
             .Throws(new OutOfMemoryException());
 
         var provider = Mock.Of<IServiceProvider>(provider =>
             provider.GetService(typeof(IOpenIddictAuthorizationManager)) == Mock.Of<IOpenIddictAuthorizationManager>() &&
-            provider.GetService(typeof(IOpenIddictTokenManager)) == manager.Object);
+            provider.GetService(typeof(IOpenIddictTokenManager)) == manager.Object &&
+            provider.GetService(typeof(IOptionsMonitor<OpenIddictQuartzOptions>)) == monitor);
 
         var job = CreateJob(provider);
 
         // Act and assert
-        await Assert.ThrowsAsync<OutOfMemoryException>(() => job.Execute(Mock.Of<IJobExecutionContext>()));
+        await Assert.ThrowsAsync<OutOfMemoryException>(async () => await job.Execute(Mock.Of<IJobExecutionContext>()));
     }
 
     [Fact]
     public async Task Execute_RethrowsOutOfMemoryExceptionsThrownDuringAuthorizationPruning()
     {
         // Arrange
+        var monitor = Mock.Of<IOptionsMonitor<OpenIddictQuartzOptions>>(
+            monitor => monitor.CurrentValue == new OpenIddictQuartzOptions
+            {
+                TimeProvider = TimeProvider.System
+            });
+
         var manager = new Mock<IOpenIddictAuthorizationManager>();
         manager.Setup(manager => manager.PruneAsync(It.IsAny<DateTimeOffset>(), It.IsAny<CancellationToken>()))
             .Throws(new OutOfMemoryException());
 
         var provider = Mock.Of<IServiceProvider>(provider =>
             provider.GetService(typeof(IOpenIddictAuthorizationManager)) == manager.Object &&
-            provider.GetService(typeof(IOpenIddictTokenManager)) == Mock.Of<IOpenIddictTokenManager>());
+            provider.GetService(typeof(IOpenIddictTokenManager)) == Mock.Of<IOpenIddictTokenManager>() &&
+            provider.GetService(typeof(IOptionsMonitor<OpenIddictQuartzOptions>)) == monitor);
 
         var job = CreateJob(provider);
 
         // Act and assert
-        await Assert.ThrowsAsync<OutOfMemoryException>(() => job.Execute(Mock.Of<IJobExecutionContext>()));
+        await Assert.ThrowsAsync<OutOfMemoryException>(async () => await job.Execute(Mock.Of<IJobExecutionContext>()));
     }
 
     [Fact]
     public async Task Execute_RethrowsOutOfMemoryExceptionsThrownDuringSessionPruning()
     {
         // Arrange
+        var monitor = Mock.Of<IOptionsMonitor<OpenIddictQuartzOptions>>(
+            monitor => monitor.CurrentValue == new OpenIddictQuartzOptions
+            {
+                TimeProvider = TimeProvider.System
+            });
+
         var manager = new Mock<IOpenIddictSessionManager>();
         manager.Setup(manager => manager.PruneAsync(It.IsAny<DateTimeOffset>(), It.IsAny<CancellationToken>()))
             .Throws(new OutOfMemoryException());
@@ -216,12 +284,13 @@ public class OpenIddictQuartzJobTests
         var provider = Mock.Of<IServiceProvider>(provider =>
             provider.GetService(typeof(IOpenIddictAuthorizationManager)) == Mock.Of<IOpenIddictAuthorizationManager>() &&
             provider.GetService(typeof(IOpenIddictTokenManager)) == Mock.Of<IOpenIddictTokenManager>() &&
-            provider.GetService(typeof(IOpenIddictSessionManager)) == manager.Object);
+            provider.GetService(typeof(IOpenIddictSessionManager)) == manager.Object &&
+            provider.GetService(typeof(IOptionsMonitor<OpenIddictQuartzOptions>)) == monitor);
 
         var job = CreateJob(provider);
 
         // Act and assert
-        await Assert.ThrowsAsync<OutOfMemoryException>(() => job.Execute(Mock.Of<IJobExecutionContext>()));
+        await Assert.ThrowsAsync<OutOfMemoryException>(async () => await job.Execute(Mock.Of<IJobExecutionContext>()));
     }
 
     [Fact]
@@ -230,20 +299,27 @@ public class OpenIddictQuartzJobTests
         // Arrange
         var token = new CancellationToken(canceled: true);
 
+        var monitor = Mock.Of<IOptionsMonitor<OpenIddictQuartzOptions>>(
+            monitor => monitor.CurrentValue == new OpenIddictQuartzOptions
+            {
+                TimeProvider = TimeProvider.System
+            });
+
         var manager = new Mock<IOpenIddictTokenManager>();
         manager.Setup(manager => manager.PruneAsync(It.IsAny<DateTimeOffset>(), It.IsAny<CancellationToken>()))
             .Throws(new OperationCanceledException(token));
 
         var provider = Mock.Of<IServiceProvider>(provider =>
             provider.GetService(typeof(IOpenIddictAuthorizationManager)) == Mock.Of<IOpenIddictAuthorizationManager>() &&
-            provider.GetService(typeof(IOpenIddictTokenManager)) == manager.Object);
+            provider.GetService(typeof(IOpenIddictTokenManager)) == manager.Object &&
+            provider.GetService(typeof(IOptionsMonitor<OpenIddictQuartzOptions>)) == monitor);
 
         var context = Mock.Of<IJobExecutionContext>(context => context.CancellationToken == token);
 
         var job = CreateJob(provider);
 
         // Act and assert
-        var exception = await Assert.ThrowsAsync<JobExecutionException>(() => job.Execute(context));
+        var exception = await Assert.ThrowsAsync<JobExecutionException>(async () => await job.Execute(context));
 
         Assert.False(exception.RefireImmediately);
 
@@ -256,20 +332,27 @@ public class OpenIddictQuartzJobTests
         // Arrange
         var token = new CancellationToken(canceled: true);
 
+        var monitor = Mock.Of<IOptionsMonitor<OpenIddictQuartzOptions>>(
+            monitor => monitor.CurrentValue == new OpenIddictQuartzOptions
+            {
+                TimeProvider = TimeProvider.System
+            });
+
         var manager = new Mock<IOpenIddictAuthorizationManager>();
         manager.Setup(manager => manager.PruneAsync(It.IsAny<DateTimeOffset>(), It.IsAny<CancellationToken>()))
             .Throws(new OperationCanceledException(token));
 
         var provider = Mock.Of<IServiceProvider>(provider =>
             provider.GetService(typeof(IOpenIddictAuthorizationManager)) == manager.Object &&
-            provider.GetService(typeof(IOpenIddictTokenManager)) == Mock.Of<IOpenIddictTokenManager>());
+            provider.GetService(typeof(IOpenIddictTokenManager)) == Mock.Of<IOpenIddictTokenManager>() &&
+            provider.GetService(typeof(IOptionsMonitor<OpenIddictQuartzOptions>)) == monitor);
 
         var context = Mock.Of<IJobExecutionContext>(context => context.CancellationToken == token);
 
         var job = CreateJob(provider);
 
         // Act and assert
-        var exception = await Assert.ThrowsAsync<JobExecutionException>(() => job.Execute(context));
+        var exception = await Assert.ThrowsAsync<JobExecutionException>(async () => await job.Execute(context));
 
         Assert.False(exception.RefireImmediately);
 
@@ -282,6 +365,12 @@ public class OpenIddictQuartzJobTests
         // Arrange
         var token = new CancellationToken(canceled: true);
 
+        var monitor = Mock.Of<IOptionsMonitor<OpenIddictQuartzOptions>>(
+            monitor => monitor.CurrentValue == new OpenIddictQuartzOptions
+            {
+                TimeProvider = TimeProvider.System
+            });
+
         var manager = new Mock<IOpenIddictSessionManager>();
         manager.Setup(manager => manager.PruneAsync(It.IsAny<DateTimeOffset>(), It.IsAny<CancellationToken>()))
             .Throws(new OperationCanceledException(token));
@@ -289,14 +378,15 @@ public class OpenIddictQuartzJobTests
         var provider = Mock.Of<IServiceProvider>(provider =>
             provider.GetService(typeof(IOpenIddictAuthorizationManager)) == Mock.Of<IOpenIddictAuthorizationManager>() &&
             provider.GetService(typeof(IOpenIddictTokenManager)) == Mock.Of<IOpenIddictTokenManager>() &&
-            provider.GetService(typeof(IOpenIddictSessionManager)) == manager.Object);
+            provider.GetService(typeof(IOpenIddictSessionManager)) == manager.Object &&
+            provider.GetService(typeof(IOptionsMonitor<OpenIddictQuartzOptions>)) == monitor);
 
         var context = Mock.Of<IJobExecutionContext>(context => context.CancellationToken == token);
 
         var job = CreateJob(provider);
 
         // Act and assert
-        var exception = await Assert.ThrowsAsync<JobExecutionException>(() => job.Execute(context));
+        var exception = await Assert.ThrowsAsync<JobExecutionException>(async () => await job.Execute(context));
 
         Assert.False(exception.RefireImmediately);
 
@@ -307,6 +397,12 @@ public class OpenIddictQuartzJobTests
     public async Task Execute_AllowsRefiringWhenExceptionsAreThrown()
     {
         // Arrange
+        var monitor = Mock.Of<IOptionsMonitor<OpenIddictQuartzOptions>>(
+            monitor => monitor.CurrentValue == new OpenIddictQuartzOptions
+            {
+                TimeProvider = TimeProvider.System
+            });
+
         var provider = new Mock<IServiceProvider>();
         provider.Setup(provider => provider.GetService(typeof(IOpenIddictAuthorizationManager)))
             .Returns(CreateAuthorizationManager(new ApplicationException()));
@@ -317,12 +413,15 @@ public class OpenIddictQuartzJobTests
         provider.Setup(provider => provider.GetService(typeof(IOpenIddictTokenManager)))
             .Returns(CreateTokenManager(new ApplicationException()));
 
+        provider.Setup(provider => provider.GetService(typeof(IOptionsMonitor<OpenIddictQuartzOptions>)))
+            .Returns(monitor);
+
         var context = Mock.Of<IJobExecutionContext>(context => context.RefireCount == 0);
 
         var job = CreateJob(provider.Object);
 
         // Act and assert
-        var exception = await Assert.ThrowsAsync<JobExecutionException>(() => job.Execute(context));
+        var exception = await Assert.ThrowsAsync<JobExecutionException>(async () => await job.Execute(context));
 
         Assert.True(exception.RefireImmediately);
         Assert.IsType<AggregateException>(exception.InnerException);
@@ -363,6 +462,12 @@ public class OpenIddictQuartzJobTests
     public async Task Execute_AllowsRefiringWhenAggregateExceptionsAreThrown()
     {
         // Arrange
+        var monitor = Mock.Of<IOptionsMonitor<OpenIddictQuartzOptions>>(
+            monitor => monitor.CurrentValue == new OpenIddictQuartzOptions
+            {
+                TimeProvider = TimeProvider.System
+            });
+
         var provider = new Mock<IServiceProvider>();
         provider.Setup(provider => provider.GetService(typeof(IOpenIddictAuthorizationManager)))
             .Returns(CreateAuthorizationManager(new AggregateException(
@@ -376,12 +481,15 @@ public class OpenIddictQuartzJobTests
             .Returns(CreateTokenManager(new AggregateException(
                 new InvalidOperationException(), new ApplicationException())));
 
+        provider.Setup(provider => provider.GetService(typeof(IOptionsMonitor<OpenIddictQuartzOptions>)))
+            .Returns(monitor);
+
         var context = Mock.Of<IJobExecutionContext>(context => context.RefireCount == 0);
 
         var job = CreateJob(provider.Object);
 
         // Act and assert
-        var exception = await Assert.ThrowsAsync<JobExecutionException>(() => job.Execute(context));
+        var exception = await Assert.ThrowsAsync<JobExecutionException>(async () => await job.Execute(context));
 
         Assert.True(exception.RefireImmediately);
         Assert.IsType<AggregateException>(exception.InnerException);
@@ -425,6 +533,13 @@ public class OpenIddictQuartzJobTests
     public async Task Execute_DisallowsRefiringWhenMaximumRefireCountIsReached()
     {
         // Arrange
+        var monitor = Mock.Of<IOptionsMonitor<OpenIddictQuartzOptions>>(
+            monitor => monitor.CurrentValue == new OpenIddictQuartzOptions
+            {
+                MaximumRefireCount = 5,
+                TimeProvider = TimeProvider.System
+            });
+
         var manager = new Mock<IOpenIddictAuthorizationManager>();
         manager.Setup(manager => manager.PruneAsync(It.IsAny<DateTimeOffset>(), It.IsAny<CancellationToken>()))
             .Throws(new ApplicationException());
@@ -432,32 +547,25 @@ public class OpenIddictQuartzJobTests
         var provider = Mock.Of<IServiceProvider>(provider =>
             provider.GetService(typeof(IOpenIddictAuthorizationManager)) == manager.Object &&
             provider.GetService(typeof(IOpenIddictSessionManager)) == Mock.Of<IOpenIddictSessionManager>() &&
-            provider.GetService(typeof(IOpenIddictTokenManager)) == Mock.Of<IOpenIddictTokenManager>());
+            provider.GetService(typeof(IOpenIddictTokenManager)) == Mock.Of<IOpenIddictTokenManager>() &&
+            provider.GetService(typeof(IOptionsMonitor<OpenIddictQuartzOptions>)) == monitor);
 
         var context = Mock.Of<IJobExecutionContext>(context => context.RefireCount == 5);
 
-        var job = CreateJob(provider, options => options.MaximumRefireCount = 5);
+        var job = CreateJob(provider);
 
         // Act and assert
-        var exception = await Assert.ThrowsAsync<JobExecutionException>(() => job.Execute(context));
+        var exception = await Assert.ThrowsAsync<JobExecutionException>(async () => await job.Execute(context));
 
         Assert.False(exception.RefireImmediately);
     }
 
-    private static OpenIddictQuartzJob CreateJob(IServiceProvider provider, Action<OpenIddictQuartzOptions>? configuration = null)
+    private static OpenIddictQuartzJob CreateJob(IServiceProvider provider)
     {
         var scope = Mock.Of<IServiceScope>(scope => scope.ServiceProvider == provider);
         var factory = Mock.Of<IServiceScopeFactory>(factory => factory.CreateScope() == scope);
-        var options = new OpenIddictQuartzOptions
-        {
-            TimeProvider = TimeProvider.System
-        };
 
-        configuration?.Invoke(options);
-
-        var monitor = Mock.Of<IOptionsMonitor<OpenIddictQuartzOptions>>(monitor => monitor.CurrentValue == options);
-
-        return new OpenIddictQuartzJob(monitor,
-            Mock.Of<IServiceProvider>(provider => provider.GetService(typeof(IServiceScopeFactory)) == factory));
+        return new OpenIddictQuartzJob(Mock.Of<IServiceProvider>(provider =>
+            provider.GetService(typeof(IServiceScopeFactory)) == factory));
     }
 }
