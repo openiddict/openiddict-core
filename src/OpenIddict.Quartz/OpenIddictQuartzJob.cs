@@ -16,24 +16,21 @@ namespace OpenIddict.Quartz;
 [DisallowConcurrentExecution, EditorBrowsable(EditorBrowsableState.Advanced)]
 public sealed class OpenIddictQuartzJob : IJob
 {
-    private readonly IOptionsMonitor<OpenIddictQuartzOptions> _options;
     private readonly IServiceProvider _provider;
 
+#if !NET
     /// <summary>
     /// Creates a new instance of the <see cref="OpenIddictQuartzJob"/> class.
     /// </summary>
     public OpenIddictQuartzJob() => throw new InvalidOperationException(SR.GetResourceString(SR.ID0082));
+#endif
 
     /// <summary>
     /// Creates a new instance of the <see cref="OpenIddictQuartzJob"/> class.
     /// </summary>
-    /// <param name="options">The OpenIddict Quartz.NET options.</param>
     /// <param name="provider">The service provider.</param>
-    public OpenIddictQuartzJob(IOptionsMonitor<OpenIddictQuartzOptions> options, IServiceProvider provider)
-    {
-        _options = options ?? throw new ArgumentNullException(nameof(options));
-        _provider = provider ?? throw new ArgumentNullException(nameof(provider));
-    }
+    public OpenIddictQuartzJob(IServiceProvider provider)
+        => _provider = provider ?? throw new ArgumentNullException(nameof(provider));
 
     /// <summary>
     /// Gets the default identity assigned to this job.
@@ -43,20 +40,24 @@ public sealed class OpenIddictQuartzJob : IJob
         group: SR.GetResourceString(SR.ID8005));
 
     /// <inheritdoc/>
+#if NET
+    public async ValueTask Execute(IJobExecutionContext context, CancellationToken cancellationToken = default)
+#else
     public async Task Execute(IJobExecutionContext context)
+#endif
     {
         ArgumentNullException.ThrowIfNull(context);
 
         List<Exception>? exceptions = null;
 
-        // Note: this job is registered as a transient service. As such, it cannot directly depend on scoped services
-        // like the core managers. To work around this limitation, a scope is manually created for each invocation.
         await using var scope = _provider.CreateAsyncScope();
+
+        var options = scope.ServiceProvider.GetRequiredService<IOptionsMonitor<OpenIddictQuartzOptions>>().CurrentValue;
 
         // Important: since authorizations that still have tokens attached are never
         // pruned, the tokens MUST be deleted before deleting the authorizations.
 
-        if (!_options.CurrentValue.DisableTokenPruning)
+        if (!options.DisableTokenPruning)
         {
             var manager = scope.ServiceProvider.GetService<IOpenIddictTokenManager>()
                 ?? throw new JobExecutionException(new InvalidOperationException(SR.GetResourceString(SR.ID0278)))
@@ -66,7 +67,7 @@ public sealed class OpenIddictQuartzJob : IJob
                     UnscheduleFiringTrigger = true
                 };
 
-            var threshold = _options.CurrentValue.TimeProvider.GetUtcNow() - _options.CurrentValue.MinimumTokenLifespan;
+            var threshold = options.TimeProvider.GetUtcNow() - options.MinimumTokenLifespan;
 
             try
             {
@@ -101,7 +102,7 @@ public sealed class OpenIddictQuartzJob : IJob
             }
         }
 
-        if (!_options.CurrentValue.DisableAuthorizationPruning)
+        if (!options.DisableAuthorizationPruning)
         {
             var manager = scope.ServiceProvider.GetService<IOpenIddictAuthorizationManager>()
                 ?? throw new JobExecutionException(new InvalidOperationException(SR.GetResourceString(SR.ID0278)))
@@ -111,7 +112,7 @@ public sealed class OpenIddictQuartzJob : IJob
                     UnscheduleFiringTrigger = true
                 };
 
-            var threshold = _options.CurrentValue.TimeProvider.GetUtcNow() - _options.CurrentValue.MinimumAuthorizationLifespan;
+            var threshold = options.TimeProvider.GetUtcNow() - options.MinimumAuthorizationLifespan;
 
             try
             {
@@ -149,7 +150,7 @@ public sealed class OpenIddictQuartzJob : IJob
         // Important: since sessions that still have tokens attached are never
         // pruned, the tokens MUST be deleted before deleting the sessions.
 
-        if (!_options.CurrentValue.DisableSessionPruning)
+        if (!options.DisableSessionPruning)
         {
             var manager = scope.ServiceProvider.GetService<IOpenIddictSessionManager>()
                 ?? throw new JobExecutionException(new InvalidOperationException(SR.GetResourceString(SR.ID0278)))
@@ -159,7 +160,7 @@ public sealed class OpenIddictQuartzJob : IJob
                     UnscheduleFiringTrigger = true
                 };
 
-            var threshold = _options.CurrentValue.TimeProvider.GetUtcNow() - _options.CurrentValue.MinimumSessionLifespan;
+            var threshold = options.TimeProvider.GetUtcNow() - options.MinimumSessionLifespan;
 
             try
             {
@@ -199,7 +200,7 @@ public sealed class OpenIddictQuartzJob : IJob
             throw new JobExecutionException(new AggregateException(exceptions))
             {
                 // Only refire the job if the maximum refire count set in the options wasn't reached.
-                RefireImmediately = context.RefireCount < _options.CurrentValue.MaximumRefireCount
+                RefireImmediately = context.RefireCount < options.MaximumRefireCount
             };
         }
     }

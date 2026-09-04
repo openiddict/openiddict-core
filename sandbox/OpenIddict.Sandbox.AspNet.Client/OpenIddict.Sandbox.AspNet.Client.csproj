@@ -16,7 +16,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\OpenIddict.EntityFramework\OpenIddict.EntityFramework.csproj" />
-    <ProjectReference Include="..\..\src\OpenIddict.Quartz\OpenIddict.Quartz.csproj" />
     <ProjectReference Include="..\..\src\OpenIddict.Owin\OpenIddict.Owin.csproj" />
   </ItemGroup>
 
