@@ -984,11 +984,12 @@ public static partial class OpenIddictServerHandlers
                     case OpenIddictServerEndpointType.Revocation    when context.Options.AcceptAnonymousClients:
                         return;
 
-                    // Note: the authorization code and client credentials grant types never
-                    // allow anonymous clients, even if the corresponding option is enabled.
+                    // Note: the authorization code, device code and client credentials grant types
+                    // never allow anonymous clients, even if the corresponding option is enabled.
                     case OpenIddictServerEndpointType.Token when context.Options.AcceptAnonymousClients &&
                         !context.Request.IsAuthorizationCodeGrantType() &&
-                        !context.Request.IsClientCredentialsGrantType():
+                        !context.Request.IsClientCredentialsGrantType() &&
+                        !context.Request.IsDeviceCodeGrantType():
                         return;
 
                     // Note: despite being conceptually similar to the token endpoint, the pushed authorization
@@ -996,6 +997,15 @@ public static partial class OpenIddictServerHandlers
                     // for both regular authorization requests and pushed authorization requests.
                     //
                     // See https://datatracker.ietf.org/doc/html/rfc9126#section-2.1 for more information.
+
+                    // Note: similarly, the device authorization endpoint doesn't allow anonymous clients,
+                    // as a client_id parameter is always required by the specification if the client
+                    // doesn't authenticate using a different method.
+                    //
+                    // See https://datatracker.ietf.org/doc/html/rfc9126#section-3.1 for more information.
+                    case OpenIddictServerEndpointType.DeviceAuthorization:
+                    case OpenIddictServerEndpointType.PushedAuthorization:
+                        break;
                 }
 
                 context.Logger.LogInformation(6220, SR.GetResourceString(SR.ID6220), Parameters.ClientId);
