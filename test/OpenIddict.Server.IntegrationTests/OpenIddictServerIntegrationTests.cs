@@ -839,6 +839,71 @@ public abstract partial class OpenIddictServerIntegrationTests
     }
 
     [Theory]
+    [InlineData("http://www.fabrikam.com/", new[] { "http://www.fabrikam.com", "http://www.fabrikam.com/" })]
+    [InlineData("http://www.fabrikam.com/issuer", new[] { "http://www.fabrikam.com/issuer" })]
+    [InlineData("http://www.fabrikam.com/issuer/", new[] { "http://www.fabrikam.com/issuer/" })]
+    public async Task ProcessAuthentication_ValidAudiencesAreAttachedToClientAssertionValidationContext(string issuer, string[] audiences)
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.SetIssuer(issuer);
+            options.EnableDegradedMode();
+
+            options.AddEventHandler<HandleTokenRequestContext>(builder =>
+                builder.UseInlineHandler(context =>
+                {
+                    context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                        .SetClaim(Claims.Subject, "Bob le Magnifique");
+
+                    return ValueTask.CompletedTask;
+                }));
+
+            options.AddEventHandler<ValidateTokenContext>(builder =>
+            {
+                builder.UseInlineHandler(context =>
+                {
+                    Assert.Single(context.ValidTokenTypes);
+                    Assert.Contains(TokenTypeIdentifiers.Private.ClientAssertion, context.ValidTokenTypes);
+
+                    Assert.Equal(audiences.Length, context.ValidAudiences.Count);
+                    foreach (var audience in audiences)
+                    {
+                        Assert.Contains(audience, context.ValidAudiences);
+                    }
+
+                    context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                        .SetAudiences(issuer)
+                        .SetClaim(Claims.Subject, "Fabrikam")
+                        .SetClaim(Claims.Issuer, "Fabrikam")
+                        .SetExpirationDate(TimeProvider.System.GetUtcNow() + TimeSpan.FromHours(1))
+                        .SetTokenType(TokenTypeIdentifiers.Private.ClientAssertion);
+
+                    return ValueTask.CompletedTask;
+                });
+
+                builder.SetOrder(int.MinValue);
+            });
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/connect/token", new OpenIddictRequest
+        {
+            ClientAssertion = "2YotnFZFEjr1zCsicMWpAA",
+            ClientAssertionType = ClientAssertionTypes.JwtBearer,
+            ClientId = "Fabrikam",
+            GrantType = GrantTypes.Password,
+            Username = "johndoe",
+            Password = "A3ddj3w"
+        });
+
+        // Assert
+        Assert.NotNull(response.AccessToken);
+    }
+
+    [Theory]
     [InlineData(OpenIddictServerEndpointType.DeviceAuthorization)]
     [InlineData(OpenIddictServerEndpointType.Introspection)]
     [InlineData(OpenIddictServerEndpointType.PushedAuthorization)]
