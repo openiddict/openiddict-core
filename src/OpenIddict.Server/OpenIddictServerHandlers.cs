@@ -780,7 +780,7 @@ public static partial class OpenIddictServerHandlers
             // For more information, see
             // https://openid.net/specs/openid-connect-core-1_0.html#ClientAuthentication and
             // https://datatracker.ietf.org/doc/html/rfc7523#section-3.
-            if (context.ClientAssertionPrincipal.GetAudiences() is not [_])
+            if (context.ClientAssertionPrincipal.GetAudiences() is not [{ Length: > 0 }])
             {
                 context.Reject(
                     error: Errors.InvalidRequest,
@@ -809,15 +809,21 @@ public static partial class OpenIddictServerHandlers
 
             static bool ValidateClaimGroup(string name, List<Claim> values) => name switch
             {
+                // The following claims MUST be represented as unique strings or array of strings.
+                //
+                // Note: the initial version of the "Updates to Audience Values for OAuth 2.0 Authorization Servers"
+                // specification initially required that the "aud" claim be represented as a unique string but more
+                // recent versions of the specification allow the "aud" claim to be represented as a JSON array of strings.
+                Claims.Audience => values.TrueForAll(static value => value.ValueType is ClaimValueTypes.String) ||
+                    // Note: a unique claim using the special JSON_ARRAY claim value type is allowed
+                    // if the individual elements of the parsed JSON array are all string values.
+                    (values is [{ ValueType: JsonClaimValueTypes.JsonArray, Value: string value }] &&
+                    JsonSerializer.Deserialize(value, OpenIddictSerializer.Default.JsonElement)
+                        is { ValueKind: JsonValueKind.Array } element &&
+                    OpenIddictHelpers.ValidateArrayElements(element, JsonValueKind.String)),
+
                 // The following claims MUST be represented as unique strings.
-                //
-                // Important: client assertions with multiple audiences was initially deliberately supported by
-                // the OpenID Connect and Assertion Framework for OAuth 2.0 Client Authentication specifications.
-                // Since 2025, using multiple audiences is no longer allowed for security reasons. As such, the
-                // "aud" claim present in client assertions MUST always be represented as a single string.
-                //
-                // See https://www.ietf.org/archive/id/draft-ietf-oauth-rfc7523bis-01.html#section-4 for more information.
-                Claims.Audience or Claims.AuthorizedParty or Claims.Issuer or Claims.JwtId or Claims.Subject
+                Claims.AuthorizedParty or Claims.Issuer or Claims.JwtId or Claims.Subject
                     => values is [{ ValueType: ClaimValueTypes.String }],
 
                 // The following claims MUST be represented as unique numeric dates.
