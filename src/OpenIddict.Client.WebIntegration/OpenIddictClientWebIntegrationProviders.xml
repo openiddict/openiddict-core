@@ -1252,6 +1252,28 @@
   </Provider>
 
   <!--
+                                       ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                                       █████ ██ ▄▄▄ █▄ ▄██ ▀██ ██ ▄▄▀██ ▄▄ ██ ▄▄ ██
+                                       █████ ██ ███ ██ ███ █ █ ██ ▀▀▄██ ▀▀ ██ █▀▀██
+                                       ██ ▀▀ ██ ▀▀▀ █▀ ▀██ ██▄ ██ ██ ██ █████ ▀▀▄██
+                                       ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
+
+  <Provider Name="JoinRpg" Id="698f413f-21e1-4be1-9b7f-c96f91bbf41d"
+            Documentation="https://github.com/joinrpg/joinrpg-net/blob/master/docs/adr004-oauth-server.md">
+    <!--
+      Note: the "email", "phone" and "profile" scopes are not strictly required but are requested
+      by default to receive the corresponding standard claims from the userinfo endpoint.
+    -->
+
+    <Environment Issuer="https://id.joinrpg.ru/">
+      <Scope Name="email" Default="true" Required="false" />
+      <Scope Name="phone" Default="true" Required="false" />
+      <Scope Name="profile" Default="true" Required="false" />
+    </Environment>
+  </Provider>
+
+  <!--
                                   ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
                                   █████ ██ ██ ██ ▄▀▄ ██ ▄▄ ██ ▄▄▀██ █████ ▄▄▄ ██ ██ ██ ▄▄▀██
                                   █████ ██ ██ ██ █ █ ██ ▀▀ ██ █████ █████ ███ ██ ██ ██ ██ ██
