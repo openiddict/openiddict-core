@@ -18,6 +18,13 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Quartz" />
+  </ItemGroup>
+
+  <ItemGroup
+    Condition=" ('$(TargetFrameworkIdentifier)' == '.NETFramework') Or
+                ('$(TargetFrameworkIdentifier)' == '.NETCoreApp' And $([MSBuild]::VersionLessThan($(TargetFrameworkVersion), '10.0'))) Or
+                ('$(TargetFrameworkIdentifier)' == '.NETStandard') ">
     <PackageReference Include="Quartz.Extensions.DependencyInjection" />
   </ItemGroup>
 
