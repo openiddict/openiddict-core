@@ -713,12 +713,6 @@ public static partial class OpenIddictClientHandlers
 
                 Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
-                // If no specific value is expected, skip the default presenter validation.
-                if (context.ValidPresenters.Count is 0)
-                {
-                    return ValueTask.CompletedTask;
-                }
-
                 // If the token doesn't have any presenter attached, return an error.
                 var presenters = context.Principal.GetPresenters();
                 if (presenters.IsDefaultOrEmpty)
@@ -772,12 +766,6 @@ public static partial class OpenIddictClientHandlers
                 ArgumentNullException.ThrowIfNull(context);
 
                 Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
-
-                // If no specific value is expected, skip the default audience validation.
-                if (context.ValidAudiences.Count is 0)
-                {
-                    return ValueTask.CompletedTask;
-                }
 
                 // If the token doesn't have any audience attached, return an error.
                 var audiences = context.Principal.GetAudiences();
