@@ -1054,7 +1054,7 @@ public static partial class OpenIddictServerHandlers
                 if (context.EndpointType is OpenIddictServerEndpointType.Token &&
                     context.Request.IsClientCredentialsGrantType())
                 {
-                    context.Logger.LogInformation(6222, SR.GetResourceString(SR.ID6222), context.Request.ClientId);
+                    context.Logger.LogInformation(6222, SR.GetResourceString(SR.ID6222), context.ClientId);
 
                     context.Reject(
                         error: Errors.UnauthorizedClient,
@@ -1633,7 +1633,7 @@ public static partial class OpenIddictServerHandlers
             var notification = new ValidateTokenContext(context.Transaction)
             {
                 DisableAudienceValidation = true,
-                // Presenter validation is disabled for the token endpoint as this endpoint
+                // Presenter validation is disabled for the authorization code grant as it
                 // implements a specialized event handler that uses more complex rules.
                 DisablePresenterValidation = context.EndpointType is OpenIddictServerEndpointType.Token &&
                                              context.Request.IsAuthorizationCodeGrantType(),
@@ -1712,7 +1712,7 @@ public static partial class OpenIddictServerHandlers
             var notification = new ValidateTokenContext(context.Transaction)
             {
                 DisableAudienceValidation = true,
-                // Presenter validation is disabled for the token endpoint as this endpoint
+                // Presenter validation is disabled for the device code grant as it
                 // implements a specialized event handler that uses more complex rules.
                 DisablePresenterValidation = context.EndpointType is OpenIddictServerEndpointType.Token &&
                                              context.Request.IsDeviceCodeGrantType(),
@@ -1973,7 +1973,7 @@ public static partial class OpenIddictServerHandlers
             var notification = new ValidateTokenContext(context.Transaction)
             {
                 DisableAudienceValidation = true,
-                // Presenter validation is disabled for the token endpoint as this endpoint
+                // Presenter validation is disabled for the refresh token grant as it
                 // implements a specialized event handler that uses more complex rules.
                 DisablePresenterValidation = context.EndpointType is OpenIddictServerEndpointType.Token &&
                                              context.Request.IsRefreshTokenGrantType(),

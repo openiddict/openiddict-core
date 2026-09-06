@@ -977,12 +977,14 @@ public static partial class OpenIddictValidationHandlers
 
             var notification = new ValidateTokenContext(context.Transaction)
             {
+                // Note: by default, access tokens are not constrainted to specific presenters but must contain
+                // at least one audience matching one of the values configured in the options, if applicable.
+                DisableAudienceValidation = context.Options.Audiences.Count is 0,
+                DisablePresenterValidation = true,
                 Token = context.AccessToken,
                 ValidTokenTypes = { TokenTypeIdentifiers.AccessToken }
             };
 
-            // Note: by default, access tokens are not constrainted to specific presenters but must contain
-            // at least one audience matching one of the values configured in the options, if applicable.
             notification.ValidAudiences.UnionWith(context.Options.Audiences);
 
             await _dispatcher.DispatchAsync(notification);

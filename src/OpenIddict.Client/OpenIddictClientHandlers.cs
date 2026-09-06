@@ -2136,6 +2136,8 @@ public static partial class OpenIddictClientHandlers
 
             var notification = new ValidateTokenContext(context.Transaction)
             {
+                DisableAudienceValidation = true,
+                DisablePresenterValidation = true,
                 Token = context.FrontchannelAccessToken,
                 ValidTokenTypes = { TokenTypeIdentifiers.AccessToken }
             };
@@ -2207,6 +2209,8 @@ public static partial class OpenIddictClientHandlers
 
             var notification = new ValidateTokenContext(context.Transaction)
             {
+                DisableAudienceValidation = true,
+                DisablePresenterValidation = true,
                 Token = context.AuthorizationCode,
                 ValidTokenTypes = { TokenTypeIdentifiers.Private.AuthorizationCode }
             };
@@ -3838,6 +3842,8 @@ public static partial class OpenIddictClientHandlers
 
             var notification = new ValidateTokenContext(context.Transaction)
             {
+                DisableAudienceValidation = true,
+                DisablePresenterValidation = true,
                 Token = context.BackchannelAccessToken,
                 ValidTokenTypes = { TokenTypeIdentifiers.AccessToken }
             };
@@ -3907,6 +3913,8 @@ public static partial class OpenIddictClientHandlers
 
             var notification = new ValidateTokenContext(context.Transaction)
             {
+                DisableAudienceValidation = true,
+                DisablePresenterValidation = true,
                 Token = context.IssuedToken,
                 ValidTokenTypes = { context.IssuedTokenType! }
             };
@@ -3978,6 +3986,8 @@ public static partial class OpenIddictClientHandlers
 
             var notification = new ValidateTokenContext(context.Transaction)
             {
+                DisableAudienceValidation = true,
+                DisablePresenterValidation = true,
                 Token = context.RefreshToken,
                 ValidTokenTypes = { TokenTypeIdentifiers.RefreshToken }
             };
@@ -4480,6 +4490,8 @@ public static partial class OpenIddictClientHandlers
 
             var notification = new ValidateTokenContext(context.Transaction)
             {
+                DisableAudienceValidation = true,
+                DisablePresenterValidation = true,
                 Token = context.UserInfoToken,
                 ValidTokenTypes = { TokenTypeIdentifiers.Private.UserInfoToken }
             };
