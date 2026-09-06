@@ -42,7 +42,6 @@ public static partial class OpenIddictServerHandlers
         ValidateClientAssertion.Descriptor,
         ValidateClientAssertionWellknownClaims.Descriptor,
         ValidateClientAssertionIssuer.Descriptor,
-        ValidateClientAssertionAudience.Descriptor,
         ValidateClientId.Descriptor,
         ValidateClientType.Descriptor,
         ValidateClientSecret.Descriptor,
@@ -632,10 +631,15 @@ public static partial class OpenIddictServerHandlers
                 return;
             }
 
+            // Throw an exception if the issuer cannot be retrieved or is not valid.
+            var issuer = context.Options.Issuer ?? context.BaseUri;
+            if (issuer is not { IsAbsoluteUri: true })
+            {
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0496));
+            }
+
             var notification = new ValidateTokenContext(context.Transaction)
             {
-                // Note: for client authentication assertions, audience validation is enforced by a specialized handler.
-                DisableAudienceValidation = true,
                 DisablePresenterValidation = true,
                 Token = context.ClientAssertion,
                 TokenFormat = context.ClientAssertionType switch
@@ -647,6 +651,31 @@ public static partial class OpenIddictServerHandlers
                 },
                 ValidTokenTypes = { TokenTypeIdentifiers.Private.ClientAssertion }
             };
+
+            // Note: for client assertions, the audience MUST be the issuer URI.
+            if (issuer is { AbsolutePath: "/", Query.Length: 0, Fragment.Length: 0 })
+            {
+                // If the issuer URI doesn't contain any query/fragment, allow both http://www.fabrikam.com
+                // and http://www.fabrikam.com/ (the recommended URI representation) to be considered valid.
+                // See https://datatracker.ietf.org/doc/html/rfc3986#section-6.2.3 for more information.
+                notification.ValidAudiences.Add(issuer.AbsoluteUri); // Uri.AbsoluteUri is normalized and always contains a trailing slash.
+                notification.ValidAudiences.Add(issuer.AbsoluteUri[..^1]);
+            }
+
+            else if (issuer is { AbsolutePath.Length: 0, Query.Length: 0, Fragment.Length: 0 })
+            {
+                // When properly normalized, Uri.AbsolutePath should never be empty and should at least
+                // contain a leading slash. While dangerous, System.Uri now offers a way to create a URI
+                // instance without applying the default canonicalization logic. To support such URIs,
+                // a special case is added here to add back the missing trailing slash when necessary.
+                notification.ValidAudiences.Add(issuer.AbsoluteUri);
+                notification.ValidAudiences.Add(issuer.AbsoluteUri + "/");
+            }
+
+            else
+            {
+                notification.ValidAudiences.Add(issuer.AbsoluteUri);
+            }
 
             await _dispatcher.DispatchAsync(notification);
 
@@ -716,9 +745,11 @@ public static partial class OpenIddictServerHandlers
                 return ValueTask.CompletedTask;
             }
 
-            // Client assertions MUST contain an "iss" claim. For more information,
-            // see https://openid.net/specs/openid-connect-core-1_0.html#ClientAuthentication
-            // and https://datatracker.ietf.org/doc/html/rfc7523#section-3.
+            // Client assertions MUST contain an issuer.
+            //
+            // For more information, see
+            // https://openid.net/specs/openid-connect-core-1_0.html#ClientAuthentication and
+            // https://datatracker.ietf.org/doc/html/rfc7523#section-3.
             if (!context.ClientAssertionPrincipal.HasClaim(Claims.Issuer))
             {
                 context.Reject(
@@ -729,9 +760,11 @@ public static partial class OpenIddictServerHandlers
                 return ValueTask.CompletedTask;
             }
 
-            // Client assertions MUST contain a "sub" claim. For more information,
-            // see https://openid.net/specs/openid-connect-core-1_0.html#ClientAuthentication
-            // and https://datatracker.ietf.org/doc/html/rfc7523#section-3.
+            // Client assertions MUST contain a subject.
+            //
+            // For more information, see
+            // https://openid.net/specs/openid-connect-core-1_0.html#ClientAuthentication and
+            // https://datatracker.ietf.org/doc/html/rfc7523#section-3.
             if (!context.ClientAssertionPrincipal.HasClaim(Claims.Subject))
             {
                 context.Reject(
@@ -742,10 +775,12 @@ public static partial class OpenIddictServerHandlers
                 return ValueTask.CompletedTask;
             }
 
-            // Client assertions MUST contain an "aud" claim. For more information,
-            // see https://openid.net/specs/openid-connect-core-1_0.html#ClientAuthentication
-            // and https://datatracker.ietf.org/doc/html/rfc7523#section-3.
-            if (!context.ClientAssertionPrincipal.HasClaim(Claims.Audience))
+            // Client assertions MUST contain a unique audience.
+            //
+            // For more information, see
+            // https://openid.net/specs/openid-connect-core-1_0.html#ClientAuthentication and
+            // https://datatracker.ietf.org/doc/html/rfc7523#section-3.
+            if (context.ClientAssertionPrincipal.GetAudiences() is not [_])
             {
                 context.Reject(
                     error: Errors.InvalidRequest,
@@ -755,10 +790,12 @@ public static partial class OpenIddictServerHandlers
                 return ValueTask.CompletedTask;
             }
 
-            // Client assertions MUST contain contain a "exp" claim. For more information,
-            // see https://openid.net/specs/openid-connect-core-1_0.html#ClientAuthentication
-            // and https://datatracker.ietf.org/doc/html/rfc7523#section-3.
-            if (!context.ClientAssertionPrincipal.HasClaim(Claims.ExpiresAt))
+            // Client assertions MUST contain contain an expiration date.
+            //
+            // For more information, see
+            // https://openid.net/specs/openid-connect-core-1_0.html#ClientAuthentication and
+            // https://datatracker.ietf.org/doc/html/rfc7523#section-3.
+            if (context.ClientAssertionPrincipal.GetExpirationDate() is null)
             {
                 context.Reject(
                     error: Errors.InvalidRequest,
@@ -871,6 +908,7 @@ public static partial class OpenIddictServerHandlers
     /// <summary>
     /// Contains the logic responsible for validating the audience contained in the client assertion principal.
     /// </summary>
+    [Obsolete("This class is obsolete and will be removed in a future version.")]
     public sealed class ValidateClientAssertionAudience : IOpenIddictServerHandler<ProcessAuthenticationContext>
     {
         /// <summary>
@@ -885,70 +923,7 @@ public static partial class OpenIddictServerHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessAuthenticationContext context)
-        {
-            ArgumentNullException.ThrowIfNull(context);
-
-            Debug.Assert(context.ClientAssertionPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
-
-            // Important: client assertions with multiple audiences was initially deliberately supported by
-            // the OpenID Connect and Assertion Framework for OAuth 2.0 Client Authentication specifications.
-            // Since 2025, using multiple audiences is no longer allowed for security reasons: as such, a single
-            // audience is allowed here and an exception is thrown if multiple claims are present in the principal.
-            //
-            // See https://www.ietf.org/archive/id/draft-ietf-oauth-rfc7523bis-01.html#section-4 for more information.
-            var audience = context.ClientAssertionPrincipal.GetClaim(Claims.Audience);
-            if (string.IsNullOrEmpty(audience) ||
-                !Uri.TryCreate(audience, UriKind.Absolute, out Uri? uri) || OpenIddictHelpers.IsImplicitFileUri(uri))
-            {
-                context.Reject(
-                    error: Errors.InvalidGrant,
-                    description: SR.FormatID2172(Claims.Audience),
-                    uri: SR.FormatID8000(SR.ID2172));
-
-                return ValueTask.CompletedTask;
-            }
-
-            // Throw an exception if the issuer cannot be retrieved or is not valid.
-            var issuer = context.Options.Issuer ?? context.BaseUri;
-            if (issuer is not { IsAbsoluteUri: true })
-            {
-                throw new InvalidOperationException(SR.GetResourceString(SR.ID0496));
-            }
-
-            if (!UriEquals(uri, issuer))
-            {
-                context.Reject(
-                    error: Errors.InvalidGrant,
-                    description: SR.FormatID2173(Claims.Audience),
-                    uri: SR.FormatID8000(SR.ID2173));
-
-                return ValueTask.CompletedTask;
-            }
-
-            return ValueTask.CompletedTask;
-
-            static bool UriEquals(Uri left, Uri right)
-            {
-                if (string.Equals(left.AbsolutePath, right.AbsolutePath, StringComparison.Ordinal))
-                {
-                    return true;
-                }
-
-                // Consider the two URIs identical if they only differ by the trailing slash.
-
-                if (left.AbsolutePath.Length == right.AbsolutePath.Length + 1 &&
-                    left.AbsolutePath.StartsWith(right.AbsolutePath, StringComparison.Ordinal) &&
-                    left.AbsolutePath[^1] is '/')
-                {
-                    return true;
-                }
-
-                return right.AbsolutePath.Length == left.AbsolutePath.Length + 1 &&
-                       right.AbsolutePath.StartsWith(left.AbsolutePath, StringComparison.Ordinal) &&
-                       right.AbsolutePath[^1] is '/';
-            }
-        }
+        public ValueTask HandleAsync(ProcessAuthenticationContext context) => default;
     }
 
     /// <summary>
@@ -977,7 +952,9 @@ public static partial class OpenIddictServerHandlers
                         new ValidateClientId(provider.GetService<IOpenIddictApplicationManager>() ??
                             throw new InvalidOperationException(SR.GetResourceString(SR.ID0016)));
                 })
+#pragma warning disable CS0618
                 .SetOrder(ValidateClientAssertionAudience.Descriptor.Order + 1_000)
+#pragma warning restore CS0618
                 .SetType(OpenIddictServerHandlerType.BuiltIn)
                 .Build();
 
