@@ -45,7 +45,7 @@
     <PackageVersion Include="System.Buffers"                                        Version="4.6.1"           />
     <PackageVersion Include="System.Collections.Immutable"                          Version="8.0.0"           />
     <PackageVersion Include="System.Net.Http.Json"                                  Version="8.0.1"           />
-    <PackageVersion Include="System.Interactive.Async"                              Version="7.0.1"           />
+    <PackageVersion Include="System.Interactive.Async"                              Version="[3.2.0, 4.0.0)"  />
     <PackageVersion Include="System.Runtime.InteropServices.RuntimeInformation"     Version="4.3.0"           />
     <PackageVersion Include="System.Security.Cryptography.Xml"                      Version="8.0.4"           />
   </ItemGroup>
@@ -85,7 +85,7 @@
     <PackageVersion Include="Quartz.Extensions.DependencyInjection"                 Version="[3.20.1, 4.0.0)" />
     <PackageVersion Include="System.Buffers"                                        Version="4.6.1"           />
     <PackageVersion Include="System.Collections.Immutable"                          Version="8.0.0"           />
-    <PackageVersion Include="System.Interactive.Async"                              Version="7.0.1"           />
+    <PackageVersion Include="System.Interactive.Async"                              Version="[3.2.0, 4.0.0)"  />
     <PackageVersion Include="System.Net.Http.Json"                                  Version="8.0.1"           />
     <PackageVersion Include="System.Security.Cryptography.Xml"                      Version="8.0.4"           />
 
@@ -137,7 +137,7 @@
     <PackageVersion Include="Quartz.Extensions.DependencyInjection"                 Version="[3.20.1, 4.0.0)" />
     <PackageVersion Include="System.Buffers"                                        Version="4.6.1"           />
     <PackageVersion Include="System.Collections.Immutable"                          Version="8.0.0"           />
-    <PackageVersion Include="System.Interactive.Async"                              Version="7.0.1"           />
+    <PackageVersion Include="System.Interactive.Async"                              Version="[3.2.0, 4.0.0)"  />
     <PackageVersion Include="System.Net.Http.Json"                                  Version="8.0.1"           />
     <PackageVersion Include="System.Security.Cryptography.Xml"                      Version="8.0.4"           />
 
@@ -361,7 +361,7 @@
     <PackageVersion Include="System.Buffers"                                        Version="4.6.1"           />
     <PackageVersion Include="System.Collections.Immutable"                          Version="8.0.0"           />
     <PackageVersion Include="System.ComponentModel.Annotations"                     Version="5.0.0"           />
-    <PackageVersion Include="System.Interactive.Async"                              Version="7.0.1"           />
+    <PackageVersion Include="System.Interactive.Async"                              Version="[3.2.0, 4.0.0)"  />
     <PackageVersion Include="System.Net.Http.Json"                                  Version="8.0.1"           />
     <PackageVersion Include="System.Security.Cryptography.Xml"                      Version="8.0.4"           />
 
@@ -406,7 +406,7 @@
     <PackageVersion Include="System.Buffers"                                        Version="4.6.1"           />
     <PackageVersion Include="System.Collections.Immutable"                          Version="8.0.0"           />
     <PackageVersion Include="System.ComponentModel.Annotations"                     Version="5.0.0"           />
-    <PackageVersion Include="System.Interactive.Async"                              Version="7.0.1"           />
+    <PackageVersion Include="System.Interactive.Async"                              Version="[3.2.0, 4.0.0)"  />
     <PackageVersion Include="System.Net.Http.Json"                                  Version="8.0.1"           />
     <PackageVersion Include="System.Security.Cryptography.Xml"                      Version="8.0.4"           />
   </ItemGroup>
