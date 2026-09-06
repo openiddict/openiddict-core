@@ -412,17 +412,21 @@ public static partial class OpenIddictServerHandlers
             {
                 ArgumentNullException.ThrowIfNull(context);
 
-                if (!context.Request.IsAuthorizationCodeGrantType() && !context.Request.IsClientCredentialsGrantType())
+                if (!context.Request.IsAuthorizationCodeGrantType() &&
+                    !context.Request.IsClientCredentialsGrantType() &&
+                    !context.Request.IsDeviceCodeGrantType())
                 {
                     return ValueTask.CompletedTask;
                 }
 
-                // Reject grant_type=authorization_code and grant_type=client_credentials requests that
-                // don't specify a client_id or a client_assertion, as the client identity MUST be sent
+                // Reject grant_type=authorization_code, grant_type=client_credentials and
+                // grant_type=urn:ietf:params:oauth:grant-type:device_code requests that don't
+                // specify a client_id or a client_assertion, as the client identity MUST be sent
                 // by the client application (even when using mTLS OAuth 2.0 client authentication).
                 //
-                // See https://tools.ietf.org/html/rfc6749#section-4.1.3
-                // and https://tools.ietf.org/html/rfc6749#section-4.4.1 for more information.
+                // See https://tools.ietf.org/html/rfc6749#section-4.1.3,
+                // https://tools.ietf.org/html/rfc6749#section-4.4.1 and
+                // https://tools.ietf.org/html/rfc8628#section-3.4 for more information.
                 if (string.IsNullOrEmpty(context.Request.ClientId) &&
                     string.IsNullOrEmpty(context.Request.ClientAssertion))
                 {

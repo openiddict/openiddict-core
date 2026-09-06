@@ -194,6 +194,27 @@ public abstract partial class OpenIddictServerIntegrationTests
     }
 
     [Fact]
+    public async Task ValidateTokenRequest_MissingClientIdCausesAnErrorForDeviceCodeRequests()
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options => options.EnableDegradedMode());
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/connect/token", new OpenIddictRequest
+        {
+            ClientId = null,
+            DeviceCode = "GmRhmhcxhwAzkoEqiMEg_DnyEysNkuNhszIySk9eS",
+            GrantType = GrantTypes.DeviceCode
+        });
+
+        // Assert
+        Assert.Equal(Errors.InvalidRequest, response.Error);
+        Assert.Equal(SR.FormatID2029(Parameters.ClientId), response.ErrorDescription);
+        Assert.Equal(SR.FormatID8000(SR.ID2029), response.ErrorUri);
+    }
+
+    [Fact]
     public async Task ValidateTokenRequest_MissingCodeCausesAnError()
     {
         // Arrange
@@ -943,6 +964,17 @@ public abstract partial class OpenIddictServerIntegrationTests
                 builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
             });
 
+            options.Services.AddSingleton(CreateApplicationManager(mock =>
+            {
+                var application = new OpenIddictApplication();
+
+                mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(application);
+
+                mock.Setup(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(true);
+            }));
+
             options.Services.AddSingleton(manager);
         });
 
@@ -951,6 +983,7 @@ public abstract partial class OpenIddictServerIntegrationTests
         // Act
         var response = await client.PostAsync("/connect/token", new OpenIddictRequest
         {
+            ClientId = "Fabrikam",
             GrantType = GrantTypes.DeviceCode,
             DeviceCode = "g43LaWCUrz2RaLILz2L1bg1bOpMSv1hGrH12IIkB9H4"
         });
@@ -2497,67 +2530,6 @@ public abstract partial class OpenIddictServerIntegrationTests
         Assert.Equal(Errors.InvalidRequest, response.Error);
         Assert.Equal(SR.FormatID2057(Parameters.ClientSecret, Parameters.ClientAssertion), response.ErrorDescription);
         Assert.Equal(SR.FormatID8000(SR.ID2057), response.ErrorUri);
-    }
-
-    [Fact]
-    public async Task ValidateTokenRequest_RequestWithoutClientIdIsRejectedWhenClientIdentificationIsRequired()
-    {
-        // Arrange
-        await using var server = await CreateServerAsync(options =>
-        {
-            options.EnableDegradedMode();
-            options.Configure(options => options.AcceptAnonymousClients = false);
-        });
-
-        await using var client = await server.CreateClientAsync();
-
-        // Act
-        var response = await client.PostAsync("/connect/token", new OpenIddictRequest
-        {
-            ClientId = null,
-            GrantType = GrantTypes.Password,
-            Username = "johndoe",
-            Password = "A3ddj3w"
-        });
-
-        // Assert
-        Assert.Equal(Errors.InvalidClient, response.Error);
-        Assert.Equal(SR.FormatID2029(Parameters.ClientId), response.ErrorDescription);
-        Assert.Equal(SR.FormatID8000(SR.ID2029), response.ErrorUri);
-    }
-
-    [Fact]
-    public async Task ValidateTokenRequest_RequestIsRejectedWhenClientCannotBeFound()
-    {
-        // Arrange
-        var manager = CreateApplicationManager(mock =>
-        {
-            mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
-                .ReturnsAsync(value: null);
-        });
-
-        await using var server = await CreateServerAsync(options =>
-        {
-            options.Services.AddSingleton(manager);
-        });
-
-        await using var client = await server.CreateClientAsync();
-
-        // Act
-        var response = await client.PostAsync("/connect/token", new OpenIddictRequest
-        {
-            ClientId = "Fabrikam",
-            GrantType = GrantTypes.Password,
-            Username = "johndoe",
-            Password = "A3ddj3w"
-        });
-
-        // Assert
-        Assert.Equal(Errors.InvalidClient, response.Error);
-        Assert.Equal(SR.FormatID2052(Parameters.ClientId), response.ErrorDescription);
-        Assert.Equal(SR.FormatID8000(SR.ID2052), response.ErrorUri);
-
-        Mock.Get(manager).Verify(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()), Times.AtLeastOnce());
     }
 
     [Fact]
