@@ -25,16 +25,38 @@ public static class OpenIddictQuartzExtensions
     {
         ArgumentNullException.ThrowIfNull(builder);
 
-        builder.Services.AddQuartz();
+        // Note: the AddQuartz() method MUST only be called once to avoid adding multiple jobs and triggers.
+        if (!builder.Services.Any(static descriptor => descriptor.ServiceType == typeof(OpenIddictQuartzJob)))
+        {
+            builder.Services.AddQuartz(options =>
+            {
+                options.AddJob<OpenIddictQuartzJob>(static builder =>
+                {
+                    builder.StoreDurably()
+                           .WithIdentity(OpenIddictQuartzJob.Identity)
+                           .WithDescription(SR.GetResourceString(SR.ID8001));
+                });
 
-        // The OpenIddict job is registered as a service to allow
-        // Quartz.NET's DI integration to resolve it from the DI.
+                options.AddTrigger(static builder =>
+                {
+                    // Note: this trigger uses a quite long interval (1 hour), which means it may be potentially never
+                    // reached if the application is shut down or recycled. As such, this trigger is set up to fire
+                    // between 1 and 10 minutes after the application starts to ensure the job is executed at least once.
+                    builder.ForJob(OpenIddictQuartzJob.Identity)
+                           .WithIdentity(SR.GetResourceString(SR.ID8004), SR.GetResourceString(SR.ID8005))
+                           .WithSimpleSchedule(options => options.WithInterval(TimeSpan.FromHours(1)).RepeatForever())
+                           .WithDescription(SR.GetResourceString(SR.ID8002))
+                           .StartAt(TimeProvider.System.GetUtcNow() + TimeSpan.FromMinutes(new Random().Next(1, 10)));
+                });
+            });
+        }
+
+#if !NET10_0_OR_GREATER
+        // Note: unlike Quartz.NET 4.0+, Quartz.NET 3.x doesn't automatically register the job as a service.
         builder.Services.TryAddTransient<OpenIddictQuartzJob>();
+#endif
 
-        // Note: TryAddEnumerable() is used here to ensure the initializers are registered only once.
-        builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<
-            IConfigureOptions<QuartzOptions>, OpenIddictQuartzConfiguration>());
-
+        // Note: TryAddEnumerable() is used here to ensure the initializer is registered only once.
         builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<
             IPostConfigureOptions<OpenIddictQuartzOptions>, OpenIddictQuartzConfiguration>());
 
