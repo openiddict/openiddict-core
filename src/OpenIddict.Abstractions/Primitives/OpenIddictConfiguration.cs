@@ -122,9 +122,19 @@ public sealed class OpenIddictConfiguration
     public HashSet<string> PushedAuthorizationEndpointAuthMethodsSupported { get; } = new(StringComparer.Ordinal);
 
     /// <summary>
+    /// Gets or sets a boolean indicating whether the "request" parameter (i.e request objects) is supported.
+    /// </summary>
+    public bool? RequestParameterSupported { get; set; }
+
+    /// <summary>
     /// Gets or sets a boolean indicating whether pushed authorization requests are required.
     /// </summary>
     public bool? RequirePushedAuthorizationRequests { get; set; }
+
+    /// <summary>
+    /// Gets or sets a boolean indicating whether signed request objects are required.
+    /// </summary>
+    public bool? RequireSignedRequestObject { get; set; }
 
     /// <summary>
     /// Gets the response mode supported by the server.

@@ -1791,6 +1791,17 @@ To use a custom policy relying on the system store, set 'OpenIddictServerOptions
   <data name="ID0523" xml:space="preserve">
     <value>A configuration manager must be attached to the validation options.</value>
   </data>
+  <data name="ID0524" xml:space="preserve">
+    <value>Signed request objects cannot be required when request object support is not enabled.
+To enable request object support, call 'services.AddOpenIddict().AddServer().EnableRequestObjectSupport()'.</value>
+  </data>
+  <data name="ID0525" xml:space="preserve">
+    <value>The request object parameters cannot be resolved as the token validation result doesn't contain a JSON Web Token.</value>
+  </data>
+  <data name="ID0526" xml:space="preserve">
+    <value>A signed request object must be sent but no asymmetric signing key was attached to the client registration.
+To use signed request objects, attach an asymmetric signing key or certificate to the client registration.</value>
+  </data>
   <data name="ID2000" xml:space="preserve">
     <value>The security token is missing.</value>
   </data>
@@ -2422,6 +2433,12 @@ To use a custom policy relying on the system store, set 'OpenIddictServerOptions
   </data>
   <data name="ID2210" xml:space="preserve">
     <value>The session associated with the token is no longer valid.</value>
+  </data>
+  <data name="ID2211" xml:space="preserve">
+    <value>The specified request object is invalid.</value>
+  </data>
+  <data name="ID2212" xml:space="preserve">
+    <value>The '{0}' claim of the request object is missing or invalid.</value>
   </data>
   <data name="ID4000" xml:space="preserve">
     <value>The '{0}' parameter shouldn't be null or empty at this point.</value>
@@ -3286,6 +3303,9 @@ This may indicate that the hashed entry is corrupted or malformed.</value>
   </data>
   <data name="ID6297" xml:space="preserve">
     <value>The session '{Identifier}' was no longer valid.</value>
+  </data>
+  <data name="ID6298" xml:space="preserve">
+    <value>The authorization request was rejected because the request object was invalid: {Error} ({Description}).</value>
   </data>
   <data name="ID8000" xml:space="preserve">
     <value>https://documentation.openiddict.com/errors/{0}</value>

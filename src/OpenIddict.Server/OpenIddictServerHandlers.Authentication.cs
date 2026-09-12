@@ -4,12 +4,15 @@
  * the license and the contributors participating to this project.
  */
 
+using System.Buffers.Text;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Security.Claims;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.JsonWebTokens;
 
 namespace OpenIddict.Server;
 
@@ -36,6 +39,7 @@ public static partial class OpenIddictServerHandlers
             ValidateRequestParameter.Descriptor,
             ValidateRequestUriParameter.Descriptor,
             ValidateClientIdParameter.Descriptor,
+            ValidateRequestObject.Descriptor,
             ValidateAuthentication.Descriptor,
             RestorePushedAuthorizationRequestParameters.Descriptor,
             ValidateRedirectUriParameter.Descriptor,
@@ -57,6 +61,7 @@ public static partial class OpenIddictServerHandlers
             ValidateScopePermissions.Descriptor,
             ValidateResourcePermissions.Descriptor,
             ValidatePushedAuthorizationRequestsRequirement.Descriptor,
+            ValidateSignedRequestObjectsRequirement.Descriptor,
             ValidateProofKeyForCodeExchangeRequirement.Descriptor,
             ValidateAuthorizedParty.Descriptor,
 
@@ -90,6 +95,7 @@ public static partial class OpenIddictServerHandlers
             ValidatePushedRequestParameter.Descriptor,
             ValidatePushedRequestUriParameter.Descriptor,
             ValidatePushedClientIdParameter.Descriptor,
+            ValidatePushedRequestObject.Descriptor,
             ValidatePushedRedirectUriParameter.Descriptor,
             ValidatePushedResponseTypeParameter.Descriptor,
             ValidatePushedResponseModeParameter.Descriptor,
@@ -109,6 +115,7 @@ public static partial class OpenIddictServerHandlers
             ValidatePushedResponseTypePermissions.Descriptor,
             ValidatePushedScopePermissions.Descriptor,
             ValidatePushedResourcePermissions.Descriptor,
+            ValidatePushedSignedRequestObjectsRequirement.Descriptor,
             ValidatePushedProofKeyForCodeExchangeRequirement.Descriptor,
             ValidatePushedAuthorizedParty.Descriptor,
 
@@ -421,7 +428,9 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible for rejecting authorization requests that specify the unsupported request parameter.
+        /// Contains the logic responsible for rejecting authorization requests that specify
+        /// the request parameter when request object support is not enabled or that don't
+        /// specify a request object when signed request objects are globally required.
         /// </summary>
         public sealed class ValidateRequestParameter : IOpenIddictServerHandler<ValidateAuthorizationRequestContext>
         {
@@ -440,8 +449,28 @@ public static partial class OpenIddictServerHandlers
             {
                 ArgumentNullException.ThrowIfNull(context);
 
-                // Reject requests using the unsupported request parameter.
-                if (!string.IsNullOrEmpty(context.Request.Request))
+                if (string.IsNullOrEmpty(context.Request.Request))
+                {
+                    // If signed request objects are globally required, reject requests that don't include
+                    // a request object, unless a request token (e.g a pushed authorization request) is used,
+                    // in which case the requirement is enforced when the request token is initially created.
+                    if (context.Options.RequireSignedRequestObjects && string.IsNullOrEmpty(context.Request.RequestUri))
+                    {
+                        context.Logger.LogInformation(6033, SR.GetResourceString(SR.ID6033), Parameters.Request);
+
+                        context.Reject(
+                            error: Errors.InvalidRequest,
+                            description: SR.FormatID2029(Parameters.Request),
+                            uri: SR.FormatID8000(SR.ID2029));
+
+                        return ValueTask.CompletedTask;
+                    }
+
+                    return ValueTask.CompletedTask;
+                }
+
+                // Reject requests using the request parameter if request object support was not enabled.
+                if (!context.Options.EnableRequestObjectSupport)
                 {
                     context.Logger.LogInformation(6032, SR.GetResourceString(SR.ID6032), Parameters.Request);
 
@@ -449,6 +478,33 @@ public static partial class OpenIddictServerHandlers
                         error: Errors.RequestNotSupported,
                         description: SR.FormatID2028(Parameters.Request),
                         uri: SR.FormatID8000(SR.ID2028));
+
+                    return ValueTask.CompletedTask;
+                }
+
+                // The request and request_uri parameters cannot be used in the same authorization request.
+                //
+                // See https://datatracker.ietf.org/doc/html/rfc9101#section-5 for more information.
+                if (!string.IsNullOrEmpty(context.Request.RequestUri))
+                {
+                    context.Reject(
+                        error: Errors.InvalidRequest,
+                        description: SR.FormatID2074(Parameters.Request),
+                        uri: SR.FormatID8000(SR.ID2074));
+
+                    return ValueTask.CompletedTask;
+                }
+
+                // Both the OpenID Connect core and OAuth 2.0 JWT-Secured Authorization Request specifications
+                // require attaching the client identifier as a regular OAuth 2.0 authorization request parameter.
+                //
+                // See https://datatracker.ietf.org/doc/html/rfc9101#section-5 for more information.
+                if (string.IsNullOrEmpty(context.Request.ClientId))
+                {
+                    context.Reject(
+                        error: Errors.InvalidRequest,
+                        description: SR.FormatID2177(Parameters.ClientId),
+                        uri: SR.FormatID8000(SR.ID2177));
 
                     return ValueTask.CompletedTask;
                 }
@@ -563,6 +619,49 @@ public static partial class OpenIddictServerHandlers
                 }
 
                 return ValueTask.CompletedTask;
+            }
+        }
+
+        /// <summary>
+        /// Contains the logic responsible for validating the request object attached to authorization requests
+        /// and replacing the authorization request parameters by the parameters contained in the request object.
+        /// </summary>
+        public sealed class ValidateRequestObject : IOpenIddictServerHandler<ValidateAuthorizationRequestContext>
+        {
+            private readonly IOpenIddictServerDispatcher _dispatcher;
+
+            public ValidateRequestObject(IOpenIddictServerDispatcher dispatcher)
+                => _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
+
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateAuthorizationRequestContext>()
+                    .UseSingletonHandler<ValidateRequestObject>()
+                    .SetOrder(ValidateClientIdParameter.Descriptor.Order + 500)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public async ValueTask HandleAsync(ValidateAuthorizationRequestContext context)
+            {
+                ArgumentNullException.ThrowIfNull(context);
+
+                if (string.IsNullOrEmpty(context.Request.Request))
+                {
+                    return;
+                }
+
+                var (principal, request) = await ValidateRequestObjectAsync(context, _dispatcher, context.Request);
+                if (principal is null || request is null)
+                {
+                    return;
+                }
+
+                context.Request = request;
+                context.RedirectUri = request.RedirectUri;
+                context.RequestObjectPrincipal = principal;
             }
         }
 
@@ -1963,6 +2062,58 @@ public static partial class OpenIddictServerHandlers
 
         /// <summary>
         /// Contains the logic responsible for rejecting authorization requests made by
+        /// applications for which signed request objects (JAR) are enforced.
+        /// Note: this handler is not used when the degraded mode is enabled.
+        /// </summary>
+        public sealed class ValidateSignedRequestObjectsRequirement : IOpenIddictServerHandler<ValidateAuthorizationRequestContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateAuthorizationRequestContext>()
+                    .AddFilter<RequireDegradedModeDisabled>()
+                    .UseSingletonHandler<ValidateSignedRequestObjectsRequirement>()
+                    .SetOrder(ValidatePushedAuthorizationRequestsRequirement.Descriptor.Order + 500)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public async ValueTask HandleAsync(ValidateAuthorizationRequestContext context)
+            {
+                ArgumentNullException.ThrowIfNull(context);
+
+                Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
+
+                // If a request object or a request token was extracted, the request is always considered valid:
+                // when a request token is used, the requirement is enforced when the request token is created.
+                if (context.RequestObjectPrincipal is not null || context.RequestTokenPrincipal is not null)
+                {
+                    return;
+                }
+
+                var manager = context.ServiceProvider.GetService<IOpenIddictApplicationManager>()
+                    ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
+
+                var application = await manager.FindByClientIdAsync(context.ClientId, context.CancellationToken)
+                    ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
+
+                if (await manager.HasRequirementAsync(application, Requirements.Features.SignedRequestObjects, context.CancellationToken))
+                {
+                    context.Logger.LogInformation(6033, SR.GetResourceString(SR.ID6033), Parameters.Request);
+
+                    context.Reject(
+                        error: Errors.InvalidRequest,
+                        description: SR.FormatID2054(Parameters.Request),
+                        uri: SR.FormatID8000(SR.ID2054));
+
+                    return;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Contains the logic responsible for rejecting authorization requests made by
         /// applications for which proof key for code exchange (PKCE) was enforced.
         /// Note: this handler is not used when the degraded mode is enabled.
         /// </summary>
@@ -2519,8 +2670,9 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible for rejecting pushed authorization
-        /// requests that specify the unsupported request parameter.
+        /// Contains the logic responsible for rejecting pushed authorization requests that specify
+        /// the request parameter when request object support is not enabled or that don't
+        /// specify a request object when signed request objects are globally required.
         /// </summary>
         public sealed class ValidatePushedRequestParameter : IOpenIddictServerHandler<ValidatePushedAuthorizationRequestContext>
         {
@@ -2539,8 +2691,26 @@ public static partial class OpenIddictServerHandlers
             {
                 ArgumentNullException.ThrowIfNull(context);
 
-                // Reject requests using the unsupported request parameter.
-                if (!string.IsNullOrEmpty(context.Request.Request))
+                if (string.IsNullOrEmpty(context.Request.Request))
+                {
+                    // If signed request objects are globally required, reject requests that don't include a request object.
+                    if (context.Options.RequireSignedRequestObjects)
+                    {
+                        context.Logger.LogInformation(6240, SR.GetResourceString(SR.ID6240), Parameters.Request);
+
+                        context.Reject(
+                            error: Errors.InvalidRequest,
+                            description: SR.FormatID2029(Parameters.Request),
+                            uri: SR.FormatID8000(SR.ID2029));
+
+                        return ValueTask.CompletedTask;
+                    }
+
+                    return ValueTask.CompletedTask;
+                }
+
+                // Reject requests using the request parameter if request object support was not enabled.
+                if (!context.Options.EnableRequestObjectSupport)
                 {
                     context.Logger.LogInformation(6239, SR.GetResourceString(SR.ID6239), Parameters.Request);
 
@@ -2631,6 +2801,49 @@ public static partial class OpenIddictServerHandlers
                 }
 
                 return ValueTask.CompletedTask;
+            }
+        }
+
+        /// <summary>
+        /// Contains the logic responsible for validating the request object attached to pushed authorization requests
+        /// and replacing the pushed authorization request parameters by the parameters contained in the request object.
+        /// </summary>
+        public sealed class ValidatePushedRequestObject : IOpenIddictServerHandler<ValidatePushedAuthorizationRequestContext>
+        {
+            private readonly IOpenIddictServerDispatcher _dispatcher;
+
+            public ValidatePushedRequestObject(IOpenIddictServerDispatcher dispatcher)
+                => _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
+
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidatePushedAuthorizationRequestContext>()
+                    .UseSingletonHandler<ValidatePushedRequestObject>()
+                    .SetOrder(ValidatePushedClientIdParameter.Descriptor.Order + 500)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public async ValueTask HandleAsync(ValidatePushedAuthorizationRequestContext context)
+            {
+                ArgumentNullException.ThrowIfNull(context);
+
+                if (string.IsNullOrEmpty(context.Request.Request))
+                {
+                    return;
+                }
+
+                var (principal, request) = await ValidateRequestObjectAsync(context, _dispatcher, context.Request);
+                if (principal is null || request is null)
+                {
+                    return;
+                }
+
+                context.Request = request;
+                context.RedirectUri = request.RedirectUri;
+                context.RequestObjectPrincipal = principal;
             }
         }
 
@@ -3904,6 +4117,56 @@ public static partial class OpenIddictServerHandlers
 
         /// <summary>
         /// Contains the logic responsible for rejecting pushed authorization requests made by
+        /// applications for which signed request objects (JAR) are enforced.
+        /// Note: this handler is not used when the degraded mode is enabled.
+        /// </summary>
+        public sealed class ValidatePushedSignedRequestObjectsRequirement : IOpenIddictServerHandler<ValidatePushedAuthorizationRequestContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidatePushedAuthorizationRequestContext>()
+                    .AddFilter<RequireDegradedModeDisabled>()
+                    .UseSingletonHandler<ValidatePushedSignedRequestObjectsRequirement>()
+                    .SetOrder(ValidatePushedResourcePermissions.Descriptor.Order + 500)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public async ValueTask HandleAsync(ValidatePushedAuthorizationRequestContext context)
+            {
+                ArgumentNullException.ThrowIfNull(context);
+
+                Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
+
+                if (context.RequestObjectPrincipal is not null)
+                {
+                    return;
+                }
+
+                var manager = context.ServiceProvider.GetService<IOpenIddictApplicationManager>()
+                    ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
+
+                var application = await manager.FindByClientIdAsync(context.ClientId, context.CancellationToken)
+                    ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
+
+                if (await manager.HasRequirementAsync(application, Requirements.Features.SignedRequestObjects, context.CancellationToken))
+                {
+                    context.Logger.LogInformation(6240, SR.GetResourceString(SR.ID6240), Parameters.Request);
+
+                    context.Reject(
+                        error: Errors.InvalidRequest,
+                        description: SR.FormatID2054(Parameters.Request),
+                        uri: SR.FormatID8000(SR.ID2054));
+
+                    return;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Contains the logic responsible for rejecting pushed authorization requests made by
         /// applications for which proof key for code exchange (PKCE) was enforced.
         /// Note: this handler is not used when the degraded mode is enabled.
         /// </summary>
@@ -4030,6 +4293,163 @@ public static partial class OpenIddictServerHandlers
 
                 return ValueTask.CompletedTask;
             }
+        }
+
+        /// <summary>
+        /// Validates the request object attached to the specified request and, if valid, returns
+        /// the principal extracted from the request object and the request parameters it contains.
+        /// If the request object is invalid, the context is automatically rejected.
+        /// </summary>
+        private static async ValueTask<(ClaimsPrincipal? Principal, OpenIddictRequest? Request)> ValidateRequestObjectAsync(
+            BaseValidatingContext context, IOpenIddictServerDispatcher dispatcher, OpenIddictRequest request)
+        {
+            Debug.Assert(!string.IsNullOrEmpty(request.Request), SR.FormatID4000(Parameters.Request));
+            Debug.Assert(!string.IsNullOrEmpty(request.ClientId), SR.FormatID4000(Parameters.ClientId));
+
+            // Throw an exception if the issuer cannot be retrieved or is not valid.
+            var issuer = context.Options.Issuer ?? context.BaseUri;
+            if (issuer is not { IsAbsoluteUri: true })
+            {
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0496));
+            }
+
+            var notification = new ValidateTokenContext(context.Transaction)
+            {
+                DisablePresenterValidation = true,
+                Token = request.Request,
+                TokenFormat = TokenFormats.Private.JsonWebToken,
+                ValidTokenTypes = { TokenTypeIdentifiers.Private.RequestObject }
+            };
+
+            // Note: for request objects, the audience MUST be the issuer URI.
+            //
+            // See https://datatracker.ietf.org/doc/html/rfc9101#section-4 for more information.
+            if (issuer is { AbsolutePath: "/", Query.Length: 0, Fragment.Length: 0 })
+            {
+                notification.ValidAudiences.Add(issuer.AbsoluteUri);
+                notification.ValidAudiences.Add(issuer.AbsoluteUri[..^1]);
+            }
+
+            else if (issuer is { AbsolutePath.Length: 0, Query.Length: 0, Fragment.Length: 0 })
+            {
+                notification.ValidAudiences.Add(issuer.AbsoluteUri);
+                notification.ValidAudiences.Add(issuer.AbsoluteUri + "/");
+            }
+
+            else
+            {
+                notification.ValidAudiences.Add(issuer.AbsoluteUri);
+            }
+
+            await dispatcher.DispatchAsync(notification);
+
+            if (notification.IsRequestHandled)
+            {
+                context.HandleRequest();
+                return default;
+            }
+
+            if (notification.IsRequestSkipped)
+            {
+                context.SkipRequest();
+                return default;
+            }
+
+            if (notification.IsRejected)
+            {
+                context.Logger.LogInformation(6298, SR.GetResourceString(SR.ID6298),
+                    notification.Error, notification.ErrorDescription);
+
+                context.Reject(
+                    error: Errors.InvalidRequestObject,
+                    description: SR.GetResourceString(SR.ID2211),
+                    uri: SR.FormatID8000(SR.ID2211));
+
+                return default;
+            }
+
+            Debug.Assert(notification.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
+
+            // Signed request objects MUST be issued by the client application sending them.
+            //
+            // See https://datatracker.ietf.org/doc/html/rfc9101#section-4 for more information.
+            if (!string.Equals(notification.Principal.GetClaim(Claims.Issuer), request.ClientId, StringComparison.Ordinal))
+            {
+                context.Reject(
+                    error: Errors.InvalidRequestObject,
+                    description: SR.FormatID2212(Claims.Issuer),
+                    uri: SR.FormatID8000(SR.ID2212));
+
+                return default;
+            }
+
+            // Resolve the parameters from the raw payload of the request object to preserve their original JSON type.
+            if (notification.TokenValidationResult?.SecurityToken is not JsonWebToken token)
+            {
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0525));
+            }
+
+            if (JsonNode.Parse(Base64Url.DecodeFromChars((token.InnerToken ?? token).EncodedPayload)) is not JsonObject parameters)
+            {
+                context.Reject(
+                    error: Errors.InvalidRequestObject,
+                    description: SR.GetResourceString(SR.ID2211),
+                    uri: SR.FormatID8000(SR.ID2211));
+
+                return default;
+            }
+
+            // If a client_id parameter is present in the request object, it MUST match the regular client_id parameter.
+            if (parameters.TryGetPropertyValue(Parameters.ClientId, out var node) &&
+                (node is not JsonValue value || !value.TryGetValue(out string? identifier) ||
+                 !string.Equals(identifier, request.ClientId, StringComparison.Ordinal)))
+            {
+                context.Reject(
+                    error: Errors.InvalidRequest,
+                    description: SR.FormatID2178(Parameters.ClientId),
+                    uri: SR.FormatID8000(SR.ID2178));
+
+                return default;
+            }
+
+            // Request objects MUST NOT contain nested request or request_uri parameters.
+            //
+            // See https://datatracker.ietf.org/doc/html/rfc9101#section-4 for more information.
+            foreach (var name in (string[]) [Parameters.Request, Parameters.RequestUri])
+            {
+                if (parameters.ContainsKey(name))
+                {
+                    context.Reject(
+                        error: Errors.InvalidRequestObject,
+                        description: SR.FormatID2074(name),
+                        uri: SR.FormatID8000(SR.ID2074));
+
+                    return default;
+                }
+            }
+
+            // Remove the JWT registered claims and the client authentication parameters from the request object:
+            // client authentication parameters are only accepted as regular parameters (e.g for PAR requests).
+            foreach (var name in (string[]) [Claims.Audience, Claims.ExpiresAt, Claims.IssuedAt, Claims.Issuer,
+                Claims.JwtId, Claims.NotBefore, Parameters.ClientAssertion, Parameters.ClientAssertionType, Parameters.ClientSecret])
+            {
+                parameters.Remove(name);
+            }
+
+            // Note: as required by the OAuth 2.0 JWT-Secured Authorization Request specification, all the parameters
+            // attached as regular OAuth 2.0 parameters are ignored, except the client identifier and the parameters
+            // used for client authentication. For more information, see https://datatracker.ietf.org/doc/html/rfc9101#section-5.
+            parameters[Parameters.ClientId] = request.ClientId;
+
+            foreach (var name in (string[]) [Parameters.ClientAssertion, Parameters.ClientAssertionType, Parameters.ClientSecret])
+            {
+                if (request.GetParameter(name) is OpenIddictParameter parameter)
+                {
+                    parameters[name] = (string?) parameter;
+                }
+            }
+
+            return (notification.Principal, new OpenIddictRequest(parameters));
         }
     }
 }

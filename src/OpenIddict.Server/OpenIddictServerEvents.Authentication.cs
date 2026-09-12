@@ -79,6 +79,12 @@ public static partial class OpenIddictServerEvents
 
         /// <summary>
         /// Gets or sets the security principal extracted from the
+        /// request object, if applicable.
+        /// </summary>
+        public ClaimsPrincipal? RequestObjectPrincipal { get; set; }
+
+        /// <summary>
+        /// Gets or sets the security principal extracted from the
         /// request token, if applicable.
         /// </summary>
         public ClaimsPrincipal? RequestTokenPrincipal { get; set; }
@@ -282,13 +288,19 @@ public static partial class OpenIddictServerEvents
         /// the user code by calling <see cref="SetRedirectUri(string)"/>.
         /// </summary>
         [StringSyntax(StringSyntaxAttribute.Uri)]
-        public string? RedirectUri { get; private set; }
+        public string? RedirectUri { get; internal set; }
 
         /// <summary>
         /// Gets or sets the security principal extracted
         /// from the identity token hint, if applicable.
         /// </summary>
         public ClaimsPrincipal? IdentityTokenHintPrincipal { get; set; }
+
+        /// <summary>
+        /// Gets or sets the security principal extracted from the
+        /// request object, if applicable.
+        /// </summary>
+        public ClaimsPrincipal? RequestObjectPrincipal { get; set; }
 
         /// <summary>
         /// Populates the <see cref="RedirectUri"/> property with the specified redirect_uri.

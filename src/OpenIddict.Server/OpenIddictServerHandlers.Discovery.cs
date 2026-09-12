@@ -855,8 +855,29 @@ public static partial class OpenIddictServerHandlers
                 // Note: these optional features are not yet supported by OpenIddict,
                 // so "false" is returned to encourage clients not to use them.
                 context.Metadata[Metadata.ClaimsParameterSupported] = false;
-                context.Metadata[Metadata.RequestParameterSupported] = false;
                 context.Metadata[Metadata.RequestUriParameterSupported] = false;
+
+                context.Metadata[Metadata.RequestParameterSupported] = context.Options.EnableRequestObjectSupport;
+
+                if (context.Options.EnableRequestObjectSupport)
+                {
+                    // Note: request objects are validated using the asymmetric signing keys attached to the client
+                    // application, so only the asymmetric algorithms natively supported by IdentityModel are returned.
+                    context.Metadata[Metadata.RequestObjectSigningAlgValuesSupported] = new JsonArray(
+                    [
+                        SecurityAlgorithms.EcdsaSha256,
+                        SecurityAlgorithms.EcdsaSha384,
+                        SecurityAlgorithms.EcdsaSha512,
+                        SecurityAlgorithms.RsaSha256,
+                        SecurityAlgorithms.RsaSha384,
+                        SecurityAlgorithms.RsaSha512,
+                        SecurityAlgorithms.RsaSsaPssSha256,
+                        SecurityAlgorithms.RsaSsaPssSha384,
+                        SecurityAlgorithms.RsaSsaPssSha512
+                    ]);
+
+                    context.Metadata[Metadata.RequireSignedRequestObject] = context.Options.RequireSignedRequestObjects;
+                }
 
                 // As of 3.2.0, OpenIddict automatically returns an "iss" parameter containing its identity as
                 // part of authorization responses to help clients mitigate mix-up attacks. For more information,

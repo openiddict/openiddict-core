@@ -541,6 +541,25 @@ public sealed class OpenIddictServerOptions
     public bool RequirePushedAuthorizationRequests { get; set; }
 
     /// <summary>
+    /// Gets or sets a boolean indicating whether authorization and pushed authorization requests
+    /// must be sent as signed request objects using the "request" parameter. If this property
+    /// is set to <see langword="true"/>, requests that don't contain a request object are rejected.
+    /// </summary>
+    /// <remarks>
+    /// Note: this option requires enabling request object support using <see cref="EnableRequestObjectSupport"/>.
+    /// </remarks>
+    public bool RequireSignedRequestObjects { get; set; }
+
+    /// <summary>
+    /// Gets or sets a boolean indicating whether JWT-secured authorization requests (i.e request objects
+    /// sent using the "request" parameter, as defined by RFC 9101) are accepted by the authorization and
+    /// pushed authorization endpoints. Request objects must be signed using a key present in the JSON Web
+    /// Key Set attached to the client application and may optionally be encrypted using one of the
+    /// encryption credentials registered in the server options.
+    /// </summary>
+    public bool EnableRequestObjectSupport { get; set; }
+
+    /// <summary>
     /// Gets the OAuth 2.0 resources enabled for this application (typically used
     /// with the OAuth 2.0 Token Exchange flow and with authorization or pushed
     /// authorization requests that include one or more resource indicators).

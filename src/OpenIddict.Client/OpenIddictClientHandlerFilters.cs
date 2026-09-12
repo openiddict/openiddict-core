@@ -351,6 +351,20 @@ public static class OpenIddictClientHandlerFilters
     }
 
     /// <summary>
+    /// Represents a filter that excludes the associated handlers if no request object is expected to be sent.
+    /// </summary>
+    public sealed class RequireRequestObject : IOpenIddictClientHandlerFilter<ProcessChallengeContext>
+    {
+        /// <inheritdoc/>
+        public ValueTask<bool> IsActiveAsync(ProcessChallengeContext context)
+        {
+            ArgumentNullException.ThrowIfNull(context);
+
+            return new(context.SendRequestObject);
+        }
+    }
+
+    /// <summary>
     /// Represents a filter that excludes the associated handlers if the request is not a redirection request.
     /// </summary>
     public sealed class RequireRedirectionRequest : IOpenIddictClientHandlerFilter<BaseContext>

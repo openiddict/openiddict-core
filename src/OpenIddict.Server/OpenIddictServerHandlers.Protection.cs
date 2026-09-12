@@ -84,16 +84,18 @@ public static partial class OpenIddictServerHandlers
                 // if multiple token types are considered valid and contain tokens issued by the
                 // authorization server and tokens issued by the client (e.g client assertions).
                 if (context.ValidTokenTypes.Count is > 1 &&
-                    context.ValidTokenTypes.Contains(TokenTypeIdentifiers.Private.ClientAssertion))
+                   (context.ValidTokenTypes.Contains(TokenTypeIdentifiers.Private.ClientAssertion) ||
+                    context.ValidTokenTypes.Contains(TokenTypeIdentifiers.Private.RequestObject)))
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0308));
                 }
 
                 var parameters = context.ValidTokenTypes.Count switch
                 {
-                    // When only client assertions are considered valid, create dynamic token validation
-                    // parameters using the encryption keys/signing keys attached to the specific client.
-                    1 when context.ValidTokenTypes.Contains(TokenTypeIdentifiers.Private.ClientAssertion)
+                    // When only client assertions or request objects are considered valid, create dynamic token
+                    // validation parameters using the encryption keys/signing keys attached to the specific client.
+                    1 when context.ValidTokenTypes.Contains(TokenTypeIdentifiers.Private.ClientAssertion) ||
+                           context.ValidTokenTypes.Contains(TokenTypeIdentifiers.Private.RequestObject)
                         => GetClientTokenValidationParameters(),
 
                     // Otherwise, use the token validation parameters of the authorization server.
@@ -102,6 +104,8 @@ public static partial class OpenIddictServerHandlers
 
                 TokenValidationParameters GetClientTokenValidationParameters()
                 {
+                    var type = context.ValidTokenTypes.Single();
+
                     // Note: the audience/issuer/lifetime are manually validated by OpenIddict itself.
                     var parameters = new TokenValidationParameters
                     {
@@ -130,16 +134,38 @@ public static partial class OpenIddictServerHandlers
                         ValidateIssuer = false,
                         ValidateLifetime = false,
 
-                        // Note: OpenIddict 7.0 and higher no uses the generic "JWT" value for client assertions and
-                        // requires using the new standard "client-authentication+jwt" type instead, as defined in the
-                        // https://www.ietf.org/archive/id/draft-ietf-oauth-rfc7523bis-01.html#name-updates-to-rfc-7523
-                        // draft. The longer "application/client-authentication+jwt" form is also considered valid.
-                        ValidTypes =
-                        [
-                            JsonWebTokenTypes.ClientAuthentication,
-                            JsonWebTokenTypes.Prefixes.Application + JsonWebTokenTypes.ClientAuthentication
-                        ]
+                        ValidTypes = type switch
+                        {
+                            // Note: OpenIddict 7.0 and higher no uses the generic "JWT" value for client assertions and
+                            // requires using the new standard "client-authentication+jwt" type instead, as defined in the
+                            // https://www.ietf.org/archive/id/draft-ietf-oauth-rfc7523bis-01.html#name-updates-to-rfc-7523
+                            // draft. The longer "application/client-authentication+jwt" form is also considered valid.
+                            TokenTypeIdentifiers.Private.ClientAssertion =>
+                            [
+                                JsonWebTokenTypes.ClientAuthentication,
+                                JsonWebTokenTypes.Prefixes.Application + JsonWebTokenTypes.ClientAuthentication
+                            ],
+
+                            // Note: the "oauth-authz-req+jwt" type is recommended by RFC 9101 but request objects
+                            // defined by OpenID Connect generally use the generic "JWT" type (or no type at all).
+                            TokenTypeIdentifiers.Private.RequestObject =>
+                            [
+                                JsonWebTokenTypes.AuthorizationRequest,
+                                JsonWebTokenTypes.Prefixes.Application + JsonWebTokenTypes.AuthorizationRequest,
+                                JsonWebTokenTypes.GenericJsonWebToken,
+                                JsonWebTokenTypes.Prefixes.Application + JsonWebTokenTypes.GenericJsonWebToken
+                            ],
+
+                            _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0308))
+                        }
                     };
+
+                    // Request objects can be optionally encrypted using one of the encryption keys of the server.
+                    if (type is TokenTypeIdentifiers.Private.RequestObject)
+                    {
+                        parameters.TokenDecryptionKeys = from credentials in context.Options.EncryptionCredentials
+                                                         select credentials.Key;
+                    }
 
                     // Only provide a signing key resolver if the degraded mode was not enabled.
                     //
@@ -321,9 +347,10 @@ public static partial class OpenIddictServerHandlers
             {
                 ArgumentNullException.ThrowIfNull(context);
 
-                // Note: reference tokens are never used for client assertions.
+                // Note: reference tokens are never used for client assertions or request objects.
                 if (context.ValidTokenTypes.Count is 1 &&
-                    context.ValidTokenTypes.Contains(TokenTypeIdentifiers.Private.ClientAssertion))
+                   (context.ValidTokenTypes.Contains(TokenTypeIdentifiers.Private.ClientAssertion) ||
+                    context.ValidTokenTypes.Contains(TokenTypeIdentifiers.Private.RequestObject)))
                 {
                     return;
                 }
@@ -534,6 +561,12 @@ public static partial class OpenIddictServerHandlers
                 context.Principal = new ClaimsPrincipal(result.ClaimsIdentity).SetTokenType(result.TokenType switch
                 {
                     null or { Length: 0 } => throw new InvalidOperationException(SR.GetResourceString(SR.ID0025)),
+
+                    // Request objects can use multiple types, including the generic "JWT" type also used by identity
+                    // tokens. Since the type was already validated by the type validator, the expected type is used.
+                    _ when context.ValidTokenTypes.Count is 1 &&
+                           context.ValidTokenTypes.Contains(TokenTypeIdentifiers.Private.RequestObject)
+                        => TokenTypeIdentifiers.Private.RequestObject,
 
                     // Both "at+jwt" and "application/at+jwt" are supported for access tokens.
                     JsonWebTokenTypes.AccessToken or
@@ -753,9 +786,10 @@ public static partial class OpenIddictServerHandlers
                     return;
                 }
 
-                // Note: token entries are never used for client assertions.
+                // Note: token entries are never used for client assertions or request objects.
                 if (context.ValidTokenTypes.Count is 1 &&
-                    context.ValidTokenTypes.Contains(TokenTypeIdentifiers.Private.ClientAssertion))
+                   (context.ValidTokenTypes.Contains(TokenTypeIdentifiers.Private.ClientAssertion) ||
+                    context.ValidTokenTypes.Contains(TokenTypeIdentifiers.Private.RequestObject)))
                 {
                     return;
                 }

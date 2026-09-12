@@ -46,6 +46,7 @@ public static partial class OpenIddictClientHandlers
             ExtractIssuerParameterRequirement.Descriptor,
             ExtractTlsClientCertificateAccessTokenBindingRequirement.Descriptor,
             ExtractPushedAuthorizationRequirement.Descriptor,
+            ExtractRequestObjectRequirements.Descriptor,
             ExtractDeviceAuthorizationEndpointClientAuthenticationMethods.Descriptor,
             ExtractIntrospectionEndpointClientAuthenticationMethods.Descriptor,
             ExtractPushedAuthorizationEndpointClientAuthenticationMethods.Descriptor,
@@ -140,7 +141,9 @@ public static partial class OpenIddictClientHandlers
 
                     // The following parameters MUST be formatted as booleans:
                     Metadata.AuthorizationResponseIssParameterSupported or
+                    Metadata.RequestParameterSupported                  or
                     Metadata.RequirePushedAuthorizationRequests         or
+                    Metadata.RequireSignedRequestObject                 or
                     Metadata.TlsClientCertificateBoundAccessTokens
                         => ((JsonElement) value).ValueKind is JsonValueKind.True or JsonValueKind.False,
 
@@ -1070,6 +1073,37 @@ public static partial class OpenIddictClientHandlers
 
                 context.Configuration.RequirePushedAuthorizationRequests = (bool?)
                     context.Response[Metadata.RequirePushedAuthorizationRequests];
+
+                return ValueTask.CompletedTask;
+            }
+        }
+
+        /// <summary>
+        /// Contains the logic responsible for extracting the flags indicating whether request
+        /// objects are supported or considered mandatory from the discovery document.
+        /// </summary>
+        public sealed class ExtractRequestObjectRequirements : IOpenIddictClientHandler<HandleConfigurationResponseContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+                = OpenIddictClientHandlerDescriptor.CreateBuilder<HandleConfigurationResponseContext>()
+                    .UseSingletonHandler<ExtractRequestObjectRequirements>()
+                    .SetOrder(ExtractPushedAuthorizationRequirement.Descriptor.Order + 500)
+                    .SetType(OpenIddictClientHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(HandleConfigurationResponseContext context)
+            {
+                ArgumentNullException.ThrowIfNull(context);
+
+                context.Configuration.RequestParameterSupported = (bool?)
+                    context.Response[Metadata.RequestParameterSupported];
+
+                context.Configuration.RequireSignedRequestObject = (bool?)
+                    context.Response[Metadata.RequireSignedRequestObject];
 
                 return ValueTask.CompletedTask;
             }

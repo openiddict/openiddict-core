@@ -307,6 +307,12 @@ public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenId
             builder.AddError(SR.GetResourceString(SR.ID0419));
         }
 
+        // Ensure signed request objects are not required when request object support is disabled.
+        if (options.RequireSignedRequestObjects && !options.EnableRequestObjectSupport)
+        {
+            builder.AddError(SR.GetResourceString(SR.ID0524));
+        }
+
         // Ensure the client authentication methods/client assertion types configuration is consistent.
         if (options.ClientAuthenticationMethods.Contains(ClientAuthenticationMethods.PrivateKeyJwt) &&
            !options.ClientAssertionTypes.Contains(ClientAssertionTypes.JwtBearer))

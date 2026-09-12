@@ -1244,6 +1244,23 @@ public static partial class OpenIddictClientEvents
         public bool SendPushedAuthorizationRequest { get; set; }
 
         /// <summary>
+        /// Gets or sets a boolean indicating whether the authorization request
+        /// parameters should be sent as a signed request object.
+        /// </summary>
+        public bool SendRequestObject { get; set; }
+
+        /// <summary>
+        /// Gets or sets the principal containing the claims that will be
+        /// used to create the request object, if applicable.
+        /// </summary>
+        public ClaimsPrincipal? RequestObjectPrincipal { get; set; }
+
+        /// <summary>
+        /// Gets or sets the request object, if applicable.
+        /// </summary>
+        public string? RequestObject { get; set; }
+
+        /// <summary>
         /// Gets or sets a boolean indicating whether a client assertion
         /// token should be generated (and optionally included in the request).
         /// </summary>

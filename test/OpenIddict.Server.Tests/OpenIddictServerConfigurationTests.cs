@@ -250,6 +250,37 @@ public class OpenIddictServerConfigurationTests
     }
 
     [Fact]
+    public void Validate_ReturnsAnErrorWhenSignedRequestObjectsAreRequiredWithoutRequestObjectSupport()
+    {
+        // Arrange
+        var configuration = new OpenIddictServerConfiguration(new ServiceCollection().BuildServiceProvider());
+        var options = CreateBaseOptions();
+        options.RequireSignedRequestObjects = true;
+
+        // Act
+        var result = configuration.Validate(name: null, options);
+
+        // Assert
+        Assert.Contains(SR.GetResourceString(SR.ID0524), result.Failures!, StringComparer.Ordinal);
+    }
+
+    [Fact]
+    public void Validate_DoesNotReturnAnErrorWhenSignedRequestObjectsAreRequiredWithRequestObjectSupport()
+    {
+        // Arrange
+        var configuration = new OpenIddictServerConfiguration(new ServiceCollection().BuildServiceProvider());
+        var options = CreateBaseOptions();
+        options.EnableRequestObjectSupport = true;
+        options.RequireSignedRequestObjects = true;
+
+        // Act
+        var result = configuration.Validate(name: null, options);
+
+        // Assert
+        Assert.DoesNotContain(SR.GetResourceString(SR.ID0524), result.Failures ?? [], StringComparer.Ordinal);
+    }
+
+    [Fact]
     public void Validate_ReturnsAnErrorWhenDeviceVerificationEndpointIsMissingForDeviceGrant()
     {
         // Arrange

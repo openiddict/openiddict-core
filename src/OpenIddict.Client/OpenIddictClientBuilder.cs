@@ -1136,6 +1136,16 @@ public sealed class OpenIddictClientBuilder
         => Configure(options => options.ClientAssertionLifetime = lifetime);
 
     /// <summary>
+    /// Sets the request object lifetime, after which authorization requests using
+    /// an expired request object should be automatically rejected by the server.
+    /// While discouraged, <see langword="null"/> can be specified to issue request objects that never expire.
+    /// </summary>
+    /// <param name="lifetime">The request object lifetime.</param>
+    /// <returns>The <see cref="OpenIddictClientBuilder"/> instance.</returns>
+    public OpenIddictClientBuilder SetRequestObjectLifetime(TimeSpan? lifetime)
+        => Configure(options => options.RequestObjectLifetime = lifetime);
+
+    /// <summary>
     /// Sets the state token lifetime, after which authorization callbacks
     /// using an expired state token will be automatically rejected by OpenIddict.
     /// Using long-lived state tokens or tokens that never expire is not recommended.

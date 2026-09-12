@@ -896,6 +896,9 @@ public static partial class OpenIddictClientHandlers
                     TokenTypeIdentifiers.Private.ClientAssertion
                         => context.Registration.EncryptionCredentials.FirstOrDefault(),
 
+                    // Request objects are never encrypted by default.
+                    TokenTypeIdentifiers.Private.RequestObject => null,
+
                     // For other types of tokens, use the global encryption credentials.
                     _ => context.Options.EncryptionCredentials[0]
                 };
@@ -905,6 +908,11 @@ public static partial class OpenIddictClientHandlers
                     // For client assertions, use the signing credentials configured for the client registration.
                     TokenTypeIdentifiers.Private.ClientAssertion
                         => context.Registration.SigningCredentials[0],
+
+                    // For request objects, use the first asymmetric signing key of the client registration.
+                    TokenTypeIdentifiers.Private.RequestObject
+                        => context.Registration.SigningCredentials.First(static credentials =>
+                            credentials.Key is AsymmetricSecurityKey),
 
                     // For other types of tokens, use the global signing credentials.
                     _ => context.Options.SigningCredentials[0]
@@ -998,6 +1006,7 @@ public static partial class OpenIddictClientHandlers
 
                     Claims.Private.Audience when context.TokenType is
                         TokenTypeIdentifiers.Private.ClientAssertion or
+                        TokenTypeIdentifiers.Private.RequestObject   or
                         TokenTypeIdentifiers.Private.StateToken => false,
 
                     _ => true
@@ -1035,9 +1044,10 @@ public static partial class OpenIddictClientHandlers
                     ? new Dictionary<string, object>(context.SecurityTokenDescriptor.Claims, StringComparer.Ordinal)
                     : new Dictionary<string, object>(StringComparer.Ordinal);
 
-                // For client assertions, set the public audience claims
-                // using the private audience claims from the security principal.
-                if (context.TokenType is TokenTypeIdentifiers.Private.ClientAssertion)
+                // For client assertions and request objects, set the public audience
+                // claims using the private audience claims from the security principal.
+                if (context.TokenType is TokenTypeIdentifiers.Private.ClientAssertion or
+                                         TokenTypeIdentifiers.Private.RequestObject)
                 {
                     var audiences = context.Principal.GetAudiences();
                     if (audiences.Any())
@@ -1063,6 +1073,9 @@ public static partial class OpenIddictClientHandlers
                     // https://www.ietf.org/archive/id/draft-ietf-oauth-rfc7523bis-01.html#name-updates-to-rfc-7523
                     // specification.
                     TokenTypeIdentifiers.Private.ClientAssertion => JsonWebTokenTypes.ClientAuthentication,
+
+                    // Request objects use the "oauth-authz-req+jwt" type recommended by RFC 9101.
+                    TokenTypeIdentifiers.Private.RequestObject => JsonWebTokenTypes.AuthorizationRequest,
 
                     TokenTypeIdentifiers.Private.StateToken => JsonWebTokenTypes.Private.StateToken,
 

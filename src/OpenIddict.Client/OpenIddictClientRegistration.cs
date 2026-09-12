@@ -48,6 +48,14 @@ public sealed class OpenIddictClientRegistration
     public bool DisablePushedAuthorizationRequests { get; set; }
 
     /// <summary>
+    /// Gets or sets a boolean indicating whether authorization requests should be sent as signed request objects
+    /// (JWT-secured authorization requests, RFC 9101). Request objects are always sent when the authorization server
+    /// requires them. When enabled, request objects are signed using the first asymmetric signing key attached to
+    /// the client registration and are sent only if the authorization server supports the "request" parameter.
+    /// </summary>
+    public bool UseSignedRequestObjects { get; set; }
+
+    /// <summary>
     /// Gets or sets the URI of the redirection endpoint that will handle the callback.
     /// </summary>
     /// <remarks>

@@ -1737,6 +1737,28 @@ public sealed class OpenIddictServerBuilder
         => Configure(options => options.RequirePushedAuthorizationRequests = true);
 
     /// <summary>
+    /// Configures OpenIddict to force client applications to send their authorization and pushed
+    /// authorization requests as signed request objects using the "request" parameter.
+    /// When enforced, requests that don't contain a request object will be rejected.
+    /// </summary>
+    /// <remarks>
+    /// Note: request object support must be enabled using <see cref="EnableRequestObjectSupport"/>.
+    /// </remarks>
+    /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
+    public OpenIddictServerBuilder RequireSignedRequestObjects()
+        => Configure(options => options.RequireSignedRequestObjects = true);
+
+    /// <summary>
+    /// Enables JWT-secured authorization requests support (RFC 9101), which allows client applications
+    /// to send their authorization and pushed authorization requests as signed request objects using the
+    /// "request" parameter. Request objects must be signed using a key present in the JSON Web Key Set
+    /// attached to the client application.
+    /// </summary>
+    /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
+    public OpenIddictServerBuilder EnableRequestObjectSupport()
+        => Configure(options => options.EnableRequestObjectSupport = true);
+
+    /// <summary>
     /// Sets the access token lifetime, after which client applications must retrieve
     /// a new access token by making a grant_type=refresh_token token request
     /// or a prompt=none authorization request, depending on the selected flow.

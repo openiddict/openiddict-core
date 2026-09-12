@@ -133,6 +133,9 @@ public static partial class OpenIddictClientHandlers
         GenerateLoginStateToken.Descriptor,
         AttachChallengeParameters.Descriptor,
         AttachCustomChallengeParameters.Descriptor,
+        EvaluateRequestObject.Descriptor,
+        PrepareRequestObjectPrincipal.Descriptor,
+        GenerateRequestObject.Descriptor,
 
         EvaluateDeviceAuthorizationRequest.Descriptor,
         AttachDeviceAuthorizationEndpointClientAuthenticationMethod.Descriptor,
@@ -5985,6 +5988,199 @@ public static partial class OpenIddictClientHandlers
             }
 
             return ValueTask.CompletedTask;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for determining whether the authorization
+    /// request parameters should be sent as a signed request object.
+    /// </summary>
+    public sealed class EvaluateRequestObject : IOpenIddictClientHandler<ProcessChallengeContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
+                .AddFilter<RequireInteractiveGrantType>()
+                .UseSingletonHandler<EvaluateRequestObject>()
+                .SetOrder(AttachCustomChallengeParameters.Descriptor.Order + 250)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessChallengeContext context)
+        {
+            ArgumentNullException.ThrowIfNull(context);
+
+            context.SendRequestObject = context.Configuration switch
+            {
+                // Always send a request object if the authorization server requires it.
+                { RequireSignedRequestObject: true } => true,
+
+                // Otherwise, only send a request object if it was enabled in the client
+                // registration and if the authorization server supports request objects.
+                { RequestParameterSupported: true } => context.Registration.UseSignedRequestObjects,
+
+                _ => false
+            };
+
+            if (context.SendRequestObject &&
+               !context.Registration.SigningCredentials.Exists(static credentials => credentials.Key is AsymmetricSecurityKey))
+            {
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0526));
+            }
+
+            return ValueTask.CompletedTask;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for preparing and attaching the claims principal
+    /// used to generate the request object, if one is going to be sent.
+    /// </summary>
+    public sealed class PrepareRequestObjectPrincipal : IOpenIddictClientHandler<ProcessChallengeContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
+                .AddFilter<RequireRequestObject>()
+                .UseSingletonHandler<PrepareRequestObjectPrincipal>()
+                .SetOrder(EvaluateRequestObject.Descriptor.Order + 250)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessChallengeContext context)
+        {
+            ArgumentNullException.ThrowIfNull(context);
+
+            Debug.Assert(context.Registration.Issuer is { IsAbsoluteUri: true }, SR.GetResourceString(SR.ID4013));
+
+            // Create a new principal that will be used to store the request object claims.
+            var principal = new ClaimsPrincipal(new ClaimsIdentity(
+                authenticationType: TokenValidationParameters.DefaultAuthenticationType,
+                nameType: Claims.Name,
+                roleType: Claims.Role));
+
+            // Attach all the authorization request parameters to the request object.
+            foreach (var parameter in context.Request.GetParameters())
+            {
+                switch (parameter.Value.GetRawValue())
+                {
+                    case null: break;
+
+                    case string value:
+                        principal.SetClaim(parameter.Key, value);
+                        break;
+
+                    case ImmutableArray<string?> values:
+                        principal.SetClaims(parameter.Key, [.. values.Where(static value => value is not null)!]);
+                        break;
+
+                    default:
+                        principal.SetClaim(parameter.Key, (JsonElement) parameter.Value);
+                        break;
+                }
+            }
+
+            principal.SetCreationDate(context.Options.TimeProvider.GetUtcNow());
+
+            var lifetime = context.Options.RequestObjectLifetime;
+            if (lifetime is not null)
+            {
+                principal.SetExpirationDate(principal.GetCreationDate() + lifetime.Value);
+            }
+
+            // Use the issuer URI as the audience. Applications that need to
+            // use a different value can register a custom event handler.
+            principal.SetAudiences(context.Registration.Issuer.OriginalString);
+
+            // Use the client_id as the issuer, as required by the specifications.
+            principal.SetClaim(Claims.Private.Issuer, context.ClientId);
+
+            // Use a random GUID as the JWT unique identifier.
+            principal.SetClaim(Claims.JwtId, Guid.NewGuid().ToString());
+
+            context.RequestObjectPrincipal = principal;
+
+            return ValueTask.CompletedTask;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for generating the request object and replacing
+    /// the authorization request parameters by the request object, if applicable.
+    /// </summary>
+    public sealed class GenerateRequestObject : IOpenIddictClientHandler<ProcessChallengeContext>
+    {
+        private readonly IOpenIddictClientDispatcher _dispatcher;
+
+        public GenerateRequestObject(IOpenIddictClientDispatcher dispatcher)
+            => _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
+
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
+                .AddFilter<RequireRequestObject>()
+                .UseSingletonHandler<GenerateRequestObject>()
+                .SetOrder(PrepareRequestObjectPrincipal.Descriptor.Order + 250)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public async ValueTask HandleAsync(ProcessChallengeContext context)
+        {
+            ArgumentNullException.ThrowIfNull(context);
+
+            Debug.Assert(context.RequestObjectPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
+
+            var notification = new GenerateTokenContext(context.Transaction)
+            {
+                CreateTokenEntry = false,
+                IsReferenceToken = false,
+                PersistTokenPayload = false,
+                Principal = context.RequestObjectPrincipal,
+                TokenFormat = TokenFormats.Private.JsonWebToken,
+                TokenType = TokenTypeIdentifiers.Private.RequestObject
+            };
+
+            await _dispatcher.DispatchAsync(notification);
+
+            if (notification.IsRequestHandled)
+            {
+                context.HandleRequest();
+                return;
+            }
+
+            if (notification.IsRequestSkipped)
+            {
+                context.SkipRequest();
+                return;
+            }
+
+            if (notification.IsRejected)
+            {
+                context.Reject(
+                    error: notification.Error ?? Errors.InvalidRequest,
+                    description: notification.ErrorDescription,
+                    uri: notification.ErrorUri);
+                return;
+            }
+
+            context.RequestObject = notification.Token;
+
+            // Replace all the authorization request parameters by the request object, except the
+            // client_id, as required by https://datatracker.ietf.org/doc/html/rfc9101#section-5.
+            context.Request = new OpenIddictRequest
+            {
+                ClientId = context.ClientId,
+                Request = context.RequestObject
+            };
         }
     }
 

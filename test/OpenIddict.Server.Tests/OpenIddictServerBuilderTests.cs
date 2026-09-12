@@ -1855,6 +1855,38 @@ public class OpenIddictServerBuilderTests
     }
 
     [Fact]
+    public void RequireSignedRequestObjects_SignedRequestObjectsAreEnforced()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act
+        builder.RequireSignedRequestObjects();
+
+        var options = GetOptions(services);
+
+        // Assert
+        Assert.True(options.RequireSignedRequestObjects);
+    }
+
+    [Fact]
+    public void EnableRequestObjectSupport_RequestObjectSupportIsEnabled()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act
+        builder.EnableRequestObjectSupport();
+
+        var options = GetOptions(services);
+
+        // Assert
+        Assert.True(options.EnableRequestObjectSupport);
+    }
+
+    [Fact]
     public void SetAuthorizationEndpointUris_ThrowsExceptionWhenUrisIsNull()
     {
         // Arrange

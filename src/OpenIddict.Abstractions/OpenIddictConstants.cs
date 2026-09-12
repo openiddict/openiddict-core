@@ -266,6 +266,7 @@ public static class OpenIddictConstants
     {
         public const string AccessToken = "at+jwt";
         public const string AuthorizationGrant = "authorization-grant+jwt";
+        public const string AuthorizationRequest = "oauth-authz-req+jwt";
         public const string ClientAuthentication = "client-authentication+jwt";
         public const string GenericJsonWebToken = "JWT";
 
@@ -321,6 +322,7 @@ public static class OpenIddictConstants
         public const string RequestUriParameterSupported = "request_uri_parameter_supported";
         public const string RequirePushedAuthorizationRequests = "require_pushed_authorization_requests";
         public const string RequireRequestUriRegistration = "require_request_uri_registration";
+        public const string RequireSignedRequestObject = "require_signed_request_object";
         public const string ResponseModesSupported = "response_modes_supported";
         public const string ResponseTypesSupported = "response_types_supported";
         public const string RevocationEndpoint = "revocation_endpoint";
@@ -511,6 +513,7 @@ public static class OpenIddictConstants
         {
             public const string ProofKeyForCodeExchange = "ft:pkce";
             public const string PushedAuthorizationRequests = "ft:par";
+            public const string SignedRequestObjects = "ft:jar";
         }
 
         public static class Prefixes
@@ -647,6 +650,7 @@ public static class OpenIddictConstants
             public const string AuthorizationCode = "urn:openiddict:params:oauth:token-type:authorization_code";
             public const string ClientAssertion = "urn:openiddict:params:oauth:token-type:client_assertion";
             public const string DeviceCode = "urn:openiddict:params:oauth:token-type:device_code";
+            public const string RequestObject = "urn:openiddict:params:oauth:token-type:request_object";
             public const string RequestToken = "urn:openiddict:params:oauth:token-type:request_token";
             public const string StateToken = "urn:openiddict:params:oauth:token-type:state_token";
             public const string UserCode = "urn:openiddict:params:oauth:token-type:user_code";
