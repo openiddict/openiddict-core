@@ -7,6 +7,22 @@ Baseline `dev@dd0d5d7d` (8.0.0-preview.5, fork of upstream). **Plan only — do 
 
 ---
 
+## Resolutions (2026-09-13)
+
+| # | Outcome |
+|---|---|
+| B1 | Duende v8.0.7: SAML IdP **built-in** (parity); CIBA poll only; **no JARM**; `check_session_iframe` supported; DCR = RFC 7591 only; key mgmt = signing keys only; also RFC 9701 JWT introspection, multi-issuer add-on |
+| B2 | Upstream `dev` == `dd0d5d7d`. Back-channel logout (#2175) and DCR (#2404) are milestoned `8.0.0-preview.5`; front-channel logout declined; DPoP low priority (mTLS preferred); nothing upstream for CIBA, JAR, key rotation → **P1, P2, P4, P9, P11.1 deferred until upstream preview.5 is merged** |
+| B3 | All exceptions approved: `OpenIddict.Server.SystemNetHttp`, BFF YARP + template pack, admin API in `Server.AspNetCore`, SAML package |
+| B4 | All schema changes accepted |
+| B5 | ✅ `JsonWebKey.ComputeJwkThumbprint()`, `JsonWebKey(string)`, `JsonWebKeyConverter` exist on every IdentityModel 8.22.0 TFM |
+| B6 | Not blocking until P5; D4 stands |
+| B7 | Host-created sessions are upstream's contract (PR #2520) |
+| Scope | **Dropped:** P3 front-channel, P7 JARM. **Added:** P12 RFC 9701 JWT introspection response |
+| Build | Needs SDK 10.0.400 (installed to `.dotnet` by `eng/common/build.ps1 -restore`); full solution needs android/maui workloads, so build individual projects |
+
+**Execution order:** P6 → P8 → P10 → P5 → P12 → P11.2 → P11.3 → P11.4 → P11.5 → P11.6; then, after upstream preview.5: P1 → P2 → P4 → P9 → P11.1.
+
 ## 0. Blocking — verify before coding
 
 | # | Verify | How |
@@ -330,6 +346,18 @@ public virtual async ValueTask<bool> TryRevokeAsync(TSession session, Cancellati
 **Risks:** API surface commitments (11.5); XML signature attack surface (11.6); ticket-store dependency (11.3).
 
 ---
+
+## P12 — JWT introspection response (RFC 9701)
+
+| Change | Where |
+|---|---|
+| `JsonWebTokenTypes.IntrospectionResponse="token-introspection+jwt"`, `TokenTypeIdentifiers.Private.IntrospectionResponse`, `Metadata.IntrospectionSigningAlgValuesSupported` / `IntrospectionEncryption*` | `OpenIddictConstants.cs` |
+| Host: detect `Accept: application/token-introspection+jwt` → `Transaction` flag | `…AspNetCoreHandlers.Introspection.cs:15-31`, OWIN |
+| After the response is built (`…Introspection.cs:227-278`): wrap in a JWT (`iss`, `aud`=client_id, `iat`, `token_introspection` claim) signed like an id token | `…Introspection.cs`, `…Protection.cs:1472` |
+| `ProcessJsonResponse` variant writing `application/token-introspection+jwt` | `…AspNetCoreHandlers.cs:1166`, OWIN `:1357` |
+| Validation stack: request + validate JWT introspection responses (optional) | `OpenIddictValidationHandlers.Introspection.cs` |
+
+**Verify:** JSON response unchanged without the header; JWT claims/signature with it; discovery algs.
 
 ## 4. Order
 
