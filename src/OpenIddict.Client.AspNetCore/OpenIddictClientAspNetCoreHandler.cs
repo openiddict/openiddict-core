@@ -218,6 +218,18 @@ public sealed class OpenIddictClientAspNetCoreHandler : AuthenticationHandler<Au
                 });
             }
 
+            // Note: the token type is stored to allow determining whether the access token
+            // must be sent as a bearer token or as a DPoP-bound token (e.g by BFF components).
+            if (!string.IsNullOrEmpty(context.BackchannelAccessToken) && !string.IsNullOrEmpty(context.TokenResponse?.TokenType))
+            {
+                tokens ??= new(capacity: 1);
+                tokens.Add(new AuthenticationToken
+                {
+                    Name = Tokens.BackchannelAccessTokenType,
+                    Value = context.TokenResponse.TokenType
+                });
+            }
+
             if (!string.IsNullOrEmpty(context.BackchannelIdentityToken))
             {
                 tokens ??= new(capacity: 1);

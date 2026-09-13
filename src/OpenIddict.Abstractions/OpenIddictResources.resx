@@ -1910,6 +1910,22 @@ Introspection responses can only be encrypted using 'RSA-OAEP' with 'A128CBC-HS2
   <data name="ID0558" xml:space="preserve">
     <value>The identifier of the client registration returned by the registration provider doesn't match the requested identifier.</value>
   </data>
+  <data name="ID0559" xml:space="preserve">
+    <value>The '{0}' backend-for-frontend endpoint path must be a non-empty path starting with '/'.</value>
+  </data>
+  <data name="ID0560" xml:space="preserve">
+    <value>The backend-for-frontend access token refresh margin, token refresh result retention period and logout token replay cache lifetime cannot be negative.</value>
+  </data>
+  <data name="ID0561" xml:space="preserve">
+    <value>The OpenIddict backend-for-frontend services cannot be resolved.
+To register them, use 'services.AddOpenIddict().AddClient().UseBff()'.</value>
+  </data>
+  <data name="ID0562" xml:space="preserve">
+    <value>The '{0}' metadata of the '{1}' route contains an invalid backend-for-frontend access token type: '{2}'.</value>
+  </data>
+  <data name="ID0563" xml:space="preserve">
+    <value>The backend-for-frontend antiforgery header name and value cannot be null or empty.</value>
+  </data>
   <data name="ID0532" xml:space="preserve">
     <value>The backchannel authentication request was not correctly extracted.
 To extract backchannel authentication requests, create a class implementing 'IOpenIddictServerHandler&lt;ExtractBackchannelAuthenticationRequestContext&gt;' and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.</value>
@@ -2633,6 +2649,12 @@ To apply backchannel authentication responses, create a class implementing 'IOpe
   </data>
   <data name="ID2238" xml:space="preserve">
     <value>The '{0}' claim is missing or invalid in the introspection response token.</value>
+  </data>
+  <data name="ID2239" xml:space="preserve">
+    <value>The mandatory 'logout_token' parameter is missing.</value>
+  </data>
+  <data name="ID2240" xml:space="preserve">
+    <value>The specified logout token is invalid.</value>
   </data>
   <data name="ID4000" xml:space="preserve">
     <value>The '{0}' parameter shouldn't be null or empty at this point.</value>
@@ -3554,6 +3576,27 @@ This may indicate that the hashed entry is corrupted or malformed.</value>
   </data>
   <data name="ID6316" xml:space="preserve">
     <value>No JSON Web Token introspection response was generated because the caller is not an authenticated client application.</value>
+  </data>
+  <data name="ID6317" xml:space="preserve">
+    <value>The access token stored in the authentication ticket is about to expire and will be refreshed using the refresh token.</value>
+  </data>
+  <data name="ID6318" xml:space="preserve">
+    <value>The refresh token stored in the authentication ticket was rejected by the authorization server ({Error}, {ErrorDescription}): the principal was rejected.</value>
+  </data>
+  <data name="ID6319" xml:space="preserve">
+    <value>An error occurred while refreshing the access token stored in the authentication ticket.</value>
+  </data>
+  <data name="ID6320" xml:space="preserve">
+    <value>The back-channel logout request was rejected because the logout token is invalid: {Reason}</value>
+  </data>
+  <data name="ID6321" xml:space="preserve">
+    <value>A back-channel logout notification was received from {Issuer} for the subject '{Subject}' and the session '{SessionId}'.</value>
+  </data>
+  <data name="ID6322" xml:space="preserve">
+    <value>The sessions associated with the back-channel logout notification cannot be removed because the session store of the '{Scheme}' cookie scheme doesn't implement IOpenIddictClientAspNetCoreBffSessionStore.</value>
+  </data>
+  <data name="ID6323" xml:space="preserve">
+    <value>{Count} session(s) were removed from the session store of the '{Scheme}' cookie scheme after a back-channel logout notification.</value>
   </data>
   <data name="ID8000" xml:space="preserve">
     <value>https://documentation.openiddict.com/errors/{0}</value>

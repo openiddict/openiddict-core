@@ -50,6 +50,7 @@ public static class OpenIddictClientOwinConstants
         public const string AuthorizationCode = "authorization_code";
         public const string BackchannelAccessToken = "backchannel_access_token";
         public const string BackchannelAccessTokenExpirationDate = "backchannel_access_token_expiration_date";
+        public const string BackchannelAccessTokenType = "backchannel_access_token_type";
         public const string BackchannelIdentityToken = "backchannel_id_token";
         public const string FrontchannelAccessToken = "frontchannel_access_token";
         public const string FrontchannelAccessTokenExpirationDate = "frontchannel_access_token_expiration_date";

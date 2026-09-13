@@ -81,6 +81,7 @@ public static class OpenIddictConstants
         public const string DPoPAccessTokenHash = "ath";
         public const string Email = "email";
         public const string EmailVerified = "email_verified";
+        public const string Events = "events";
         public const string ExpiresAt = "exp";
         public const string FamilyName = "family_name";
         public const string Formatted = "formatted";
@@ -294,6 +295,7 @@ public static class OpenIddictConstants
         public const string DPoPProof = "dpop+jwt";
         public const string GenericJsonWebToken = "JWT";
         public const string IntrospectionResponse = "token-introspection+jwt";
+        public const string LogoutToken = "logout+jwt";
 
         public static class Prefixes
         {
@@ -430,6 +432,7 @@ public static class OpenIddictConstants
         public const string IssuedTokenType = "issued_token_type";
         public const string LoginHint = "login_hint";
         public const string LoginHintToken = "login_hint_token";
+        public const string LogoutToken = "logout_token";
         public const string Keys = "keys";
         public const string MaxAge = "max_age";
         public const string Nonce = "nonce";

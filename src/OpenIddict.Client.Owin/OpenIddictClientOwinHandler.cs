@@ -217,6 +217,13 @@ public sealed class OpenIddictClientOwinHandler : AuthenticationHandler<Authenti
                     context.BackchannelAccessTokenExpirationDate.Value.ToString("o", CultureInfo.InvariantCulture);
             }
 
+            // Note: the token type is stored to allow determining whether the access
+            // token must be sent as a bearer token or as a DPoP-bound token.
+            if (!string.IsNullOrEmpty(context.BackchannelAccessToken) && !string.IsNullOrEmpty(context.TokenResponse?.TokenType))
+            {
+                properties.Dictionary[Tokens.BackchannelAccessTokenType] = context.TokenResponse.TokenType;
+            }
+
             if (!string.IsNullOrEmpty(context.BackchannelIdentityToken))
             {
                 properties.Dictionary[Tokens.BackchannelIdentityToken] = context.BackchannelIdentityToken;

@@ -52,6 +52,7 @@
     <Project Path="src/OpenIddict.Abstractions/OpenIddict.Abstractions.csproj" />
     <Project Path="src/OpenIddict.AspNetCore/OpenIddict.AspNetCore.csproj" />
     <Project Path="src/OpenIddict.Client.AspNetCore/OpenIddict.Client.AspNetCore.csproj" />
+    <Project Path="src/OpenIddict.Client.AspNetCore.Bff/OpenIddict.Client.AspNetCore.Bff.csproj" />
     <Project Path="src/OpenIddict.Client.DataProtection/OpenIddict.Client.DataProtection.csproj" />
     <Project Path="src/OpenIddict.Client.Owin/OpenIddict.Client.Owin.csproj" />
     <Project Path="src/OpenIddict.Client.SystemIntegration/OpenIddict.Client.SystemIntegration.csproj" />
@@ -82,6 +83,7 @@
 
   <Folder Name="/test/">
     <Project Path="test/OpenIddict.Abstractions.Tests/OpenIddict.Abstractions.Tests.csproj" />
+    <Project Path="test/OpenIddict.Client.AspNetCore.Bff.Tests/OpenIddict.Client.AspNetCore.Bff.Tests.csproj" />
     <Project Path="test/OpenIddict.Client.AspNetCore.IntegrationTests/OpenIddict.Client.AspNetCore.IntegrationTests.csproj" />
     <Project Path="test/OpenIddict.Client.AspNetCore.Tests/OpenIddict.Client.AspNetCore.Tests.csproj" Id="e01de82f-c08a-4346-9106-906da82c01fc" />
     <Project Path="test/OpenIddict.Client.DataProtection.Tests/OpenIddict.Client.DataProtection.Tests.csproj" Id="9106b798-291d-4360-9e06-08f9abc5a9de" />
