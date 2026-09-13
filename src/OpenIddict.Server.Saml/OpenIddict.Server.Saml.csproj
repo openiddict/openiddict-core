@@ -8,7 +8,7 @@
     <Description>SAML 2.0 identity provider services for the OpenIddict server (metadata, Web Browser SSO, signed assertions).
 
 Note: this package only contains the generic/host-agnostic SAML components.
-To use the SAML identity provider on ASP.NET Core, reference the OpenIddict.Server.Saml.AspNetCore package.</Description>
+To use the SAML identity provider, reference the OpenIddict.Server.Saml.AspNetCore or OpenIddict.Server.Saml.Owin package.</Description>
     <PackageTags>$(PackageTags);server;saml;saml2</PackageTags>
   </PropertyGroup>
 

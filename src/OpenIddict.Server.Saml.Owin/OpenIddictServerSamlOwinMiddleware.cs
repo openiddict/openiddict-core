@@ -1,0 +1,289 @@
+﻿/*
+ * Licensed under the Apache License, Version 2.0 (http://www.apache.org/licenses/LICENSE-2.0)
+ * See https://github.com/openiddict/openiddict-core for more information concerning
+ * the license and the contributors participating to this project.
+ */
+
+using System.ComponentModel;
+using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Text;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
+using static OpenIddict.Server.Saml.OpenIddictServerSamlConstants;
+using static OpenIddict.Server.Saml.OpenIddictServerSamlModels;
+using Parameters = OpenIddict.Server.Saml.OpenIddictServerSamlConstants.Parameters;
+using SamlStatusCodes = OpenIddict.Server.Saml.OpenIddictServerSamlConstants.StatusCodes;
+
+namespace OpenIddict.Server.Saml.Owin;
+
+/// <summary>
+/// Handles the SAML 2.0 identity provider metadata and single sign-on endpoints in an OWIN/Katana pipeline.
+/// </summary>
+[EditorBrowsable(EditorBrowsableState.Advanced)]
+public sealed class OpenIddictServerSamlOwinMiddleware : OwinMiddleware
+{
+    /// <summary>
+    /// Creates a new instance of the <see cref="OpenIddictServerSamlOwinMiddleware"/> class.
+    /// </summary>
+    /// <param name="next">The next middleware in the pipeline, if applicable.</param>
+    public OpenIddictServerSamlOwinMiddleware(OwinMiddleware? next)
+        : base(next)
+    {
+    }
+
+    /// <inheritdoc/>
+    public override Task Invoke(IOwinContext context)
+    {
+        ArgumentNullException.ThrowIfNull(context);
+
+        var provider = context.Get<IServiceProvider>(typeof(IServiceProvider).FullName) ??
+            throw new InvalidOperationException(SR.GetResourceString(SR.ID0578));
+
+        var options = provider.GetService<IOptionsMonitor<OpenIddictServerSamlOwinOptions>>()?.CurrentValue ??
+            throw new InvalidOperationException(SR.GetResourceString(SR.ID0578));
+
+        if (context.Request.Path == options.MetadataPath)
+        {
+            return MetadataAsync(context, provider, options);
+        }
+
+        if (context.Request.Path == options.SingleSignOnPath)
+        {
+            return SingleSignOnAsync(context, provider, options);
+        }
+
+        return Next?.Invoke(context) ?? Task.CompletedTask;
+    }
+
+    private static async Task MetadataAsync(IOwinContext context, IServiceProvider provider, OpenIddictServerSamlOwinOptions options)
+    {
+        if (!IsGet(context.Request))
+        {
+            context.Response.StatusCode = 405;
+            return;
+        }
+
+        if (!ValidateTransportSecurity(context, options))
+        {
+            await WriteErrorAsync(context, SR.GetResourceString(SR.ID2264));
+            return;
+        }
+
+        var service = GetService(provider);
+        var metadata = service.CreateMetadata(GetEndpointUrl(context, options.SingleSignOnPath));
+
+        context.Response.ContentType = MediaTypes.Metadata;
+        await WriteAsync(context, metadata);
+    }
+
+    private static async Task SingleSignOnAsync(IOwinContext context, IServiceProvider provider, OpenIddictServerSamlOwinOptions options)
+    {
+        if (!IsGet(context.Request) && !IsPost(context.Request))
+        {
+            context.Response.StatusCode = 405;
+            return;
+        }
+
+        if (!ValidateTransportSecurity(context, options))
+        {
+            await WriteErrorAsync(context, SR.GetResourceString(SR.ID2264));
+            return;
+        }
+
+        var service = GetService(provider);
+        var protector = provider.GetRequiredService<OpenIddictServerSamlOwinStateProtector>();
+
+        var endpoint = GetEndpointUrl(context, options.SingleSignOnPath);
+        var request = context.Request;
+        var cancellationToken = request.CallCancelled;
+
+        AuthenticationRequestResult result;
+        RequestState? state = null;
+
+        if (IsGet(request) && request.Query.GetValues(Parameters.State) is { } values)
+        {
+            state = values.Count is 1 ? protector.Unprotect(values[0]) : null;
+
+            // Note: the service provider is resolved again to ensure it was not removed or updated.
+            result = await service.ValidateRequestStateAsync(state, cancellationToken);
+            if (state is null || !result.Succeeded)
+            {
+                await WriteErrorAsync(context, SR.GetResourceString(SR.ID2263));
+                return;
+            }
+        }
+
+        else if (IsGet(request) && request.Query.GetValues(Parameters.SamlRequest) is not null)
+        {
+            result = await service.ValidateRedirectAuthenticationRequestAsync(request.QueryString.Value, endpoint, cancellationToken);
+        }
+
+        else if (IsPost(request) && request.ContentType is { Length: > 0 } type &&
+            type.StartsWith("application/x-www-form-urlencoded", StringComparison.OrdinalIgnoreCase))
+        {
+            var form = await request.ReadFormAsync();
+            if (form.GetValues(Parameters.SamlRequest) is { Count: > 1 } || form.GetValues(Parameters.RelayState) is { Count: > 1 })
+            {
+                await WriteErrorAsync(context, SR.GetResourceString(SR.ID2259));
+                return;
+            }
+
+            result = await service.ValidatePostAuthenticationRequestAsync(
+                form.Get(Parameters.SamlRequest), form.Get(Parameters.RelayState), endpoint, cancellationToken);
+        }
+
+        else if (IsGet(request) && request.Query.GetValues(Parameters.ServiceProvider) is { } providers)
+        {
+            if (providers.Count > 1 || request.Query.GetValues(Parameters.RelayState) is { Count: > 1 })
+            {
+                await WriteErrorAsync(context, SR.GetResourceString(SR.ID2259));
+                return;
+            }
+
+            result = await service.ValidateIdentityProviderInitiatedRequestAsync(
+                providers[0], request.Query.Get(Parameters.RelayState), cancellationToken);
+        }
+
+        else
+        {
+            await WriteErrorAsync(context, SR.GetResourceString(SR.ID2266));
+            return;
+        }
+
+        if (!result.Succeeded)
+        {
+            if (result.CanReturnErrorToServiceProvider)
+            {
+                await WriteErrorResponseAsync(result, result.Status!, result.SecondLevelStatus, result.ErrorDescription);
+            }
+
+            else
+            {
+                await WriteErrorAsync(context, result.ErrorDescription!);
+            }
+
+            return;
+        }
+
+        var authentication = await context.Authentication.AuthenticateAsync(options.AuthenticationType);
+
+        var authenticated = authentication?.Identity is { IsAuthenticated: true };
+        if (authenticated && result.Request?.ForceAuthentication is true)
+        {
+            // When authentication is forced, the user must have been authenticated after the request was received.
+            // For requests that were just received, a challenge is always triggered.
+            authenticated = state is not null && authentication!.Properties?.IssuedUtc >= state.CreationDate;
+        }
+
+        if (!authenticated)
+        {
+            if (result.Request?.IsPassive is true)
+            {
+                await WriteErrorResponseAsync(result, SamlStatusCodes.Responder, SamlStatusCodes.NoPassive, SR.GetResourceString(SR.ID2260));
+                return;
+            }
+
+            // Note: unlike ASP.NET Core, the meaning of AuthenticationProperties.RedirectUri depends on the Katana
+            // middleware (e.g the cookies middleware uses it as the login page address). To support all the
+            // authentication middleware, the user agent is first redirected to the address containing the
+            // protected state, that is used as the return address when the challenge is triggered.
+            if (state is null)
+            {
+                state = service.CreateRequestState(result, options.RequestStateLifetime);
+
+                context.Response.Headers.Set("Cache-Control", "no-cache, no-store");
+                context.Response.Redirect(request.PathBase.Add(options.SingleSignOnPath).ToUriComponent() + "?" +
+                    Parameters.State + "=" + Uri.EscapeDataString(protector.Protect(state)));
+                return;
+            }
+
+            context.Response.StatusCode = 401;
+            context.Authentication.Challenge(new AuthenticationProperties(), options.AuthenticationType);
+            return;
+        }
+
+        var assertion = await provider.GetRequiredService<IOpenIddictServerSamlAssertionProvider>()
+            .CreateAssertionAsync(new AssertionContext
+            {
+                AuthenticationInstant = authentication!.Properties?.IssuedUtc,
+                CancellationToken = cancellationToken,
+                Principal = new ClaimsPrincipal(authentication.Identity),
+                Request = result.Request,
+                ServiceProvider = result.ServiceProvider!
+            });
+
+        if (assertion is null)
+        {
+            await WriteErrorResponseAsync(result, SamlStatusCodes.Responder, SamlStatusCodes.RequestDenied, SR.GetResourceString(SR.ID2261));
+            return;
+        }
+
+        await WriteResponseAsync(context, result, service.CreateResponse(new ResponseDescriptor
+        {
+            Assertion = assertion,
+            AssertionConsumerServiceUrl = result.AssertionConsumerServiceUrl!,
+            InResponseTo = result.RequestId,
+            ServiceProvider = result.ServiceProvider!
+        }));
+
+        Task WriteErrorResponseAsync(AuthenticationRequestResult result, string status, string? secondLevelStatus, string? description)
+            => WriteResponseAsync(context, result, service.CreateResponse(new ResponseDescriptor
+            {
+                AssertionConsumerServiceUrl = result.AssertionConsumerServiceUrl!,
+                InResponseTo = result.RequestId,
+                SecondLevelStatus = secondLevelStatus,
+                ServiceProvider = result.ServiceProvider!,
+                Status = status,
+                StatusMessage = description
+            }));
+    }
+
+    private static Task WriteResponseAsync(IOwinContext context, AuthenticationRequestResult result, string response)
+    {
+        var url = result.AssertionConsumerServiceUrl!;
+        var nonce = Base64UrlEncoder.Encode(RandomNumberGenerator.GetBytes(16));
+
+        var headers = context.Response.Headers;
+        headers.Set("Cache-Control", "no-cache, no-store");
+        headers.Set("Pragma", "no-cache");
+        headers.Set("Content-Security-Policy", $"default-src 'none'; script-src 'nonce-{nonce}'; " +
+            $"form-action {url.GetLeftPart(UriPartial.Authority)}; frame-ancestors 'none'; base-uri 'none'");
+
+        context.Response.ContentType = "text/html; charset=utf-8";
+
+        return WriteAsync(context, OpenIddictServerSamlService.CreateFormPostPage(url, response, result.RelayState, nonce));
+    }
+
+    private static Task WriteErrorAsync(IOwinContext context, string description)
+    {
+        context.Response.StatusCode = 400;
+        context.Response.Headers.Set("Cache-Control", "no-cache, no-store");
+        context.Response.ContentType = "text/plain; charset=utf-8";
+
+        return WriteAsync(context, description);
+    }
+
+    private static Task WriteAsync(IOwinContext context, string content)
+    {
+        var bytes = Encoding.UTF8.GetBytes(content);
+        context.Response.ContentLength = bytes.Length;
+
+        return context.Response.WriteAsync(bytes, context.Request.CallCancelled);
+    }
+
+    private static OpenIddictServerSamlService GetService(IServiceProvider provider)
+        => provider.GetService<OpenIddictServerSamlService>() ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0578));
+
+    private static bool IsGet(IOwinRequest request) => string.Equals(request.Method, "GET", StringComparison.OrdinalIgnoreCase);
+
+    private static bool IsPost(IOwinRequest request) => string.Equals(request.Method, "POST", StringComparison.OrdinalIgnoreCase);
+
+    private static bool ValidateTransportSecurity(IOwinContext context, OpenIddictServerSamlOwinOptions options)
+        => options.DisableTransportSecurityRequirement || context.Request.IsSecure;
+
+    private static Uri GetEndpointUrl(IOwinContext context, PathString path)
+        => new(context.Request.Scheme + Uri.SchemeDelimiter + context.Request.Host.Value +
+            context.Request.PathBase.Add(path).ToUriComponent(), UriKind.Absolute);
+}

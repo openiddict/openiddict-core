@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>$(NetFrameworkTargetFrameworks)</TargetFrameworks>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Description>OWIN/Katana integration package for the OpenIddict SAML 2.0 identity provider (metadata and single sign-on endpoints).</Description>
+    <PackageTags>$(PackageTags);server;saml;saml2;aspnet;katana;owin</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\OpenIddict.Server.Saml\OpenIddict.Server.Saml.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.DataProtection" />
+    <PackageReference Include="Microsoft.Owin.Security" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Microsoft.Owin" />
+    <Using Include="Microsoft.Owin.Security" />
+    <Using Include="OpenIddict.Abstractions" />
+    <Using Include="OpenIddict.Abstractions.OpenIddictConstants" Static="true" />
+    <Using Include="OpenIddict.Abstractions.OpenIddictResources" Alias="SR" />
+  </ItemGroup>
+
+</Project>
