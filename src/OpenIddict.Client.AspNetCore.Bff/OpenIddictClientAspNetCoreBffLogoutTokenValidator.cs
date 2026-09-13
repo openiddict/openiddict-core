@@ -10,6 +10,7 @@ using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.JsonWebTokens;
+using Microsoft.IdentityModel.Tokens;
 using static OpenIddict.Client.AspNetCore.Bff.OpenIddictClientAspNetCoreBffModels;
 
 namespace OpenIddict.Client.AspNetCore.Bff;
@@ -52,7 +53,20 @@ internal sealed class OpenIddictClientAspNetCoreBffLogoutTokenValidator
             return Fail("the token is not a JSON Web Token.");
         }
 
-        var unvalidated = handler.ReadJsonWebToken(token);
+        JsonWebToken unvalidated;
+
+        try
+        {
+            unvalidated = handler.ReadJsonWebToken(token);
+        }
+
+        // Note: CanReadToken() only checks the overall format of the token: tokens whose segments
+        // are not valid base64url-encoded JSON documents are rejected when they are actually read.
+        catch (Exception exception) when (exception is ArgumentException or SecurityTokenException)
+        {
+            return Fail("the token is malformed.");
+        }
+
         if (!Uri.TryCreate(unvalidated.Issuer, UriKind.Absolute, out var issuer))
         {
             return Fail("the issuer is missing or invalid.");
@@ -112,9 +126,33 @@ internal sealed class OpenIddictClientAspNetCoreBffLogoutTokenValidator
             return Fail("the token contains a nonce claim.");
         }
 
-        if (!jwt.TryGetPayloadValue<long>(Claims.IssuedAt, out _))
+        if (!jwt.TryGetPayloadValue<long>(Claims.IssuedAt, out var iat))
         {
             return Fail("the iat claim is missing.");
+        }
+
+        var now = _clientOptions.CurrentValue.TimeProvider.GetUtcNow();
+        var lifetime = _options.CurrentValue.LogoutTokenReplayCacheLifetime;
+        var skew = parameters.ClockSkew;
+
+        DateTimeOffset issuedAt;
+
+        try
+        {
+            issuedAt = DateTimeOffset.FromUnixTimeSeconds(iat);
+        }
+
+        catch (ArgumentOutOfRangeException)
+        {
+            return Fail("the iat claim is invalid.");
+        }
+
+        // Note: the replay cache only retains identifiers for a limited period: to ensure a token cannot
+        // be replayed once its identifier was evicted, tokens without an expiration date are only accepted
+        // if they were issued during the replay cache window and tokens issued in the future are rejected.
+        if (issuedAt > now + lifetime + skew || (jwt.ValidTo == DateTime.MinValue && issuedAt + lifetime + skew < now))
+        {
+            return Fail("the iat claim is outside the accepted window.");
         }
 
         var subject = jwt.TryGetPayloadValue<string>(Claims.Subject, out var sub) && !string.IsNullOrEmpty(sub) ? sub : null;
@@ -130,11 +168,13 @@ internal sealed class OpenIddictClientAspNetCoreBffLogoutTokenValidator
         }
 
         // Prevent replay attacks by rejecting logout tokens whose identifier was already seen.
-        var now = _clientOptions.CurrentValue.TimeProvider.GetUtcNow();
-        var expiration = now + _options.CurrentValue.LogoutTokenReplayCacheLifetime;
-        if (jwt.ValidTo > DateTime.MinValue && new DateTimeOffset(jwt.ValidTo, TimeSpan.Zero) > expiration)
+        // Note: the identifier is kept until the token can no longer be accepted (i.e until it expires or,
+        // for tokens without an expiration date, until the end of the accepted "iat" window), plus the clock skew.
+        var expiration = now + lifetime;
+        var limit = (jwt.ValidTo > DateTime.MinValue ? new DateTimeOffset(jwt.ValidTo, TimeSpan.Zero) : issuedAt + lifetime) + skew;
+        if (limit > expiration)
         {
-            expiration = new DateTimeOffset(jwt.ValidTo, TimeSpan.Zero);
+            expiration = limit;
         }
 
         foreach (var entry in _identifiers)

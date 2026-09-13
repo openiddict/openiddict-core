@@ -46,7 +46,8 @@ public sealed class OpenIddictClientAspNetCoreBffTestHost : IAsyncDisposable
         Action<OpenIddictClientBuilder>? client = null,
         Action<OpenIddictClientAspNetCoreBffBuilder>? bff = null,
         Action<IServiceCollection>? services = null,
-        Action<IEndpointRouteBuilder>? endpoints = null)
+        Action<IEndpointRouteBuilder>? endpoints = null,
+        bool middleware = true)
     {
         var endpoint = new TokenEndpoint();
         var key = new RsaSecurityKey(RSA.Create(2048)) { KeyId = "signing_key" };
@@ -117,7 +118,11 @@ public sealed class OpenIddictClientAspNetCoreBffTestHost : IAsyncDisposable
             {
                 app.UseRouting();
                 app.UseAuthentication();
-                app.UseOpenIddictBff();
+                if (middleware)
+                {
+                    app.UseOpenIddictBff();
+                }
+
                 app.UseAuthorization();
 
                 app.UseEndpoints(routes =>

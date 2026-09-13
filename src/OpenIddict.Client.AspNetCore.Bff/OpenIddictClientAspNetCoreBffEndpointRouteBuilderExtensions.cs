@@ -44,7 +44,10 @@ public static class OpenIddictClientAspNetCoreBffEndpointRouteBuilderExtensions
     /// Marks the endpoint as a BFF API endpoint: requests must contain the antiforgery header (unless disabled)
     /// and unauthenticated requests receive 401 responses instead of being redirected to the login page.
     /// </summary>
-    /// <remarks>This requires registering the BFF middleware using <see cref="UseOpenIddictBff(IApplicationBuilder)"/>.</remarks>
+    /// <remarks>
+    /// The checks are enforced by the endpoint itself; registering the BFF middleware using
+    /// <see cref="UseOpenIddictBff(IApplicationBuilder)"/> allows rejecting requests before the authorization middleware runs.
+    /// </remarks>
     /// <typeparam name="TBuilder">The type of the endpoint convention builder.</typeparam>
     /// <param name="builder">The endpoint convention builder.</param>
     /// <param name="disableAntiforgeryCheck">Whether the antiforgery header check should be disabled.</param>
@@ -54,10 +57,31 @@ public static class OpenIddictClientAspNetCoreBffEndpointRouteBuilderExtensions
     {
         ArgumentNullException.ThrowIfNull(builder);
 
-        return builder.WithMetadata(new OpenIddictClientAspNetCoreBffApiEndpointMetadata
+        builder.WithMetadata(new OpenIddictClientAspNetCoreBffApiEndpointMetadata
         {
             DisableAntiforgeryCheck = disableAntiforgeryCheck
         });
+
+        // Note: the checks are also enforced by the endpoint itself so that the endpoint is never
+        // left unprotected if the BFF middleware was not registered or was registered too early.
+        // The result of the checks is cached, so they are only applied once per request.
+        builder.Finally(static endpoint =>
+        {
+            if (endpoint.RequestDelegate is not RequestDelegate next)
+            {
+                return;
+            }
+
+            endpoint.RequestDelegate = async context =>
+            {
+                if (await OpenIddictClientAspNetCoreBffMiddleware.ValidateRequestAsync(context))
+                {
+                    await next(context);
+                }
+            };
+        });
+
+        return builder;
     }
 
     /// <summary>

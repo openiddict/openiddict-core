@@ -82,6 +82,14 @@ public sealed class OpenIddictClientAspNetCoreBffTransformProvider : ITransformP
         var manager = context.HttpContext.RequestServices.GetService<OpenIddictClientAspNetCoreBffTokenManager>() ??
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0561));
 
+        // Note: the antiforgery and authentication checks are also enforced here so that the access tokens
+        // are never attached to forged requests if the BFF middleware was not registered. Setting a non-200
+        // status code prevents YARP from forwarding the request. The result of the checks is cached per request.
+        if (!await OpenIddictClientAspNetCoreBffMiddleware.ValidateRequestAsync(context.HttpContext))
+        {
+            return;
+        }
+
         // Remove the authorization header potentially sent by the browser.
         RequestTransform.RemoveHeader(context, HeaderNames.Authorization);
 
@@ -102,6 +110,12 @@ public sealed class OpenIddictClientAspNetCoreBffTransformProvider : ITransformP
 
         if (token is null)
         {
+            // Routes requiring a user access token are never proxied without one.
+            if (type is OpenIddictClientAspNetCoreBffTokenType.User)
+            {
+                context.HttpContext.Response.StatusCode = StatusCodes.Status401Unauthorized;
+            }
+
             return;
         }
 

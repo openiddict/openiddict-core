@@ -94,6 +94,7 @@ public sealed class OpenIddictClientAspNetCoreBffOptions
 
     /// <summary>
     /// Gets or sets the lifetime of the logout token identifiers kept in memory to prevent replay attacks.
+    /// Logout tokens without an "exp" claim are only accepted if their "iat" claim is within this window.
     /// </summary>
     public TimeSpan LogoutTokenReplayCacheLifetime { get; set; } = TimeSpan.FromMinutes(5);
 }

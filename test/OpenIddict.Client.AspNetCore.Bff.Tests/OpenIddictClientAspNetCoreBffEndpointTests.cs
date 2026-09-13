@@ -130,6 +130,27 @@ public class OpenIddictClientAspNetCoreBffEndpointTests
     }
 
     [Fact]
+    public async Task ApiEndpoint_AntiforgeryHeaderIsRequiredWhenTheMiddlewareIsNotRegistered()
+    {
+        // Arrange
+        await using var host = await OpenIddictClientAspNetCoreBffTestHost.CreateAsync(endpoints: routes =>
+        {
+            routes.MapGet("/api/data", static () => "data").AsOpenIddictBffApiEndpoint();
+            routes.MapGet("/api/unprotected", static () => "data").AsOpenIddictBffApiEndpoint(disableAntiforgeryCheck: true);
+        }, middleware: false);
+
+        // Act
+        using var missing = await host.SendAsync(HttpMethod.Get, "/api/data", cookie: null);
+        using var valid = await host.SendAsync(HttpMethod.Get, "/api/data", cookie: null, antiforgery: true);
+        using var unprotected = await host.SendAsync(HttpMethod.Get, "/api/unprotected", cookie: null);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.Unauthorized, missing.StatusCode);
+        Assert.Equal(HttpStatusCode.OK, valid.StatusCode);
+        Assert.Equal(HttpStatusCode.OK, unprotected.StatusCode);
+    }
+
+    [Fact]
     public async Task ApiEndpoint_UnauthenticatedRequestReturns401InsteadOfRedirecting()
     {
         // Arrange
@@ -357,7 +378,11 @@ public class OpenIddictClientAspNetCoreBffEndpointTests
         ["wrong_key"],
         ["expired"],
         ["replayed"],
-        ["not_a_jwt"]
+        ["not_a_jwt"],
+        ["malformed"],
+        ["unsigned"],
+        ["stale_iat_without_exp"],
+        ["future_iat"]
     ];
 
     [Theory]
@@ -379,6 +404,10 @@ public class OpenIddictClientAspNetCoreBffEndpointTests
             "wrong_key" => CreateLogoutToken(host, sid: "session", key: new RsaSecurityKey(System.Security.Cryptography.RSA.Create(2048))),
             "expired" => CreateLogoutToken(host, sid: "session", expiration: DateTime.UtcNow.AddMinutes(-5)),
             "replayed" => CreateLogoutToken(host, sid: "session", identifier: "replayed"),
+            "malformed" => "abc.def.ghi",
+            "unsigned" => CreateLogoutToken(host, sid: "session", unsigned: true),
+            "stale_iat_without_exp" => CreateLogoutToken(host, sid: "session", expires: false, issuedAt: DateTime.UtcNow.AddHours(-1)),
+            "future_iat" => CreateLogoutToken(host, sid: "session", expires: false, issuedAt: DateTime.UtcNow.AddHours(1)),
             _ => "not_a_jwt"
         };
 
@@ -398,6 +427,27 @@ public class OpenIddictClientAspNetCoreBffEndpointTests
         using var document = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
         Assert.Equal(Errors.InvalidRequest, document.RootElement.GetProperty(Parameters.Error).GetString());
         Assert.Empty(handler.Notifications);
+    }
+
+    [Fact]
+    public async Task BackchannelLogoutEndpoint_RecentLogoutTokenWithoutExpirationIsAcceptedOnce()
+    {
+        // Arrange
+        var handler = new RecordingLogoutHandler();
+
+        await using var host = await OpenIddictClientAspNetCoreBffTestHost.CreateAsync(services: services =>
+            services.AddSingleton<IOpenIddictClientAspNetCoreBffBackchannelLogoutHandler>(handler));
+
+        var token = CreateLogoutToken(host, sid: "session", expires: false, issuedAt: DateTime.UtcNow.AddMinutes(-1));
+
+        // Act
+        using var first = await SendLogoutTokenAsync(host, token);
+        using var second = await SendLogoutTokenAsync(host, token);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, first.StatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, second.StatusCode);
+        Assert.Single(handler.Notifications);
     }
 
     [Fact]
@@ -476,8 +526,10 @@ public class OpenIddictClientAspNetCoreBffEndpointTests
         Assert.Equal("api", token.Scope);
     }
 
-    [Fact]
-    public async Task ReverseProxy_UserAccessTokenIsAttachedAndCookiesAreRemoved()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task ReverseProxy_UserAccessTokenIsAttachedAndCookiesAreRemoved(bool middleware)
     {
         // Arrange
         var backend = new RecordingHandler();
@@ -518,19 +570,23 @@ public class OpenIddictClientAspNetCoreBffEndpointTests
                         ])
                     .AddOpenIddictBffTransforms();
             },
-            endpoints: routes => routes.MapReverseProxy());
+            endpoints: routes => routes.MapReverseProxy(),
+            middleware: middleware);
 
         var cookie = await host.SignInAsync(expiration: DateTimeOffset.UtcNow.AddHours(1));
+        var tokenless = await host.SignInAsync(accessToken: null, refreshToken: null);
 
         // Act
         using var missing = await host.SendAsync(HttpMethod.Get, "/proxy/user/resource", cookie);
         using var anonymous = await host.SendAsync(HttpMethod.Get, "/proxy/user/resource", cookie: null, antiforgery: true);
+        using var unavailable = await host.SendAsync(HttpMethod.Get, "/proxy/user/resource", tokenless, antiforgery: true);
         using var response = await host.SendAsync(HttpMethod.Get, "/proxy/user/resource?value=1", cookie, antiforgery: true);
         using var other = await host.SendAsync(HttpMethod.Get, "/proxy/anonymous/resource", cookie);
 
         // Assert
         Assert.Equal(HttpStatusCode.Unauthorized, missing.StatusCode);
         Assert.Equal(HttpStatusCode.Unauthorized, anonymous.StatusCode);
+        Assert.Equal(HttpStatusCode.Unauthorized, unavailable.StatusCode);
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Equal(HttpStatusCode.OK, other.StatusCode);
 
@@ -570,7 +626,7 @@ public class OpenIddictClientAspNetCoreBffEndpointTests
 
     private static string CreateLogoutToken(OpenIddictClientAspNetCoreBffTestHost host, string? sub = null, string? sid = null,
         bool events = true, bool nonce = false, string audience = "Fabrikam", SecurityKey? key = null,
-        DateTime? expiration = null, string? identifier = null)
+        DateTime? expiration = null, string? identifier = null, bool unsigned = false, bool expires = true, DateTime? issuedAt = null)
     {
         var claims = new Dictionary<string, object>(StringComparer.Ordinal)
         {
@@ -602,15 +658,15 @@ public class OpenIddictClientAspNetCoreBffEndpointTests
 
         var now = DateTime.UtcNow;
 
-        return new JsonWebTokenHandler().CreateToken(new SecurityTokenDescriptor
+        return new JsonWebTokenHandler { SetDefaultTimesOnTokenCreation = expires }.CreateToken(new SecurityTokenDescriptor
         {
             Audience = audience,
             Claims = claims,
-            Expires = expiration ?? now.AddMinutes(2),
-            IssuedAt = (expiration ?? now.AddMinutes(2)).AddMinutes(-2),
-            NotBefore = (expiration ?? now.AddMinutes(2)).AddMinutes(-2),
+            Expires = expires ? expiration ?? now.AddMinutes(2) : null,
+            IssuedAt = issuedAt ?? (expiration ?? now.AddMinutes(2)).AddMinutes(-2),
+            NotBefore = expires ? (expiration ?? now.AddMinutes(2)).AddMinutes(-2) : null,
             Issuer = OpenIddictClientAspNetCoreBffTestHost.Issuer.AbsoluteUri,
-            SigningCredentials = new SigningCredentials(key ?? host.SigningKey, SecurityAlgorithms.RsaSha256),
+            SigningCredentials = unsigned ? null : new SigningCredentials(key ?? host.SigningKey, SecurityAlgorithms.RsaSha256),
             TokenType = JsonWebTokenTypes.LogoutToken
         });
     }
