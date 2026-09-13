@@ -175,7 +175,7 @@ public class OpenIddictServerAspNetCoreAdminApiTests
     }
 
     [Fact]
-    public async Task GetApplication_ReturnsJsonWebKeySet()
+    public async Task GetApplication_ReturnsJsonWebKeySetWithoutPrivateKeyParameters()
     {
         // Arrange
         var application = new object();
@@ -185,7 +185,16 @@ public class OpenIddictServerAspNetCoreAdminApiTests
             .ReturnsAsync(application);
         manager.Setup(mock => mock.PopulateAsync(It.IsAny<OpenIddictApplicationDescriptor>(), application, It.IsAny<CancellationToken>()))
             .Callback((OpenIddictApplicationDescriptor descriptor, object _, CancellationToken _) =>
-                descriptor.JsonWebKeySet = JsonWebKeySet.Create("""{ "keys": [ { "kty": "oct", "kid": "key-1", "k": "c2VjcmV0" } ] }"""))
+                descriptor.JsonWebKeySet = JsonWebKeySet.Create("""
+                    {
+                      "keys": [
+                        { "kty": "RSA", "kid": "key-1", "use": "sig", "n": "bW9kdWx1cw", "e": "AQAB",
+                          "d": "cHJpdmF0ZS1leHBvbmVudA", "p": "cHJpbWUtMQ", "q": "cHJpbWUtMg",
+                          "dp": "ZXhwb25lbnQtMQ", "dq": "ZXhwb25lbnQtMg", "qi": "Y29lZmZpY2llbnQ" },
+                        { "kty": "oct", "kid": "key-2", "k": "c3ltbWV0cmljLXNlY3JldA" }
+                      ]
+                    }
+                    """))
             .Returns(ValueTask.CompletedTask);
 
         using var host = await CreateHostAsync(services => services.AddSingleton(manager.Object));
@@ -196,9 +205,23 @@ public class OpenIddictServerAspNetCoreAdminApiTests
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        using var document = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
-        var key = Assert.Single(document.RootElement.GetProperty("json_web_key_set").GetProperty("keys").EnumerateArray());
-        Assert.Equal("key-1", key.GetProperty("kid").GetString());
+        var content = await response.Content.ReadAsStringAsync();
+        using var document = JsonDocument.Parse(content);
+        var keys = document.RootElement.GetProperty("json_web_key_set").GetProperty("keys").EnumerateArray().ToArray();
+        Assert.Equal(2, keys.Length);
+
+        Assert.Equal("key-1", keys[0].GetProperty("kid").GetString());
+        Assert.Equal("bW9kdWx1cw", keys[0].GetProperty("n").GetString());
+        Assert.Equal("AQAB", keys[0].GetProperty("e").GetString());
+        Assert.Equal("key-2", keys[1].GetProperty("kid").GetString());
+
+        foreach (var parameter in (string[]) ["d", "p", "q", "dp", "dq", "qi", "k"])
+        {
+            Assert.All(keys, key => Assert.False(key.TryGetProperty(parameter, out _)));
+        }
+
+        Assert.DoesNotContain("cHJpdmF0ZS1leHBvbmVudA", content, StringComparison.Ordinal);
+        Assert.DoesNotContain("c3ltbWV0cmljLXNlY3JldA", content, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -511,6 +534,38 @@ public class OpenIddictServerAspNetCoreAdminApiTests
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
         Assert.Equal(HttpStatusCode.UnsupportedMediaType, form.StatusCode);
         manager.Verify(mock => mock.TryRevokeAsync(token, It.IsAny<CancellationToken>()), Times.Once());
+    }
+
+    [Fact]
+    public async Task RevokeAuthorization_RevokesTheAssociatedTokens()
+    {
+        // Arrange
+        var authorization = new object();
+
+        var manager = new Mock<IOpenIddictAuthorizationManager>();
+        manager.Setup(mock => mock.FindByIdAsync("a1", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(authorization);
+        manager.Setup(mock => mock.GetIdAsync(authorization, It.IsAny<CancellationToken>()))
+            .ReturnsAsync("a1");
+        manager.Setup(mock => mock.TryRevokeAsync(authorization, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+
+        var tokens = new Mock<IOpenIddictTokenManager>();
+        tokens.Setup(mock => mock.RevokeByAuthorizationIdAsync("a1", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(2);
+
+        using var host = await CreateHostAsync(services => services
+            .AddSingleton(manager.Object)
+            .AddSingleton(tokens.Object));
+        using var client = CreateClient(host, role: "admin");
+
+        // Act
+        var response = await client.PostAsync("/openiddict/admin/authorizations/a1/revoke", JsonContent("{}"));
+
+        // Assert
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        manager.Verify(mock => mock.TryRevokeAsync(authorization, It.IsAny<CancellationToken>()), Times.Once());
+        tokens.Verify(mock => mock.RevokeByAuthorizationIdAsync("a1", It.IsAny<CancellationToken>()), Times.Once());
     }
 
     [Fact]

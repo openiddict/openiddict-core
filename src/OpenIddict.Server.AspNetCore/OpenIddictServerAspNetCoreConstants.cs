@@ -13,6 +13,12 @@ public static class OpenIddictServerAspNetCoreConstants
 {
     public static class AdminApi
     {
+        public static class ErrorCodes
+        {
+            public const string Conflict = "conflict";
+            public const string NotFound = "not_found";
+        }
+
         public static class Paths
         {
             public const string Applications = "applications";

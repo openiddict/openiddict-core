@@ -23,6 +23,13 @@ internal static class OpenIddictServerAspNetCoreAdminApiEndpoints
     private const int DefaultCount = 100;
     private const int MaximumCount = 1000;
 
+    // Private (RSA, EC, OKP, AKP) and symmetric (oct) key parameters.
+    // See https://datatracker.ietf.org/doc/html/rfc7518#section-6 for more information.
+    private static readonly HashSet<string> PrivateJsonWebKeyParameters = new(StringComparer.Ordinal)
+    {
+        "d", "dp", "dq", "k", "oth", "p", "priv", "q", "qi"
+    };
+
     public static Task ListApplicationsAsync(HttpContext context) => ExecuteAsync(context, static async context =>
     {
         var manager = GetManager<IOpenIddictApplicationManager>(context);
@@ -297,6 +304,14 @@ internal static class OpenIddictServerAspNetCoreAdminApiEndpoints
         if (!await manager.TryRevokeAsync(authorization, context.RequestAborted))
         {
             throw new AdminApiException(StatusCodes.Status409Conflict, SR.GetResourceString(SR.ID2244));
+        }
+
+        // Revoke the tokens attached to the authorization so that they are no longer considered valid
+        // (independently of whether token validation checks the status of the authorization entry).
+        if (context.RequestServices.GetService<IOpenIddictTokenManager>() is IOpenIddictTokenManager tokens &&
+            await manager.GetIdAsync(authorization, context.RequestAborted) is { Length: > 0 } identifier)
+        {
+            await tokens.RevokeByAuthorizationIdAsync(identifier, context.RequestAborted);
         }
 
         context.Response.StatusCode = StatusCodes.Status204NoContent;
@@ -598,8 +613,8 @@ internal static class OpenIddictServerAspNetCoreAdminApiEndpoints
             writer.WriteStartObject();
             writer.WriteString(Parameters.Error, status switch
             {
-                StatusCodes.Status404NotFound => "not_found",
-                StatusCodes.Status409Conflict => "conflict",
+                StatusCodes.Status404NotFound => ErrorCodes.NotFound,
+                StatusCodes.Status409Conflict => ErrorCodes.Conflict,
                 _ => Errors.InvalidRequest
             });
             writer.WriteString(Parameters.ErrorDescription, description);
@@ -680,7 +695,10 @@ internal static class OpenIddictServerAspNetCoreAdminApiEndpoints
 
         if (descriptor.JsonWebKeySet is not null)
         {
-            JsonSerializer.Serialize(writer, descriptor.JsonWebKeySet, OpenIddictSerializer.Default.JsonWebKeySet);
+            using var set = JsonDocument.Parse(JsonSerializer.SerializeToUtf8Bytes(
+                descriptor.JsonWebKeySet, OpenIddictSerializer.Default.JsonWebKeySet));
+
+            WritePublicJsonWebKeySet(writer, set.RootElement);
         }
 
         else
@@ -703,6 +721,48 @@ internal static class OpenIddictServerAspNetCoreAdminApiEndpoints
         writer.WriteEndObject();
 
         WriteProperties(writer, descriptor.Properties);
+        writer.WriteEndObject();
+    }
+
+    private static void WritePublicJsonWebKeySet(Utf8JsonWriter writer, JsonElement set)
+    {
+        // Note: the private and symmetric key parameters (that may have been attached to the client
+        // JSON Web Key Set, even if only public keys are expected) are deliberately never returned.
+        writer.WriteStartObject();
+
+        foreach (var property in set.EnumerateObject())
+        {
+            if (!property.NameEquals(JsonWebKeySetParameterNames.Keys) || property.Value.ValueKind is not JsonValueKind.Array)
+            {
+                property.WriteTo(writer);
+                continue;
+            }
+
+            writer.WriteStartArray(property.Name);
+
+            foreach (var key in property.Value.EnumerateArray())
+            {
+                if (key.ValueKind is not JsonValueKind.Object)
+                {
+                    continue;
+                }
+
+                writer.WriteStartObject();
+
+                foreach (var parameter in key.EnumerateObject())
+                {
+                    if (!PrivateJsonWebKeyParameters.Contains(parameter.Name))
+                    {
+                        parameter.WriteTo(writer);
+                    }
+                }
+
+                writer.WriteEndObject();
+            }
+
+            writer.WriteEndArray();
+        }
+
         writer.WriteEndObject();
     }
 
