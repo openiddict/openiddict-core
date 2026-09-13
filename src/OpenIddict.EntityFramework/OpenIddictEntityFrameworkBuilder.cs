@@ -129,6 +129,32 @@ public sealed class OpenIddictEntityFrameworkBuilder
     }
 
     /// <summary>
+    /// Configures OpenIddict to use the specified key entity, derived
+    /// from the default OpenIddict Entity Framework 6.x key entity.
+    /// </summary>
+    /// <returns>The <see cref="OpenIddictEntityFrameworkBuilder"/> instance.</returns>
+    public OpenIddictEntityFrameworkBuilder ReplaceDefaultKeyEntity<
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TEntity,
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TKey>()
+        where TEntity : OpenIddictEntityFrameworkKey<TKey>
+        where TKey : notnull, IEquatable<TKey>
+    {
+        // Note: Entity Framework 6.x always throws an exception when using generic types as entity types.
+        if (typeof(TEntity).IsGenericType)
+        {
+            throw new InvalidOperationException(SR.GetResourceString(SR.ID0277));
+        }
+
+        Services.Replace(ServiceDescriptor.Scoped<IOpenIddictKeyManager>(static provider =>
+            provider.GetRequiredService<OpenIddictKeyManager<TEntity>>()));
+
+        Services.Replace(ServiceDescriptor.Scoped<IOpenIddictKeyStore<TEntity>,
+            OpenIddictEntityFrameworkKeyStore<TEntity, TKey>>());
+
+        return this;
+    }
+
+    /// <summary>
     /// Configures the OpenIddict Entity Framework 6.x stores to use the specified database context type.
     /// </summary>
     /// <typeparam name="TContext">The type of the <see cref="DbContext"/> used by OpenIddict.</typeparam>

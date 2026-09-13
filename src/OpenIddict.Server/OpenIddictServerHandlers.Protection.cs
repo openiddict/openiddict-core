@@ -74,9 +74,11 @@ public static partial class OpenIddictServerHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(ValidateTokenContext context)
+            public async ValueTask HandleAsync(ValidateTokenContext context)
             {
                 ArgumentNullException.ThrowIfNull(context);
+
+                var credentials = await OpenIddictServerKeyRing.ResolveCredentialsAsync(context.Transaction);
 
                 // The OpenIddict server is expected to validate tokens it creates (e.g access tokens)
                 // and tokens that are created by one or multiple clients (e.g client assertions).
@@ -164,8 +166,8 @@ public static partial class OpenIddictServerHandlers
                     // Request objects can be optionally encrypted using one of the encryption keys of the server.
                     if (type is TokenTypeIdentifiers.Private.RequestObject)
                     {
-                        parameters.TokenDecryptionKeys = from credentials in context.Options.EncryptionCredentials
-                                                         select credentials.Key;
+                        parameters.TokenDecryptionKeys = from encryption in credentials.EncryptionCredentials
+                                                         select encryption.Key;
                     }
 
                     // Only provide a signing key resolver if the degraded mode was not enabled.
@@ -200,6 +202,10 @@ public static partial class OpenIddictServerHandlers
                 TokenValidationParameters GetServerTokenValidationParameters()
                 {
                     var parameters = context.Options.TokenValidationParameters.Clone();
+
+                    // Note: the keys are resolved per transaction to support automatic key management.
+                    parameters.IssuerSigningKeys = from signing in credentials.SigningCredentials select signing.Key;
+                    parameters.TokenDecryptionKeys = from encryption in credentials.EncryptionCredentials select encryption.Key;
 
                     parameters.ValidIssuers ??= (context.Options.Issuer ?? context.BaseUri) switch
                     {
@@ -279,8 +285,6 @@ public static partial class OpenIddictServerHandlers
 
                 context.SecurityTokenHandler = context.Options.JsonWebTokenHandler;
                 context.TokenValidationParameters = parameters;
-
-                return ValueTask.CompletedTask;
             }
         }
 
@@ -1555,9 +1559,11 @@ public static partial class OpenIddictServerHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(GenerateTokenContext context)
+            public async ValueTask HandleAsync(GenerateTokenContext context)
             {
                 ArgumentNullException.ThrowIfNull(context);
+
+                var credentials = await OpenIddictServerKeyRing.ResolveCredentialsAsync(context.Transaction);
 
                 context.SecurityTokenHandler = context.Options.JsonWebTokenHandler;
 
@@ -1567,20 +1573,18 @@ public static partial class OpenIddictServerHandlers
                     TokenTypeIdentifiers.AccessToken when context.Options.DisableAccessTokenEncryption => null,
                     TokenTypeIdentifiers.IdentityToken                                                 => null,
 
-                    _ => context.Options.EncryptionCredentials[0]
+                    _ => credentials.EncryptionCredentials[0]
                 };
 
                 context.SigningCredentials = context.TokenType switch
                 {
                     // Note: unlike other tokens, identity tokens can only be signed using an asymmetric key
                     // as they are meant to be validated by clients using the public keys exposed by the server.
-                    TokenTypeIdentifiers.IdentityToken => context.Options.SigningCredentials.First(static credentials =>
+                    TokenTypeIdentifiers.IdentityToken => credentials.SigningCredentials.First(static credentials =>
                         credentials.Key is AsymmetricSecurityKey),
 
-                    _ => context.Options.SigningCredentials[0]
+                    _ => credentials.SigningCredentials[0]
                 };
-
-                return ValueTask.CompletedTask;
             }
         }
 

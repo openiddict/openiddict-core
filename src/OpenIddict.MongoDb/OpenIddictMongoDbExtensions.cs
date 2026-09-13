@@ -34,6 +34,7 @@ public static class OpenIddictMongoDbExtensions
                .SetDefaultAuthorizationEntity<OpenIddictMongoDbAuthorization>()
                .SetDefaultResourceEntity<OpenIddictMongoDbResource>()
                .SetDefaultScopeEntity<OpenIddictMongoDbScope>()
+               .SetDefaultKeyEntity<OpenIddictMongoDbKey>()
                .SetDefaultSessionEntity<OpenIddictMongoDbSession>()
                .SetDefaultTokenEntity<OpenIddictMongoDbToken>();
 
@@ -43,6 +44,7 @@ public static class OpenIddictMongoDbExtensions
                .ReplaceAuthorizationStore<OpenIddictMongoDbAuthorization, OpenIddictMongoDbAuthorizationStore>(ServiceLifetime.Singleton)
                .ReplaceResourceStore<OpenIddictMongoDbResource, OpenIddictMongoDbResourceStore>(ServiceLifetime.Singleton)
                .ReplaceScopeStore<OpenIddictMongoDbScope, OpenIddictMongoDbScopeStore>(ServiceLifetime.Singleton)
+               .ReplaceKeyStore<OpenIddictMongoDbKey, OpenIddictMongoDbKeyStore>(ServiceLifetime.Singleton)
                .ReplaceSessionStore<OpenIddictMongoDbSession, OpenIddictMongoDbSessionStore>(ServiceLifetime.Singleton)
                .ReplaceTokenStore<OpenIddictMongoDbToken, OpenIddictMongoDbTokenStore>(ServiceLifetime.Singleton);
 

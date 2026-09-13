@@ -430,32 +430,51 @@ public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenId
             builder.AddError(SR.GetResourceString(SR.ID0492));
         }
 
-        if (options.EncryptionCredentials.Count is 0)
+        // Note: when automatic key management is enabled, static credentials are optional.
+        if (options.EnableAutomaticKeyManagement)
         {
-            builder.AddError(SR.GetResourceString(SR.ID0085));
+            if (_provider.GetService<IOpenIddictServerKeyProtector>() is null)
+            {
+                builder.AddError(SR.GetResourceString(SR.ID0542));
+            }
+
+            if (options.KeyRotationInterval <= TimeSpan.Zero || options.KeyPropagationTime < TimeSpan.Zero ||
+                options.KeyRetentionTime < TimeSpan.Zero || options.KeyRingCacheLifetime <= TimeSpan.Zero ||
+                options.KeyPropagationTime >= options.KeyRotationInterval)
+            {
+                builder.AddError(SR.GetResourceString(SR.ID0543));
+            }
         }
 
-        if (!options.SigningCredentials.Exists(static credentials => credentials.Key is AsymmetricSecurityKey))
+        else
         {
-            builder.AddError(SR.GetResourceString(SR.ID0086));
-        }
+            if (options.EncryptionCredentials.Count is 0)
+            {
+                builder.AddError(SR.GetResourceString(SR.ID0085));
+            }
 
-        var now = options.TimeProvider.GetUtcNow().LocalDateTime;
+            if (!options.SigningCredentials.Exists(static credentials => credentials.Key is AsymmetricSecurityKey))
+            {
+                builder.AddError(SR.GetResourceString(SR.ID0086));
+            }
 
-        // If all the registered encryption credentials are backed by a X.509 certificate, at least one of them must be valid.
-        if (options.EncryptionCredentials.TrueForAll(credentials =>
-            credentials.Key is X509SecurityKey { Certificate: X509Certificate2 certificate } &&
-           (certificate.NotBefore > now || certificate.NotAfter < now)))
-        {
-            builder.AddError(SR.GetResourceString(SR.ID0087));
-        }
+            var now = options.TimeProvider.GetUtcNow().LocalDateTime;
 
-        // If all the registered signing credentials are backed by a X.509 certificate, at least one of them must be valid.
-        if (options.SigningCredentials.TrueForAll(credentials =>
-            credentials.Key is X509SecurityKey { Certificate: X509Certificate2 certificate } &&
-           (certificate.NotBefore > now || certificate.NotAfter < now)))
-        {
-            builder.AddError(SR.GetResourceString(SR.ID0088));
+            // If all the registered encryption credentials are backed by a X.509 certificate, at least one of them must be valid.
+            if (options.EncryptionCredentials.TrueForAll(credentials =>
+                credentials.Key is X509SecurityKey { Certificate: X509Certificate2 certificate } &&
+               (certificate.NotBefore > now || certificate.NotAfter < now)))
+            {
+                builder.AddError(SR.GetResourceString(SR.ID0087));
+            }
+
+            // If all the registered signing credentials are backed by a X.509 certificate, at least one of them must be valid.
+            if (options.SigningCredentials.TrueForAll(credentials =>
+                credentials.Key is X509SecurityKey { Certificate: X509Certificate2 certificate } &&
+               (certificate.NotBefore > now || certificate.NotAfter < now)))
+            {
+                builder.AddError(SR.GetResourceString(SR.ID0088));
+            }
         }
 
         // When set, the mTLS endpoint aliases MUST represent absolute HTTPS URLs.

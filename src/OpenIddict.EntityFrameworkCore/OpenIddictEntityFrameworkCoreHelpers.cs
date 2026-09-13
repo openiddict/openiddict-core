@@ -219,6 +219,7 @@ public static class OpenIddictEntityFrameworkCoreHelpers
         return builder
             .ApplyConfiguration(new OpenIddictEntityFrameworkCoreApplicationConfiguration<TApplication, TAuthorization, TSession, TToken, TKey>())
             .ApplyConfiguration(new OpenIddictEntityFrameworkCoreAuthorizationConfiguration<TAuthorization, TApplication, TSession, TToken, TKey>())
+            .ApplyConfiguration(new OpenIddictEntityFrameworkCoreKeyConfiguration<OpenIddictEntityFrameworkCoreKey<TKey>, TKey>())
             .ApplyConfiguration(new OpenIddictEntityFrameworkCoreResourceConfiguration<TResource, TKey>())
             .ApplyConfiguration(new OpenIddictEntityFrameworkCoreScopeConfiguration<TScope, TKey>())
             .ApplyConfiguration(new OpenIddictEntityFrameworkCoreSessionConfiguration<TSession, TApplication, TAuthorization, TToken, TKey>())

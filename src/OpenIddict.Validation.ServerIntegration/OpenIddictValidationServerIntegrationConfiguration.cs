@@ -53,6 +53,32 @@ public sealed class OpenIddictValidationServerIntegrationConfiguration : IConfig
         // Import the encryption keys from the server configuration.
         options.EncryptionCredentials.AddRange(settings.EncryptionCredentials);
 
+        // When automatic key management is enabled, the keys change over time and are
+        // resolved from the server key ring every time a token is validated.
+        if (settings.EnableAutomaticKeyManagement)
+        {
+            options.Handlers.Add(OpenIddictValidationHandlerDescriptor.CreateBuilder<ValidateTokenContext>()
+                .UseInlineHandler(static async context =>
+                {
+                    var credentials = await context.Transaction.ServiceProvider
+                        .GetRequiredService<OpenIddictServerKeyRing>()
+                        .GetCredentialsAsync(context.Transaction.ServiceProvider, context.CancellationToken);
+
+                    var parameters = context.TokenValidationParameters;
+
+                    parameters.IssuerSigningKeys = [
+                        .. parameters.IssuerSigningKeys ?? [],
+                        .. from signing in credentials.SigningCredentials select signing.Key];
+
+                    parameters.TokenDecryptionKeys = [
+                        .. parameters.TokenDecryptionKeys ?? [],
+                        .. from encryption in credentials.EncryptionCredentials select encryption.Key];
+                })
+                .SetOrder(OpenIddictValidationHandlers.Protection.ResolveTokenValidationParameters.Descriptor.Order + 500)
+                .SetType(OpenIddictValidationHandlerType.BuiltIn)
+                .Build());
+        }
+
         // Note: token entry validation must be enabled to be able to validate reference access tokens.
         options.EnableTokenEntryValidation = settings.UseReferenceAccessTokens;
     }

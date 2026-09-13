@@ -767,11 +767,11 @@ public static partial class OpenIddictServerHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(HandleConfigurationRequestContext context)
+            public async ValueTask HandleAsync(HandleConfigurationRequestContext context)
             {
                 ArgumentNullException.ThrowIfNull(context);
 
-                foreach (var credentials in context.Options.SigningCredentials)
+                foreach (var credentials in (await OpenIddictServerKeyRing.ResolveCredentialsAsync(context.Transaction)).SigningCredentials)
                 {
                     // Try to resolve the JWA algorithm short name.
                     var algorithm = credentials.Algorithm switch
@@ -812,8 +812,6 @@ public static partial class OpenIddictServerHandlers
 
                     context.IdTokenSigningAlgorithms.Add(algorithm);
                 }
-
-                return ValueTask.CompletedTask;
             }
         }
 
@@ -1225,11 +1223,11 @@ public static partial class OpenIddictServerHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(HandleJsonWebKeySetRequestContext context)
+            public async ValueTask HandleAsync(HandleJsonWebKeySetRequestContext context)
             {
                 ArgumentNullException.ThrowIfNull(context);
 
-                foreach (var credentials in context.Options.SigningCredentials)
+                foreach (var credentials in (await OpenIddictServerKeyRing.ResolveCredentialsAsync(context.Transaction)).SigningCredentials)
                 {
                     if (!credentials.Key.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha256) &&
                         !credentials.Key.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha384) &&
@@ -1387,8 +1385,6 @@ public static partial class OpenIddictServerHandlers
 
                     context.Keys.Add(key);
                 }
-
-                return ValueTask.CompletedTask;
 
                 // Note: IdentityModel 5+ doesn't expose a method allowing to retrieve the underlying algorithm
                 // from a generic security key. To work around this limitation, these local functions try to

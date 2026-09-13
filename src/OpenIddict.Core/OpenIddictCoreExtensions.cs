@@ -38,6 +38,7 @@ public static class OpenIddictCoreExtensions
 
         builder.Services.TryAddScoped(typeof(OpenIddictApplicationManager<>));
         builder.Services.TryAddScoped(typeof(OpenIddictAuthorizationManager<>));
+        builder.Services.TryAddScoped(typeof(OpenIddictKeyManager<>));
         builder.Services.TryAddScoped(typeof(OpenIddictResourceManager<>));
         builder.Services.TryAddScoped(typeof(OpenIddictScopeManager<>));
         builder.Services.TryAddScoped(typeof(OpenIddictSessionManager<>));
@@ -49,6 +50,8 @@ public static class OpenIddictCoreExtensions
         builder.Services.TryAddScoped<IOpenIddictApplicationManager>(static provider =>
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0472)));
         builder.Services.TryAddScoped<IOpenIddictAuthorizationManager>(static provider =>
+            throw new InvalidOperationException(SR.GetResourceString(SR.ID0472)));
+        builder.Services.TryAddScoped<IOpenIddictKeyManager>(static provider =>
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0472)));
         builder.Services.TryAddScoped<IOpenIddictResourceManager>(static provider =>
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0472)));

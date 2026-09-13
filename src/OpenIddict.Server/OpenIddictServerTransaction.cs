@@ -21,6 +21,11 @@ public sealed class OpenIddictServerTransaction
     public required CancellationToken CancellationToken { get; init; }
 
     /// <summary>
+    /// Gets or sets the signing and encryption credentials resolved for the current transaction, if available.
+    /// </summary>
+    public OpenIddictServerCredentials? Credentials { get; set; }
+
+    /// <summary>
     /// Gets or sets the X.509 client certificate used by the remote peer, if available.
     /// </summary>
     public X509Certificate2? RemoteCertificate { get; set; }

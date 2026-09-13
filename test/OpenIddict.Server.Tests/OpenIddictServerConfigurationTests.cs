@@ -556,6 +556,39 @@ public class OpenIddictServerConfigurationTests
     }
 
     [Fact]
+    public void Validate_AutomaticKeyManagementRequiresKeyProtectorButNoStaticCredentials()
+    {
+        // Arrange
+        var configuration = new OpenIddictServerConfiguration(new ServiceCollection().BuildServiceProvider());
+        var options = CreateBaseOptions();
+        options.EnableAutomaticKeyManagement = true;
+
+        // Act
+        var result = configuration.Validate(name: null, options);
+
+        // Assert
+        Assert.Contains(SR.GetResourceString(SR.ID0542), result.Failures!, StringComparer.Ordinal);
+        Assert.DoesNotContain(SR.GetResourceString(SR.ID0085), result.Failures!, StringComparer.Ordinal);
+        Assert.DoesNotContain(SR.GetResourceString(SR.ID0086), result.Failures!, StringComparer.Ordinal);
+    }
+
+    [Fact]
+    public void Validate_ReturnsAnErrorForInvalidKeyManagementPeriods()
+    {
+        // Arrange
+        var configuration = new OpenIddictServerConfiguration(new ServiceCollection().BuildServiceProvider());
+        var options = CreateBaseOptions();
+        options.EnableAutomaticKeyManagement = true;
+        options.KeyPropagationTime = options.KeyRotationInterval;
+
+        // Act
+        var result = configuration.Validate(name: null, options);
+
+        // Assert
+        Assert.Contains(SR.GetResourceString(SR.ID0543), result.Failures!, StringComparer.Ordinal);
+    }
+
+    [Fact]
     public void Validate_ReturnsAnErrorWhenNoAsymmetricSigningCredentialIsRegistered()
     {
         // Arrange

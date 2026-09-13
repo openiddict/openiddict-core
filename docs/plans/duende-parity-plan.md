@@ -29,8 +29,9 @@ Baseline `dev@dd0d5d7d` (8.0.0-preview.5, fork of upstream). **Plan only — do 
 |---|---|---|---|
 | P6 JAR | ✅ server + client | `ad3476ee` | Request objects are validated via a direct `ValidateTokenContext` dispatch before `ValidateAuthentication`, so the PAR handler order is unchanged. External `request_uri` is not supported. |
 | P8 CIBA | ✅ server (poll) | `30193eb8` | Requires `SetIssuer`, token storage and non-degraded mode (ID0529). Completion goes through `OpenIddictServerService`. `slow_down`/`interval` also apply to the device flow. Signed CIBA requests and mTLS alias are not implemented. |
-| P8b CIBA client | ⏳ next | — | `OpenIddictClientService.ChallengeUsingBackchannelAsync` / `AuthenticateWithBackchannelAsync` |
-| P10, P5, P12, P11.x | ⏳ | — | — |
+| P8b CIBA client | ✅ | `f3bf09ab` | `OpenIddictClientService.ChallengeUsingBackchannelAsync` / `AuthenticateWithBackchannelAsync` |
+| P10 key management | ✅ | see `feature/key-management` | RSA-2048 sig (RS256) + enc (RSA-OAEP) keys. Key entity in EF Core/EF6/MongoDB. `OpenIddictServerKeyRing` resolves credentials per transaction (`Transaction.Credentials`). Protector: `IOpenIddictServerKeyProtector` (in `OpenIddict.Server`, default via `UseDataProtection()`). Quartz pruning is opt-in (`EnableKeyPruning`). |
+| P5, P12, P11.x | ⏳ | — | — |
 
 ## 0. Blocking — verify before coding
 

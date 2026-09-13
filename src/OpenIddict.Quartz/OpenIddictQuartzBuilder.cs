@@ -63,6 +63,13 @@ public sealed class OpenIddictQuartzBuilder
         => Configure(options => options.DisableAuthorizationPruning = true);
 
     /// <summary>
+    /// Enables pruning of the retired and revoked keys created by the automatic key management feature.
+    /// </summary>
+    /// <returns>The <see cref="OpenIddictQuartzBuilder"/> instance.</returns>
+    public OpenIddictQuartzBuilder EnableKeyPruning()
+        => Configure(options => options.EnableKeyPruning = true);
+
+    /// <summary>
     /// Disables sessions pruning.
     /// </summary>
     /// <returns>The <see cref="OpenIddictQuartzBuilder"/> instance.</returns>

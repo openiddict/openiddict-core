@@ -27,6 +27,8 @@ public class OpenIddictEntityFrameworkCoreHelpersTests
             .Returns(builder.Object);
         builder.Setup(mock => mock.ApplyConfiguration(It.IsAny<IEntityTypeConfiguration<OpenIddictEntityFrameworkCoreScope>>()))
             .Returns(builder.Object);
+        builder.Setup(mock => mock.ApplyConfiguration(It.IsAny<IEntityTypeConfiguration<OpenIddictEntityFrameworkCoreKey<string>>>()))
+            .Returns(builder.Object);
         builder.Setup(mock => mock.ApplyConfiguration(It.IsAny<IEntityTypeConfiguration<OpenIddictEntityFrameworkCoreSession>>()))
             .Returns(builder.Object);
         builder.Setup(mock => mock.ApplyConfiguration(It.IsAny<IEntityTypeConfiguration<OpenIddictEntityFrameworkCoreToken>>()))
@@ -44,6 +46,8 @@ public class OpenIddictEntityFrameworkCoreHelpersTests
             It.IsAny<OpenIddictEntityFrameworkCoreResourceConfiguration<OpenIddictEntityFrameworkCoreResource, string>>()), Times.Once());
         builder.Verify(mock => mock.ApplyConfiguration(
             It.IsAny<OpenIddictEntityFrameworkCoreScopeConfiguration<OpenIddictEntityFrameworkCoreScope, string>>()), Times.Once());
+        builder.Verify(mock => mock.ApplyConfiguration(
+            It.IsAny<OpenIddictEntityFrameworkCoreKeyConfiguration<OpenIddictEntityFrameworkCoreKey<string>, string>>()), Times.Once());
         builder.Verify(mock => mock.ApplyConfiguration(
             It.IsAny<OpenIddictEntityFrameworkCoreSessionConfiguration<OpenIddictEntityFrameworkCoreSession, OpenIddictEntityFrameworkCoreApplication, OpenIddictEntityFrameworkCoreAuthorization, OpenIddictEntityFrameworkCoreToken, string>>()), Times.Once());
         builder.Verify(mock => mock.ApplyConfiguration(
@@ -63,6 +67,8 @@ public class OpenIddictEntityFrameworkCoreHelpersTests
             .Returns(builder.Object);
         builder.Setup(mock => mock.ApplyConfiguration(It.IsAny<IEntityTypeConfiguration<OpenIddictEntityFrameworkCoreScope<long>>>()))
             .Returns(builder.Object);
+        builder.Setup(mock => mock.ApplyConfiguration(It.IsAny<IEntityTypeConfiguration<OpenIddictEntityFrameworkCoreKey<long>>>()))
+            .Returns(builder.Object);
         builder.Setup(mock => mock.ApplyConfiguration(It.IsAny<IEntityTypeConfiguration<OpenIddictEntityFrameworkCoreSession<long>>>() ))
             .Returns(builder.Object);
         builder.Setup(mock => mock.ApplyConfiguration(It.IsAny<IEntityTypeConfiguration<OpenIddictEntityFrameworkCoreToken<long>>>()))
@@ -80,6 +86,8 @@ public class OpenIddictEntityFrameworkCoreHelpersTests
             It.IsAny<OpenIddictEntityFrameworkCoreResourceConfiguration<OpenIddictEntityFrameworkCoreResource<long>, long>>()), Times.Once());
         builder.Verify(mock => mock.ApplyConfiguration(
             It.IsAny<OpenIddictEntityFrameworkCoreScopeConfiguration<OpenIddictEntityFrameworkCoreScope<long>, long>>()), Times.Once());
+        builder.Verify(mock => mock.ApplyConfiguration(
+            It.IsAny<OpenIddictEntityFrameworkCoreKeyConfiguration<OpenIddictEntityFrameworkCoreKey<long>, long>>()), Times.Once());
         builder.Verify(mock => mock.ApplyConfiguration(
             It.IsAny<OpenIddictEntityFrameworkCoreSessionConfiguration<OpenIddictEntityFrameworkCoreSession<long>, OpenIddictEntityFrameworkCoreApplication<long>, OpenIddictEntityFrameworkCoreAuthorization<long>, OpenIddictEntityFrameworkCoreToken<long>, long>>()), Times.Once());
         builder.Verify(mock => mock.ApplyConfiguration(
@@ -99,6 +107,8 @@ public class OpenIddictEntityFrameworkCoreHelpersTests
             .Returns(builder.Object);
         builder.Setup(mock => mock.ApplyConfiguration(It.IsAny<IEntityTypeConfiguration<CustomScope>>()))
             .Returns(builder.Object);
+        builder.Setup(mock => mock.ApplyConfiguration(It.IsAny<IEntityTypeConfiguration<OpenIddictEntityFrameworkCoreKey<Guid>>>()))
+            .Returns(builder.Object);
         builder.Setup(mock => mock.ApplyConfiguration(It.IsAny<IEntityTypeConfiguration<CustomSession>>()))
             .Returns(builder.Object);
         builder.Setup(mock => mock.ApplyConfiguration(It.IsAny<IEntityTypeConfiguration<CustomToken>>()))
@@ -116,6 +126,8 @@ public class OpenIddictEntityFrameworkCoreHelpersTests
             It.IsAny<OpenIddictEntityFrameworkCoreResourceConfiguration<CustomResource, Guid>>()), Times.Once());
         builder.Verify(mock => mock.ApplyConfiguration(
             It.IsAny<OpenIddictEntityFrameworkCoreScopeConfiguration<CustomScope, Guid>>()), Times.Once());
+        builder.Verify(mock => mock.ApplyConfiguration(
+            It.IsAny<OpenIddictEntityFrameworkCoreKeyConfiguration<OpenIddictEntityFrameworkCoreKey<Guid>, Guid>>()), Times.Once());
         builder.Verify(mock => mock.ApplyConfiguration(
             It.IsAny<OpenIddictEntityFrameworkCoreSessionConfiguration<CustomSession, CustomApplication, CustomAuthorization, CustomToken, Guid>>()), Times.Once());
         builder.Verify(mock => mock.ApplyConfiguration(

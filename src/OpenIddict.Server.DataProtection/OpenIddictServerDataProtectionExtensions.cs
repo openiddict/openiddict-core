@@ -36,6 +36,9 @@ public static class OpenIddictServerDataProtectionExtensions
         // Register the built-in filters used by the default OpenIddict Data Protection event handlers.
         builder.Services.TryAddSingleton<RequireDataProtectionTokenFormat>();
 
+        // Register the default protector used by the automatic key management feature.
+        builder.Services.TryAddSingleton<IOpenIddictServerKeyProtector, OpenIddictServerDataProtectionKeyProtector>();
+
         // Note: TryAddEnumerable() is used here to ensure the initializers are registered only once.
         builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<
             IConfigureOptions<OpenIddictServerOptions>, OpenIddictServerDataProtectionConfiguration>());

@@ -113,6 +113,8 @@ public sealed class OpenIddictEntityFrameworkCoreBuilder
             provider.GetRequiredService<OpenIddictApplicationManager<TApplication>>()));
         Services.Replace(ServiceDescriptor.Scoped<IOpenIddictAuthorizationManager>(static provider =>
             provider.GetRequiredService<OpenIddictAuthorizationManager<TAuthorization>>()));
+        Services.Replace(ServiceDescriptor.Scoped<IOpenIddictKeyManager>(static provider =>
+            provider.GetRequiredService<OpenIddictKeyManager<OpenIddictEntityFrameworkCoreKey<TKey>>>()));
         Services.Replace(ServiceDescriptor.Scoped<IOpenIddictResourceManager>(static provider =>
             provider.GetRequiredService<OpenIddictResourceManager<TResource>>()));
         Services.Replace(ServiceDescriptor.Scoped<IOpenIddictScopeManager>(static provider =>
@@ -126,6 +128,8 @@ public sealed class OpenIddictEntityFrameworkCoreBuilder
             OpenIddictEntityFrameworkCoreApplicationStore<TApplication, TAuthorization, TSession, TToken, TKey>>());
         Services.Replace(ServiceDescriptor.Scoped<IOpenIddictAuthorizationStore<TAuthorization>,
             OpenIddictEntityFrameworkCoreAuthorizationStore<TAuthorization, TApplication, TSession, TToken, TKey>>());
+        Services.Replace(ServiceDescriptor.Scoped<IOpenIddictKeyStore<OpenIddictEntityFrameworkCoreKey<TKey>>,
+            OpenIddictEntityFrameworkCoreKeyStore<OpenIddictEntityFrameworkCoreKey<TKey>, TKey>>());
         Services.Replace(ServiceDescriptor.Scoped<IOpenIddictResourceStore<TResource>,
             OpenIddictEntityFrameworkCoreResourceStore<TResource, TKey>>());
         Services.Replace(ServiceDescriptor.Scoped<IOpenIddictScopeStore<TScope>,

@@ -195,6 +195,37 @@ public sealed class OpenIddictQuartzJob : IJob
             }
         }
 
+        if (options.EnableKeyPruning)
+        {
+            var manager = scope.ServiceProvider.GetService<IOpenIddictKeyManager>()
+                ?? throw new JobExecutionException(new InvalidOperationException(SR.GetResourceString(SR.ID0278)))
+                {
+                    RefireImmediately = false,
+                    UnscheduleAllTriggers = true,
+                    UnscheduleFiringTrigger = true
+                };
+
+            try
+            {
+                // Note: retired keys are no longer used, so they are removed as soon as they are retired.
+                await manager.PruneAsync(options.TimeProvider.GetUtcNow(), context.CancellationToken);
+            }
+
+            catch (OperationCanceledException exception) when (context.CancellationToken.IsCancellationRequested)
+            {
+                throw new JobExecutionException(exception)
+                {
+                    RefireImmediately = false
+                };
+            }
+
+            catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
+            {
+                exceptions ??= new List<Exception>(capacity: 1);
+                exceptions.Add(exception);
+            }
+        }
+
         if (exceptions is { Count: > 0 })
         {
             throw new JobExecutionException(new AggregateException(exceptions))

@@ -28,6 +28,11 @@ public sealed class OpenIddictMongoDbOptions
     public IMongoDatabase? Database { get; set; }
 
     /// <summary>
+    /// Gets or sets the name of the keys collection (by default, openiddict.keys).
+    /// </summary>
+    public string KeysCollectionName { get; set; } = "openiddict.keys";
+
+    /// <summary>
     /// Gets or sets the name of the resources collection (by default, openiddict.resources).
     /// </summary>
     public string ResourcesCollectionName { get; set; } = "openiddict.resources";

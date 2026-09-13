@@ -33,6 +33,7 @@ public static class OpenIddictEntityFrameworkCoreExtensions
 
         builder.SetDefaultApplicationEntity<OpenIddictEntityFrameworkCoreApplication>()
                .SetDefaultAuthorizationEntity<OpenIddictEntityFrameworkCoreAuthorization>()
+               .SetDefaultKeyEntity<OpenIddictEntityFrameworkCoreKey<string>>()
                .SetDefaultResourceEntity<OpenIddictEntityFrameworkCoreResource>()
                .SetDefaultScopeEntity<OpenIddictEntityFrameworkCoreScope>()
                .SetDefaultSessionEntity<OpenIddictEntityFrameworkCoreSession>()
@@ -40,6 +41,7 @@ public static class OpenIddictEntityFrameworkCoreExtensions
 
         builder.ReplaceApplicationStore<OpenIddictEntityFrameworkCoreApplication, OpenIddictEntityFrameworkCoreApplicationStore>()
                .ReplaceAuthorizationStore<OpenIddictEntityFrameworkCoreAuthorization, OpenIddictEntityFrameworkCoreAuthorizationStore>()
+               .ReplaceKeyStore<OpenIddictEntityFrameworkCoreKey<string>, OpenIddictEntityFrameworkCoreKeyStore>()
                .ReplaceResourceStore<OpenIddictEntityFrameworkCoreResource, OpenIddictEntityFrameworkCoreResourceStore>()
                .ReplaceScopeStore<OpenIddictEntityFrameworkCoreScope, OpenIddictEntityFrameworkCoreScopeStore>()
                .ReplaceSessionStore<OpenIddictEntityFrameworkCoreSession, OpenIddictEntityFrameworkCoreSessionStore>()

@@ -28,7 +28,30 @@ public static class OpenIddictEntityFrameworkHelpers
                                  OpenIddictEntityFrameworkResource,
                                  OpenIddictEntityFrameworkScope,
                                  OpenIddictEntityFrameworkSession,
-                                 OpenIddictEntityFrameworkToken, string>();
+                                 OpenIddictEntityFrameworkToken, string>()
+                  .UseOpenIddictKeys<OpenIddictEntityFrameworkKey, string>();
+
+    /// <summary>
+    /// Registers the OpenIddict key entity set in the Entity Framework 6.x context.
+    /// </summary>
+    /// <remarks>
+    /// Note: when using a custom key entity, the new entity MUST be registered by calling
+    /// <see cref="OpenIddictEntityFrameworkBuilder.ReplaceDefaultKeyEntity{TEntity, TKey}"/>.
+    /// </remarks>
+    /// <param name="builder">The builder used to configure the Entity Framework context.</param>
+    /// <returns>The Entity Framework context builder.</returns>
+    public static DbModelBuilder UseOpenIddictKeys<
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TEntity,
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TKey>(this DbModelBuilder builder)
+        where TEntity : OpenIddictEntityFrameworkKey<TKey>
+        where TKey : notnull, IEquatable<TKey>
+    {
+        ArgumentNullException.ThrowIfNull(builder);
+
+        builder.Configurations.Add(new OpenIddictEntityFrameworkKeyConfiguration<TEntity, TKey>());
+
+        return builder;
+    }
 
     /// <summary>
     /// Registers the OpenIddict entity sets in the Entity Framework 6.x

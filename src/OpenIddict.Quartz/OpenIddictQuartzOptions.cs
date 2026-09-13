@@ -17,6 +17,11 @@ public sealed class OpenIddictQuartzOptions
     public bool DisableAuthorizationPruning { get; set; }
 
     /// <summary>
+    /// Gets or sets a boolean indicating whether retired and revoked keys should be pruned (disabled by default).
+    /// </summary>
+    public bool EnableKeyPruning { get; set; }
+
+    /// <summary>
     /// Gets or sets a boolean indicating whether sessions pruning should be disabled.
     /// </summary>
     public bool DisableSessionPruning { get; set; }

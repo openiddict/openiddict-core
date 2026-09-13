@@ -5358,7 +5358,7 @@ public static partial class OpenIddictServerHandlers
                 .Build();
 
         /// <inheritdoc/>
-        public ValueTask HandleAsync(ProcessSignInContext context)
+        public async ValueTask HandleAsync(ProcessSignInContext context)
         {
             ArgumentNullException.ThrowIfNull(context);
 
@@ -5369,11 +5369,11 @@ public static partial class OpenIddictServerHandlers
 
             if (string.IsNullOrEmpty(context.AccessToken) && string.IsNullOrEmpty(context.AuthorizationCode))
             {
-                return ValueTask.CompletedTask;
+                return;
             }
 
-            var credentials = context.Options.SigningCredentials.Find(
-                static credentials => credentials.Key is AsymmetricSecurityKey)
+            var credentials = (await OpenIddictServerKeyRing.ResolveCredentialsAsync(context.Transaction)).SigningCredentials
+                .FirstOrDefault(static credentials => credentials.Key is AsymmetricSecurityKey)
                 ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0266));
 
             if (!string.IsNullOrEmpty(context.AccessToken))
@@ -5393,8 +5393,6 @@ public static partial class OpenIddictServerHandlers
                 // See http://openid.net/specs/openid-connect-core-1_0.html#HybridIDToken
                 context.IdentityTokenPrincipal.SetClaim(Claims.CodeHash, Base64Url.EncodeToString(digest.AsSpan(0, digest.Length / 2)));
             }
-
-            return ValueTask.CompletedTask;
 
             static byte[] ComputeTokenHash(SigningCredentials credentials, string token) => credentials switch
             {

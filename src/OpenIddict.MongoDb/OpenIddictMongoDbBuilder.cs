@@ -127,6 +127,23 @@ public sealed class OpenIddictMongoDbBuilder
     }
 
     /// <summary>
+    /// Configures OpenIddict to use the specified entity as the default key entity.
+    /// </summary>
+    /// <returns>The <see cref="OpenIddictMongoDbBuilder"/> instance.</returns>
+    public OpenIddictMongoDbBuilder ReplaceDefaultKeyEntity<
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TEntity>()
+        where TEntity : OpenIddictMongoDbKey
+    {
+        Services.Replace(ServiceDescriptor.Scoped<IOpenIddictKeyManager>(static provider =>
+            provider.GetRequiredService<OpenIddictKeyManager<TEntity>>()));
+
+        Services.Replace(ServiceDescriptor.Singleton<
+            IOpenIddictKeyStore<TEntity>, OpenIddictMongoDbKeyStore<TEntity>>());
+
+        return this;
+    }
+
+    /// <summary>
     /// Configures OpenIddict to use the specified entity as the default session entity.
     /// </summary>
     /// <returns>The <see cref="OpenIddictMongoDbBuilder"/> instance.</returns>
@@ -194,6 +211,18 @@ public sealed class OpenIddictMongoDbBuilder
         ArgumentException.ThrowIfNullOrEmpty(name);
 
         return Configure(options => options.ResourcesCollectionName = name);
+    }
+
+    /// <summary>
+    /// Replaces the default keys collection name (by default, openiddict.keys).
+    /// </summary>
+    /// <param name="name">The collection name</param>
+    /// <returns>The <see cref="OpenIddictMongoDbBuilder"/> instance.</returns>
+    public OpenIddictMongoDbBuilder SetKeysCollectionName(string name)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(name);
+
+        return Configure(options => options.KeysCollectionName = name);
     }
 
     /// <summary>

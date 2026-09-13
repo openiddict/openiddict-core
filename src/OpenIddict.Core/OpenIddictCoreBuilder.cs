@@ -378,6 +378,42 @@ public sealed class OpenIddictCoreBuilder
     }
 
     /// <summary>
+    /// Replaces the key manager by the specified type.
+    /// </summary>
+    /// <typeparam name="TEntity">The type of the entity.</typeparam>
+    /// <typeparam name="TManager">The type of the manager.</typeparam>
+    /// <returns>The <see cref="OpenIddictCoreBuilder"/> instance.</returns>
+    public OpenIddictCoreBuilder ReplaceKeyManager<
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TEntity,
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TManager>()
+        where TEntity : class
+        where TManager : OpenIddictKeyManager<TEntity>
+    {
+        Services.Replace(ServiceDescriptor.Scoped<OpenIddictKeyManager<TEntity>, TManager>());
+
+        return this;
+    }
+
+    /// <summary>
+    /// Replaces the key store by the specified type.
+    /// </summary>
+    /// <typeparam name="TEntity">The type of the entity.</typeparam>
+    /// <typeparam name="TStore">The type of the store.</typeparam>
+    /// <param name="lifetime">The lifetime of the store.</param>
+    /// <returns>The <see cref="OpenIddictCoreBuilder"/> instance.</returns>
+    public OpenIddictCoreBuilder ReplaceKeyStore<
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TEntity,
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TStore>(
+        ServiceLifetime lifetime = ServiceLifetime.Scoped)
+        where TEntity : class
+        where TStore : IOpenIddictKeyStore<TEntity>
+    {
+        Services.Replace(ServiceDescriptor.Describe(typeof(IOpenIddictKeyStore<TEntity>), typeof(TStore), lifetime));
+
+        return this;
+    }
+
+    /// <summary>
     /// Replaces the session manager by the specified type.
     /// </summary>
     /// <typeparam name="TSession">The type of the entity.</typeparam>
@@ -676,6 +712,19 @@ public sealed class OpenIddictCoreBuilder
     {
         Services.Replace(ServiceDescriptor.Scoped<IOpenIddictScopeManager>(static provider =>
             provider.GetRequiredService<OpenIddictScopeManager<TScope>>()));
+
+        return this;
+    }
+
+    /// <summary>
+    /// Configures OpenIddict to use the specified entity as the default key entity.
+    /// </summary>
+    /// <returns>The <see cref="OpenIddictCoreBuilder"/> instance.</returns>
+    public OpenIddictCoreBuilder SetDefaultKeyEntity<
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TEntity>() where TEntity : class
+    {
+        Services.Replace(ServiceDescriptor.Scoped<IOpenIddictKeyManager>(static provider =>
+            provider.GetRequiredService<OpenIddictKeyManager<TEntity>>()));
 
         return this;
     }

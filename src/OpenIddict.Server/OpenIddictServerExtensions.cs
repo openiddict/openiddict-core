@@ -31,6 +31,7 @@ public static class OpenIddictServerExtensions
 
         builder.Services.TryAddSingleton<IOpenIddictServerDispatcher, OpenIddictServerDispatcher>();
         builder.Services.TryAddScoped<OpenIddictServerService>();
+        builder.Services.TryAddSingleton<OpenIddictServerKeyRing>();
 
         // Register the built-in server event handlers used by the OpenIddict server components.
         // Note: the order used here is not important, as the actual order is set in the options.

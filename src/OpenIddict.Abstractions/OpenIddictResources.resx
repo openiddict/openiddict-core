@@ -1851,6 +1851,13 @@ To attach it, enable the pass-through mode or register a custom event handler fo
   <data name="ID0541" xml:space="preserve">
     <value>Exactly one of the login hint, login hint token or identity token hint must be specified when using the Client-Initiated Backchannel Authentication grant.</value>
   </data>
+  <data name="ID0542" xml:space="preserve">
+    <value>No key protector was registered: automatic key management requires an 'IOpenIddictServerKeyProtector' implementation.
+To use ASP.NET Core Data Protection, reference the 'OpenIddict.Server.DataProtection' package and call 'services.AddOpenIddict().AddServer().UseDataProtection()'.</value>
+  </data>
+  <data name="ID0543" xml:space="preserve">
+    <value>The key rotation interval, propagation time, retention time and key ring cache lifetime must be positive, and the propagation time must be shorter than the rotation interval.</value>
+  </data>
   <data name="ID0532" xml:space="preserve">
     <value>The backchannel authentication request was not correctly extracted.
 To extract backchannel authentication requests, create a class implementing 'IOpenIddictServerHandler&lt;ExtractBackchannelAuthenticationRequestContext&gt;' and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.</value>
@@ -2517,6 +2524,21 @@ To apply backchannel authentication responses, create a class implementing 'IOpe
   </data>
   <data name="ID2219" xml:space="preserve">
     <value>The backchannel authentication request was rejected by the remote server.</value>
+  </data>
+  <data name="ID2220" xml:space="preserve">
+    <value>The key identifier cannot be null or empty.</value>
+  </data>
+  <data name="ID2221" xml:space="preserve">
+    <value>The key payload cannot be null or empty.</value>
+  </data>
+  <data name="ID2222" xml:space="preserve">
+    <value>The key usage must be either 'sig' or 'enc'.</value>
+  </data>
+  <data name="ID2223" xml:space="preserve">
+    <value>The key algorithm cannot be null or empty.</value>
+  </data>
+  <data name="ID2224" xml:space="preserve">
+    <value>The key activation, expiration and retirement dates must be specified and ordered chronologically.</value>
   </data>
   <data name="ID4000" xml:space="preserve">
     <value>The '{0}' parameter shouldn't be null or empty at this point.</value>
@@ -3414,6 +3436,12 @@ This may indicate that the hashed entry is corrupted or malformed.</value>
   </data>
   <data name="ID6308" xml:space="preserve">
     <value>The backchannel authentication response returned by {Uri} was successfully extracted: {Response}.</value>
+  </data>
+  <data name="ID6309" xml:space="preserve">
+    <value>A new automatically managed key '{KeyId}' ({Usage}) was created and will be activated on {ActivationDate}.</value>
+  </data>
+  <data name="ID6310" xml:space="preserve">
+    <value>The automatically managed key '{KeyId}' could not be unprotected and was ignored.</value>
   </data>
   <data name="ID8000" xml:space="preserve">
     <value>https://documentation.openiddict.com/errors/{0}</value>

@@ -368,6 +368,32 @@ public sealed class OpenIddictServerOptions
     public bool EnableDegradedMode { get; set; }
 
     /// <summary>
+    /// Gets or sets a boolean indicating whether signing and encryption keys are automatically
+    /// created, rotated and retired using the key store (in addition to the static credentials).
+    /// </summary>
+    public bool EnableAutomaticKeyManagement { get; set; }
+
+    /// <summary>
+    /// Gets or sets the period during which an automatically managed key is used to protect tokens (by default, 90 days).
+    /// </summary>
+    public TimeSpan KeyRotationInterval { get; set; } = TimeSpan.FromDays(90);
+
+    /// <summary>
+    /// Gets or sets the period during which a new automatically managed key is published before being used (by default, 14 days).
+    /// </summary>
+    public TimeSpan KeyPropagationTime { get; set; } = TimeSpan.FromDays(14);
+
+    /// <summary>
+    /// Gets or sets the period during which an expired automatically managed key is still published (by default, 14 days).
+    /// </summary>
+    public TimeSpan KeyRetentionTime { get; set; } = TimeSpan.FromDays(14);
+
+    /// <summary>
+    /// Gets or sets the maximum period during which the automatically managed keys are cached (by default, 1 hour).
+    /// </summary>
+    public TimeSpan KeyRingCacheLifetime { get; set; } = TimeSpan.FromHours(1);
+
+    /// <summary>
     /// Gets the list of the handlers responsible for processing the OpenIddict server operations.
     /// Note: the list is automatically sorted based on the order assigned to each handler descriptor.
     /// As such, it MUST NOT be mutated after options initialization to preserve the exact order.

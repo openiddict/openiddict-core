@@ -1337,6 +1337,26 @@ public class OpenIddictServerBuilderTests
     }
 
     [Fact]
+    public void EnableAutomaticKeyManagement_KeyManagementIsEnabled()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act
+        builder.EnableAutomaticKeyManagement(rotationInterval: TimeSpan.FromDays(30))
+               .SetKeyRingCacheLifetime(TimeSpan.FromMinutes(5));
+
+        var options = GetOptions(services);
+
+        // Assert
+        Assert.True(options.EnableAutomaticKeyManagement);
+        Assert.Equal(TimeSpan.FromDays(30), options.KeyRotationInterval);
+        Assert.Equal(TimeSpan.FromDays(14), options.KeyPropagationTime);
+        Assert.Equal(TimeSpan.FromMinutes(5), options.KeyRingCacheLifetime);
+    }
+
+    [Fact]
     public void DisableTokenStorage_TokenStorageIsDisabled()
     {
         // Arrange

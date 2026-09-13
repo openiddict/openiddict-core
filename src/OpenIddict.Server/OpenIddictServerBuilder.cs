@@ -1613,6 +1613,32 @@ public sealed class OpenIddictServerBuilder
         => Configure(options => options.DisableTokenStorage = true);
 
     /// <summary>
+    /// Enables automatic key management: RSA signing and encryption keys are created, rotated
+    /// and retired using the key store. An <see cref="IOpenIddictServerKeyProtector"/> must be registered.
+    /// </summary>
+    /// <param name="rotationInterval">The period during which a key is used to protect tokens (by default, 90 days).</param>
+    /// <param name="propagationTime">The period during which a new key is published before being used (by default, 14 days).</param>
+    /// <param name="retentionTime">The period during which an expired key is still published (by default, 14 days).</param>
+    /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
+    public OpenIddictServerBuilder EnableAutomaticKeyManagement(
+        TimeSpan? rotationInterval = null, TimeSpan? propagationTime = null, TimeSpan? retentionTime = null)
+        => Configure(options =>
+        {
+            options.EnableAutomaticKeyManagement = true;
+            options.KeyRotationInterval = rotationInterval ?? options.KeyRotationInterval;
+            options.KeyPropagationTime = propagationTime ?? options.KeyPropagationTime;
+            options.KeyRetentionTime = retentionTime ?? options.KeyRetentionTime;
+        });
+
+    /// <summary>
+    /// Sets the maximum period during which the automatically managed keys are cached (by default, 1 hour).
+    /// </summary>
+    /// <param name="lifetime">The cache lifetime.</param>
+    /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
+    public OpenIddictServerBuilder SetKeyRingCacheLifetime(TimeSpan lifetime)
+        => Configure(options => options.KeyRingCacheLifetime = lifetime);
+
+    /// <summary>
     /// Enables the degraded mode. When the degraded mode is enabled, all the security checks that
     /// depend on the OpenIddict core managers are disabled. This option MUST be enabled with extreme
     /// caution and custom handlers MUST be registered to properly validate OpenID Connect requests.
