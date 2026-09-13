@@ -3,7 +3,8 @@
 | | |
 |---|---|
 | Date | 2026-09-13 |
-| OpenIddict baseline | 8.0.0-preview.5 (`dd0d5d7d`, identical to upstream `dev`) + fork branches `feature/jar`, `feature/ciba`, `feature/ciba-client`, `feature/key-management` |
+| OpenIddict baseline | 8.0.0-preview.5 (`dd0d5d7d`, identical to upstream `dev`) |
+| Fork state | Linear stack on `dev`, not pushed: `docs/duende-parity-plan` → `feature/jar` → `feature/ciba` → `feature/ciba-client` → `feature/key-management` (tip `c1322cbe`) |
 | Duende reference | IdentityServer 8.0.7 (June 2026) |
 | Detailed plan | [`docs/plans/duende-parity-plan.md`](../plans/duende-parity-plan.md) |
 
@@ -41,7 +42,7 @@ Legend: ✅ available · 🟢 implemented in this fork (not upstream) · ⚠️ 
 | UI templates | ✅ | ⚠️ sandbox only | P11.4 |
 | Admin UI | ❌ (third-party) | ❌ | P11.5 (API only) |
 | SAML 2.0 IdP | ✅ built-in (v8) | ❌ | P11.6 — separate plan needed |
-| FAPI 2.0 conformance report | ✅ | ❌ | Depends on DPoP + key management |
+| FAPI 2.0 conformance report | ✅ | ❌ | Depends on DPoP (key management done) |
 | Multi-issuer hosting | ✅ add-on | ❌ | Not planned |
 
 ## 3. OpenIddict strengths with no Duende equivalent
@@ -50,7 +51,7 @@ Legend: ✅ available · 🟢 implemented in this fork (not upstream) · ⚠️ 
 |---|---|
 | Client stack | Full OAuth/OIDC client, including desktop/mobile integration and 100+ generated web providers |
 | Hosts | ASP.NET Core **and** OWIN / .NET Framework |
-| Stores | EF Core, EF6, MongoDB; Quartz pruning job |
+| Stores | EF Core, EF6, MongoDB (incl. keys); Quartz pruning job |
 | Licensing | Apache 2.0, no paid tiers |
 
 ## 4. Implemented in this fork
@@ -58,11 +59,11 @@ Legend: ✅ available · 🟢 implemented in this fork (not upstream) · ⚠️ 
 | Phase | Commit | What changed | Notable behaviour |
 |---|---|---|---|
 | P6 JAR | `d5c9bff7` | Server: `EnableRequestObjectSupport()`, `RequireSignedRequestObjects()`, per-client `ft:jar`, discovery metadata. Client: `UseSignedRequestObjects`. | Parameters outside the object are ignored (RFC 9101). Objects are validated with the client JWKS. |
-| P8b CIBA (client) | `b67cf1f3` | `AllowClientInitiatedBackchannelAuthenticationFlow()`, `OpenIddictClientService.ChallengeUsingBackchannelAsync` / `AuthenticateWithBackchannelAsync`, discovery extraction. | Poll mode only. PAR requirement now enforced only for interactive flows. |
-| P10 key management | `4d19d539` | New **Key** entity (EF Core `OpenIddictKeys` table, EF6, MongoDB `openiddict.keys`), `IOpenIddictKeyManager`. Server: `EnableAutomaticKeyManagement()`, `OpenIddictServerKeyRing`, `IOpenIddictServerKeyProtector` (Data Protection default). Local validation follows rotation. Quartz: `EnableKeyPruning()`. | Schema change for every EF user. Static keys still used, after the active auto key. `UseDataProtection()` also switches token formats unless `PreferDefaultTokenFormat()`. |
 | P8 CIBA (server) | `bbd52cbf` | Backchannel endpoint and pass-through, `urn:openid:params:grant-type:ciba`, `OpenIddictServerService` (list / approve / reject), discovery metadata. | Requires `SetIssuer`, token storage and non-degraded mode. **Device flow now returns `interval` and enforces `slow_down`**; disable with `SetPollingInterval(null)`. |
+| P8b CIBA (client) | `b67cf1f3` | `AllowClientInitiatedBackchannelAuthenticationFlow()`, `OpenIddictClientService.ChallengeUsingBackchannelAsync` / `AuthenticateWithBackchannelAsync`, discovery extraction. | Poll mode only. PAR requirement now enforced only for interactive flows. |
+| P10 automatic key management | `4d19d539` | New **Key** entity (EF Core `OpenIddictKeys` table, EF6, MongoDB `openiddict.keys`), `IOpenIddictKeyManager`. Server: `EnableAutomaticKeyManagement()`, `OpenIddictServerKeyRing`, `IOpenIddictServerKeyProtector` (in `OpenIddict.Server`; Data Protection implementation via `UseDataProtection()`). Local validation follows rotation. Quartz: `EnableKeyPruning()`. | Schema change for every EF user. Static keys still used, after the active auto key. `UseDataProtection()` also switches token formats unless `PreferDefaultTokenFormat()`. |
 
-Tests pass on the latest run: server unit (696), ASP.NET Core integration (1,530), OWIN integration (1,500), core (661), client (162), EF Core (10), EF6 (7), MongoDB (36), Quartz (34).
+Latest runs, all green (client suite from `b67cf1f3`, others from `4d19d539`): server unit 696 · ASP.NET Core integration 1,530 · OWIN integration 1,500 · core 661 · client 162 · MongoDB 36 · Quartz 34 · validation ASP.NET Core integration 20 · EF Core 10 · EF6 7 · Data Protection 1.
 
 ## 5. Remaining work (ordered)
 
@@ -80,5 +81,6 @@ Tests pass on the latest run: server unit (696), ASP.NET Core integration (1,530
 
 - **Divergence from upstream:** keep fork-only features isolated per branch; rebase when preview.5 ships.
 - **Schema changes** (sessions, keys, provider registrations): batch them into one preview.
-- **Behaviour change** in device-flow polling: needs a release note.
+- **Behaviour changes** needing release notes: device-flow `interval`/`slow_down`; PAR requirement limited to interactive flows; `OpenIddictKeys` table appears in EF migrations even when key management is off.
+- **Key management:** losing the Data Protection key ring makes stored keys unreadable (they are skipped, new ones are created); concurrent first start on several instances can create extra keys (all published, same active key chosen).
 - **Scope:** every phase is independently shippable, and P11.4–P11.6 can be dropped.
