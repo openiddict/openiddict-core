@@ -37,7 +37,7 @@ Baseline `dev@dd0d5d7d` (8.0.0-preview.5, fork of upstream). **Plan only — do 
 | P11.3 BFF | ✅ new package `OpenIddict.Client.AspNetCore.Bff` | `6e1aca1f`, `36a6a9b2` | `UseBff()`, `MapOpenIddictBffEndpoints()`, `UseOpenIddictBff()`, `AsOpenIddictBffApiEndpoint()`, `AddOpenIddictBff*AccessTokenHandler()`, `AddOpenIddictBffTransforms()` (YARP 2.3.0). Hosts store `backchannel_access_token_type`. See deviations below. |
 | P11.4 templates | ✅ `templates/OpenIddict.Templates.csproj` | `56cd9786` | `openiddict-server-identity`, `openiddict-server-empty`, `openiddict-bff`; `templates/verify.sh` (pack + `dotnet new` + build + HTTP smoke). See deviations below. |
 | P11.5 admin API | ✅ `Server.AspNetCore` | `e4cc3771`, `6a0d72b7` | `MapOpenIddictAdminApi(policy, prefix)`. See deviations below. |
-| P11.6 SAML IdP | ✅ new packages `OpenIddict.Server.Saml` (net48 + net10.0) + `OpenIddict.Server.Saml.AspNetCore` | `b6ba3f30` | `UseSaml()`, `UseAspNetCore()`, `MapOpenIddictSamlEndpoints()`. See "P11.6 SAML plan" in P11 and deviations below. |
+| P11.6 SAML IdP | ✅ new packages `OpenIddict.Server.Saml` (net48 + net10.0) + `OpenIddict.Server.Saml.AspNetCore` + `OpenIddict.Server.Saml.Owin` | `b6ba3f30`, `814f25f8`, `3c25b4d4` | `UseSaml()`, `UseAspNetCore()`/`MapOpenIddictSamlEndpoints()`, `UseOwin()`/`app.UseOpenIddictSaml()`. See "P11.6 SAML plan" in P11 and deviations below. |
 | P11.x (others) | ⏳ | — | — |
 
 **P11.6 deviations**
@@ -45,13 +45,14 @@ Baseline `dev@dd0d5d7d` (8.0.0-preview.5, fork of upstream). **Plan only — do 
 | Item | Behaviour |
 |---|---|
 | Architecture | Services (`OpenIddictServerSamlService`), not the server event/handler pipeline: SAML messages are XML and don't map to `OpenIddictRequest`. Constants in `OpenIddictServerSamlConstants` (package-local, like BFF) |
-| Hosts | ASP.NET Core only; the core package is host-agnostic (an OWIN host would reuse it) |
-| Authentication | No MVC pass-through: the endpoint authenticates `AuthenticationScheme` (default scheme if null) and challenges it with `RedirectUri = /saml/sso?openiddict_saml_state=…` (Data Protection, 1 h). Claims → assertion via `IOpenIddictServerSamlAssertionProvider` (`null` = `RequestDenied`) |
+| Hosts | ASP.NET Core and OWIN share the host-agnostic service. OWIN: `SetAuthenticationType()` required; the browser is first redirected to the state URL, then challenged without `RedirectUri` (Katana cookies use `RedirectUri` as the login URL) |
+| Authentication | No MVC pass-through: the endpoint authenticates `AuthenticationScheme` (default scheme if null) and challenges it with `RedirectUri = /saml/sso?openiddict_saml_state=…` (Data Protection, 1 h, expiry inside the payload). The state keeps the whole validated AuthnRequest (`AssertionContext.Request` is restored); on callback the SP, ACS, issuer, signature requirement and IdP-initiated opt-in are re-checked (`ValidateRequestStateAsync`). Claims → assertion via `IOpenIddictServerSamlAssertionProvider` (`null` = `RequestDenied`) |
 | ForceAuthn | Ticket `IssuedUtc` must be ≥ request time (second precision); tickets without `IssuedUtc` loop on the login page. The login page must show the form even for signed-in users |
 | NameID | `emailAddress` ← `email`; `transient` ← random; others ← `NameIdClaimTypes` (`sub`, `nameidentifier`). Requested format must be `unspecified` or the SP format (else `InvalidNameIDPolicy`) |
 | Signing keys | X.509 RSA certificates only (SAML options, else server X.509 signing certificates); automatic key-ring keys (no certificate) not used. Metadata unsigned |
 | Request errors | Unknown SP/ACS, bad/missing signature, expired/`Destination` mismatch → 400 text; `ProtocolBinding` ≠ POST, `Subject`, NameID policy, `NoPassive`, denial → signed error `Response` to the ACS |
 | Not implemented | SLO (needs P1), artifact binding, encrypted assertions, `RequestedAuthnContext`/`Scoping`, ECDSA, SHA-1, SP metadata import, replay cache for AuthnRequest IDs (SP-side `InResponseTo` checks rely on the SP) |
+| `IssueInstant` | Values without a time zone are read as UTC (not local time); out-of-range values rejected |
 | Endpoint URL | Built from the request (`Destination` check): proxies need forwarded headers |
 | .NET Framework | SignedXml mishandles nested signatures when validating an assertion inside a signed response in the same document; SPs on .NET Framework should validate the assertion in its own document (library signing is unaffected) |
 
@@ -459,7 +460,7 @@ public virtual async ValueTask<bool> TryRevokeAsync(TSession session, Cancellati
 
 ### P11.6 SAML plan
 
-**Packages:** `OpenIddict.Server.Saml` (host-agnostic, net48 + net10.0, `System.Security.Cryptography.Xml`) and `OpenIddict.Server.Saml.AspNetCore` (minimal-API endpoints, net10.0). Registration: `services.AddOpenIddict().AddServer().UseSaml(saml => saml.UseAspNetCore())`, `app.MapOpenIddictSamlEndpoints()`.
+**Packages:** `OpenIddict.Server.Saml` (host-agnostic, net48 + net10.0, `System.Security.Cryptography.Xml`), `OpenIddict.Server.Saml.AspNetCore` (minimal-API endpoints, net10.0) and `OpenIddict.Server.Saml.Owin` (middleware, net48: `UseOwin()`, `app.UseOpenIddictSaml()`). Registration: `services.AddOpenIddict().AddServer().UseSaml(saml => saml.UseAspNetCore())`, `app.MapOpenIddictSamlEndpoints()`.
 
 | Scope | MVP | Notes |
 |---|---|---|
@@ -471,7 +472,7 @@ public virtual async ValueTask<bool> TryRevokeAsync(TSession session, Cancellati
 | `ForceAuthn` / `IsPassive` | ✅ ticket `IssuedUtc` must be after the request; passive without session → `NoPassive` | |
 | IdP-initiated SSO | ✅ opt-in per SP (`?sp=<entityId>`) | Unsolicited responses (no `InResponseTo`) |
 | SLO | ❌ skipped | Needs P1 sessions; not advertised in metadata |
-| Encrypted assertions, artifact binding, `RequestedAuthnContext`, `Scoping`, OWIN host | ❌ | Documented deviations |
+| Encrypted assertions, artifact binding, `RequestedAuthnContext`, `Scoping` | ❌ | Documented deviations |
 
 | Security decision | Rule |
 |---|---|
@@ -481,11 +482,11 @@ public virtual async ValueTask<bool> TryRevokeAsync(TSession session, Cancellati
 | Redirect signature | Verified over the raw received `SAMLRequest`/`RelayState`/`SigAlg` octets; duplicate parameters rejected |
 | Signed requests | Required by default (`RequireSignedAuthnRequests = true`); signed requests must carry a matching `Destination` |
 | ACS | Must match a registered URL (ordinal, normalized); unknown SP / ACS / bad signature → 400, never redirected |
-| Freshness | `IssueInstant` within lifetime (5 min) ± clock skew (2 min); state protected + time-limited (1 h) |
+| Freshness | `IssueInstant` within lifetime (5 min) ± clock skew (2 min); state protected, expiry in the payload (1 h), SP/ACS re-checked on callback |
 | Auto-POST page | CSP (`default-src 'none'`, script nonce, `form-action` ACS origin, `frame-ancestors 'none'`), `no-store`, HTML-encoded values |
 | Transport | HTTPS required unless `DisableTransportSecurityRequirement()` |
 
-**Resource IDs:** ID0565–ID0575, ID2246–ID2266, ID6324–ID6326.
+**Resource IDs:** ID0565–ID0579, ID2246–ID2266, ID6324–ID6326.
 
 ---
 
