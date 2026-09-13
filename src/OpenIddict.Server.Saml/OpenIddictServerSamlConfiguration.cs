@@ -98,8 +98,8 @@ public sealed class OpenIddictServerSamlConfiguration : IPostConfigureOptions<Op
             return ValidateOptionsResult.Fail(SR.FormatID0842(options.DataEncryptionAlgorithm, options.KeyTransportAlgorithm));
         }
 
-        if (OpenIddictServerSamlHelpers.GetHashAlgorithm(options.SignatureAlgorithm) is null ||
-            !OpenIddictServerSamlHelpers.IsSupportedDigestAlgorithm(options.DigestAlgorithm))
+        if (OpenIddict.Extensions.OpenIddictSamlHelpers.GetHashAlgorithm(options.SignatureAlgorithm) is null ||
+            !OpenIddict.Extensions.OpenIddictSamlHelpers.IsSupportedDigestAlgorithm(options.DigestAlgorithm))
         {
             return ValidateOptionsResult.Fail(SR.FormatID0573(options.SignatureAlgorithm, options.DigestAlgorithm));
         }
@@ -127,7 +127,8 @@ public sealed class OpenIddictServerSamlConfiguration : IPostConfigureOptions<Op
         return ValidateOptionsResult.Success;
     }
 
-    private static bool IsRsaCertificate(X509Certificate2 certificate) => OpenIddictServerSamlHelpers.IsRsaCertificate(certificate);
+    private static bool IsRsaCertificate(X509Certificate2 certificate)
+        => OpenIddict.Extensions.OpenIddictSamlHelpers.IsRsaCertificate(certificate);
 
     /// <summary>
     /// Ensures the specified service provider is valid.

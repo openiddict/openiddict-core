@@ -19,6 +19,10 @@ To use the SAML identity provider, reference the OpenIddict.Server.Saml.AspNetCo
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" />
+    <Compile Include="..\..\shared\OpenIddict.Extensions\Saml\*.cs" Visible="false" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="System.Security.Cryptography.Xml" />
   </ItemGroup>
 

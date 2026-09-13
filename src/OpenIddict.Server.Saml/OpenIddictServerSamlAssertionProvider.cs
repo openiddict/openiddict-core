@@ -40,7 +40,7 @@ public sealed class OpenIddictServerSamlAssertionProvider : IOpenIddictServerSam
         var value = format switch
         {
             NameIdFormats.EmailAddress => FindFirstValue(context.Principal, [Claims.Email, ClaimTypes.Email]),
-            NameIdFormats.Transient    => OpenIddictServerSamlHelpers.CreateIdentifier(),
+            NameIdFormats.Transient    => OpenIddict.Extensions.OpenIddictSamlHelpers.CreateIdentifier(),
             _                          => FindFirstValue(context.Principal, _options.CurrentValue.NameIdClaimTypes)
         };
 

@@ -13,6 +13,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using static OpenIddict.Server.Saml.OpenIddictServerSamlConstants;
 using Parameters = OpenIddict.Server.Saml.OpenIddictServerSamlConstants.Parameters;
+using static OpenIddict.Extensions.OpenIddictSamlHelpers;
 using static OpenIddict.Server.Saml.OpenIddictServerSamlHelpers;
 using static OpenIddict.Server.Saml.OpenIddictServerSamlModels;
 
@@ -562,7 +563,7 @@ public sealed class OpenIddictServerSamlService
 
         else if (binding is Bindings.HttpPost)
         {
-            result = ValidateEnvelopedSignature(root, provider.SigningCertificates);
+            result = ValidateRootSignature(root, provider.SigningCertificates);
         }
 
         switch (result)
@@ -1159,7 +1160,7 @@ public sealed class OpenIddictServerSamlService
 
             // The requester must be authenticated before the artifact is resolved (SAML bindings, 3.6.5.2).
             if (await FindServiceProviderAsync(issuer, cancellationToken) is not { } provider ||
-                ValidateEnvelopedSignature(request, provider.SigningCertificates) is not SignatureValidationResult.Valid)
+                ValidateMessageSignature(request, provider.SigningCertificates) is not SignatureValidationResult.Valid)
             {
                 return CreateEmptyResponse(identifier, SR.ID2423);
             }
@@ -1328,23 +1329,17 @@ public sealed class OpenIddictServerSamlService
         ArgumentException.ThrowIfNullOrEmpty(response);
         ArgumentException.ThrowIfNullOrEmpty(nonce);
 
-        var builder = new StringBuilder()
-            .Append("<!doctype html><html><head><meta charset=\"utf-8\" /><title>Working...</title></head><body>")
-            .Append("<form id=\"saml\" method=\"post\" action=\"").Append(WebUtility.HtmlEncode(url.AbsoluteUri)).Append("\">")
-            .Append("<input type=\"hidden\" name=\"").Append(Parameters.SamlResponse).Append("\" value=\"")
-            .Append(WebUtility.HtmlEncode(Convert.ToBase64String(Encoding.UTF8.GetBytes(response)))).Append("\" />");
+        var fields = new List<KeyValuePair<string, string>>
+        {
+            new(Parameters.SamlResponse, Convert.ToBase64String(Encoding.UTF8.GetBytes(response)))
+        };
 
         if (relayState is not null)
         {
-            builder.Append("<input type=\"hidden\" name=\"").Append(Parameters.RelayState).Append("\" value=\"")
-                   .Append(WebUtility.HtmlEncode(relayState)).Append("\" />");
+            fields.Add(new(Parameters.RelayState, relayState));
         }
 
-        return builder
-            .Append("<noscript><button type=\"submit\">Continue</button></noscript></form>")
-            .Append("<script nonce=\"").Append(WebUtility.HtmlEncode(nonce)).Append("\">document.getElementById('saml').submit();</script>")
-            .Append("</body></html>")
-            .ToString();
+        return OpenIddict.Extensions.OpenIddictSamlHelpers.CreateFormPostPage(url, fields, nonce);
     }
 
     private static X509Certificate2 GetSigningCertificate(OpenIddictServerSamlOptions options)
@@ -1357,72 +1352,6 @@ public sealed class OpenIddictServerSamlService
                throw new InvalidOperationException(SR.GetResourceString(SR.ID0566));
     }
 
-    private static XmlElement AppendElement(XmlElement parent, string prefix, string name, string ns, string? text = null)
-    {
-        var element = parent.OwnerDocument.CreateElement(prefix, name, ns);
-
-        if (text is not null)
-        {
-            element.AppendChild(parent.OwnerDocument.CreateTextNode(text));
-        }
-
-        parent.AppendChild(element);
-
-        return element;
-    }
-
     private static string GetAssertionConsumerServiceBinding(OpenIddictServerSamlServiceProvider provider, int index)
         => provider.AssertionConsumerServiceBindings.TryGetValue(index, out var binding) ? binding : Bindings.HttpPost;
-
-    private static bool IsNCName(string value)
-    {
-        try
-        {
-            XmlConvert.VerifyNCName(value);
-            return true;
-        }
-
-        catch (XmlException)
-        {
-            return false;
-        }
-    }
-
-    private static bool IsSameUrl(string value, Uri url)
-        => Uri.TryCreate(value, UriKind.Absolute, out var candidate) &&
-           IsSameUrl(candidate, url);
-
-    private static bool IsSameUrl(Uri left, Uri right)
-        => left.IsAbsoluteUri && right.IsAbsoluteUri &&
-           Uri.Compare(left, right, UriComponents.AbsoluteUri, UriFormat.UriEscaped, StringComparison.Ordinal) is 0;
-
-    private static bool TryParseInstant(string value, out DateTimeOffset instant)
-    {
-        instant = default;
-
-        if (string.IsNullOrEmpty(value))
-        {
-            return false;
-        }
-
-        try
-        {
-            // Note: SAML 2.0 requires UTC instants (SAML core, 1.3.3). Values without a time zone are
-            // treated as UTC (instead of local time) and values with an offset are converted to UTC.
-            var date = XmlConvert.ToDateTime(value, XmlDateTimeSerializationMode.RoundtripKind);
-
-            instant = date.Kind switch
-            {
-                DateTimeKind.Unspecified => new DateTimeOffset(DateTime.SpecifyKind(date, DateTimeKind.Utc)),
-                _                        => new DateTimeOffset(date.ToUniversalTime())
-            };
-
-            return true;
-        }
-
-        catch (Exception exception) when (exception is FormatException or ArgumentException or OverflowException)
-        {
-            return false;
-        }
-    }
 }
