@@ -606,6 +606,56 @@ public sealed class OpenIddictServerOptions
     public bool EnableRequestObjectSupport { get; set; }
 
     /// <summary>
+    /// Gets or sets a boolean indicating whether OAuth 2.0 Demonstrating Proof of Possession (DPoP, RFC 9449)
+    /// is supported. When enabled, DPoP proofs sent to the token, pushed authorization and userinfo endpoints
+    /// are validated and access tokens (and refresh tokens issued to public clients) are bound to the proof key.
+    /// </summary>
+    public bool EnableDPoPSupport { get; set; }
+
+    /// <summary>
+    /// Gets or sets a boolean indicating whether all token requests must include a valid DPoP proof.
+    /// </summary>
+    /// <remarks>
+    /// Note: this option requires enabling DPoP support using <see cref="EnableDPoPSupport"/>.
+    /// </remarks>
+    public bool RequireDPoP { get; set; }
+
+    /// <summary>
+    /// Gets or sets a boolean indicating whether DPoP proofs must include a server-provided nonce.
+    /// </summary>
+    /// <remarks>
+    /// Note: this option requires enabling DPoP support using <see cref="EnableDPoPSupport"/>.
+    /// </remarks>
+    public bool RequireDPoPNonces { get; set; }
+
+    /// <summary>
+    /// Gets or sets the maximum difference allowed between the issuance date of a DPoP proof and the current date.
+    /// </summary>
+    public TimeSpan DPoPProofLifetime { get; set; } = TimeSpan.FromMinutes(5);
+
+    /// <summary>
+    /// Gets or sets the lifetime of the DPoP nonces issued when <see cref="RequireDPoPNonces"/> is enabled.
+    /// </summary>
+    public TimeSpan DPoPNonceLifetime { get; set; } = TimeSpan.FromMinutes(5);
+
+    /// <summary>
+    /// Gets the asymmetric signing algorithms allowed for DPoP proofs.
+    /// </summary>
+    [EditorBrowsable(EditorBrowsableState.Advanced)]
+    public HashSet<string> DPoPSigningAlgorithms { get; } = new(StringComparer.Ordinal)
+    {
+        SecurityAlgorithms.EcdsaSha256,
+        SecurityAlgorithms.EcdsaSha384,
+        SecurityAlgorithms.EcdsaSha512,
+        SecurityAlgorithms.RsaSha256,
+        SecurityAlgorithms.RsaSha384,
+        SecurityAlgorithms.RsaSha512,
+        SecurityAlgorithms.RsaSsaPssSha256,
+        SecurityAlgorithms.RsaSsaPssSha384,
+        SecurityAlgorithms.RsaSsaPssSha512
+    };
+
+    /// <summary>
     /// Gets the OAuth 2.0 resources enabled for this application (typically used
     /// with the OAuth 2.0 Token Exchange flow and with authorization or pushed
     /// authorization requests that include one or more resource indicators).

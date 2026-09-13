@@ -5,6 +5,7 @@
  */
 
 using System.ComponentModel;
+using System.Security.Claims;
 using System.Security.Cryptography.X509Certificates;
 
 namespace OpenIddict.Server;
@@ -29,6 +30,35 @@ public sealed class OpenIddictServerTransaction
     /// Gets or sets the X.509 client certificate used by the remote peer, if available.
     /// </summary>
     public X509Certificate2? RemoteCertificate { get; set; }
+
+    /// <summary>
+    /// Gets or sets the authentication scheme used to send the access token
+    /// in the Authorization header (e.g "Bearer" or "DPoP"), if applicable.
+    /// </summary>
+    public string? AccessTokenScheme { get; set; }
+
+    /// <summary>
+    /// Gets or sets the raw DPoP proof sent by the remote peer, if available.
+    /// </summary>
+    public string? DPoPProof { get; set; }
+
+    /// <summary>
+    /// Gets or sets the principal extracted from the validated DPoP proof, if available.
+    /// </summary>
+    /// <remarks>
+    /// Note: the RFC 7638 thumbprint of the proof key is stored in the private "oi_dpop_jkt" claim.
+    /// </remarks>
+    public ClaimsPrincipal? DPoPProofPrincipal { get; set; }
+
+    /// <summary>
+    /// Gets or sets the DPoP nonce returned to the remote peer using the "DPoP-Nonce" header, if applicable.
+    /// </summary>
+    public string? DPoPNonce { get; set; }
+
+    /// <summary>
+    /// Gets or sets the HTTP method of the current transaction, if available.
+    /// </summary>
+    public string? RequestMethod { get; set; }
 
     /// <summary>
     /// Gets or sets the type of the endpoint processing the current transaction.

@@ -51,6 +51,7 @@ public static partial class OpenIddictServerHandlers
         ValidateClientType.Descriptor,
         ValidateClientSecret.Descriptor,
         ValidateClientCertificate.Descriptor,
+        ValidateDPoPProof.Descriptor,
         ValidateRequestToken.Descriptor,
         ValidateRequestTokenType.Descriptor,
         ValidateAccessToken.Descriptor,
@@ -1451,6 +1452,195 @@ public static partial class OpenIddictServerHandlers
                     return;
                 }
             }
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for validating the DPoP proof sent to the token,
+    /// pushed authorization and userinfo endpoints, if applicable.
+    /// </summary>
+    public sealed class ValidateDPoPProof : IOpenIddictServerHandler<ProcessAuthenticationContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+            = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
+                .AddFilter<RequireDPoPSupportEnabled>()
+                .UseSingletonHandler<ValidateDPoPProof>()
+                .SetOrder(ValidateClientCertificate.Descriptor.Order + 500)
+                .SetType(OpenIddictServerHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public async ValueTask HandleAsync(ProcessAuthenticationContext context)
+        {
+            ArgumentNullException.ThrowIfNull(context);
+
+            if (context.EndpointType is not (OpenIddictServerEndpointType.Token or
+                                             OpenIddictServerEndpointType.PushedAuthorization or
+                                             OpenIddictServerEndpointType.UserInfo))
+            {
+                return;
+            }
+
+            // Note: DPoP proofs sent to the userinfo endpoint are only validated when the
+            // access token is sent using the "DPoP" scheme. Access tokens sent using the
+            // "Bearer" scheme are treated as bearer tokens (and DPoP-bound tokens are rejected).
+            //
+            // See https://datatracker.ietf.org/doc/html/rfc9449#section-7 for more information.
+            if (context.EndpointType is OpenIddictServerEndpointType.UserInfo &&
+                !string.Equals(context.Transaction.AccessTokenScheme, Schemes.DPoP, StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
+
+            if (string.IsNullOrEmpty(context.Transaction.DPoPProof))
+            {
+                if (context.EndpointType is OpenIddictServerEndpointType.UserInfo ||
+                   (context.EndpointType is OpenIddictServerEndpointType.Token && context.Options.RequireDPoP))
+                {
+                    context.Logger.LogInformation(6311, SR.GetResourceString(SR.ID6311), SR.GetResourceString(SR.ID2228));
+
+                    context.Reject(
+                        error: Errors.InvalidDPoPProof,
+                        description: SR.GetResourceString(SR.ID2228),
+                        uri: SR.FormatID8000(SR.ID2228));
+
+                    return;
+                }
+
+                return;
+            }
+
+            if (string.IsNullOrEmpty(context.Transaction.RequestMethod) || context.RequestUri is not { IsAbsoluteUri: true } uri)
+            {
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0549));
+            }
+
+            var date = context.Options.TimeProvider.GetUtcNow();
+
+            var result = await OpenIddictDPoPHelpers.ValidateProofAsync(
+                proof     : context.Transaction.DPoPProof,
+                method    : context.Transaction.RequestMethod,
+                uri       : uri,
+                algorithms: context.Options.DPoPSigningAlgorithms,
+                date      : date,
+                lifetime  : context.Options.DPoPProofLifetime,
+                token     : context.EndpointType is OpenIddictServerEndpointType.UserInfo ? context.AccessToken : null);
+
+            if (result is not { Error: OpenIddictDPoPHelpers.ProofError.None, Token: JsonWebToken token, Thumbprint: string thumbprint })
+            {
+                context.Logger.LogInformation(6311, SR.GetResourceString(SR.ID6311), result.Claim ?? result.Error.ToString());
+
+                context.Reject(
+                    error: Errors.InvalidDPoPProof,
+                    description: result.Claim is not null ? SR.FormatID2226(result.Claim) : SR.GetResourceString(SR.ID2225),
+                    uri: SR.FormatID8000(result.Claim is not null ? SR.ID2226 : SR.ID2225));
+
+                return;
+            }
+
+            // If nonces are required, ensure the proof contains a valid nonce issued by this server.
+            if (context.Options.RequireDPoPNonces && !await ValidateDPoPNonceAsync(context.Transaction, OpenIddictDPoPHelpers.GetNonce(token)))
+            {
+                context.Logger.LogInformation(6313, SR.GetResourceString(SR.ID6313));
+
+                context.Transaction.DPoPNonce = await CreateDPoPNonceAsync(context.Transaction);
+
+                context.Reject(
+                    error: Errors.UseDPoPNonce,
+                    description: SR.GetResourceString(SR.ID2229),
+                    uri: SR.FormatID8000(SR.ID2229));
+
+                return;
+            }
+
+            // When token storage is enabled, prevent the proof from being replayed by storing
+            // a token entry whose reference identifier is derived from the key and the proof "jti".
+            if (!context.Options.EnableDegradedMode && !context.Options.DisableTokenStorage)
+            {
+                var manager = context.ServiceProvider.GetService<IOpenIddictTokenManager>()
+                    ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
+
+                var identifier = thumbprint + "." + OpenIddictDPoPHelpers.GetJwtId(token);
+
+                if (await manager.FindByReferenceIdAsync(identifier, context.CancellationToken) is not null)
+                {
+                    context.Logger.LogInformation(6312, SR.GetResourceString(SR.ID6312));
+
+                    context.Reject(
+                        error: Errors.InvalidDPoPProof,
+                        description: SR.GetResourceString(SR.ID2227),
+                        uri: SR.FormatID8000(SR.ID2227));
+
+                    return;
+                }
+
+                var issued = new DateTimeOffset(token.IssuedAt, TimeSpan.Zero);
+
+                try
+                {
+                    await manager.CreateAsync(new OpenIddictTokenDescriptor
+                    {
+                        CreationDate = date,
+                        ExpirationDate = (issued > date ? issued : date) + context.Options.DPoPProofLifetime,
+                        ReferenceId = identifier,
+                        Status = Statuses.Redeemed,
+                        Type = TokenTypeIdentifiers.Private.DPoPProof
+                    }, context.CancellationToken);
+                }
+
+                // If the token entry couldn't be created because a concurrent request using the same
+                // proof created it first (e.g because a unique index exists), reject the request.
+                catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
+                {
+                    if (await manager.FindByReferenceIdAsync(identifier, context.CancellationToken) is null)
+                    {
+                        throw;
+                    }
+
+                    context.Logger.LogInformation(6312, SR.GetResourceString(SR.ID6312));
+
+                    context.Reject(
+                        error: Errors.InvalidDPoPProof,
+                        description: SR.GetResourceString(SR.ID2227),
+                        uri: SR.FormatID8000(SR.ID2227));
+
+                    return;
+                }
+            }
+
+            // When the proof is sent to the pushed authorization endpoint, bind the authorization code that will
+            // be issued to the proof key, unless a "dpop_jkt" parameter was specified, in which case both must match.
+            //
+            // See https://datatracker.ietf.org/doc/html/rfc9449#section-10.1 for more information.
+            if (context.EndpointType is OpenIddictServerEndpointType.PushedAuthorization)
+            {
+                if (string.IsNullOrEmpty(context.Request.DPoPJkt))
+                {
+                    context.Request.DPoPJkt = thumbprint;
+                }
+
+                else if (!OpenIddictDPoPHelpers.FixedTimeEquals(context.Request.DPoPJkt, thumbprint))
+                {
+                    context.Reject(
+                        error: Errors.InvalidDPoPProof,
+                        description: SR.FormatID2233(Parameters.DPoPJkt),
+                        uri: SR.FormatID8000(SR.ID2233));
+
+                    return;
+                }
+            }
+
+            var principal = new ClaimsPrincipal(new ClaimsIdentity(token.Claims,
+                authenticationType: TokenValidationParameters.DefaultAuthenticationType,
+                nameType: Claims.Name,
+                roleType: Claims.Role));
+
+            principal.SetClaim(Claims.Private.DPoPJwkThumbprint, thumbprint);
+
+            context.Transaction.DPoPProofPrincipal = principal;
         }
     }
 
@@ -3676,20 +3866,17 @@ public static partial class OpenIddictServerHandlers
                 context.Logger.LogDebug(6010, SR.GetResourceString(SR.ID6010), scopes);
             }
 
-            // If certificate-bound access tokens are enabled and a client certificate was used, bind the access
-            // token to the certificate by storing a confirmation claim containing the certificate thumbprint.
-            if (context.Options.UseClientCertificateBoundAccessTokens &&
-                context.Transaction.RemoteCertificate is X509Certificate2 certificate)
+            // If certificate-bound access tokens are enabled and a client certificate was used or if a valid DPoP
+            // proof was sent, bind the access token by storing a confirmation claim containing the thumbprint
+            // of the certificate and/or the thumbprint of the DPoP proof key.
+            if (CreateConfirmationClaim(context.Transaction,
+                certificate: context.Options.UseClientCertificateBoundAccessTokens,
+                proof: true) is JsonObject confirmation)
             {
-                principal.SetClaim(Claims.Confirmation, CreateConfirmationClaim(certificate));
+                principal.SetClaim(Claims.Confirmation, confirmation);
             }
 
             context.AccessTokenPrincipal = principal;
-
-            static JsonNode CreateConfirmationClaim(X509Certificate2 certificate) => new JsonObject
-            {
-                [JsonWebKeyParameterNames.X5tS256] = Base64Url.EncodeToString(certificate.GetCertHash(HashAlgorithmName.SHA256))
-            };
         }
     }
 
@@ -3795,6 +3982,16 @@ public static partial class OpenIddictServerHandlers
             // Attach the nonce so that it can be later returned by
             // the token endpoint as part of the JWT identity token.
             principal.SetClaim(Claims.Private.Nonce, context.Request.Nonce);
+
+            // If DPoP support is enabled and a "dpop_jkt" parameter was specified (or inferred from the
+            // DPoP proof sent to the pushed authorization endpoint), attach it to the authorization code
+            // to ensure the same key is used to sign the DPoP proof sent when redeeming the code.
+            //
+            // See https://datatracker.ietf.org/doc/html/rfc9449#section-10 for more information.
+            if (context.Options.EnableDPoPSupport && !string.IsNullOrEmpty(context.Request.DPoPJkt))
+            {
+                principal.SetClaim(Claims.Private.DPoPJwkThumbprint, context.Request.DPoPJkt);
+            }
 
             context.AuthorizationCodePrincipal = principal;
         }
@@ -4214,60 +4411,30 @@ public static partial class OpenIddictServerHandlers
                 principal.SetClaim(Claims.ClientId, context.ClientId);
             }
 
-            if (context.Transaction.RemoteCertificate is X509Certificate2 certificate)
+            // If certificate-bound access tokens are enabled and a client certificate was used or if a valid DPoP
+            // proof was sent, bind the access token by storing a confirmation claim containing the thumbprint
+            // of the certificate and/or the thumbprint of the DPoP proof key.
+            if (context.IssuedTokenType is TokenTypeIdentifiers.AccessToken &&
+                CreateConfirmationClaim(context.Transaction,
+                    certificate: context.Options.UseClientCertificateBoundAccessTokens,
+                    proof: true) is JsonObject confirmation)
             {
-                // If certificate-bound access tokens are enabled and a client certificate was used, bind the access
-                // token to the certificate by storing a confirmation claim containing the certificate thumbprint.
-                if (context.IssuedTokenType is TokenTypeIdentifiers.AccessToken &&
-                    context.Options.UseClientCertificateBoundAccessTokens)
-                {
-                    principal.SetClaim(Claims.Confirmation, CreateConfirmationClaim(certificate));
-                }
+                principal.SetClaim(Claims.Confirmation, confirmation);
+            }
 
-                // If certificate-bound refresh tokens are enabled and a client certificate was used, bind the refresh
-                // token to the certificate by storing a confirmation claim containing the certificate thumbprint.
-                if (context.IssuedTokenType is TokenTypeIdentifiers.RefreshToken &&
-                    context.Options.UseClientCertificateBoundRefreshTokens &&
-                    !string.IsNullOrEmpty(context.ClientId))
-                {
-                    // If the degraded mode was enabled, it is impossible to determine whether
-                    // the client is a public or confidential application. In this case, the
-                    // confirmation claim is always added to the principal by default.
-                    //
-                    // Applications that need to use a different logic can implement their
-                    // own event handler and remove the confirmation claim from the principal.
-                    if (context.Options.EnableDegradedMode)
-                    {
-                        principal.SetClaim(Claims.Confirmation, CreateConfirmationClaim(certificate));
-                    }
-
-                    else
-                    {
-                        var manager = context.ServiceProvider.GetService<IOpenIddictApplicationManager>()
-                            ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
-
-                        var application = await manager.FindByClientIdAsync(context.ClientId, context.CancellationToken)
-                            ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0017));
-
-                        // Note: refresh tokens are only bound to the provided certificate when the client
-                        // is a public application, as refresh tokens issued to confidential applications
-                        // are already sender-constrained via standard client authentication, which is more
-                        // flexible than certificate-based token binding, as rotating client credentials is
-                        // easier in that case (specially when using PKI-based mTLS client authentication).
-                        if (await manager.HasClientTypeAsync(application, ClientTypes.Public, context.CancellationToken))
-                        {
-                            principal.SetClaim(Claims.Confirmation, CreateConfirmationClaim(certificate));
-                        }
-                    }
-                }
+            // If certificate-bound refresh tokens are enabled and a client certificate was used or if a valid DPoP
+            // proof was sent, bind the refresh token issued to public clients by storing a confirmation claim.
+            else if (context.IssuedTokenType is TokenTypeIdentifiers.RefreshToken &&
+                !string.IsNullOrEmpty(context.ClientId) &&
+                CreateConfirmationClaim(context.Transaction,
+                    certificate: context.Options.UseClientCertificateBoundRefreshTokens,
+                    proof: true) is JsonObject node &&
+                await IsRefreshTokenBindingRequiredAsync(context, context.ClientId))
+            {
+                principal.SetClaim(Claims.Confirmation, node);
             }
 
             context.IssuedTokenPrincipal = principal;
-
-            static JsonNode CreateConfirmationClaim(X509Certificate2 certificate) => new JsonObject
-            {
-                [JsonWebKeyParameterNames.X5tS256] = Base64Url.EncodeToString(certificate.GetCertHash(HashAlgorithmName.SHA256))
-            };
         }
     }
 
@@ -4482,49 +4649,19 @@ public static partial class OpenIddictServerHandlers
                 _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0496))
             });
 
-            // If certificate-bound refresh tokens are enabled and a client certificate was used, bind the refresh
-            // token to the certificate by storing a confirmation claim containing the certificate thumbprint.
-            if (context.Options.UseClientCertificateBoundRefreshTokens &&
-                context.Transaction.RemoteCertificate is X509Certificate2 certificate &&
-                !string.IsNullOrEmpty(context.ClientId))
+            // If certificate-bound refresh tokens are enabled and a client certificate was used or if a valid DPoP
+            // proof was sent, bind the refresh token issued to public clients by storing a confirmation claim
+            // containing the thumbprint of the certificate and/or the thumbprint of the DPoP proof key.
+            if (!string.IsNullOrEmpty(context.ClientId) &&
+                CreateConfirmationClaim(context.Transaction,
+                    certificate: context.Options.UseClientCertificateBoundRefreshTokens,
+                    proof: true) is JsonObject confirmation &&
+                await IsRefreshTokenBindingRequiredAsync(context, context.ClientId))
             {
-                // If the degraded mode was enabled, it is impossible to determine whether
-                // the client is a public or confidential application. In this case, the
-                // confirmation claim is always added to the principal by default.
-                //
-                // Applications that need to use a different logic can implement their
-                // own event handler and remove the confirmation claim from the principal.
-                if (context.Options.EnableDegradedMode)
-                {
-                    principal.SetClaim(Claims.Confirmation, CreateConfirmationClaim(certificate));
-                }
-
-                else
-                {
-                    var manager = context.ServiceProvider.GetService<IOpenIddictApplicationManager>()
-                        ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
-
-                    var application = await manager.FindByClientIdAsync(context.ClientId, context.CancellationToken)
-                        ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0017));
-
-                    // Note: refresh tokens are only bound to the provided certificate when the client
-                    // is a public application, as refresh tokens issued to confidential applications
-                    // are already sender-constrained via standard client authentication, which is more
-                    // flexible than certificate-based token binding, as rotating client credentials is
-                    // easier in that case (specially when using PKI-based mTLS client authentication).
-                    if (await manager.HasClientTypeAsync(application, ClientTypes.Public, context.CancellationToken))
-                    {
-                        principal.SetClaim(Claims.Confirmation, CreateConfirmationClaim(certificate));
-                    }
-                }
+                principal.SetClaim(Claims.Confirmation, confirmation);
             }
 
             context.RefreshTokenPrincipal = principal;
-
-            static JsonNode CreateConfirmationClaim(X509Certificate2 certificate) => new JsonObject
-            {
-                [JsonWebKeyParameterNames.X5tS256] = Base64Url.EncodeToString(certificate.GetCertHash(HashAlgorithmName.SHA256))
-            };
         }
     }
 
@@ -5657,7 +5794,7 @@ public static partial class OpenIddictServerHandlers
             if (context.IncludeAccessToken)
             {
                 context.Response.AccessToken = context.AccessToken;
-                context.Response.TokenType = TokenTypes.Bearer;
+                context.Response.TokenType = IsDPoPBoundToken(context.AccessTokenPrincipal) ? TokenTypes.DPoP : TokenTypes.Bearer;
 
                 // If the principal is available, attach additional metadata.
                 if (context.AccessTokenPrincipal is not null)
@@ -5714,9 +5851,13 @@ public static partial class OpenIddictServerHandlers
                 // is set to "N_A" to indicate when the token used as the "access_token" parameter is not an access token.
                 context.Response.AccessToken = context.IssuedToken;
                 context.Response.IssuedTokenType = context.IssuedTokenType;
-                context.Response.TokenType = context.IssuedTokenType is TokenTypeIdentifiers.AccessToken
-                    ? TokenTypes.Bearer
-                    : TokenTypes.NotApplicable;
+                context.Response.TokenType = context.IssuedTokenType switch
+                {
+                    TokenTypeIdentifiers.AccessToken when IsDPoPBoundToken(context.IssuedTokenPrincipal) => TokenTypes.DPoP,
+                    TokenTypeIdentifiers.AccessToken => TokenTypes.Bearer,
+
+                    _ => TokenTypes.NotApplicable
+                };
 
                 // If the principal is available, attach additional metadata.
                 if (context.IssuedTokenPrincipal is not null)
@@ -6043,5 +6184,130 @@ public static partial class OpenIddictServerHandlers
 
             return ValueTask.CompletedTask;
         }
+    }
+
+    /// <summary>
+    /// Creates a confirmation claim containing the thumbprint of the client certificate
+    /// and/or the thumbprint of the DPoP proof key, if applicable.
+    /// </summary>
+    /// <param name="transaction">The transaction.</param>
+    /// <param name="certificate">Whether the client certificate should be used, if available.</param>
+    /// <param name="proof">Whether the DPoP proof key should be used, if available.</param>
+    /// <returns>The confirmation claim or <see langword="null"/> if no binding is applicable.</returns>
+    private static JsonObject? CreateConfirmationClaim(OpenIddictServerTransaction transaction, bool certificate, bool proof)
+    {
+        var node = new JsonObject();
+
+        if (certificate && transaction.RemoteCertificate is X509Certificate2 value)
+        {
+            node[JsonWebKeyParameterNames.X5tS256] = Base64Url.EncodeToString(value.GetCertHash(HashAlgorithmName.SHA256));
+        }
+
+        if (proof && transaction.DPoPProofPrincipal?.GetClaim(Claims.Private.DPoPJwkThumbprint) is { Length: > 0 } thumbprint)
+        {
+            node[Claims.JsonWebKeyThumbprint] = thumbprint;
+        }
+
+        return node.Count is > 0 ? node : null;
+    }
+
+    /// <summary>
+    /// Determines whether refresh tokens issued to the specified client must be bound
+    /// to the client certificate or DPoP proof key (i.e whether the client is public).
+    /// </summary>
+    /// <param name="context">The context.</param>
+    /// <param name="identifier">The client identifier.</param>
+    /// <returns><see langword="true"/> if refresh tokens must be bound, <see langword="false"/> otherwise.</returns>
+    private static async ValueTask<bool> IsRefreshTokenBindingRequiredAsync(ProcessSignInContext context, string identifier)
+    {
+        // If the degraded mode was enabled, it is impossible to determine whether
+        // the client is a public or confidential application. In this case, the
+        // confirmation claim is always added to the principal by default.
+        //
+        // Applications that need to use a different logic can implement their
+        // own event handler and remove the confirmation claim from the principal.
+        if (context.Options.EnableDegradedMode)
+        {
+            return true;
+        }
+
+        var manager = context.ServiceProvider.GetService<IOpenIddictApplicationManager>()
+            ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
+
+        var application = await manager.FindByClientIdAsync(identifier, context.CancellationToken)
+            ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0017));
+
+        // Note: refresh tokens are only bound when the client is a public application, as refresh tokens
+        // issued to confidential applications are already sender-constrained via standard client authentication,
+        // which is more flexible than token binding, as rotating client credentials is easier in that case.
+        return await manager.HasClientTypeAsync(application, ClientTypes.Public, context.CancellationToken);
+    }
+
+    /// <summary>
+    /// Determines whether the specified principal contains a DPoP confirmation ("jkt") claim.
+    /// </summary>
+    /// <param name="principal">The principal.</param>
+    /// <returns><see langword="true"/> if the token is bound to a DPoP key, <see langword="false"/> otherwise.</returns>
+    internal static bool IsDPoPBoundToken(ClaimsPrincipal? principal)
+        => principal?.GetClaim(Claims.Confirmation) is { Length: > 0 } value &&
+           JsonNode.Parse(value) is JsonObject node && node.ContainsKey(Claims.JsonWebKeyThumbprint);
+
+    /// <summary>
+    /// Creates a new DPoP nonce signed using the signing credentials of the server.
+    /// </summary>
+    /// <param name="transaction">The transaction.</param>
+    /// <returns>The nonce.</returns>
+    internal static async ValueTask<string> CreateDPoPNonceAsync(OpenIddictServerTransaction transaction)
+    {
+        var credentials = await OpenIddictServerKeyRing.ResolveCredentialsAsync(transaction);
+        if (credentials.SigningCredentials is not [SigningCredentials signing, ..])
+        {
+            throw new InvalidOperationException(SR.GetResourceString(SR.ID0266));
+        }
+
+        var date = transaction.Options.TimeProvider.GetUtcNow();
+
+        return new JsonWebTokenHandler { SetDefaultTimesOnTokenCreation = false }.CreateToken(new SecurityTokenDescriptor
+        {
+            Claims = new Dictionary<string, object>(StringComparer.Ordinal)
+            {
+                [Claims.ExpiresAt] = (date + transaction.Options.DPoPNonceLifetime).ToUnixTimeSeconds(),
+                [Claims.IssuedAt] = date.ToUnixTimeSeconds()
+            },
+            SigningCredentials = signing,
+            TokenType = JsonWebTokenTypes.Private.DPoPNonce
+        });
+    }
+
+    /// <summary>
+    /// Determines whether the specified DPoP nonce was issued by the server and is not expired.
+    /// </summary>
+    /// <param name="transaction">The transaction.</param>
+    /// <param name="nonce">The nonce.</param>
+    /// <returns><see langword="true"/> if the nonce is valid, <see langword="false"/> otherwise.</returns>
+    internal static async ValueTask<bool> ValidateDPoPNonceAsync(OpenIddictServerTransaction transaction, string? nonce)
+    {
+        if (string.IsNullOrEmpty(nonce))
+        {
+            return false;
+        }
+
+        var credentials = await OpenIddictServerKeyRing.ResolveCredentialsAsync(transaction);
+
+        var result = await new JsonWebTokenHandler().ValidateTokenAsync(nonce, new TokenValidationParameters
+        {
+            IssuerSigningKeys = credentials.SigningCredentials.Select(static credentials => credentials.Key).ToList(),
+            RequireExpirationTime = true,
+            RequireSignedTokens = true,
+            TryAllIssuerSigningKeys = true,
+            ValidateAudience = false,
+            ValidateIssuer = false,
+            // Note: the lifetime is manually validated to use the time provider attached to the options.
+            ValidateLifetime = false,
+            ValidTypes = [JsonWebTokenTypes.Private.DPoPNonce]
+        });
+
+        return result is { IsValid: true, SecurityToken: JsonWebToken token } &&
+            new DateTimeOffset(token.ValidTo, TimeSpan.Zero) > transaction.Options.TimeProvider.GetUtcNow();
     }
 }

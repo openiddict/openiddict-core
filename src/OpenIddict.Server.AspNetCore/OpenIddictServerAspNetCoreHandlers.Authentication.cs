@@ -49,6 +49,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
             ExtractPostRequest<ExtractPushedAuthorizationRequestContext>.Descriptor,
             ValidateClientAuthenticationMethod<ExtractPushedAuthorizationRequestContext>.Descriptor,
             ExtractClientCertificate<ExtractPushedAuthorizationRequestContext>.Descriptor,
+            ExtractDPoPProof<ExtractPushedAuthorizationRequestContext>.Descriptor,
             ExtractBasicAuthenticationCredentials<ExtractPushedAuthorizationRequestContext>.Descriptor,
 
             /*
@@ -57,6 +58,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
             AttachHttpResponseCode<ApplyPushedAuthorizationResponseContext>.Descriptor,
             AttachCacheControlHeader<ApplyPushedAuthorizationResponseContext>.Descriptor,
             AttachWwwAuthenticateHeader<ApplyPushedAuthorizationResponseContext>.Descriptor,
+            AttachDPoPNonceHeader<ApplyPushedAuthorizationResponseContext>.Descriptor,
             ProcessJsonResponse<ApplyPushedAuthorizationResponseContext>.Descriptor
         ];
 

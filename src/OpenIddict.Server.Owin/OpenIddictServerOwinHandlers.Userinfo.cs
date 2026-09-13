@@ -20,6 +20,7 @@ public static partial class OpenIddictServerOwinHandlers
             ExtractGetOrPostRequest<ExtractUserInfoRequestContext>.Descriptor,
             ExtractAccessToken<ExtractUserInfoRequestContext>.Descriptor,
             ExtractClientCertificate<ExtractUserInfoRequestContext>.Descriptor,
+            ExtractDPoPProof<ExtractUserInfoRequestContext>.Descriptor,
 
             /*
              * UserInfo request handling:
@@ -33,6 +34,7 @@ public static partial class OpenIddictServerOwinHandlers
             AttachOwinResponseChallenge<ApplyUserInfoResponseContext>.Descriptor,
             SuppressFormsAuthenticationRedirect<ApplyUserInfoResponseContext>.Descriptor,
             AttachWwwAuthenticateHeader<ApplyUserInfoResponseContext>.Descriptor,
+            AttachDPoPNonceHeader<ApplyUserInfoResponseContext>.Descriptor,
             ProcessChallengeErrorResponse<ApplyUserInfoResponseContext>.Descriptor,
             ProcessJsonResponse<ApplyUserInfoResponseContext>.Descriptor
         ];

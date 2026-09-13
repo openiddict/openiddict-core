@@ -17,6 +17,11 @@ To use the validation feature on ASP.NET Core or OWIN/Katana, reference the Open
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="..\..\shared\OpenIddict.Extensions\IdentityModel\*.cs" Visible="false" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.Logging" />
     <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" />
     <PackageReference Include="Microsoft.IdentityModel.Protocols" />

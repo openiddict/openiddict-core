@@ -758,6 +758,12 @@ public static partial class OpenIddictServerHandlers
                     // and https://tools.ietf.org/html/rfc6749#section-5.1 for more information.
                     TokenTypeIdentifiers.AccessToken when context.Confirmation is null => TokenTypes.Bearer,
 
+                    // DPoP-bound access tokens use the specific "DPoP" token type.
+                    //
+                    // See https://datatracker.ietf.org/doc/html/rfc9449#section-6.2 for more information.
+                    TokenTypeIdentifiers.AccessToken when context.Confirmation?.ContainsKey(Claims.JsonWebKeyThumbprint) is true
+                        => TokenTypes.DPoP,
+
                     _ => null
                 };
 

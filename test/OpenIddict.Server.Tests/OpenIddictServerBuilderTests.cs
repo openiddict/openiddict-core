@@ -1967,6 +1967,30 @@ public class OpenIddictServerBuilderTests
     }
 
     [Fact]
+    public void EnableDPoPSupport_DPoPOptionsAreCorrectlySet()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act
+        builder.EnableDPoPSupport()
+               .RequireDPoP()
+               .RequireDPoPNonces()
+               .SetDPoPProofLifetime(TimeSpan.FromMinutes(2))
+               .SetDPoPNonceLifetime(TimeSpan.FromMinutes(3));
+
+        var options = GetOptions(services);
+
+        // Assert
+        Assert.True(options.EnableDPoPSupport);
+        Assert.True(options.RequireDPoP);
+        Assert.True(options.RequireDPoPNonces);
+        Assert.Equal(TimeSpan.FromMinutes(2), options.DPoPProofLifetime);
+        Assert.Equal(TimeSpan.FromMinutes(3), options.DPoPNonceLifetime);
+    }
+
+    [Fact]
     public void EnableRequestObjectSupport_RequestObjectSupportIsEnabled()
     {
         // Arrange

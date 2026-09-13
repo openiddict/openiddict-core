@@ -316,6 +316,55 @@ public class OpenIddictServerConfigurationTests
         Assert.Contains(SR.GetResourceString(SR.ID0524), result.Failures!, StringComparer.Ordinal);
     }
 
+    [Theory]
+    [InlineData(true, false, "ID0544")]
+    [InlineData(false, true, "ID0545")]
+    public void Validate_ReturnsAnErrorWhenDPoPIsRequiredWithoutDPoPSupport(bool proofs, bool nonces, string identifier)
+    {
+        // Arrange
+        var configuration = new OpenIddictServerConfiguration(new ServiceCollection().BuildServiceProvider());
+        var options = CreateBaseOptions();
+        options.RequireDPoP = proofs;
+        options.RequireDPoPNonces = nonces;
+
+        // Act
+        var result = configuration.Validate(name: null, options);
+
+        // Assert
+        Assert.Contains(SR.GetResourceString(identifier), result.Failures!, StringComparer.Ordinal);
+    }
+
+    [Fact]
+    public void Validate_ReturnsAnErrorWhenSymmetricDPoPAlgorithmIsAllowed()
+    {
+        // Arrange
+        var configuration = new OpenIddictServerConfiguration(new ServiceCollection().BuildServiceProvider());
+        var options = CreateBaseOptions();
+        options.EnableDPoPSupport = true;
+        options.DPoPSigningAlgorithms.Add(SecurityAlgorithms.HmacSha256);
+
+        // Act
+        var result = configuration.Validate(name: null, options);
+
+        // Assert
+        Assert.Contains(SR.GetResourceString(SR.ID0546), result.Failures!, StringComparer.Ordinal);
+    }
+
+    [Fact]
+    public void Validate_ReturnsAnErrorWhenDPoPProofLifetimeIsNotPositive()
+    {
+        // Arrange
+        var configuration = new OpenIddictServerConfiguration(new ServiceCollection().BuildServiceProvider());
+        var options = CreateBaseOptions();
+        options.DPoPProofLifetime = TimeSpan.Zero;
+
+        // Act
+        var result = configuration.Validate(name: null, options);
+
+        // Assert
+        Assert.Contains(SR.GetResourceString(SR.ID0547), result.Failures!, StringComparer.Ordinal);
+    }
+
     [Fact]
     public void Validate_DoesNotReturnAnErrorWhenSignedRequestObjectsAreRequiredWithRequestObjectSupport()
     {

@@ -889,6 +889,13 @@ public static partial class OpenIddictServerHandlers
                     context.Metadata[Metadata.RequireSignedRequestObject] = context.Options.RequireSignedRequestObjects;
                 }
 
+                // If DPoP support was enabled, return the signing algorithms allowed for DPoP proofs.
+                if (context.Options.EnableDPoPSupport)
+                {
+                    context.Metadata[Metadata.DPoPSigningAlgValuesSupported] = new JsonArray(
+                        [.. context.Options.DPoPSigningAlgorithms.Select(static algorithm => (JsonNode) algorithm)]);
+                }
+
                 // As of 3.2.0, OpenIddict automatically returns an "iss" parameter containing its identity as
                 // part of authorization responses to help clients mitigate mix-up attacks. For more information,
                 // see https://datatracker.ietf.org/doc/html/draft-ietf-oauth-iss-auth-resp-05.

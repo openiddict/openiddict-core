@@ -102,6 +102,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
 
             context.BaseUri = CreateUri(UriHelper.BuildAbsolute(request.Scheme, host, request.PathBase));
             context.RequestUri = CreateUri(UriHelper.BuildAbsolute(request.Scheme, host, request.PathBase, request.Path, request.QueryString));
+            context.Transaction.RequestMethod = request.Method;
 
             return ValueTask.CompletedTask;
 
@@ -714,6 +715,60 @@ public static partial class OpenIddictServerAspNetCoreHandlers
     }
 
     /// <summary>
+    /// Contains the logic responsible for extracting the DPoP proof from the request headers.
+    /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
+    /// </summary>
+    public sealed class ExtractDPoPProof<TContext> : IOpenIddictServerHandler<TContext>
+        where TContext : BaseValidatingContext
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+            = OpenIddictServerHandlerDescriptor.CreateBuilder<TContext>()
+                .AddFilter<RequireHttpRequest>()
+                .AddFilter<RequireDPoPSupportEnabled>()
+                .UseSingletonHandler<ExtractDPoPProof<TContext>>()
+                .SetOrder(ExtractClientCertificate<TContext>.Descriptor.Order + 500)
+                .SetType(OpenIddictServerHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(TContext context)
+        {
+            ArgumentNullException.ThrowIfNull(context);
+
+            // This handler only applies to ASP.NET Core requests. If the HTTP context cannot be resolved,
+            // this may indicate that the request was incorrectly processed by another server stack.
+            var request = context.Transaction.GetHttpRequest()
+                ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0114));
+
+            var values = request.Headers[OpenIddictServerAspNetCoreConstants.Headers.DPoP];
+            if (values.Count is 0)
+            {
+                return ValueTask.CompletedTask;
+            }
+
+            // Requests MUST NOT contain more than one DPoP header (or a comma-separated list of proofs).
+            //
+            // See https://datatracker.ietf.org/doc/html/rfc9449#section-4.3 for more information.
+            if (values.Count is not 1 || string.IsNullOrEmpty(values[0]) || values[0]!.Contains(',', StringComparison.Ordinal))
+            {
+                context.Reject(
+                    error: Errors.InvalidDPoPProof,
+                    description: SR.GetResourceString(SR.ID2234),
+                    uri: SR.FormatID8000(SR.ID2234));
+
+                return ValueTask.CompletedTask;
+            }
+
+            context.Transaction.DPoPProof = values[0];
+
+            return ValueTask.CompletedTask;
+        }
+    }
+
+    /// <summary>
     /// Contains the logic responsible for extracting client credentials from the standard HTTP Authorization header.
     /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
     /// </summary>
@@ -840,13 +895,31 @@ public static partial class OpenIddictServerAspNetCoreHandlers
             Debug.Assert(context.Transaction.Request is not null, SR.GetResourceString(SR.ID4008));
 
             string? header = request.Headers[HeaderNames.Authorization];
-            if (string.IsNullOrEmpty(header) || !header.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+            if (string.IsNullOrEmpty(header))
             {
                 return ValueTask.CompletedTask;
             }
 
-            // Attach the access token to the request message.
-            context.Transaction.Request.AccessToken = header["Bearer ".Length..];
+            if (header.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+            {
+                // Attach the access token to the request message.
+                context.Transaction.Request.AccessToken = header["Bearer ".Length..];
+                context.Transaction.AccessTokenScheme = Schemes.Bearer;
+
+                return ValueTask.CompletedTask;
+            }
+
+            // If DPoP support was enabled, also accept access tokens sent using the "DPoP" scheme.
+            //
+            // See https://datatracker.ietf.org/doc/html/rfc9449#section-7.1 for more information.
+            if (context.Options.EnableDPoPSupport && header.StartsWith("DPoP ", StringComparison.OrdinalIgnoreCase))
+            {
+                // Attach the access token to the request message.
+                context.Transaction.Request.AccessToken = header["DPoP ".Length..];
+                context.Transaction.AccessTokenScheme = Schemes.DPoP;
+
+                return ValueTask.CompletedTask;
+            }
 
             return ValueTask.CompletedTask;
         }
@@ -945,6 +1018,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
                 // as part of the standard WWW-Authenticate header. For more information, see
                 // https://openid.net/specs/openid-connect-core-1_0.html#UserInfoError.
                 (OpenIddictServerEndpointType.UserInfo, Errors.InvalidToken       or Errors.MissingToken)      => 401,
+                (OpenIddictServerEndpointType.UserInfo, Errors.InvalidDPoPProof   or Errors.UseDPoPNonce)      => 401,
                 (OpenIddictServerEndpointType.UserInfo, Errors.InsufficientAccess or Errors.InsufficientScope) => 403,
 
                 // When client authentication is made using basic authentication, the authorization server
@@ -1046,6 +1120,12 @@ public static partial class OpenIddictServerAspNetCoreHandlers
                 // logic as errors returned by API endpoints implementing bearer token authentication and
                 // MUST be returned as part of the standard WWW-Authenticate header. For more information,
                 // see https://openid.net/specs/openid-connect-core-1_0.html#UserInfoError.
+                //
+                // Note: when DPoP is used, the "DPoP" scheme is returned instead of the "Bearer" scheme.
+                // See https://datatracker.ietf.org/doc/html/rfc9449#section-7.1 for more information.
+                (OpenIddictServerEndpointType.UserInfo, Errors.InvalidDPoPProof or Errors.UseDPoPNonce) => Schemes.DPoP,
+                (OpenIddictServerEndpointType.UserInfo, _) when string.Equals(
+                    context.Transaction.AccessTokenScheme, Schemes.DPoP, StringComparison.OrdinalIgnoreCase) => Schemes.DPoP,
                 (OpenIddictServerEndpointType.UserInfo, _) => Schemes.Bearer,
 
                 // When client authentication is made using basic authentication, the authorization server
@@ -1095,6 +1175,12 @@ public static partial class OpenIddictServerAspNetCoreHandlers
                 parameters[parameter.Key] = value;
             }
 
+            // When using the DPoP scheme, return the list of supported algorithms.
+            if (scheme is Schemes.DPoP && context.Options.DPoPSigningAlgorithms.Count is > 0)
+            {
+                parameters[Parameters.Algs] = string.Join(' ', context.Options.DPoPSigningAlgorithms);
+            }
+
             var builder = new StringBuilder(scheme);
 
             foreach (var parameter in parameters)
@@ -1115,6 +1201,43 @@ public static partial class OpenIddictServerAspNetCoreHandlers
             }
 
             response.Headers.Append(HeaderNames.WWWAuthenticate, builder.ToString());
+
+            return ValueTask.CompletedTask;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for attaching the DPoP nonce to the "DPoP-Nonce" response header, if applicable.
+    /// Note: this handler is not used when the OpenID Connect request is not initially handled by ASP.NET Core.
+    /// </summary>
+    public sealed class AttachDPoPNonceHeader<TContext> : IOpenIddictServerHandler<TContext> where TContext : BaseRequestContext
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+            = OpenIddictServerHandlerDescriptor.CreateBuilder<TContext>()
+                .AddFilter<RequireHttpRequest>()
+                .AddFilter<RequireDPoPSupportEnabled>()
+                .UseSingletonHandler<AttachDPoPNonceHeader<TContext>>()
+                .SetOrder(AttachWwwAuthenticateHeader<TContext>.Descriptor.Order + 500)
+                .SetType(OpenIddictServerHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(TContext context)
+        {
+            ArgumentNullException.ThrowIfNull(context);
+
+            // This handler only applies to ASP.NET Core requests. If the HTTP context cannot be resolved,
+            // this may indicate that the request was incorrectly processed by another server stack.
+            var response = context.Transaction.GetHttpRequest()?.HttpContext.Response
+                ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0114));
+
+            if (!string.IsNullOrEmpty(context.Transaction.DPoPNonce))
+            {
+                response.Headers[OpenIddictServerAspNetCoreConstants.Headers.DPoPNonce] = context.Transaction.DPoPNonce;
+            }
 
             return ValueTask.CompletedTask;
         }

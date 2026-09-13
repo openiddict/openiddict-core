@@ -16,6 +16,8 @@ public static class OpenIddictServerOwinConstants
         public const string Authorization = "Authorization";
         public const string CacheControl = "Cache-Control";
         public const string ContentType = "Content-Type";
+        public const string DPoP = "DPoP";
+        public const string DPoPNonce = "DPoP-Nonce";
         public const string Expires = "Expires";
         public const string Host = "Host";
         public const string Pragma = "Pragma";

@@ -1858,6 +1858,30 @@ To use ASP.NET Core Data Protection, reference the 'OpenIddict.Server.DataProtec
   <data name="ID0543" xml:space="preserve">
     <value>The key rotation interval, propagation time, retention time and key ring cache lifetime must be positive, and the propagation time must be shorter than the rotation interval.</value>
   </data>
+  <data name="ID0544" xml:space="preserve">
+    <value>DPoP proofs cannot be required when DPoP support is not enabled.
+To enable DPoP support, call 'services.AddOpenIddict().AddServer().EnableDPoPSupport()'.</value>
+  </data>
+  <data name="ID0545" xml:space="preserve">
+    <value>DPoP nonces cannot be required when DPoP support is not enabled.
+To enable DPoP support, call 'services.AddOpenIddict().AddServer().EnableDPoPSupport()'.</value>
+  </data>
+  <data name="ID0546" xml:space="preserve">
+    <value>At least one asymmetric signing algorithm (e.g ES256 or PS256) must be allowed for DPoP proofs and only asymmetric algorithms can be used.</value>
+  </data>
+  <data name="ID0547" xml:space="preserve">
+    <value>The DPoP proof and nonce lifetimes must be positive.</value>
+  </data>
+  <data name="ID0548" xml:space="preserve">
+    <value>The DPoP signing key must be an elliptic curve (P-256, P-384 or P-521) or RSA key whose public parameters can be exported.</value>
+  </data>
+  <data name="ID0549" xml:space="preserve">
+    <value>The HTTP method of the current request couldn't be resolved, which is required to validate DPoP proofs.</value>
+  </data>
+  <data name="ID0550" xml:space="preserve">
+    <value>No DPoP signing credentials were attached to the client registration.
+To enable DPoP, call 'services.AddOpenIddict().AddClient().EnableDPoPTokenBinding()'.</value>
+  </data>
   <data name="ID0532" xml:space="preserve">
     <value>The backchannel authentication request was not correctly extracted.
 To extract backchannel authentication requests, create a class implementing 'IOpenIddictServerHandler&lt;ExtractBackchannelAuthenticationRequestContext&gt;' and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.</value>
@@ -2539,6 +2563,36 @@ To apply backchannel authentication responses, create a class implementing 'IOpe
   </data>
   <data name="ID2224" xml:space="preserve">
     <value>The key activation, expiration and retirement dates must be specified and ordered chronologically.</value>
+  </data>
+  <data name="ID2225" xml:space="preserve">
+    <value>The specified DPoP proof is malformed or invalid.</value>
+  </data>
+  <data name="ID2226" xml:space="preserve">
+    <value>The '{0}' claim of the DPoP proof is missing or invalid.</value>
+  </data>
+  <data name="ID2227" xml:space="preserve">
+    <value>The specified DPoP proof has already been used.</value>
+  </data>
+  <data name="ID2228" xml:space="preserve">
+    <value>A valid DPoP proof is required to use this endpoint.</value>
+  </data>
+  <data name="ID2229" xml:space="preserve">
+    <value>A server-provided nonce must be included in the DPoP proof.</value>
+  </data>
+  <data name="ID2230" xml:space="preserve">
+    <value>A DPoP-based proof-of-possession is required to use this token.</value>
+  </data>
+  <data name="ID2231" xml:space="preserve">
+    <value>The specified DPoP-based proof-of-possession is not valid.</value>
+  </data>
+  <data name="ID2232" xml:space="preserve">
+    <value>The specified token is not bound to the key used to sign the DPoP proof.</value>
+  </data>
+  <data name="ID2233" xml:space="preserve">
+    <value>The key used to sign the DPoP proof doesn't match the '{0}' parameter.</value>
+  </data>
+  <data name="ID2234" xml:space="preserve">
+    <value>A single DPoP proof must be specified.</value>
   </data>
   <data name="ID4000" xml:space="preserve">
     <value>The '{0}' parameter shouldn't be null or empty at this point.</value>
@@ -3442,6 +3496,18 @@ This may indicate that the hashed entry is corrupted or malformed.</value>
   </data>
   <data name="ID6310" xml:space="preserve">
     <value>The automatically managed key '{KeyId}' could not be unprotected and was ignored.</value>
+  </data>
+  <data name="ID6311" xml:space="preserve">
+    <value>The DPoP proof was rejected because it was invalid ({Reason}).</value>
+  </data>
+  <data name="ID6312" xml:space="preserve">
+    <value>The DPoP proof was rejected because it was already used.</value>
+  </data>
+  <data name="ID6313" xml:space="preserve">
+    <value>The DPoP proof was rejected because it didn't contain a valid server-provided nonce.</value>
+  </data>
+  <data name="ID6314" xml:space="preserve">
+    <value>The token was rejected because the DPoP proof was missing or didn't match the confirmation claim.</value>
   </data>
   <data name="ID8000" xml:space="preserve">
     <value>https://documentation.openiddict.com/errors/{0}</value>

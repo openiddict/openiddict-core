@@ -11,6 +11,12 @@ namespace OpenIddict.Server.AspNetCore;
 /// </summary>
 public static class OpenIddictServerAspNetCoreConstants
 {
+    public static class Headers
+    {
+        public const string DPoP = "DPoP";
+        public const string DPoPNonce = "DPoP-Nonce";
+    }
+
     public static class Properties
     {
         public const string AccessTokenPrincipal = ".access_token_principal";

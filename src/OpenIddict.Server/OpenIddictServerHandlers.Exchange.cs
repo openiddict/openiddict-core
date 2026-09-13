@@ -58,9 +58,11 @@ public static partial class OpenIddictServerHandlers
             ValidateAudiencePermissions.Descriptor,
             ValidateResourcePermissions.Descriptor,
             ValidateProofKeyForCodeExchangeRequirement.Descriptor,
+            ValidateDPoPRequirement.Descriptor,
             ValidateAuthorizedParty.Descriptor,
             ValidateRedirectUri.Descriptor,
             ValidateCodeVerifier.Descriptor,
+            ValidateDPoPJwkThumbprint.Descriptor,
             ValidateGrantedScopes.Descriptor,
 
             /*
@@ -1565,6 +1567,58 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
+        /// Contains the logic responsible for rejecting token requests made by
+        /// applications for which DPoP was enforced and that don't include a DPoP proof.
+        /// Note: this handler is not used when the degraded mode is enabled.
+        /// </summary>
+        public sealed class ValidateDPoPRequirement : IOpenIddictServerHandler<ValidateTokenRequestContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateTokenRequestContext>()
+                    .AddFilter<RequireClientIdParameter>()
+                    .AddFilter<RequireDegradedModeDisabled>()
+                    .UseSingletonHandler<ValidateDPoPRequirement>()
+                    .SetOrder(ValidateProofKeyForCodeExchangeRequirement.Descriptor.Order + 500)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public async ValueTask HandleAsync(ValidateTokenRequestContext context)
+            {
+                ArgumentNullException.ThrowIfNull(context);
+
+                // If a valid DPoP proof was received, the request is always considered valid.
+                if (context.Transaction.DPoPProofPrincipal is not null)
+                {
+                    return;
+                }
+
+                Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
+
+                var manager = context.ServiceProvider.GetService<IOpenIddictApplicationManager>()
+                    ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
+
+                var application = await manager.FindByClientIdAsync(context.ClientId, context.CancellationToken)
+                    ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
+
+                if (await manager.HasRequirementAsync(application, Requirements.Features.DPoP, context.CancellationToken))
+                {
+                    context.Logger.LogInformation(6311, SR.GetResourceString(SR.ID6311), SR.GetResourceString(SR.ID2228));
+
+                    context.Reject(
+                        error: Errors.InvalidDPoPProof,
+                        description: SR.GetResourceString(SR.ID2228),
+                        uri: SR.FormatID8000(SR.ID2228));
+
+                    return;
+                }
+            }
+        }
+
+        /// <summary>
         /// Contains the logic responsible for rejecting token requests that specify a token
         /// that cannot be used by the client application sending the token request.
         /// </summary>
@@ -2010,6 +2064,60 @@ public static partial class OpenIddictServerHandlers
                         error: Errors.InvalidGrant,
                         description: SR.FormatID2052(Parameters.CodeVerifier),
                         uri: SR.FormatID8000(SR.ID2052));
+
+                    return ValueTask.CompletedTask;
+                }
+
+                return ValueTask.CompletedTask;
+            }
+        }
+
+        /// <summary>
+        /// Contains the logic responsible for rejecting authorization code token requests whose
+        /// DPoP proof key doesn't match the "dpop_jkt" value attached to the authorization code.
+        /// </summary>
+        public sealed class ValidateDPoPJwkThumbprint : IOpenIddictServerHandler<ValidateTokenRequestContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateTokenRequestContext>()
+                    .UseSingletonHandler<ValidateDPoPJwkThumbprint>()
+                    .SetOrder(ValidateCodeVerifier.Descriptor.Order + 500)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(ValidateTokenRequestContext context)
+            {
+                ArgumentNullException.ThrowIfNull(context);
+
+                if (!context.Request.IsAuthorizationCodeGrantType())
+                {
+                    return ValueTask.CompletedTask;
+                }
+
+                Debug.Assert(context.AuthorizationCodePrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
+
+                var thumbprint = context.AuthorizationCodePrincipal.GetClaim(Claims.Private.DPoPJwkThumbprint);
+                if (string.IsNullOrEmpty(thumbprint))
+                {
+                    return ValueTask.CompletedTask;
+                }
+
+                // If the authorization code was bound to a DPoP key, the token request MUST include
+                // a DPoP proof signed using the same key. For more information, see
+                // https://datatracker.ietf.org/doc/html/rfc9449#section-10.
+                if (!OpenIddictDPoPHelpers.FixedTimeEquals(thumbprint,
+                    context.Transaction.DPoPProofPrincipal?.GetClaim(Claims.Private.DPoPJwkThumbprint)))
+                {
+                    context.Logger.LogInformation(6314, SR.GetResourceString(SR.ID6314));
+
+                    context.Reject(
+                        error: Errors.InvalidDPoPProof,
+                        description: SR.FormatID2233(Parameters.DPoPJkt),
+                        uri: SR.FormatID8000(SR.ID2233));
 
                     return ValueTask.CompletedTask;
                 }

@@ -1837,6 +1837,52 @@ public sealed class OpenIddictServerBuilder
         => Configure(options => options.EnableRequestObjectSupport = true);
 
     /// <summary>
+    /// Enables OAuth 2.0 Demonstrating Proof of Possession (DPoP, RFC 9449) support, which allows client applications
+    /// to send DPoP proofs to the token, pushed authorization and userinfo endpoints. When a valid proof is received
+    /// by the token endpoint, access tokens (and refresh tokens issued to public clients) are bound to the proof key.
+    /// </summary>
+    /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
+    public OpenIddictServerBuilder EnableDPoPSupport()
+        => Configure(options => options.EnableDPoPSupport = true);
+
+    /// <summary>
+    /// Configures OpenIddict to require a valid DPoP proof for all token requests.
+    /// </summary>
+    /// <remarks>
+    /// Note: DPoP support must be enabled using <see cref="EnableDPoPSupport"/>.
+    /// </remarks>
+    /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
+    public OpenIddictServerBuilder RequireDPoP()
+        => Configure(options => options.RequireDPoP = true);
+
+    /// <summary>
+    /// Configures OpenIddict to require a server-provided nonce in DPoP proofs. When a proof doesn't
+    /// contain a valid nonce, a "use_dpop_nonce" error is returned with a new "DPoP-Nonce" header.
+    /// </summary>
+    /// <remarks>
+    /// Note: DPoP support must be enabled using <see cref="EnableDPoPSupport"/>.
+    /// </remarks>
+    /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
+    public OpenIddictServerBuilder RequireDPoPNonces()
+        => Configure(options => options.RequireDPoPNonces = true);
+
+    /// <summary>
+    /// Sets the maximum difference allowed between the issuance date of a DPoP proof and the current date.
+    /// </summary>
+    /// <param name="lifetime">The DPoP proof lifetime.</param>
+    /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
+    public OpenIddictServerBuilder SetDPoPProofLifetime(TimeSpan lifetime)
+        => Configure(options => options.DPoPProofLifetime = lifetime);
+
+    /// <summary>
+    /// Sets the lifetime of the DPoP nonces issued by the server.
+    /// </summary>
+    /// <param name="lifetime">The DPoP nonce lifetime.</param>
+    /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
+    public OpenIddictServerBuilder SetDPoPNonceLifetime(TimeSpan lifetime)
+        => Configure(options => options.DPoPNonceLifetime = lifetime);
+
+    /// <summary>
     /// Sets the access token lifetime, after which client applications must retrieve
     /// a new access token by making a grant_type=refresh_token token request
     /// or a prompt=none authorization request, depending on the selected flow.

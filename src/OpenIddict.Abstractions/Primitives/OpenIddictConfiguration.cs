@@ -58,6 +58,11 @@ public sealed class OpenIddictConfiguration
     public HashSet<string> DeviceAuthorizationEndpointAuthMethodsSupported { get; } = new(StringComparer.Ordinal);
 
     /// <summary>
+    /// Gets the signing algorithms supported by the server for DPoP proofs.
+    /// </summary>
+    public HashSet<string> DPoPSigningAlgValuesSupported { get; } = new(StringComparer.Ordinal);
+
+    /// <summary>
     /// Gets or sets the URI of the end session endpoint.
     /// </summary>
     public Uri? EndSessionEndpoint { get; set; }

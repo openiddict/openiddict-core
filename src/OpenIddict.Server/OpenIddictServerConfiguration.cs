@@ -335,6 +335,28 @@ public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenId
             builder.AddError(SR.GetResourceString(SR.ID0524));
         }
 
+        // Ensure the DPoP configuration is consistent.
+        if (options.RequireDPoP && !options.EnableDPoPSupport)
+        {
+            builder.AddError(SR.GetResourceString(SR.ID0544));
+        }
+
+        if (options.RequireDPoPNonces && !options.EnableDPoPSupport)
+        {
+            builder.AddError(SR.GetResourceString(SR.ID0545));
+        }
+
+        if (options.EnableDPoPSupport && (options.DPoPSigningAlgorithms.Count is 0 || options.DPoPSigningAlgorithms.Any(
+            static algorithm => !OpenIddictDPoPHelpers.SupportedAlgorithms.Contains(algorithm, StringComparer.Ordinal))))
+        {
+            builder.AddError(SR.GetResourceString(SR.ID0546));
+        }
+
+        if (options.DPoPProofLifetime <= TimeSpan.Zero || options.DPoPNonceLifetime <= TimeSpan.Zero)
+        {
+            builder.AddError(SR.GetResourceString(SR.ID0547));
+        }
+
         // Ensure the client authentication methods/client assertion types configuration is consistent.
         if (options.ClientAuthenticationMethods.Contains(ClientAuthenticationMethods.PrivateKeyJwt) &&
            !options.ClientAssertionTypes.Contains(ClientAssertionTypes.JwtBearer))

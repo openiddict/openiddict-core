@@ -319,6 +319,15 @@ public class OpenIddictRequest : OpenIddictMessage
     }
 
     /// <summary>
+    /// Gets or sets the "dpop_jkt" parameter.
+    /// </summary>
+    public string? DPoPJkt
+    {
+        get => (string?) GetParameter(OpenIddictConstants.Parameters.DPoPJkt);
+        set => SetParameter(OpenIddictConstants.Parameters.DPoPJkt, value);
+    }
+
+    /// <summary>
     /// Gets or sets the "grant_type" parameter.
     /// </summary>
     public string? GrantType
