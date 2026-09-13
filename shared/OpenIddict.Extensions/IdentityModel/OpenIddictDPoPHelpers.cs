@@ -271,13 +271,42 @@ internal static class OpenIddictDPoPHelpers
                 }
             }
 
-            key = new JsonWebKey(node.ToJsonString());
+            // Note: only elliptic curve and RSA keys are supported. To ensure the signature is always validated
+            // using the key members the thumbprint is computed from, a minimal JSON Web Key containing only the
+            // required members is created (e.g "x5c" or "x5u" must never be used to resolve the verification key).
+            var minimal = (string?) node[JsonWebKeyParameterNames.Kty] switch
+            {
+                JsonWebAlgorithmsKeyTypes.EllipticCurve => new JsonObject
+                {
+                    [JsonWebKeyParameterNames.Crv] = (string?) node[JsonWebKeyParameterNames.Crv],
+                    [JsonWebKeyParameterNames.Kty] = JsonWebAlgorithmsKeyTypes.EllipticCurve,
+                    [JsonWebKeyParameterNames.X] = (string?) node[JsonWebKeyParameterNames.X],
+                    [JsonWebKeyParameterNames.Y] = (string?) node[JsonWebKeyParameterNames.Y]
+                },
 
-            // Note: only elliptic curve and RSA keys are supported.
-            if (key.Kty is not (JsonWebAlgorithmsKeyTypes.EllipticCurve or JsonWebAlgorithmsKeyTypes.RSA))
+                JsonWebAlgorithmsKeyTypes.RSA => new JsonObject
+                {
+                    [JsonWebKeyParameterNames.E] = (string?) node[JsonWebKeyParameterNames.E],
+                    [JsonWebKeyParameterNames.Kty] = JsonWebAlgorithmsKeyTypes.RSA,
+                    [JsonWebKeyParameterNames.N] = (string?) node[JsonWebKeyParameterNames.N]
+                },
+
+                _ => null
+            };
+
+            if (minimal is null || minimal.Any(static member => string.IsNullOrEmpty((string?) member.Value)))
             {
                 return new(ProofError.InvalidKey, null, null, null);
             }
+
+            // Ensure the algorithm is compatible with the key type (and with the curve, for elliptic curve keys).
+            if (!IsCompatibleAlgorithm(jwt.Alg, (string) minimal[JsonWebKeyParameterNames.Kty]!,
+                (string?) minimal[JsonWebKeyParameterNames.Crv]))
+            {
+                return new(ProofError.InvalidKey, null, null, null);
+            }
+
+            key = new JsonWebKey(minimal.ToJsonString());
 
             thumbprint = Base64UrlEncoder.Encode(key.ComputeJwkThumbprint());
         }
@@ -346,6 +375,19 @@ internal static class OpenIddictDPoPHelpers
         }
 
         return new(ProofError.None, null, jwt, thumbprint);
+
+        static bool IsCompatibleAlgorithm(string algorithm, string type, string? curve) => (algorithm, type, curve) switch
+        {
+            (SecurityAlgorithms.EcdsaSha256, JsonWebAlgorithmsKeyTypes.EllipticCurve, JsonWebKeyECTypes.P256) => true,
+            (SecurityAlgorithms.EcdsaSha384, JsonWebAlgorithmsKeyTypes.EllipticCurve, JsonWebKeyECTypes.P384) => true,
+            (SecurityAlgorithms.EcdsaSha512, JsonWebAlgorithmsKeyTypes.EllipticCurve, JsonWebKeyECTypes.P521) => true,
+
+            (SecurityAlgorithms.RsaSha256 or SecurityAlgorithms.RsaSha384 or SecurityAlgorithms.RsaSha512 or
+             SecurityAlgorithms.RsaSsaPssSha256 or SecurityAlgorithms.RsaSsaPssSha384 or SecurityAlgorithms.RsaSsaPssSha512,
+             JsonWebAlgorithmsKeyTypes.RSA, _) => true,
+
+            _ => false
+        };
     }
 
     /// <summary>
