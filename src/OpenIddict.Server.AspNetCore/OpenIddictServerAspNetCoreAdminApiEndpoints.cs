@@ -6,7 +6,6 @@
 
 using System.Buffers;
 using System.Globalization;
-using System.Runtime.CompilerServices;
 using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
@@ -23,13 +22,6 @@ internal static class OpenIddictServerAspNetCoreAdminApiEndpoints
     private const int DefaultCount = 100;
     private const int MaximumCount = 1000;
 
-    // Private (RSA, EC, OKP, AKP) and symmetric (oct) key parameters.
-    // See https://datatracker.ietf.org/doc/html/rfc7518#section-6 for more information.
-    private static readonly HashSet<string> PrivateJsonWebKeyParameters = new(StringComparer.Ordinal)
-    {
-        "d", "dp", "dq", "k", "oth", "p", "priv", "q", "qi"
-    };
-
     public static Task ListApplicationsAsync(HttpContext context) => ExecuteAsync(context, static async context =>
     {
         var manager = GetManager<IOpenIddictApplicationManager>(context);
@@ -39,7 +31,7 @@ internal static class OpenIddictServerAspNetCoreAdminApiEndpoints
 
         await foreach (var application in manager.ListAsync(count, offset, context.RequestAborted))
         {
-            entries.Add(await DescribeApplicationAsync(manager, application, context.RequestAborted));
+            entries.Add(await OpenIddictServerAspNetCoreAdminOperations.DescribeApplicationAsync(manager, application, context.RequestAborted));
         }
 
         await WriteAsync(context, StatusCodes.Status200OK, writer =>
@@ -65,7 +57,7 @@ internal static class OpenIddictServerAspNetCoreAdminApiEndpoints
             return;
         }
 
-        var (identifier, descriptor) = await DescribeApplicationAsync(manager, application, context.RequestAborted);
+        var (identifier, descriptor) = await OpenIddictServerAspNetCoreAdminOperations.DescribeApplicationAsync(manager, application, context.RequestAborted);
         await WriteAsync(context, StatusCodes.Status200OK, writer => WriteApplication(writer, identifier, descriptor));
     });
 
@@ -80,7 +72,7 @@ internal static class OpenIddictServerAspNetCoreAdminApiEndpoints
 
         var application = await manager.CreateAsync(descriptor, context.RequestAborted);
 
-        var (identifier, result) = await DescribeApplicationAsync(manager, application, context.RequestAborted);
+        var (identifier, result) = await OpenIddictServerAspNetCoreAdminOperations.DescribeApplicationAsync(manager, application, context.RequestAborted);
         SetLocation(context, identifier);
         await WriteAsync(context, StatusCodes.Status201Created, writer => WriteApplication(writer, identifier, result));
     });
@@ -104,7 +96,7 @@ internal static class OpenIddictServerAspNetCoreAdminApiEndpoints
 
         await manager.UpdateAsync(application, descriptor, context.RequestAborted);
 
-        var (identifier, result) = await DescribeApplicationAsync(manager, application, context.RequestAborted);
+        var (identifier, result) = await OpenIddictServerAspNetCoreAdminOperations.DescribeApplicationAsync(manager, application, context.RequestAborted);
         await WriteAsync(context, StatusCodes.Status200OK, writer => WriteApplication(writer, identifier, result));
     });
 
@@ -131,7 +123,7 @@ internal static class OpenIddictServerAspNetCoreAdminApiEndpoints
 
         await foreach (var scope in manager.ListAsync(count, offset, context.RequestAborted))
         {
-            entries.Add(await DescribeScopeAsync(manager, scope, context.RequestAborted));
+            entries.Add(await OpenIddictServerAspNetCoreAdminOperations.DescribeScopeAsync(manager, scope, context.RequestAborted));
         }
 
         await WriteAsync(context, StatusCodes.Status200OK, writer =>
@@ -157,7 +149,7 @@ internal static class OpenIddictServerAspNetCoreAdminApiEndpoints
             return;
         }
 
-        var (identifier, descriptor) = await DescribeScopeAsync(manager, scope, context.RequestAborted);
+        var (identifier, descriptor) = await OpenIddictServerAspNetCoreAdminOperations.DescribeScopeAsync(manager, scope, context.RequestAborted);
         await WriteAsync(context, StatusCodes.Status200OK, writer => WriteScope(writer, identifier, descriptor));
     });
 
@@ -172,7 +164,7 @@ internal static class OpenIddictServerAspNetCoreAdminApiEndpoints
 
         var scope = await manager.CreateAsync(descriptor, context.RequestAborted);
 
-        var (identifier, result) = await DescribeScopeAsync(manager, scope, context.RequestAborted);
+        var (identifier, result) = await OpenIddictServerAspNetCoreAdminOperations.DescribeScopeAsync(manager, scope, context.RequestAborted);
         SetLocation(context, identifier);
         await WriteAsync(context, StatusCodes.Status201Created, writer => WriteScope(writer, identifier, result));
     });
@@ -196,7 +188,7 @@ internal static class OpenIddictServerAspNetCoreAdminApiEndpoints
 
         await manager.UpdateAsync(scope, descriptor, context.RequestAborted);
 
-        var (identifier, result) = await DescribeScopeAsync(manager, scope, context.RequestAborted);
+        var (identifier, result) = await OpenIddictServerAspNetCoreAdminOperations.DescribeScopeAsync(manager, scope, context.RequestAborted);
         await WriteAsync(context, StatusCodes.Status200OK, writer => WriteScope(writer, identifier, result));
     });
 
@@ -220,16 +212,14 @@ internal static class OpenIddictServerAspNetCoreAdminApiEndpoints
         var (count, offset) = GetPagination(context);
         var (subject, application, status, type) = GetFilters(context);
 
-        var authorizations = subject is null && application is null && status is null && type is null ?
-            manager.ListAsync(count, offset, context.RequestAborted) :
-            PaginateAsync(manager.FindAsync((subject, application, status, type, null), context.RequestAborted),
-                count, offset, context.RequestAborted);
+        var authorizations = OpenIddictServerAspNetCoreAdminOperations.ListAuthorizationsAsync(
+            manager, subject, application, status, type, count, offset, context.RequestAborted);
 
         List<(string? Identifier, OpenIddictAuthorizationDescriptor Descriptor)> entries = [];
 
         await foreach (var authorization in authorizations.WithCancellation(context.RequestAborted))
         {
-            entries.Add(await DescribeAuthorizationAsync(manager, authorization, context.RequestAborted));
+            entries.Add(await OpenIddictServerAspNetCoreAdminOperations.DescribeAuthorizationAsync(manager, authorization, context.RequestAborted));
         }
 
         await WriteAsync(context, StatusCodes.Status200OK, writer =>
@@ -255,7 +245,7 @@ internal static class OpenIddictServerAspNetCoreAdminApiEndpoints
             return;
         }
 
-        var (identifier, descriptor) = await DescribeAuthorizationAsync(manager, authorization, context.RequestAborted);
+        var (identifier, descriptor) = await OpenIddictServerAspNetCoreAdminOperations.DescribeAuthorizationAsync(manager, authorization, context.RequestAborted);
         await WriteAsync(context, StatusCodes.Status200OK, writer => WriteAuthorization(writer, identifier, descriptor));
     });
 
@@ -270,7 +260,7 @@ internal static class OpenIddictServerAspNetCoreAdminApiEndpoints
 
         var authorization = await manager.CreateAsync(descriptor, context.RequestAborted);
 
-        var (identifier, result) = await DescribeAuthorizationAsync(manager, authorization, context.RequestAborted);
+        var (identifier, result) = await OpenIddictServerAspNetCoreAdminOperations.DescribeAuthorizationAsync(manager, authorization, context.RequestAborted);
         SetLocation(context, identifier);
         await WriteAsync(context, StatusCodes.Status201Created, writer => WriteAuthorization(writer, identifier, result));
     });
@@ -301,17 +291,11 @@ internal static class OpenIddictServerAspNetCoreAdminApiEndpoints
             return;
         }
 
-        if (!await manager.TryRevokeAsync(authorization, context.RequestAborted))
+        // Note: the tokens attached to the authorization are also revoked.
+        if (!await OpenIddictServerAspNetCoreAdminOperations.TryRevokeAuthorizationAsync(manager,
+            context.RequestServices.GetService<IOpenIddictTokenManager>(), authorization, context.RequestAborted))
         {
             throw new AdminApiException(StatusCodes.Status409Conflict, SR.GetResourceString(SR.ID2244));
-        }
-
-        // Revoke the tokens attached to the authorization so that they are no longer considered valid
-        // (independently of whether token validation checks the status of the authorization entry).
-        if (context.RequestServices.GetService<IOpenIddictTokenManager>() is IOpenIddictTokenManager tokens &&
-            await manager.GetIdAsync(authorization, context.RequestAborted) is { Length: > 0 } identifier)
-        {
-            await tokens.RevokeByAuthorizationIdAsync(identifier, context.RequestAborted);
         }
 
         context.Response.StatusCode = StatusCodes.Status204NoContent;
@@ -323,16 +307,14 @@ internal static class OpenIddictServerAspNetCoreAdminApiEndpoints
         var (count, offset) = GetPagination(context);
         var (subject, application, status, type) = GetFilters(context);
 
-        var tokens = subject is null && application is null && status is null && type is null ?
-            manager.ListAsync(count, offset, context.RequestAborted) :
-            PaginateAsync(manager.FindAsync((subject, application, status, type), context.RequestAborted),
-                count, offset, context.RequestAborted);
+        var tokens = OpenIddictServerAspNetCoreAdminOperations.ListTokensAsync(
+            manager, subject, application, status, type, count, offset, context.RequestAborted);
 
         List<(string? Identifier, OpenIddictTokenDescriptor Descriptor)> entries = [];
 
         await foreach (var token in tokens.WithCancellation(context.RequestAborted))
         {
-            entries.Add(await DescribeTokenAsync(manager, token, context.RequestAborted));
+            entries.Add(await OpenIddictServerAspNetCoreAdminOperations.DescribeTokenAsync(manager, token, context.RequestAborted));
         }
 
         await WriteAsync(context, StatusCodes.Status200OK, writer =>
@@ -358,7 +340,7 @@ internal static class OpenIddictServerAspNetCoreAdminApiEndpoints
             return;
         }
 
-        var (identifier, descriptor) = await DescribeTokenAsync(manager, token, context.RequestAborted);
+        var (identifier, descriptor) = await OpenIddictServerAspNetCoreAdminOperations.DescribeTokenAsync(manager, token, context.RequestAborted);
         await WriteAsync(context, StatusCodes.Status200OK, writer => WriteToken(writer, identifier, descriptor));
     });
 
@@ -405,7 +387,7 @@ internal static class OpenIddictServerAspNetCoreAdminApiEndpoints
 
         await foreach (var key in manager.ListAsync(count, offset, context.RequestAborted))
         {
-            entries.Add(await DescribeKeyAsync(manager, key, context.RequestAborted));
+            entries.Add(await OpenIddictServerAspNetCoreAdminOperations.DescribeKeyAsync(manager, key, context.RequestAborted));
         }
 
         await WriteAsync(context, StatusCodes.Status200OK, writer =>
@@ -431,7 +413,7 @@ internal static class OpenIddictServerAspNetCoreAdminApiEndpoints
             return;
         }
 
-        var (identifier, descriptor) = await DescribeKeyAsync(manager, key, context.RequestAborted);
+        var (identifier, descriptor) = await OpenIddictServerAspNetCoreAdminOperations.DescribeKeyAsync(manager, key, context.RequestAborted);
         await WriteAsync(context, StatusCodes.Status200OK, writer => WriteKey(writer, identifier, descriptor));
     });
 
@@ -447,13 +429,12 @@ internal static class OpenIddictServerAspNetCoreAdminApiEndpoints
             return;
         }
 
-        if (!await manager.TryRevokeAsync(key, context.RequestAborted))
+        // Note: the credentials cached by the key ring are discarded so that the revoked key is no longer used.
+        if (!await OpenIddictServerAspNetCoreAdminOperations.TryRevokeKeyAsync(manager,
+            context.RequestServices.GetService<OpenIddictServerKeyRing>(), key, context.RequestAborted))
         {
             throw new AdminApiException(StatusCodes.Status409Conflict, SR.GetResourceString(SR.ID2244));
         }
-
-        // Discard the credentials cached by the key ring so that the revoked key is no longer used.
-        context.RequestServices.GetService<OpenIddictServerKeyRing>()?.Invalidate();
 
         context.Response.StatusCode = StatusCodes.Status204NoContent;
     });
@@ -609,27 +590,6 @@ internal static class OpenIddictServerAspNetCoreAdminApiEndpoints
         string? Get(string name) => (string?) context.Request.Query[name] is { Length: > 0 } value ? value : null;
     }
 
-    private static async IAsyncEnumerable<object> PaginateAsync(IAsyncEnumerable<object> source,
-        int count, int offset, [EnumeratorCancellation] CancellationToken cancellationToken)
-    {
-        var index = 0;
-
-        await foreach (var item in source.WithCancellation(cancellationToken))
-        {
-            if (index++ < offset)
-            {
-                continue;
-            }
-
-            yield return item;
-
-            if (index - offset >= count)
-            {
-                yield break;
-            }
-        }
-    }
-
     private static void SetLocation(HttpContext context, string? identifier)
     {
         if (!string.IsNullOrEmpty(identifier))
@@ -719,51 +679,6 @@ internal static class OpenIddictServerAspNetCoreAdminApiEndpoints
             writer.WriteEndObject();
         });
 
-    private static async ValueTask<(string?, OpenIddictApplicationDescriptor)> DescribeApplicationAsync(
-        IOpenIddictApplicationManager manager, object application, CancellationToken cancellationToken)
-    {
-        var descriptor = new OpenIddictApplicationDescriptor();
-        await manager.PopulateAsync(descriptor, application, cancellationToken);
-
-        return (await manager.GetIdAsync(application, cancellationToken), descriptor);
-    }
-
-    private static async ValueTask<(string?, OpenIddictScopeDescriptor)> DescribeScopeAsync(
-        IOpenIddictScopeManager manager, object scope, CancellationToken cancellationToken)
-    {
-        var descriptor = new OpenIddictScopeDescriptor();
-        await manager.PopulateAsync(descriptor, scope, cancellationToken);
-
-        return (await manager.GetIdAsync(scope, cancellationToken), descriptor);
-    }
-
-    private static async ValueTask<(string?, OpenIddictAuthorizationDescriptor)> DescribeAuthorizationAsync(
-        IOpenIddictAuthorizationManager manager, object authorization, CancellationToken cancellationToken)
-    {
-        var descriptor = new OpenIddictAuthorizationDescriptor();
-        await manager.PopulateAsync(descriptor, authorization, cancellationToken);
-
-        return (await manager.GetIdAsync(authorization, cancellationToken), descriptor);
-    }
-
-    private static async ValueTask<(string?, OpenIddictTokenDescriptor)> DescribeTokenAsync(
-        IOpenIddictTokenManager manager, object token, CancellationToken cancellationToken)
-    {
-        var descriptor = new OpenIddictTokenDescriptor();
-        await manager.PopulateAsync(descriptor, token, cancellationToken);
-
-        return (await manager.GetIdAsync(token, cancellationToken), descriptor);
-    }
-
-    private static async ValueTask<(string?, OpenIddictKeyDescriptor)> DescribeKeyAsync(
-        IOpenIddictKeyManager manager, object key, CancellationToken cancellationToken)
-    {
-        var descriptor = new OpenIddictKeyDescriptor();
-        await manager.PopulateAsync(descriptor, key, cancellationToken);
-
-        return (await manager.GetIdAsync(key, cancellationToken), descriptor);
-    }
-
     private static void WriteApplication(Utf8JsonWriter writer, string? identifier, OpenIddictApplicationDescriptor descriptor)
     {
         // Note: the client secret is deliberately never returned.
@@ -780,10 +695,7 @@ internal static class OpenIddictServerAspNetCoreAdminApiEndpoints
 
         if (descriptor.JsonWebKeySet is not null)
         {
-            using var set = JsonDocument.Parse(JsonSerializer.SerializeToUtf8Bytes(
-                descriptor.JsonWebKeySet, OpenIddictSerializer.Default.JsonWebKeySet));
-
-            WritePublicJsonWebKeySet(writer, set.RootElement);
+            OpenIddictServerAspNetCoreAdminOperations.WritePublicJsonWebKeySet(writer, descriptor.JsonWebKeySet);
         }
 
         else
@@ -806,48 +718,6 @@ internal static class OpenIddictServerAspNetCoreAdminApiEndpoints
         writer.WriteEndObject();
 
         WriteProperties(writer, descriptor.Properties);
-        writer.WriteEndObject();
-    }
-
-    private static void WritePublicJsonWebKeySet(Utf8JsonWriter writer, JsonElement set)
-    {
-        // Note: the private and symmetric key parameters (that may have been attached to the client
-        // JSON Web Key Set, even if only public keys are expected) are deliberately never returned.
-        writer.WriteStartObject();
-
-        foreach (var property in set.EnumerateObject())
-        {
-            if (!property.NameEquals(JsonWebKeySetParameterNames.Keys) || property.Value.ValueKind is not JsonValueKind.Array)
-            {
-                property.WriteTo(writer);
-                continue;
-            }
-
-            writer.WriteStartArray(property.Name);
-
-            foreach (var key in property.Value.EnumerateArray())
-            {
-                if (key.ValueKind is not JsonValueKind.Object)
-                {
-                    continue;
-                }
-
-                writer.WriteStartObject();
-
-                foreach (var parameter in key.EnumerateObject())
-                {
-                    if (!PrivateJsonWebKeyParameters.Contains(parameter.Name))
-                    {
-                        parameter.WriteTo(writer);
-                    }
-                }
-
-                writer.WriteEndObject();
-            }
-
-            writer.WriteEndArray();
-        }
-
         writer.WriteEndObject();
     }
 
