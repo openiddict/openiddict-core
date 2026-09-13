@@ -1070,6 +1070,22 @@ public class OpenIddictValidationBuilderTests
         Assert.Equal(OpenIddictValidationType.Introspection, options.ValidationType);
     }
 
+    [Fact]
+    public void RequireJsonWebTokenIntrospectionResponses_OptionIsSet()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act
+        builder.RequireJsonWebTokenIntrospectionResponses();
+
+        var options = GetOptions(services);
+
+        // Assert
+        Assert.True(options.RequireJsonWebTokenIntrospectionResponses);
+    }
+
     private static X509Certificate2 CreateCertificate(X509KeyUsageFlags usages, bool includePrivateKey)
     {
         using var algorithm = RSA.Create(keySizeInBits: 2048);

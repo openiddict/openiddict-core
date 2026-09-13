@@ -107,6 +107,11 @@ public static partial class OpenIddictValidationEvents
             get => Transaction.Response;
             set => Transaction.Response = value;
         }
+
+        /// <summary>
+        /// Gets or sets the JSON Web Token introspection response, if available.
+        /// </summary>
+        public string? IntrospectionResponseToken { get; set; }
     }
 
     /// <summary>
@@ -144,6 +149,11 @@ public static partial class OpenIddictValidationEvents
         /// Gets or sets the token sent to the introspection endpoint.
         /// </summary>
         public string? Token { get; set; }
+
+        /// <summary>
+        /// Gets or sets the JSON Web Token introspection response, if available.
+        /// </summary>
+        public string? IntrospectionResponseToken { get; set; }
 
         /// <summary>
         /// Gets or sets the principal containing the claims resolved from the introspection response.

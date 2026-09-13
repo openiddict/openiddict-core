@@ -130,6 +130,14 @@ public static partial class OpenIddictValidationHandlers
                             JsonWebTokenTypes.Prefixes.Application + JsonWebTokenTypes.AccessToken
                         ],
 
+                        // For introspection responses, both "token-introspection+jwt"
+                        // and "application/token-introspection+jwt" are valid.
+                        TokenTypeIdentifiers.Private.IntrospectionResponse =>
+                        [
+                            JsonWebTokenTypes.IntrospectionResponse,
+                            JsonWebTokenTypes.Prefixes.Application + JsonWebTokenTypes.IntrospectionResponse
+                        ],
+
                         string value => [value]
                     })
                 };
@@ -361,6 +369,10 @@ public static partial class OpenIddictValidationHandlers
                     // Both at+jwt and application/at+jwt are supported for access tokens.
                     JsonWebTokenTypes.AccessToken or JsonWebTokenTypes.Prefixes.Application + JsonWebTokenTypes.AccessToken
                         => TokenTypeIdentifiers.AccessToken,
+
+                    // Both token-introspection+jwt and application/token-introspection+jwt are supported for introspection responses.
+                    JsonWebTokenTypes.IntrospectionResponse or JsonWebTokenTypes.Prefixes.Application + JsonWebTokenTypes.IntrospectionResponse
+                        => TokenTypeIdentifiers.Private.IntrospectionResponse,
 
                     string value => value
                 });

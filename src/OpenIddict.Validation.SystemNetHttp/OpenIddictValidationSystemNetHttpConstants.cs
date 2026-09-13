@@ -26,6 +26,7 @@ public static class OpenIddictValidationSystemNetHttpConstants
 
     public static class MediaTypes
     {
+        public const string IntrospectionResponseJsonWebToken = "application/token-introspection+jwt";
         public const string Json = "application/json";
     }
 }

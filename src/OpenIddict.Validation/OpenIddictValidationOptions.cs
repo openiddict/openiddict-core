@@ -94,6 +94,16 @@ public sealed class OpenIddictValidationOptions
     public string? ClientSecret { get; set; }
 
     /// <summary>
+    /// Gets or sets a boolean indicating whether introspection responses must be returned as JSON Web Tokens (RFC 9701).
+    /// When enabled, introspection requests are sent with an "Accept: application/token-introspection+jwt" header
+    /// and successful responses that are not signed by the authorization server are rejected.
+    /// </summary>
+    /// <remarks>
+    /// Note: encrypted responses are decrypted using the encryption credentials registered in the validation options.
+    /// </remarks>
+    public bool RequireJsonWebTokenIntrospectionResponses { get; set; }
+
+    /// <summary>
     /// Gets or sets a boolean indicating whether a database call is made
     /// to validate the authorization entry associated with the received tokens.
     /// Note: enabling this option may have an impact on performance and

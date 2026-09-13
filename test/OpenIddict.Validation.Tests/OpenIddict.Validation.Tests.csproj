@@ -6,6 +6,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\OpenIddict.Validation\OpenIddict.Validation.csproj" />
+    <ProjectReference Include="..\..\src\OpenIddict.Validation.SystemNetHttp\OpenIddict.Validation.SystemNetHttp.csproj" />
   </ItemGroup>
 
   <ItemGroup>

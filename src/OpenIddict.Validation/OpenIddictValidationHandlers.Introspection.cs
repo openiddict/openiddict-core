@@ -6,10 +6,12 @@
 
 using System.Collections.Immutable;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Security.Claims;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.JsonWebTokens;
 
 namespace OpenIddict.Validation;
 
@@ -22,6 +24,7 @@ public static partial class OpenIddictValidationHandlers
             /*
              * Introspection response handling:
              */
+            ValidateIntrospectionResponseToken.Descriptor,
             ValidateWellKnownParameters.Descriptor,
             HandleErrorResponse.Descriptor,
             HandleInactiveResponse.Descriptor,
@@ -31,6 +34,138 @@ public static partial class OpenIddictValidationHandlers
             PopulateClaims.Descriptor,
             MapInternalClaims.Descriptor
         ];
+
+        /// <summary>
+        /// Contains the logic responsible for validating the JSON Web Token introspection response (RFC 9701)
+        /// and replacing the response by the parameters extracted from its "token_introspection" claim.
+        /// </summary>
+        public sealed class ValidateIntrospectionResponseToken : IOpenIddictValidationHandler<HandleIntrospectionResponseContext>
+        {
+            private readonly IOpenIddictValidationDispatcher _dispatcher;
+
+            public ValidateIntrospectionResponseToken(IOpenIddictValidationDispatcher dispatcher)
+                => _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
+
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
+                = OpenIddictValidationHandlerDescriptor.CreateBuilder<HandleIntrospectionResponseContext>()
+                    .UseSingletonHandler<ValidateIntrospectionResponseToken>()
+                    .SetOrder(int.MinValue + 50_000)
+                    .SetType(OpenIddictValidationHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public async ValueTask HandleAsync(HandleIntrospectionResponseContext context)
+            {
+                ArgumentNullException.ThrowIfNull(context);
+
+                if (string.IsNullOrEmpty(context.IntrospectionResponseToken))
+                {
+                    // When JSON Web Token responses are required, reject successful responses returned as plain JSON.
+                    // Note: errors (e.g invalid client authentication) are always returned as regular JSON responses.
+                    if (context.Options.RequireJsonWebTokenIntrospectionResponses && string.IsNullOrEmpty(context.Response.Error))
+                    {
+                        context.Reject(
+                            error: Errors.ServerError,
+                            description: SR.GetResourceString(SR.ID2235),
+                            uri: SR.FormatID8000(SR.ID2235));
+                    }
+
+                    return;
+                }
+
+                var notification = new ValidateTokenContext(context.Transaction)
+                {
+                    // Note: the audience is manually validated below, as it is represented by the client identifier.
+                    DisableAudienceValidation = true,
+                    DisablePresenterValidation = true,
+                    DisableProofOfPossessionValidation = true,
+                    Token = context.IntrospectionResponseToken,
+                    ValidTokenTypes = { TokenTypeIdentifiers.Private.IntrospectionResponse }
+                };
+
+                await _dispatcher.DispatchAsync(notification);
+
+                if (notification.IsRequestHandled)
+                {
+                    context.HandleRequest();
+                    return;
+                }
+
+                if (notification.IsRequestSkipped)
+                {
+                    context.SkipRequest();
+                    return;
+                }
+
+                if (notification.IsRejected || notification.Principal is not ClaimsPrincipal principal)
+                {
+                    context.Logger.LogInformation(6315, SR.GetResourceString(SR.ID6315),
+                        notification.Error, notification.ErrorDescription);
+
+                    context.Reject(
+                        error: Errors.ServerError,
+                        description: SR.GetResourceString(SR.ID2236),
+                        uri: SR.FormatID8000(SR.ID2236));
+
+                    return;
+                }
+
+                // Ensure the token was issued to this client application.
+                if (string.IsNullOrEmpty(context.Options.ClientId) ||
+                    !principal.GetClaims(Claims.Audience).Contains(context.Options.ClientId, StringComparer.Ordinal))
+                {
+                    context.Reject(
+                        error: Errors.ServerError,
+                        description: SR.GetResourceString(SR.ID2237),
+                        uri: SR.FormatID8000(SR.ID2237));
+
+                    return;
+                }
+
+                if (!TryExtractResponse(principal, out var response))
+                {
+                    context.Reject(
+                        error: Errors.ServerError,
+                        description: SR.FormatID2238(Claims.TokenIntrospection),
+                        uri: SR.FormatID8000(SR.ID2238));
+
+                    return;
+                }
+
+                context.Response = response;
+            }
+
+            private static bool TryExtractResponse(ClaimsPrincipal principal, [NotNullWhen(true)] out OpenIddictResponse? response)
+            {
+                response = null;
+
+                var claim = principal.FindFirst(Claims.TokenIntrospection);
+                if (claim is null || !string.Equals(claim.ValueType, JsonClaimValueTypes.Json, StringComparison.Ordinal))
+                {
+                    return false;
+                }
+
+                try
+                {
+                    using var document = JsonDocument.Parse(claim.Value);
+                    if (document.RootElement.ValueKind is not JsonValueKind.Object)
+                    {
+                        return false;
+                    }
+
+                    response = new OpenIddictResponse(document.RootElement.Clone());
+                    return true;
+                }
+
+                catch (JsonException)
+                {
+                    return false;
+                }
+            }
+        }
 
         /// <summary>
         /// Contains the logic responsible for validating the well-known parameters contained in the introspection response.

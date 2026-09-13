@@ -735,6 +735,17 @@ public sealed class OpenIddictValidationBuilder
     public OpenIddictValidationBuilder UseIntrospection()
         => Configure(options => options.ValidationType = OpenIddictValidationType.Introspection);
 
+    /// <summary>
+    /// Configures OpenIddict to request JSON Web Token introspection responses (RFC 9701) and to reject
+    /// successful introspection responses that are not returned as tokens signed by the authorization server.
+    /// </summary>
+    /// <remarks>
+    /// Note: this option is only used when introspection is enabled using <see cref="UseIntrospection"/>.
+    /// </remarks>
+    /// <returns>The <see cref="OpenIddictValidationBuilder"/> instance.</returns>
+    public OpenIddictValidationBuilder RequireJsonWebTokenIntrospectionResponses()
+        => Configure(options => options.RequireJsonWebTokenIntrospectionResponses = true);
+
     /// <inheritdoc/>
     [EditorBrowsable(EditorBrowsableState.Never)]
     public override bool Equals([NotNullWhen(true)] object? obj) => base.Equals(obj);
