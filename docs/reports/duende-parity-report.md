@@ -21,9 +21,9 @@ Legend: ✅ available · 🟢 implemented in this fork (not upstream) · ⚠️ 
 | Feature | Duende 8 | OpenIddict | Status / next step |
 |---|---|---|---|
 | Code+PKCE, CC, refresh, device, token exchange, PAR, mTLS | ✅ | ✅ | — |
-| JWT-secured authorization requests (RFC 9101), by value | ✅ | 🟢 | Done (`ad3476ee`) |
+| JWT-secured authorization requests (RFC 9101), by value | ✅ | 🟢 | Done (`d5c9bff7`) |
 | JAR by reference (external `request_uri`) | ✅ (opt-in) | ❌ | Not planned (SSRF risk) |
-| CIBA — poll mode | ✅ | 🟢 server + client | Done (`30193eb8`, `f3bf09ab`) |
+| CIBA — poll mode | ✅ | 🟢 server + client | Done (`bbd52cbf`, `b67cf1f3`) |
 | CIBA — signed requests, ping/push | ❌ ping/push | ❌ | Low priority |
 | Server-side sessions | ✅ (expiry, query/terminate API) | ⚠️ entity + validation only | ⏸ P1 / P11.1 after upstream |
 | Back-channel logout | ✅ | ❌ | ⏸ P2 (upstream #2175) |
@@ -57,10 +57,10 @@ Legend: ✅ available · 🟢 implemented in this fork (not upstream) · ⚠️ 
 
 | Phase | Commit | What changed | Notable behaviour |
 |---|---|---|---|
-| P6 JAR | `ad3476ee` | Server: `EnableRequestObjectSupport()`, `RequireSignedRequestObjects()`, per-client `ft:jar`, discovery metadata. Client: `UseSignedRequestObjects`. | Parameters outside the object are ignored (RFC 9101). Objects are validated with the client JWKS. |
-| P8b CIBA (client) | `f3bf09ab` | `AllowClientInitiatedBackchannelAuthenticationFlow()`, `OpenIddictClientService.ChallengeUsingBackchannelAsync` / `AuthenticateWithBackchannelAsync`, discovery extraction. | Poll mode only. PAR requirement now enforced only for interactive flows. |
-| P10 key management | `feature/key-management` | New **Key** entity (EF Core `OpenIddictKeys` table, EF6, MongoDB `openiddict.keys`), `IOpenIddictKeyManager`. Server: `EnableAutomaticKeyManagement()`, `OpenIddictServerKeyRing`, `IOpenIddictServerKeyProtector` (Data Protection default). Local validation follows rotation. Quartz: `EnableKeyPruning()`. | Schema change for every EF user. Static keys still used, after the active auto key. `UseDataProtection()` also switches token formats unless `PreferDefaultTokenFormat()`. |
-| P8 CIBA (server) | `30193eb8` | Backchannel endpoint and pass-through, `urn:openid:params:grant-type:ciba`, `OpenIddictServerService` (list / approve / reject), discovery metadata. | Requires `SetIssuer`, token storage and non-degraded mode. **Device flow now returns `interval` and enforces `slow_down`**; disable with `SetPollingInterval(null)`. |
+| P6 JAR | `d5c9bff7` | Server: `EnableRequestObjectSupport()`, `RequireSignedRequestObjects()`, per-client `ft:jar`, discovery metadata. Client: `UseSignedRequestObjects`. | Parameters outside the object are ignored (RFC 9101). Objects are validated with the client JWKS. |
+| P8b CIBA (client) | `b67cf1f3` | `AllowClientInitiatedBackchannelAuthenticationFlow()`, `OpenIddictClientService.ChallengeUsingBackchannelAsync` / `AuthenticateWithBackchannelAsync`, discovery extraction. | Poll mode only. PAR requirement now enforced only for interactive flows. |
+| P10 key management | `4d19d539` | New **Key** entity (EF Core `OpenIddictKeys` table, EF6, MongoDB `openiddict.keys`), `IOpenIddictKeyManager`. Server: `EnableAutomaticKeyManagement()`, `OpenIddictServerKeyRing`, `IOpenIddictServerKeyProtector` (Data Protection default). Local validation follows rotation. Quartz: `EnableKeyPruning()`. | Schema change for every EF user. Static keys still used, after the active auto key. `UseDataProtection()` also switches token formats unless `PreferDefaultTokenFormat()`. |
+| P8 CIBA (server) | `bbd52cbf` | Backchannel endpoint and pass-through, `urn:openid:params:grant-type:ciba`, `OpenIddictServerService` (list / approve / reject), discovery metadata. | Requires `SetIssuer`, token storage and non-degraded mode. **Device flow now returns `interval` and enforces `slow_down`**; disable with `SetPollingInterval(null)`. |
 
 Tests pass on the latest run: server unit (696), ASP.NET Core integration (1,530), OWIN integration (1,500), core (661), client (162), EF Core (10), EF6 (7), MongoDB (36), Quartz (34).
 
