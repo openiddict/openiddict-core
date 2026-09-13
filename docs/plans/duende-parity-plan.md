@@ -37,6 +37,7 @@ Baseline `dev@dd0d5d7d` (8.0.0-preview.5, fork of upstream). **Plan only — do 
 | P11.3 BFF | ✅ new package `OpenIddict.Client.AspNetCore.Bff` | `6e1aca1f`, `36a6a9b2` | `UseBff()`, `MapOpenIddictBffEndpoints()`, `UseOpenIddictBff()`, `AsOpenIddictBffApiEndpoint()`, `AddOpenIddictBff*AccessTokenHandler()`, `AddOpenIddictBffTransforms()` (YARP 2.3.0). Hosts store `backchannel_access_token_type`. See deviations below. |
 | P11.4 templates | ✅ `templates/OpenIddict.Templates.csproj` | `56cd9786` | `openiddict-server-identity`, `openiddict-server-empty`, `openiddict-bff`; `templates/verify.sh` (pack + `dotnet new` + build + HTTP smoke). See deviations below. |
 | P11.5 admin API | ✅ `Server.AspNetCore` | `e4cc3771`, `6a0d72b7` | `MapOpenIddictAdminApi(policy, prefix)`. See deviations below. |
+| P11.6 SAML IdP | 🚧 new packages `OpenIddict.Server.Saml` + `.AspNetCore` | — | See "P11.6 SAML plan" in P11. |
 | P11.x (others) | ⏳ | — | — |
 
 **P5 deviations**
@@ -440,6 +441,36 @@ public virtual async ValueTask<bool> TryRevokeAsync(TSession session, Cancellati
 - 11.4: CI runs `dotnet new` + build + discovery smoke test.
 
 **Risks:** API surface commitments (11.5); XML signature attack surface (11.6); ticket-store dependency (11.3).
+
+### P11.6 SAML plan
+
+**Packages:** `OpenIddict.Server.Saml` (host-agnostic, net48 + net10.0, `System.Security.Cryptography.Xml`) and `OpenIddict.Server.Saml.AspNetCore` (minimal-API endpoints, net10.0). Registration: `services.AddOpenIddict().AddServer().UseSaml(saml => saml.UseAspNetCore())`, `app.MapOpenIddictSamlEndpoints()`.
+
+| Scope | MVP | Notes |
+|---|---|---|
+| SP registry | ✅ `OpenIddictServerSamlOptions.ServiceProviders` + `IOpenIddictServerSamlServiceProviderStore` | Entity id, ACS allow-list, signing certificates, NameID format, attribute mappings, IdP-initiated flag |
+| Metadata | ✅ `IDPSSODescriptor` (signing certificates, SSO Redirect + POST, NameID formats) | `application/samlmetadata+xml`; unsigned |
+| SP-initiated SSO | ✅ AuthnRequest via HTTP-Redirect (deflate, query signature) and HTTP-POST (enveloped signature) | Response via HTTP-POST only |
+| Authentication | ✅ challenge/callback: validated request → data-protected state → `ChallengeAsync(scheme)` → callback re-authenticates | Principal → `IOpenIddictServerSamlAssertionProvider` (null = `RequestDenied`) |
+| Response | ✅ signed Assertion (always), signed Response (opt-in, always for errors); `InResponseTo`, `NotBefore`/`NotOnOrAfter`, `AudienceRestriction`, bearer `SubjectConfirmationData` (`Recipient`) | RSA-SHA256 + SHA-256 default |
+| `ForceAuthn` / `IsPassive` | ✅ ticket `IssuedUtc` must be after the request; passive without session → `NoPassive` | |
+| IdP-initiated SSO | ✅ opt-in per SP (`?sp=<entityId>`) | Unsolicited responses (no `InResponseTo`) |
+| SLO | ❌ skipped | Needs P1 sessions; not advertised in metadata |
+| Encrypted assertions, artifact binding, `RequestedAuthnContext`, `Scoping`, OWIN host | ❌ | Documented deviations |
+
+| Security decision | Rule |
+|---|---|
+| XML parsing | `DtdProcessing.Prohibit`, `XmlResolver = null`, size limit (default 64 KiB, applied after base64/inflate) |
+| Signature wrapping | Exactly one `ds:Signature`, direct child of the root; exactly one `Reference` with `URI="#<root ID>"`; root `ID` unique in the document (`ID`/`Id`/`id`); values read from the verified root only |
+| Algorithms | RSA-SHA256/384/512, SHA-256/384/512 digests, exc-c14n/c14n (no comments), transforms limited to enveloped + c14n; SHA-1 rejected; `KeyInfo` ignored (registered certificates only) |
+| Redirect signature | Verified over the raw received `SAMLRequest`/`RelayState`/`SigAlg` octets; duplicate parameters rejected |
+| Signed requests | Required by default (`RequireSignedAuthnRequests = true`); signed requests must carry a matching `Destination` |
+| ACS | Must match a registered URL (ordinal, normalized); unknown SP / ACS / bad signature → 400, never redirected |
+| Freshness | `IssueInstant` within lifetime (5 min) ± clock skew (2 min); state protected + time-limited (1 h) |
+| Auto-POST page | CSP (`default-src 'none'`, script nonce, `form-action` ACS origin, `frame-ancestors 'none'`), `no-store`, HTML-encoded values |
+| Transport | HTTPS required unless `DisableTransportSecurityRequirement()` |
+
+**Resource IDs:** ID0565–ID0575, ID2246–ID2266, ID6324–ID6326.
 
 ---
 
