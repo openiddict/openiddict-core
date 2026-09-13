@@ -56,6 +56,12 @@ public sealed class OpenIddictServerTransaction
     public string? DPoPNonce { get; set; }
 
     /// <summary>
+    /// Gets or sets a boolean indicating whether the caller requested a JSON Web Token
+    /// introspection response using the "application/token-introspection+jwt" media type.
+    /// </summary>
+    public bool IsJsonWebTokenIntrospectionResponseRequested { get; set; }
+
+    /// <summary>
     /// Gets or sets the HTTP method of the current transaction, if available.
     /// </summary>
     public string? RequestMethod { get; set; }

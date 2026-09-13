@@ -114,6 +114,7 @@ public static class OpenIddictConstants
         public const string StreetAddress = "street_address";
         public const string Subject = "sub";
         public const string TargetLinkUri = "target_link_uri";
+        public const string TokenIntrospection = "token_introspection";
         public const string TokenType = "token_type";
         public const string TokenUsage = "token_usage";
         public const string UpdatedAt = "updated_at";
@@ -292,6 +293,7 @@ public static class OpenIddictConstants
         public const string ClientAuthentication = "client-authentication+jwt";
         public const string DPoPProof = "dpop+jwt";
         public const string GenericJsonWebToken = "JWT";
+        public const string IntrospectionResponse = "token-introspection+jwt";
 
         public static class Prefixes
         {
@@ -337,6 +339,9 @@ public static class OpenIddictConstants
         public const string IntrospectionEndpoint = "introspection_endpoint";
         public const string IntrospectionEndpointAuthMethodsSupported = "introspection_endpoint_auth_methods_supported";
         public const string IntrospectionEndpointAuthSigningAlgValuesSupported = "introspection_endpoint_auth_signing_alg_values_supported";
+        public const string IntrospectionEncryptionAlgValuesSupported = "introspection_encryption_alg_values_supported";
+        public const string IntrospectionEncryptionEncValuesSupported = "introspection_encryption_enc_values_supported";
+        public const string IntrospectionSigningAlgValuesSupported = "introspection_signing_alg_values_supported";
         public const string Issuer = "issuer";
         public const string JwksUri = "jwks_uri";
         public const string MtlsEndpointAliases = "mtls_endpoint_aliases";
@@ -696,6 +701,7 @@ public static class OpenIddictConstants
             public const string ClientAssertion = "urn:openiddict:params:oauth:token-type:client_assertion";
             public const string DeviceCode = "urn:openiddict:params:oauth:token-type:device_code";
             public const string DPoPProof = "urn:openiddict:params:oauth:token-type:dpop_proof";
+            public const string IntrospectionResponse = "urn:openiddict:params:oauth:token-type:introspection_response";
             public const string RequestObject = "urn:openiddict:params:oauth:token-type:request_object";
             public const string RequestToken = "urn:openiddict:params:oauth:token-type:request_token";
             public const string StateToken = "urn:openiddict:params:oauth:token-type:state_token";

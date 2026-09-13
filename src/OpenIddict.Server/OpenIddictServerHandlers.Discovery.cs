@@ -896,6 +896,23 @@ public static partial class OpenIddictServerHandlers
                         [.. context.Options.DPoPSigningAlgorithms.Select(static algorithm => (JsonNode) algorithm)]);
                 }
 
+                // If JSON Web Token introspection responses were enabled, return the signing algorithms (that are
+                // the same as the ones used for identity tokens) and, unless the degraded mode was enabled, the
+                // encryption algorithms used when the client application has an RSA encryption key registered.
+                //
+                // See https://datatracker.ietf.org/doc/html/rfc9701#section-7 for more information.
+                if (context.Options.EnableJsonWebTokenIntrospectionResponses && context.IntrospectionEndpoint is not null)
+                {
+                    context.Metadata[Metadata.IntrospectionSigningAlgValuesSupported] = new JsonArray(
+                        [.. context.IdTokenSigningAlgorithms.Select(static algorithm => (JsonNode) algorithm)]);
+
+                    if (!context.Options.EnableDegradedMode)
+                    {
+                        context.Metadata[Metadata.IntrospectionEncryptionAlgValuesSupported] = new JsonArray(SecurityAlgorithms.RsaOAEP);
+                        context.Metadata[Metadata.IntrospectionEncryptionEncValuesSupported] = new JsonArray(SecurityAlgorithms.Aes256CbcHmacSha512);
+                    }
+                }
+
                 // As of 3.2.0, OpenIddict automatically returns an "iss" parameter containing its identity as
                 // part of authorization responses to help clients mitigate mix-up attacks. For more information,
                 // see https://datatracker.ietf.org/doc/html/draft-ietf-oauth-iss-auth-resp-05.

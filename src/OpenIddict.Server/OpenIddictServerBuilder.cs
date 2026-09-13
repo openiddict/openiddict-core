@@ -1846,6 +1846,16 @@ public sealed class OpenIddictServerBuilder
         => Configure(options => options.EnableDPoPSupport = true);
 
     /// <summary>
+    /// Enables JSON Web Token introspection responses (RFC 9701): introspection requests that include an
+    /// "Accept: application/token-introspection+jwt" header receive a signed JWT whose "token_introspection"
+    /// claim contains the introspection response. The JWT is also encrypted if the client application
+    /// has an RSA encryption key ("use": "enc") in its JSON Web Key Set.
+    /// </summary>
+    /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
+    public OpenIddictServerBuilder EnableJsonWebTokenIntrospectionResponses()
+        => Configure(options => options.EnableJsonWebTokenIntrospectionResponses = true);
+
+    /// <summary>
     /// Configures OpenIddict to require a valid DPoP proof for all token requests.
     /// </summary>
     /// <remarks>

@@ -355,6 +355,62 @@ internal static class OpenIddictHelpers
     }
 
     /// <summary>
+    /// Determines whether the specified HTTP "Accept" header values explicitly include the specified media type.
+    /// </summary>
+    /// <remarks>
+    /// Note: wildcards (e.g "*/*") are deliberately not considered as matching the specified media type
+    /// and media ranges whose quality factor is "0" are considered as not acceptable.
+    /// </remarks>
+    /// <param name="values">The "Accept" header values.</param>
+    /// <param name="type">The media type.</param>
+    /// <returns>
+    /// <see langword="true"/> if the media type is explicitly accepted, <see langword="false"/> otherwise.
+    /// </returns>
+    /// <exception cref="ArgumentNullException"><paramref name="values"/> is <see langword="null"/>.</exception>
+    public static bool IncludesMediaType(IEnumerable<string?> values, string type)
+    {
+        ArgumentNullException.ThrowIfNull(values);
+        ArgumentException.ThrowIfNullOrEmpty(type);
+
+        foreach (var value in values)
+        {
+            if (string.IsNullOrEmpty(value))
+            {
+                continue;
+            }
+
+            foreach (var range in value.Split(Separators.Comma, StringSplitOptions.RemoveEmptyEntries))
+            {
+                var segments = range.Split(Separators.Semicolon);
+                if (!string.Equals(segments[0].Trim(), type, StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                var acceptable = true;
+
+                for (var index = 1; index < segments.Length; index++)
+                {
+                    var parameter = segments[index].Split(Separators.EqualsSign, 2);
+                    if (parameter.Length is 2 && string.Equals(parameter[0].Trim(), "q", StringComparison.OrdinalIgnoreCase) &&
+                        decimal.TryParse(parameter[1].Trim(), NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out var quality) &&
+                        quality is 0)
+                    {
+                        acceptable = false;
+                    }
+                }
+
+                if (acceptable)
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /// <summary>
     /// Determines whether the specified <paramref name="element"/> represents a null, undefined or empty JSON node.
     /// </summary>
     /// <param name="element">The <see cref="JsonElement"/>.</param>

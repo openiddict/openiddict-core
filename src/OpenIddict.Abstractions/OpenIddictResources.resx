@@ -1882,6 +1882,12 @@ To enable DPoP support, call 'services.AddOpenIddict().AddServer().EnableDPoPSup
     <value>No DPoP signing credentials were attached to the client registration.
 To enable DPoP, call 'services.AddOpenIddict().AddClient().EnableDPoPTokenBinding()'.</value>
   </data>
+  <data name="ID0551" xml:space="preserve">
+    <value>An error occurred while generating the introspection response token.
+  Error: {0}
+  Error description: {1}
+  Error URI: {2}</value>
+  </data>
   <data name="ID0532" xml:space="preserve">
     <value>The backchannel authentication request was not correctly extracted.
 To extract backchannel authentication requests, create a class implementing 'IOpenIddictServerHandler&lt;ExtractBackchannelAuthenticationRequestContext&gt;' and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.</value>
@@ -2593,6 +2599,18 @@ To apply backchannel authentication responses, create a class implementing 'IOpe
   </data>
   <data name="ID2234" xml:space="preserve">
     <value>A single DPoP proof must be specified.</value>
+  </data>
+  <data name="ID2235" xml:space="preserve">
+    <value>The introspection response was not returned as a JSON Web Token.</value>
+  </data>
+  <data name="ID2236" xml:space="preserve">
+    <value>The introspection response token is invalid.</value>
+  </data>
+  <data name="ID2237" xml:space="preserve">
+    <value>The audience of the introspection response token doesn't match the client identifier.</value>
+  </data>
+  <data name="ID2238" xml:space="preserve">
+    <value>The '{0}' claim is missing or invalid in the introspection response token.</value>
   </data>
   <data name="ID4000" xml:space="preserve">
     <value>The '{0}' parameter shouldn't be null or empty at this point.</value>
@@ -3508,6 +3526,12 @@ This may indicate that the hashed entry is corrupted or malformed.</value>
   </data>
   <data name="ID6314" xml:space="preserve">
     <value>The token was rejected because the DPoP proof was missing or didn't match the confirmation claim.</value>
+  </data>
+  <data name="ID6315" xml:space="preserve">
+    <value>The introspection response token was rejected: {Error} ({Description}).</value>
+  </data>
+  <data name="ID6316" xml:space="preserve">
+    <value>No JSON Web Token introspection response was generated because the caller is not a known client application.</value>
   </data>
   <data name="ID8000" xml:space="preserve">
     <value>https://documentation.openiddict.com/errors/{0}</value>

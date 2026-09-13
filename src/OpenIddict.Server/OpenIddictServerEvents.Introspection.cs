@@ -216,5 +216,10 @@ public static partial class OpenIddictServerEvents
         /// this property returns <see langword="null"/>.
         /// </summary>
         public string? Error => Response.Error;
+
+        /// <summary>
+        /// Gets or sets the JSON Web Token returned instead of the JSON response, if applicable.
+        /// </summary>
+        public string? IntrospectionResponseToken { get; set; }
     }
 }

@@ -51,6 +51,7 @@ public static partial class OpenIddictServerHandlers
              * Token generation:
              */
             AttachSecurityCredentials.Descriptor,
+            AttachIntrospectionResponseEncryptionCredentials.Descriptor,
             CreateTokenEntry.Descriptor,
             AttachTokenSubject.Descriptor,
             AttachTokenMetadata.Descriptor,
@@ -1630,6 +1631,11 @@ public static partial class OpenIddictServerHandlers
                     TokenTypeIdentifiers.AccessToken when context.Options.DisableAccessTokenEncryption => null,
                     TokenTypeIdentifiers.IdentityToken                                                 => null,
 
+                    // Note: introspection responses are never encrypted using the server keys, as they are meant
+                    // to be read by the client application (AttachIntrospectionResponseEncryptionCredentials can
+                    // attach encryption credentials resolved from the JSON Web Key Set of the client application).
+                    TokenTypeIdentifiers.Private.IntrospectionResponse => null,
+
                     _ => credentials.EncryptionCredentials[0]
                 };
 
@@ -1637,11 +1643,68 @@ public static partial class OpenIddictServerHandlers
                 {
                     // Note: unlike other tokens, identity tokens can only be signed using an asymmetric key
                     // as they are meant to be validated by clients using the public keys exposed by the server.
-                    TokenTypeIdentifiers.IdentityToken => credentials.SigningCredentials.First(static credentials =>
-                        credentials.Key is AsymmetricSecurityKey),
+                    TokenTypeIdentifiers.IdentityToken or TokenTypeIdentifiers.Private.IntrospectionResponse
+                        => credentials.SigningCredentials.First(static credentials => credentials.Key is AsymmetricSecurityKey),
 
                     _ => credentials.SigningCredentials[0]
                 };
+            }
+        }
+
+        /// <summary>
+        /// Contains the logic responsible for resolving the encryption credentials used to encrypt introspection
+        /// responses from the JSON Web Key Set of the client application the response is returned to, if applicable.
+        /// Note: this handler is not used when the degraded mode is enabled.
+        /// </summary>
+        public sealed class AttachIntrospectionResponseEncryptionCredentials : IOpenIddictServerHandler<GenerateTokenContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<GenerateTokenContext>()
+                    .AddFilter<RequireDegradedModeDisabled>()
+                    .UseSingletonHandler<AttachIntrospectionResponseEncryptionCredentials>()
+                    .SetOrder(AttachSecurityCredentials.Descriptor.Order + 500)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public async ValueTask HandleAsync(GenerateTokenContext context)
+            {
+                ArgumentNullException.ThrowIfNull(context);
+
+                if (context.TokenType is not TokenTypeIdentifiers.Private.IntrospectionResponse ||
+                    context.EncryptionCredentials is not null || string.IsNullOrEmpty(context.ClientId))
+                {
+                    return;
+                }
+
+                var manager = context.ServiceProvider.GetService<IOpenIddictApplicationManager>()
+                    ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
+
+                var application = await manager.FindByClientIdAsync(context.ClientId, context.CancellationToken)
+                    ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0017));
+
+                if (await manager.GetJsonWebKeySetAsync(application, context.CancellationToken) is not JsonWebKeySet set)
+                {
+                    return;
+                }
+
+                // Note: only RSA keys explicitly registered for encryption are used, with RSA-OAEP as the
+                // key management algorithm and A256CBC-HS512 as the content encryption algorithm.
+                //
+                // See https://datatracker.ietf.org/doc/html/rfc9701#section-5 for more information.
+                var key = set.Keys.FirstOrDefault(static key =>
+                    string.Equals(key.Use, JsonWebKeyUseNames.Enc, StringComparison.Ordinal) &&
+                    string.Equals(key.Kty, JsonWebAlgorithmsKeyTypes.RSA, StringComparison.Ordinal) &&
+                    (string.IsNullOrEmpty(key.Alg) || string.Equals(key.Alg, SecurityAlgorithms.RsaOAEP, StringComparison.Ordinal)));
+
+                if (key is not null)
+                {
+                    context.EncryptionCredentials = new EncryptingCredentials(key,
+                        SecurityAlgorithms.RsaOAEP, SecurityAlgorithms.Aes256CbcHmacSha512);
+                }
             }
         }
 
@@ -1762,8 +1825,8 @@ public static partial class OpenIddictServerHandlers
                     Claims.Private.CreationDate or Claims.Private.ExpirationDate or
                     Claims.Private.Issuer       or Claims.Private.TokenType => false,
 
-                    Claims.Private.Audience
-                        when context.TokenType is TokenTypeIdentifiers.AccessToken or TokenTypeIdentifiers.IdentityToken => false,
+                    Claims.Private.Audience when context.TokenType is TokenTypeIdentifiers.AccessToken or
+                        TokenTypeIdentifiers.IdentityToken or TokenTypeIdentifiers.Private.IntrospectionResponse => false,
 
                     Claims.Private.Scope when context.TokenType is TokenTypeIdentifiers.AccessToken => false,
 
@@ -1804,9 +1867,10 @@ public static partial class OpenIddictServerHandlers
                     ? new Dictionary<string, object>(context.SecurityTokenDescriptor.Claims, StringComparer.Ordinal)
                     : new Dictionary<string, object>(StringComparer.Ordinal);
 
-                // For access and identity tokens, set the public audience claims
-                // using the private audience claims from the security principal.
-                if (context.TokenType is TokenTypeIdentifiers.AccessToken or TokenTypeIdentifiers.IdentityToken)
+                // For access tokens, identity tokens and introspection responses, set the
+                // public audience claims using the private audience claims from the security principal.
+                if (context.TokenType is TokenTypeIdentifiers.AccessToken or TokenTypeIdentifiers.IdentityToken or
+                                         TokenTypeIdentifiers.Private.IntrospectionResponse)
                 {
                     var audiences = context.Principal.GetAudiences();
                     if (audiences.Any())
@@ -1884,6 +1948,7 @@ public static partial class OpenIddictServerHandlers
                     TokenTypeIdentifiers.Private.DeviceCode        => JsonWebTokenTypes.Private.DeviceCode,
                     TokenTypeIdentifiers.Private.AuthenticationRequestId => JsonWebTokenTypes.Private.AuthenticationRequestId,
                     TokenTypeIdentifiers.IdentityToken             => JsonWebTokenTypes.GenericJsonWebToken,
+                    TokenTypeIdentifiers.Private.IntrospectionResponse => JsonWebTokenTypes.IntrospectionResponse,
                     TokenTypeIdentifiers.RefreshToken              => JsonWebTokenTypes.Private.RefreshToken,
                     TokenTypeIdentifiers.Private.RequestToken      => JsonWebTokenTypes.Private.RequestToken,
                     TokenTypeIdentifiers.Private.UserCode          => JsonWebTokenTypes.Private.UserCode,

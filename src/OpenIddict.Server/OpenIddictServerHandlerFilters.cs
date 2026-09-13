@@ -866,6 +866,34 @@ public static class OpenIddictServerHandlerFilters
     }
 
     /// <summary>
+    /// Represents a filter that excludes the associated handlers if JSON Web Token introspection responses were not enabled.
+    /// </summary>
+    public sealed class RequireJsonWebTokenIntrospectionResponsesEnabled : IOpenIddictServerHandlerFilter<BaseContext>
+    {
+        /// <inheritdoc/>
+        public ValueTask<bool> IsActiveAsync(BaseContext context)
+        {
+            ArgumentNullException.ThrowIfNull(context);
+
+            return new(context.Options.EnableJsonWebTokenIntrospectionResponses);
+        }
+    }
+
+    /// <summary>
+    /// Represents a filter that excludes the associated handlers if no JSON Web Token introspection response was requested.
+    /// </summary>
+    public sealed class RequireJsonWebTokenIntrospectionResponseRequested : IOpenIddictServerHandlerFilter<BaseContext>
+    {
+        /// <inheritdoc/>
+        public ValueTask<bool> IsActiveAsync(BaseContext context)
+        {
+            ArgumentNullException.ThrowIfNull(context);
+
+            return new(context.Transaction.IsJsonWebTokenIntrospectionResponseRequested);
+        }
+    }
+
+    /// <summary>
     /// Represents a filter that excludes the associated handlers if token storage was not enabled.
     /// </summary>
     public sealed class RequireTokenStorageEnabled : IOpenIddictServerHandlerFilter<BaseContext>

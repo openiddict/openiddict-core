@@ -191,6 +191,9 @@ public class OpenIddictServerIntegrationTestClient : IAsyncDisposable
             ResponseHeaders[header.Key] = [.. header.Value];
         }
 
+        ResponseMediaType = response.Content.Headers.ContentType?.MediaType;
+        ResponseToken = null;
+
         return await GetResponseAsync(response);
     }
 
@@ -203,6 +206,16 @@ public class OpenIddictServerIntegrationTestClient : IAsyncDisposable
     /// Gets the headers returned in the last response received by this client.
     /// </summary>
     public Dictionary<string, string[]> ResponseHeaders { get; } = new(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>
+    /// Gets the media type of the last response received by this client, if available.
+    /// </summary>
+    public string? ResponseMediaType { get; private set; }
+
+    /// <summary>
+    /// Gets the JSON Web Token returned as the payload of the last response received by this client, if applicable.
+    /// </summary>
+    public string? ResponseToken { get; private set; }
 
     private HttpRequestMessage CreateRequestMessage(OpenIddictRequest request, HttpMethod method, Uri uri)
     {
@@ -426,6 +439,15 @@ public class OpenIddictServerIntegrationTestClient : IAsyncDisposable
             return new OpenIddictResponse(parameters
                 .GroupBy(static parameter => parameter.Key, static parameter => parameter.Value, StringComparer.Ordinal)
                 .Select(static grouping => KeyValuePair.Create(grouping.Key, new StringValues([.. grouping]))));
+        }
+
+        if (message.Content.Headers.ContentType?.MediaType is string type &&
+            type.StartsWith("application/", StringComparison.OrdinalIgnoreCase) &&
+            type.EndsWith("jwt", StringComparison.OrdinalIgnoreCase))
+        {
+            ResponseToken = await message.Content.ReadAsStringAsync();
+
+            return new OpenIddictResponse();
         }
 
         if (string.Equals(message.Content.Headers.ContentType?.MediaType, "text/plain", StringComparison.OrdinalIgnoreCase))

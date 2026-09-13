@@ -54,7 +54,8 @@ public static partial class OpenIddictServerHandlers
             /*
              * Introspection response handling:
              */
-            NormalizeErrorResponse.Descriptor
+            NormalizeErrorResponse.Descriptor,
+            GenerateIntrospectionResponseToken.Descriptor
         ];
 
         /// <summary>
@@ -972,6 +973,106 @@ public static partial class OpenIddictServerHandlers
                 }
 
                 return ValueTask.CompletedTask;
+            }
+        }
+
+        /// <summary>
+        /// Contains the logic responsible for generating the JSON Web Token returned in lieu of
+        /// the JSON introspection response when the caller requested it, as defined by RFC 9701.
+        /// </summary>
+        public sealed class GenerateIntrospectionResponseToken : IOpenIddictServerHandler<ApplyIntrospectionResponseContext>
+        {
+            private readonly IOpenIddictServerDispatcher _dispatcher;
+
+            public GenerateIntrospectionResponseToken(IOpenIddictServerDispatcher dispatcher)
+                => _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
+
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<ApplyIntrospectionResponseContext>()
+                    .AddFilter<RequireJsonWebTokenIntrospectionResponsesEnabled>()
+                    .AddFilter<RequireJsonWebTokenIntrospectionResponseRequested>()
+                    .UseSingletonHandler<GenerateIntrospectionResponseToken>()
+                    // Note: this handler is deliberately executed after the custom handlers using the default order
+                    // so that the parameters they add to the response are also included in the generated token.
+                    .SetOrder(50_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public async ValueTask HandleAsync(ApplyIntrospectionResponseContext context)
+            {
+                ArgumentNullException.ThrowIfNull(context);
+
+                // Note: errors (e.g invalid client authentication) are always returned as regular JSON responses.
+                if (!string.IsNullOrEmpty(context.Error) || !string.IsNullOrEmpty(context.IntrospectionResponseToken))
+                {
+                    return;
+                }
+
+                // The "aud" claim of the token MUST identify the caller: if the client application
+                // is not known (e.g because anonymous clients are allowed), return a JSON response.
+                if (string.IsNullOrEmpty(context.Request?.ClientId))
+                {
+                    context.Logger.LogInformation(6316, SR.GetResourceString(SR.ID6316));
+
+                    return;
+                }
+
+                var principal = new ClaimsPrincipal(new ClaimsIdentity(TokenValidationParameters.DefaultAuthenticationType))
+                    .SetCreationDate(context.Options.TimeProvider.GetUtcNow())
+                    .SetAudiences(context.Request.ClientId)
+                    .SetClaim(Claims.Private.Issuer, (context.Options.Issuer ?? context.BaseUri) switch
+                    {
+                        { IsAbsoluteUri: true } uri => uri.AbsoluteUri,
+
+                        // Throw an exception if the issuer cannot be retrieved or is not valid.
+                        _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0496))
+                    });
+
+                // Attach the introspection response as a JSON object claim.
+                //
+                // See https://datatracker.ietf.org/doc/html/rfc9701#section-5 for more information.
+                ((ClaimsIdentity) principal.Identity!).AddClaim(new Claim(
+                    Claims.TokenIntrospection, SerializeResponse(context.Response), JsonClaimValueTypes.Json));
+
+                var notification = new GenerateTokenContext(context.Transaction)
+                {
+                    ClientId = context.Request.ClientId,
+                    CreateTokenEntry = false,
+                    IsReferenceToken = false,
+                    PersistTokenPayload = false,
+                    Principal = principal,
+                    TokenFormat = TokenFormats.Private.JsonWebToken,
+                    TokenType = TokenTypeIdentifiers.Private.IntrospectionResponse
+                };
+
+                await _dispatcher.DispatchAsync(notification);
+
+                if (notification.IsRejected || string.IsNullOrEmpty(notification.Token))
+                {
+                    throw new InvalidOperationException(SR.FormatID0551(
+                        notification.Error, notification.ErrorDescription, notification.ErrorUri));
+                }
+
+                context.IntrospectionResponseToken = notification.Token;
+
+                static string SerializeResponse(OpenIddictResponse response)
+                {
+                    using var stream = new MemoryStream();
+                    using var writer = new Utf8JsonWriter(stream, new JsonWriterOptions
+                    {
+                        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+                        Indented = false
+                    });
+
+                    response.WriteTo(writer);
+                    writer.Flush();
+
+                    return Encoding.UTF8.GetString(stream.ToArray());
+                }
             }
         }
     }

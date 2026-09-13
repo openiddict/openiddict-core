@@ -613,6 +613,14 @@ public sealed class OpenIddictServerOptions
     public bool EnableDPoPSupport { get; set; }
 
     /// <summary>
+    /// Gets or sets a boolean indicating whether JSON Web Token introspection responses (RFC 9701) are supported.
+    /// When enabled, introspection requests that include an "Accept: application/token-introspection+jwt"
+    /// header receive a signed JWT whose "token_introspection" claim contains the introspection response.
+    /// The JWT is also encrypted if the client application has an RSA encryption key in its JSON Web Key Set.
+    /// </summary>
+    public bool EnableJsonWebTokenIntrospectionResponses { get; set; }
+
+    /// <summary>
     /// Gets or sets a boolean indicating whether all token requests must include a valid DPoP proof.
     /// </summary>
     /// <remarks>
