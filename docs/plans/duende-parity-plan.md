@@ -34,7 +34,7 @@ Baseline `dev@dd0d5d7d` (8.0.0-preview.5, fork of upstream). **Plan only — do 
 | P5 DPoP | ✅ server + validation + client | `0dae3a9d`, `0a732595`, `dbc144f5` | Opt-in (`EnableDPoPSupport`, `EnableDPoPTokenBinding`). Shared helper `shared/OpenIddict.Extensions/IdentityModel/OpenIddictDPoPHelpers.cs`. Server replay: redeemed token entry (reference id = `jkt.jti`). Nonces: signed JWT (server keys), server only. Validation replay: optional `IDistributedCache`. See deviations below. |
 | P12 JWT introspection | ✅ server + client + validation | `f1ff44d8`, `811b913a`, `a2c44c5a`, `9d913f9a`, `0152298e`, `f1a9a312` | Opt-in (`EnableJsonWebTokenIntrospectionResponses`, `RequireJsonWebTokenIntrospectionResponses`). Token generated through `GenerateTokenContext` (`TokenTypeIdentifiers.Private.IntrospectionResponse`), signed with the first asymmetric key from `OpenIddictServerKeyRing.ResolveCredentialsAsync`. See deviations below. |
 | P11.2 dynamic providers | ✅ client + ASP.NET Core + OWIN | `ad43bd3a`, `5315d310` | `IOpenIddictClientRegistrationProvider` (`AddRegistrationProvider`), static provider registered by default. Registration init/validation extracted to `OpenIddictClientConfiguration.ConfigureRegistration`/`ValidateRegistration`. See deviations below. |
-| P11.3 BFF | ✅ new package `OpenIddict.Client.AspNetCore.Bff` | `6e1aca1f` | `UseBff()`, `MapOpenIddictBffEndpoints()`, `UseOpenIddictBff()`, `AsOpenIddictBffApiEndpoint()`, `AddOpenIddictBff*AccessTokenHandler()`, `AddOpenIddictBffTransforms()` (YARP 2.3.0). Hosts store `backchannel_access_token_type`. See deviations below. |
+| P11.3 BFF | ✅ new package `OpenIddict.Client.AspNetCore.Bff` | `6e1aca1f`, `36a6a9b2` | `UseBff()`, `MapOpenIddictBffEndpoints()`, `UseOpenIddictBff()`, `AsOpenIddictBffApiEndpoint()`, `AddOpenIddictBff*AccessTokenHandler()`, `AddOpenIddictBffTransforms()` (YARP 2.3.0). Hosts store `backchannel_access_token_type`. See deviations below. |
 | P11.x (others) | ⏳ | — | — |
 
 **P5 deviations**
@@ -74,6 +74,7 @@ Baseline `dev@dd0d5d7d` (8.0.0-preview.5, fork of upstream). **Plan only — do 
 | Antiforgery | Custom header (`X-CSRF: 1`) on user endpoint, `AsOpenIddictBffApiEndpoint()` endpoints and YARP routes with `OpenIddict.Bff.AccessToken` metadata (`OpenIddict.Bff.DisableAntiforgeryCheck=true` opts out); 401 when missing. Cookie redirects → 401/403 for these endpoints |
 | Back-channel logout | Logout token validated in the BFF package (not the client pipeline, pending P2/P4): registration by `iss` + `aud`, signature, lifetime, `events`, no `nonce`, `iat`, `sub`/`sid`, `jti` replay (in-memory). Sessions removed only when the cookie `SessionStore` implements `IOpenIddictClientAspNetCoreBffSessionStore` (in-memory store via `UseInMemorySessionStore()`); cookie-only sessions are not revoked (hook: `IOpenIddictClientAspNetCoreBffBackchannelLogoutHandler`) |
 | Not included | Refresh token revocation on logout; anonymous `/user` response option; distributed session store |
+| Review fixes (`36a6a9b2`) | Antiforgery/user checks also enforced by `AsOpenIddictBffApiEndpoint()` endpoints and the YARP transform (fail-closed without `UseOpenIddictBff()`); `User` routes not proxied without a token; malformed logout tokens → 400; logout token `iat` bounded (no `exp` → must be within the replay window; future `iat` rejected) |
 
 **P11.2 deviations**
 
