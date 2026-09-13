@@ -31,7 +31,18 @@ Baseline `dev@dd0d5d7d` (8.0.0-preview.5, fork of upstream). **Plan only — do 
 | P8 CIBA | ✅ server (poll) | `bbd52cbf` | Requires `SetIssuer`, token storage and non-degraded mode (ID0529). Completion goes through `OpenIddictServerService`. `slow_down`/`interval` also apply to the device flow. Signed CIBA requests and mTLS alias are not implemented. |
 | P8b CIBA client | ✅ | `b67cf1f3` | `OpenIddictClientService.ChallengeUsingBackchannelAsync` / `AuthenticateWithBackchannelAsync` |
 | P10 key management | ✅ | `4d19d539` | RSA-2048 sig (RS256) + enc (RSA-OAEP) keys. Key entity in EF Core/EF6/MongoDB. `OpenIddictServerKeyRing` resolves credentials per transaction (`Transaction.Credentials`). Protector: `IOpenIddictServerKeyProtector` (in `OpenIddict.Server`, default via `UseDataProtection()`). Quartz pruning is opt-in (`EnableKeyPruning`). |
-| P5, P12, P11.x | ⏳ | — | — |
+| P5 DPoP | ✅ server + validation + client | `0dae3a9d`, `0a732595`, `dbc144f5` | Opt-in (`EnableDPoPSupport`, `EnableDPoPTokenBinding`). Shared helper `shared/OpenIddict.Extensions/IdentityModel/OpenIddictDPoPHelpers.cs`. Server replay: redeemed token entry (reference id = `jkt.jti`). Nonces: signed JWT (server keys), server only. Validation replay: optional `IDistributedCache`. See deviations below. |
+| P12, P11.x | ⏳ | — | — |
+
+**P5 deviations**
+
+| Item | Behaviour |
+|---|---|
+| Replay (server) | Entry created as `redeemed` (no separate `TryRedeemAsync`); concurrent duplicates rely on the store's unique `ReferenceId` (EF6 has none) |
+| Replay (validation) | `IDistributedCache` get-then-set, not atomic |
+| Nonces | Returned only with `use_dpop_nonce` errors; not issued by the validation stack |
+| Confidential clients | Refresh tokens not bound; no Bearer-downgrade check on refresh |
+| Client | One `use_dpop_nonce` retry; nonces cached per authority in memory; `dpop_jkt` not sent automatically (use `GetDPoPJsonWebKeyThumbprint`); ephemeral key lost on restart |
 
 ## 0. Blocking — verify before coding
 
