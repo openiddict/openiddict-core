@@ -36,7 +36,7 @@ Baseline `dev@dd0d5d7d` (8.0.0-preview.5, fork of upstream). **Plan only — do 
 | P11.2 dynamic providers | ✅ client + ASP.NET Core + OWIN | `ad43bd3a`, `5315d310` | `IOpenIddictClientRegistrationProvider` (`AddRegistrationProvider`), static provider registered by default. Registration init/validation extracted to `OpenIddictClientConfiguration.ConfigureRegistration`/`ValidateRegistration`. See deviations below. |
 | P11.3 BFF | ✅ new package `OpenIddict.Client.AspNetCore.Bff` | `6e1aca1f`, `36a6a9b2` | `UseBff()`, `MapOpenIddictBffEndpoints()`, `UseOpenIddictBff()`, `AsOpenIddictBffApiEndpoint()`, `AddOpenIddictBff*AccessTokenHandler()`, `AddOpenIddictBffTransforms()` (YARP 2.3.0). Hosts store `backchannel_access_token_type`. See deviations below. |
 | P11.4 templates | ✅ `templates/OpenIddict.Templates.csproj` | `56cd9786` | `openiddict-server-identity`, `openiddict-server-empty`, `openiddict-bff`; `templates/verify.sh` (pack + `dotnet new` + build + HTTP smoke). See deviations below. |
-| P11.5 admin API | ✅ `Server.AspNetCore` | `e4cc3771` | `MapOpenIddictAdminApi(policy, prefix)`. See deviations below. |
+| P11.5 admin API | ✅ `Server.AspNetCore` | `e4cc3771`, `6a0d72b7` | `MapOpenIddictAdminApi(policy, prefix)`. See deviations below. |
 | P11.x (others) | ⏳ | — | — |
 
 **P5 deviations**
@@ -70,10 +70,11 @@ Baseline `dev@dd0d5d7d` (8.0.0-preview.5, fork of upstream). **Plan only — do 
 |---|---|
 | Name | `MapOpenIddictAdminApi(policy, prefix = "/openiddict/admin")` (plan: `MapOpenIddictManagementEndpoints`); returns the `RouteGroupBuilder` |
 | Scope | Applications/scopes: list, get, create, PATCH (merge: present fields replace, collections replaced), delete. Authorizations: list, get, create, delete, revoke. Tokens: list, get, delete, revoke (no create/update). Keys: list, get, revoke (no create/delete). Sessions not exposed (P1/P11.1) |
-| DTOs | snake_case JSON written from descriptors (`Populate`); never returned: client secret, token payload/reference id, key payload. Unknown input properties → 400 |
+| DTOs | snake_case JSON written from descriptors (`Populate`); never returned: client secret, token payload/reference id, key payload, private/symmetric JWK parameters of client key sets (`d`, `p`, `q`, `dp`, `dq`, `qi`, `oth`, `k`, `priv`). Unknown input properties → 400 |
 | Lists | `count` (1–1000, default 100) / `offset`; token/authorization filters `subject`, `application_id`, `status`, `type` use `FindAsync` + in-memory paging |
 | CSRF | POST/PATCH require `application/json` (415 otherwise), so cookie-authenticated callers need a CORS preflight |
 | Errors | 400 `invalid_request` (+ `errors` for manager validation), 404, 409 (concurrency / failed revoke), 415. Missing core services → `InvalidOperationException` (ID0564) |
+| Revoke | Authorization revoke also revokes its tokens (`RevokeByAuthorizationIdAsync`) |
 | Keys | Revoke invalidates the local `OpenIddictServerKeyRing` snapshot only; other instances pick it up on snapshot expiry |
 | Host | ASP.NET Core only (no OWIN admin API); no UI |
 
@@ -84,7 +85,7 @@ Baseline `dev@dd0d5d7d` (8.0.0-preview.5, fork of upstream). **Plan only — do 
 | Packages | Templates reference `OpenIddict.Server.AspNetCore` + `OpenIddict.EntityFrameworkCore` (servers) and `OpenIddict.Client.AspNetCore.Bff` + `OpenIddict.Client.SystemNetHttp` (BFF), not the `OpenIddict.AspNetCore` metapackage |
 | Version | Default `--OpenIddictVersion` hardcoded (`8.0.0-preview.5`); the pack fails if it differs from `eng/Versions.props` |
 | Identity template | Default Identity UI (no `AccountController`/`ManageController`); no external providers, sessions (`login_id`), password or token exchange flows; clients seeded from `OpenIddict:Clients`; admin API opt-in (`OpenIddict:EnableAdminApi`) |
-| Empty template | Login page is a development-only placeholder (501 otherwise); no consent/authorization entries |
+| Empty template | Login page is a development-only placeholder (501 otherwise); no consent/authorization entries; `prompt=none` without a login returns `login_required` |
 | BFF template | `DisableTokenStorage()`, in-memory session store, development certificates |
 | Verification | `templates/verify.sh` (bash/curl/openssl/python); not wired into CI |
 

@@ -111,6 +111,7 @@ B=https://127.0.0.1:5197; J="$WORK/empty.cookies"; rm -f "$J"
 AUTHZ="/connect/authorize?$QUERY"
 check discovery 200 "$(status "$B/.well-known/openid-configuration")"
 check authorize-challenge 302 "$(status -c "$J" -b "$J" "$B$AUTHZ")"
+check prompt-none-login-required yes "$(curl -sk -o /dev/null -w '%{redirect_url}' "$B$AUTHZ&prompt=none" | grep -q 'error=login_required' && echo yes || echo no)"
 TOKEN=$(curl -sk -c "$J" -b "$J" "$B/account/login" | grep -o 'name="__RequestVerificationToken" value="[^"]*"' | sed 's/.*value="//;s/"$//')
 check login 302 "$(status -c "$J" -b "$J" --data-urlencode "__RequestVerificationToken=$TOKEN" --data-urlencode "UserName=alice" --data-urlencode "ReturnUrl=$AUTHZ" "$B/account/login")"
 LOCATION=$(curl -sk -c "$J" -b "$J" -o /dev/null -w '%{redirect_url}' "$B$AUTHZ")

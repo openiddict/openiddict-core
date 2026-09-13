@@ -82,6 +82,20 @@ app.MapMethods("/connect/authorize", [HttpMethods.Get, HttpMethods.Post], async 
     var result = await context.AuthenticateAsync(CookieAuthenticationDefaults.AuthenticationScheme);
     if (result is not { Succeeded: true })
     {
+        // If the client application requested promptless authentication,
+        // return an error indicating that the user is not logged in.
+        if (request.HasPromptValue(PromptValues.None))
+        {
+            await context.ForbidAsync(OpenIddictServerAspNetCoreDefaults.AuthenticationScheme,
+                new AuthenticationProperties(new Dictionary<string, string?>
+                {
+                    [OpenIddictServerAspNetCoreConstants.Properties.Error] = Errors.LoginRequired,
+                    [OpenIddictServerAspNetCoreConstants.Properties.ErrorDescription] = "The user is not logged in."
+                }));
+
+            return;
+        }
+
         await context.ChallengeAsync(CookieAuthenticationDefaults.AuthenticationScheme, new AuthenticationProperties
         {
             RedirectUri = context.Request.PathBase + context.Request.Path + QueryString.Create(
