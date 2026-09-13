@@ -77,6 +77,8 @@
     <Project Path="src/OpenIddict.Server.AspNetCore/OpenIddict.Server.AspNetCore.csproj" />
     <Project Path="src/OpenIddict.Server.DataProtection/OpenIddict.Server.DataProtection.csproj" />
     <Project Path="src/OpenIddict.Server.Owin/OpenIddict.Server.Owin.csproj" />
+    <Project Path="src/OpenIddict.Server.Saml.AspNetCore/OpenIddict.Server.Saml.AspNetCore.csproj" />
+    <Project Path="src/OpenIddict.Server.Saml/OpenIddict.Server.Saml.csproj" />
     <Project Path="src/OpenIddict.Server/OpenIddict.Server.csproj" />
     <Project Path="src/OpenIddict.Validation.AspNetCore/OpenIddict.Validation.AspNetCore.csproj" />
     <Project Path="src/OpenIddict.Validation.DataProtection/OpenIddict.Validation.DataProtection.csproj" />
@@ -110,6 +112,8 @@
     <Project Path="test/OpenIddict.Server.IntegrationTests/OpenIddict.Server.IntegrationTests.csproj" />
     <Project Path="test/OpenIddict.Server.Owin.IntegrationTests/OpenIddict.Server.Owin.IntegrationTests.csproj" />
     <Project Path="test/OpenIddict.Server.Owin.Tests/OpenIddict.Server.Owin.Tests.csproj" Id="a6908da1-4188-4f8a-808b-b465b4fa496a" />
+    <Project Path="test/OpenIddict.Server.Saml.AspNetCore.Tests/OpenIddict.Server.Saml.AspNetCore.Tests.csproj" />
+    <Project Path="test/OpenIddict.Server.Saml.Tests/OpenIddict.Server.Saml.Tests.csproj" />
     <Project Path="test/OpenIddict.Server.Tests/OpenIddict.Server.Tests.csproj" />
     <Project Path="test/OpenIddict.Validation.AspNetCore.IntegrationTests/OpenIddict.Validation.AspNetCore.IntegrationTests.csproj" />
     <Project Path="test/OpenIddict.Validation.AspNetCore.Tests/OpenIddict.Validation.AspNetCore.Tests.csproj" Id="3afbc55d-c26a-4972-b2dd-a62d938b92ac" />

@@ -1,0 +1,28 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>$(NetCoreTargetFrameworks)</TargetFrameworks>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Description>ASP.NET Core integration package for the OpenIddict SAML 2.0 identity provider (metadata and single sign-on endpoints).</Description>
+    <PackageTags>$(PackageTags);server;saml;saml2;aspnetcore</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\OpenIddict.Server.Saml\OpenIddict.Server.Saml.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Microsoft.AspNetCore.Authentication" />
+    <Using Include="Microsoft.AspNetCore.Http" />
+    <Using Include="OpenIddict.Abstractions" />
+    <Using Include="OpenIddict.Abstractions.OpenIddictConstants" Static="true" />
+    <Using Include="OpenIddict.Abstractions.OpenIddictResources" Alias="SR" />
+  </ItemGroup>
+
+</Project>

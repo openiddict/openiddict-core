@@ -1930,6 +1930,40 @@ To register them, use 'services.AddOpenIddict().AddClient().UseBff()'.</value>
     <value>The OpenIddict admin API requires the core services.
 To register the OpenIddict core services, reference the 'OpenIddict.Core' package and call 'services.AddOpenIddict().AddCore()' from 'ConfigureServices'.</value>
   </data>
+  <data name="ID0565" xml:space="preserve">
+    <value>The SAML identity provider entity identifier must be set. To set it, use 'services.AddOpenIddict().AddServer().UseSaml().SetEntityId()' or 'SetIssuer()'.</value>
+  </data>
+  <data name="ID0566" xml:space="preserve">
+    <value>At least one X.509 signing certificate with an RSA private key must be registered to use the SAML identity provider. To register one, use 'services.AddOpenIddict().AddServer().UseSaml().AddSigningCertificate()' or register an X.509 signing certificate in the server options.</value>
+  </data>
+  <data name="ID0567" xml:space="preserve">
+    <value>The SAML service provider entity identifier cannot be null or empty.</value>
+  </data>
+  <data name="ID0568" xml:space="preserve">
+    <value>The SAML service provider '{0}' must have at least one assertion consumer service URL and all of them must be absolute HTTP or HTTPS URLs without a fragment.</value>
+  </data>
+  <data name="ID0569" xml:space="preserve">
+    <value>The SAML service provider '{0}' requires signed authentication requests but no signing certificate was registered.</value>
+  </data>
+  <data name="ID0570" xml:space="preserve">
+    <value>The SAML service provider '{0}' was registered multiple times.</value>
+  </data>
+  <data name="ID0571" xml:space="preserve">
+    <value>The OpenIddict SAML identity provider services cannot be resolved.
+To register them, use 'services.AddOpenIddict().AddServer().UseSaml().UseAspNetCore()'.</value>
+  </data>
+  <data name="ID0572" xml:space="preserve">
+    <value>The SAML assertion lifetime, authentication request lifetime, request state lifetime and clock skew must be positive and the maximum message size must be greater than zero.</value>
+  </data>
+  <data name="ID0573" xml:space="preserve">
+    <value>The SAML signature algorithm '{0}' or digest algorithm '{1}' is not supported.</value>
+  </data>
+  <data name="ID0574" xml:space="preserve">
+    <value>The SAML service provider store returned a service provider whose entity identifier doesn't match the requested entity identifier.</value>
+  </data>
+  <data name="ID0575" xml:space="preserve">
+    <value>The SAML assertion descriptor must contain a non-empty NameID value.</value>
+  </data>
   <data name="ID0532" xml:space="preserve">
     <value>The backchannel authentication request was not correctly extracted.
 To extract backchannel authentication requests, create a class implementing 'IOpenIddictServerHandler&lt;ExtractBackchannelAuthenticationRequestContext&gt;' and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.</value>
@@ -2674,6 +2708,69 @@ To apply backchannel authentication responses, create a class implementing 'IOpe
   </data>
   <data name="ID2245" xml:space="preserve">
     <value>The entry is invalid.</value>
+  </data>
+  <data name="ID2246" xml:space="preserve">
+    <value>The SAML message is missing or malformed.</value>
+  </data>
+  <data name="ID2247" xml:space="preserve">
+    <value>The SAML message exceeds the maximum allowed size.</value>
+  </data>
+  <data name="ID2248" xml:space="preserve">
+    <value>The SAML message contains a document type definition, which is not allowed.</value>
+  </data>
+  <data name="ID2249" xml:space="preserve">
+    <value>The SAML message is not a valid SAML 2.0 authentication request.</value>
+  </data>
+  <data name="ID2250" xml:space="preserve">
+    <value>The SAML authentication request has expired or its issue instant is in the future.</value>
+  </data>
+  <data name="ID2251" xml:space="preserve">
+    <value>The issuer of the SAML authentication request is missing or doesn't correspond to a registered service provider.</value>
+  </data>
+  <data name="ID2252" xml:space="preserve">
+    <value>The destination of the SAML authentication request is missing or doesn't match the single sign-on endpoint.</value>
+  </data>
+  <data name="ID2253" xml:space="preserve">
+    <value>The SAML authentication request must be signed.</value>
+  </data>
+  <data name="ID2254" xml:space="preserve">
+    <value>The signature of the SAML authentication request is invalid.</value>
+  </data>
+  <data name="ID2255" xml:space="preserve">
+    <value>The signature, digest, canonicalization or transform algorithm of the SAML authentication request is not supported.</value>
+  </data>
+  <data name="ID2256" xml:space="preserve">
+    <value>The assertion consumer service is not registered for the SAML service provider.</value>
+  </data>
+  <data name="ID2257" xml:space="preserve">
+    <value>The protocol binding requested by the SAML service provider is not supported.</value>
+  </data>
+  <data name="ID2258" xml:space="preserve">
+    <value>The NameID format requested by the SAML service provider is not supported.</value>
+  </data>
+  <data name="ID2259" xml:space="preserve">
+    <value>The SAML message contains duplicate parameters.</value>
+  </data>
+  <data name="ID2260" xml:space="preserve">
+    <value>The user cannot be authenticated passively.</value>
+  </data>
+  <data name="ID2261" xml:space="preserve">
+    <value>The SAML authentication request was denied.</value>
+  </data>
+  <data name="ID2262" xml:space="preserve">
+    <value>Identity provider-initiated single sign-on is not allowed for this SAML service provider.</value>
+  </data>
+  <data name="ID2263" xml:space="preserve">
+    <value>The SAML request state is invalid or has expired.</value>
+  </data>
+  <data name="ID2264" xml:space="preserve">
+    <value>This server only accepts HTTPS requests.</value>
+  </data>
+  <data name="ID2265" xml:space="preserve">
+    <value>The SAML authentication request contains unsupported elements.</value>
+  </data>
+  <data name="ID2266" xml:space="preserve">
+    <value>The mandatory 'SAMLRequest' parameter is missing.</value>
   </data>
   <data name="ID4000" xml:space="preserve">
     <value>The '{0}' parameter shouldn't be null or empty at this point.</value>
@@ -3616,6 +3713,15 @@ This may indicate that the hashed entry is corrupted or malformed.</value>
   </data>
   <data name="ID6323" xml:space="preserve">
     <value>{Count} session(s) were removed from the session store of the '{Scheme}' cookie scheme after a back-channel logout notification.</value>
+  </data>
+  <data name="ID6324" xml:space="preserve">
+    <value>The SAML authentication request was rejected: {Description}</value>
+  </data>
+  <data name="ID6325" xml:space="preserve">
+    <value>A SAML response containing a signed assertion was returned to the service provider '{ServiceProvider}'.</value>
+  </data>
+  <data name="ID6326" xml:space="preserve">
+    <value>A SAML error response ({Status}) was returned to the service provider '{ServiceProvider}': {Description}</value>
   </data>
   <data name="ID8000" xml:space="preserve">
     <value>https://documentation.openiddict.com/errors/{0}</value>
