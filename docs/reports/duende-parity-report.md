@@ -4,7 +4,7 @@
 |---|---|
 | Date | 2026-09-13 |
 | OpenIddict baseline | 8.0.0-preview.5 (`dd0d5d7d`, identical to upstream `dev`) |
-| Fork state | Linear stack on `dev`, not pushed: `docs/duende-parity-plan` → `feature/jar` → `feature/ciba` → `feature/ciba-client` → `feature/key-management` → `feature/dpop` → `feature/jwt-introspection` → `feature/dynamic-providers` → `feature/bff` → `feature/templates-admin-api` → `feature/saml` (tip `38973987`) |
+| Fork state | Linear stack on `dev`, not pushed: `docs/duende-parity-plan` → `feature/jar` → `feature/ciba` → `feature/ciba-client` → `feature/key-management` → `feature/dpop` → `feature/jwt-introspection` → `feature/dynamic-providers` → `feature/bff` → `feature/templates-admin-api` → `feature/saml` (last implementation commit `38973987`) |
 | Duende reference | IdentityServer 8.0.7 (June 2026) |
 | Detailed plan | [`docs/plans/duende-parity-plan.md`](../plans/duende-parity-plan.md) |
 
