@@ -113,6 +113,41 @@ public class OpenIddictClientHandlersIntrospectionResponseTests
     }
 
     [Fact]
+    public async Task ValidateIntrospectionResponseToken_TokenSignedWithLocalKeyIsRejected()
+    {
+        // Arrange
+        using var provider = CreateProvider(required: true);
+        var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictClientOptions>>().CurrentValue;
+
+        var context = CreateContext(provider, CreateToken(signing: options.SigningCredentials[0]));
+
+        // Act
+        await CreateHandler(provider).HandleAsync(context);
+
+        // Assert
+        Assert.True(context.IsRejected);
+        Assert.Equal(SR.GetResourceString(SR.ID2236), context.ErrorDescription);
+    }
+
+    [Fact]
+    public async Task ValidateIntrospectionResponseToken_UnsignedEncryptedTokenIsRejected()
+    {
+        // Arrange
+        using var provider = CreateProvider(required: true);
+        var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictClientOptions>>().CurrentValue;
+
+        var context = CreateContext(provider, CreateToken(unsigned: true, encryption: new EncryptingCredentials(
+            options.EncryptionCredentials[0].Key, SecurityAlgorithms.RsaOAEP, SecurityAlgorithms.Aes256CbcHmacSha512)));
+
+        // Act
+        await CreateHandler(provider).HandleAsync(context);
+
+        // Assert
+        Assert.True(context.IsRejected);
+        Assert.Equal(SR.GetResourceString(SR.ID2236), context.ErrorDescription);
+    }
+
+    [Fact]
     public async Task ValidateIntrospectionResponseToken_JsonResponseIsRejectedWhenTokenIsRequired()
     {
         // Arrange
@@ -189,7 +224,7 @@ public class OpenIddictClientHandlersIntrospectionResponseTests
 
         using var message = new HttpResponseMessage
         {
-            Content = new StringContent("token", Encoding.UTF8, "application/token-introspection+jwt")
+            Content = new StringContent(" token\r\n", Encoding.UTF8, "application/token-introspection+jwt")
         };
 
         var transaction = new OpenIddictClientTransaction
@@ -225,7 +260,8 @@ public class OpenIddictClientHandlersIntrospectionResponseTests
         string audience = "Fabrikam",
         string? introspection = """{"active":true,"sub":"Bob le Magnifique"}""",
         SigningCredentials? signing = null,
-        EncryptingCredentials? encryption = null)
+        EncryptingCredentials? encryption = null,
+        bool unsigned = false)
     {
         var claims = new Dictionary<string, object>(StringComparer.Ordinal)
         {
@@ -243,7 +279,7 @@ public class OpenIddictClientHandlersIntrospectionResponseTests
         {
             Claims = claims,
             EncryptingCredentials = encryption,
-            SigningCredentials = signing ?? new SigningCredentials(ServerSigningKey, SecurityAlgorithms.RsaSha256),
+            SigningCredentials = unsigned ? null : signing ?? new SigningCredentials(ServerSigningKey, SecurityAlgorithms.RsaSha256),
             TokenType = type
         });
     }

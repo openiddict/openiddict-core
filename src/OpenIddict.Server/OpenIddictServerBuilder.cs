@@ -1849,7 +1849,8 @@ public sealed class OpenIddictServerBuilder
     /// Enables JSON Web Token introspection responses (RFC 9701): introspection requests that include an
     /// "Accept: application/token-introspection+jwt" header receive a signed JWT whose "token_introspection"
     /// claim contains the introspection response. The JWT is also encrypted if the client application
-    /// has an RSA encryption key ("use": "enc") in its JSON Web Key Set.
+    /// opted in using the <see cref="Settings.IntrospectionResponse.EncryptionAlgorithm"/> setting
+    /// and has an RSA encryption key ("use": "enc") in its JSON Web Key Set.
     /// </summary>
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
     public OpenIddictServerBuilder EnableJsonWebTokenIntrospectionResponses()

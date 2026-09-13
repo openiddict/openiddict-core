@@ -12,6 +12,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 using Moq;
+using OpenIddict.Core;
 using Xunit;
 using static OpenIddict.Server.OpenIddictServerEvents;
 using static OpenIddict.Server.OpenIddictServerHandlers.Protection;
@@ -37,7 +38,8 @@ public abstract partial class OpenIddictServerIntegrationTests
         Assert.NotNull(algorithms);
         Assert.Contains(SecurityAlgorithms.RsaSha256, algorithms.Value, StringComparer.Ordinal);
         Assert.Equal([SecurityAlgorithms.RsaOAEP], (ImmutableArray<string?>?) response[Metadata.IntrospectionEncryptionAlgValuesSupported]);
-        Assert.Equal([SecurityAlgorithms.Aes256CbcHmacSha512], (ImmutableArray<string?>?) response[Metadata.IntrospectionEncryptionEncValuesSupported]);
+        Assert.Equal([SecurityAlgorithms.Aes128CbcHmacSha256, SecurityAlgorithms.Aes256CbcHmacSha512],
+            (ImmutableArray<string?>?) response[Metadata.IntrospectionEncryptionEncValuesSupported]);
     }
 
     [Fact]
@@ -341,37 +343,26 @@ public abstract partial class OpenIddictServerIntegrationTests
         Assert.Equal("custom_value", introspection.GetProperty("custom_parameter").GetString());
     }
 
-    [Fact]
-    public async Task ApplyIntrospectionResponse_TokenIsEncryptedWhenClientHasEncryptionKey()
+    [Theory]
+    [InlineData(SecurityAlgorithms.Aes256CbcHmacSha512, SecurityAlgorithms.Aes256CbcHmacSha512)]
+    [InlineData(null, SecurityAlgorithms.Aes128CbcHmacSha256)]
+    public async Task ApplyIntrospectionResponse_TokenIsEncryptedWhenClientOptedIn(string? method, string expected)
     {
         // Arrange
         using var algorithm = RSA.Create(keySizeInBits: 2048);
 
-        var key = JsonWebKeyConverter.ConvertFromRSASecurityKey(new RsaSecurityKey(algorithm.ExportParameters(includePrivateParameters: false)));
-        key.Kid = "encryption_key";
-        key.Use = JsonWebKeyUseNames.Enc;
+        var settings = ImmutableDictionary.Create<string, string>(StringComparer.Ordinal)
+            .SetItem(Settings.IntrospectionResponse.EncryptionAlgorithm, SecurityAlgorithms.RsaOAEP);
 
-        var application = new OpenIddictApplication();
-
-        var manager = CreateApplicationManager(mock =>
+        if (method is not null)
         {
-            mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
-                .ReturnsAsync(application);
-
-            mock.Setup(manager => manager.HasClientTypeAsync(application, ClientTypes.Confidential, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(true);
-
-            mock.Setup(manager => manager.ValidateClientSecretAsync(application, "7Fjfp0ZBr1KtDRbnfVdmIw", It.IsAny<CancellationToken>()))
-                .ReturnsAsync(true);
-
-            mock.Setup(manager => manager.GetJsonWebKeySetAsync(application, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new JsonWebKeySet { Keys = { key } });
-        });
+            settings = settings.SetItem(Settings.IntrospectionResponse.EncryptionMethod, method);
+        }
 
         await using var server = await CreateServerAsync(options =>
         {
             options.EnableJsonWebTokenIntrospectionResponses();
-            options.Services.AddSingleton(manager);
+            options.Services.AddSingleton(CreateIntrospectionResponseApplicationManager(settings, CreateEncryptionKeySet(algorithm)));
 
             ConfigureIntrospectedToken(options);
         });
@@ -388,7 +379,7 @@ public abstract partial class OpenIddictServerIntegrationTests
 
         var envelope = new JsonWebToken(client.ResponseToken);
         Assert.Equal(SecurityAlgorithms.RsaOAEP, envelope.Alg);
-        Assert.Equal(SecurityAlgorithms.Aes256CbcHmacSha512, envelope.Enc);
+        Assert.Equal(expected, envelope.Enc);
         Assert.Equal("encryption_key", envelope.Kid);
 
         var token = await ValidateIntrospectionResponseTokenAsync(client, client.ResponseToken, new RsaSecurityKey(algorithm));
@@ -397,30 +388,16 @@ public abstract partial class OpenIddictServerIntegrationTests
     }
 
     [Fact]
-    public async Task ApplyIntrospectionResponse_TokenIsNotEncryptedWhenClientHasNoEncryptionKey()
+    public async Task ApplyIntrospectionResponse_TokenIsNotEncryptedWhenClientDidNotOptIn()
     {
         // Arrange
-        var application = new OpenIddictApplication();
-
-        var manager = CreateApplicationManager(mock =>
-        {
-            mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
-                .ReturnsAsync(application);
-
-            mock.Setup(manager => manager.HasClientTypeAsync(application, ClientTypes.Confidential, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(true);
-
-            mock.Setup(manager => manager.ValidateClientSecretAsync(application, "7Fjfp0ZBr1KtDRbnfVdmIw", It.IsAny<CancellationToken>()))
-                .ReturnsAsync(true);
-
-            mock.Setup(manager => manager.GetJsonWebKeySetAsync(application, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(CreateRequestObjectJsonWebKeySet());
-        });
+        using var algorithm = RSA.Create(keySizeInBits: 2048);
 
         await using var server = await CreateServerAsync(options =>
         {
             options.EnableJsonWebTokenIntrospectionResponses();
-            options.Services.AddSingleton(manager);
+            options.Services.AddSingleton(CreateIntrospectionResponseApplicationManager(
+                ImmutableDictionary.Create<string, string>(StringComparer.Ordinal), CreateEncryptionKeySet(algorithm)));
 
             ConfigureIntrospectedToken(options);
         });
@@ -434,6 +411,98 @@ public abstract partial class OpenIddictServerIntegrationTests
         // Assert
         Assert.NotNull(client.ResponseToken);
         Assert.False(new JsonWebToken(client.ResponseToken).IsEncrypted);
+    }
+
+    [Fact]
+    public async Task ApplyIntrospectionResponse_MissingEncryptionKeyCausesAnException()
+    {
+        // Arrange
+        var settings = ImmutableDictionary.Create<string, string>(StringComparer.Ordinal)
+            .SetItem(Settings.IntrospectionResponse.EncryptionAlgorithm, SecurityAlgorithms.RsaOAEP);
+
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.EnableJsonWebTokenIntrospectionResponses();
+            options.Services.AddSingleton(CreateIntrospectionResponseApplicationManager(settings, CreateRequestObjectJsonWebKeySet()));
+
+            ConfigureIntrospectedToken(options);
+        });
+
+        await using var client = await server.CreateClientAsync();
+        client.RequestHeaders["Accept"] = [IntrospectionResponseMediaType];
+
+        // Act and assert
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(delegate
+        {
+            return client.PostAsync("/connect/introspect", CreateIntrospectionRequest(secret: "7Fjfp0ZBr1KtDRbnfVdmIw"));
+        });
+
+        Assert.Equal(SR.GetResourceString(SR.ID0553), exception.Message);
+    }
+
+    [Theory]
+    [InlineData(Settings.IntrospectionResponse.EncryptionAlgorithm, SecurityAlgorithms.RsaOaepKeyWrap)]
+    [InlineData(Settings.IntrospectionResponse.EncryptionMethod, SecurityAlgorithms.Aes128Gcm)]
+    public async Task ApplyIntrospectionResponse_UnsupportedEncryptionSettingCausesAnException(string name, string value)
+    {
+        // Arrange
+        using var algorithm = RSA.Create(keySizeInBits: 2048);
+
+        var settings = ImmutableDictionary.Create<string, string>(StringComparer.Ordinal)
+            .SetItem(Settings.IntrospectionResponse.EncryptionAlgorithm, SecurityAlgorithms.RsaOAEP)
+            .SetItem(name, value);
+
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.EnableJsonWebTokenIntrospectionResponses();
+            options.Services.AddSingleton(CreateIntrospectionResponseApplicationManager(settings, CreateEncryptionKeySet(algorithm)));
+
+            ConfigureIntrospectedToken(options);
+        });
+
+        await using var client = await server.CreateClientAsync();
+        client.RequestHeaders["Accept"] = [IntrospectionResponseMediaType];
+
+        // Act and assert
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(delegate
+        {
+            return client.PostAsync("/connect/introspect", CreateIntrospectionRequest(secret: "7Fjfp0ZBr1KtDRbnfVdmIw"));
+        });
+
+        Assert.Equal(SR.FormatID0552(value, name), exception.Message);
+    }
+
+    private OpenIddictApplicationManager<OpenIddictApplication> CreateIntrospectionResponseApplicationManager(
+        ImmutableDictionary<string, string> settings, JsonWebKeySet set)
+    {
+        var application = new OpenIddictApplication();
+
+        return CreateApplicationManager(mock =>
+        {
+            mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
+                .ReturnsAsync(application);
+
+            mock.Setup(manager => manager.HasClientTypeAsync(application, ClientTypes.Confidential, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(true);
+
+            mock.Setup(manager => manager.ValidateClientSecretAsync(application, "7Fjfp0ZBr1KtDRbnfVdmIw", It.IsAny<CancellationToken>()))
+                .ReturnsAsync(true);
+
+            mock.Setup(manager => manager.GetSettingsAsync(application, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(settings);
+
+            mock.Setup(manager => manager.GetJsonWebKeySetAsync(application, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(set);
+        });
+    }
+
+    private static JsonWebKeySet CreateEncryptionKeySet(RSA algorithm)
+    {
+        var key = JsonWebKeyConverter.ConvertFromRSASecurityKey(new RsaSecurityKey(algorithm.ExportParameters(includePrivateParameters: false)));
+        key.Kid = "encryption_key";
+        key.Use = JsonWebKeyUseNames.Enc;
+
+        return new JsonWebKeySet { Keys = { key } };
     }
 
     private static OpenIddictRequest CreateIntrospectionRequest(string? secret = null) => new()

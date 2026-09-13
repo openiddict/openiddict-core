@@ -1686,25 +1686,41 @@ public static partial class OpenIddictServerHandlers
                 var application = await manager.FindByClientIdAsync(context.ClientId, context.CancellationToken)
                     ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0017));
 
-                if (await manager.GetJsonWebKeySetAsync(application, context.CancellationToken) is not JsonWebKeySet set)
+                // Note: as defined by RFC 9701, introspection responses are only encrypted if the client application
+                // explicitly opted in (the equivalent of the "introspection_encrypted_response_alg" client metadata).
+                //
+                // See https://datatracker.ietf.org/doc/html/rfc9701#section-6 for more information.
+                var settings = await manager.GetSettingsAsync(application, context.CancellationToken);
+                if (!settings.TryGetValue(Settings.IntrospectionResponse.EncryptionAlgorithm, out string? algorithm) ||
+                    string.IsNullOrEmpty(algorithm))
                 {
                     return;
                 }
 
-                // Note: only RSA keys explicitly registered for encryption are used, with RSA-OAEP as the
-                // key management algorithm and A256CBC-HS512 as the content encryption algorithm.
-                //
-                // See https://datatracker.ietf.org/doc/html/rfc9701#section-5 for more information.
-                var key = set.Keys.FirstOrDefault(static key =>
+                if (!string.Equals(algorithm, SecurityAlgorithms.RsaOAEP, StringComparison.Ordinal))
+                {
+                    throw new InvalidOperationException(SR.FormatID0552(algorithm, Settings.IntrospectionResponse.EncryptionAlgorithm));
+                }
+
+                // If no content encryption algorithm was explicitly set, use A128CBC-HS256 (the default value defined by RFC 9701).
+                var method = settings.TryGetValue(Settings.IntrospectionResponse.EncryptionMethod, out string? value) &&
+                    !string.IsNullOrEmpty(value) ? value : SecurityAlgorithms.Aes128CbcHmacSha256;
+
+                if (method is not (SecurityAlgorithms.Aes128CbcHmacSha256 or SecurityAlgorithms.Aes256CbcHmacSha512))
+                {
+                    throw new InvalidOperationException(SR.FormatID0552(method, Settings.IntrospectionResponse.EncryptionMethod));
+                }
+
+                // Note: only RSA keys explicitly registered for encryption can be used. Since the client application
+                // opted in for encrypted responses, an exception is thrown if no suitable key can be found to ensure
+                // the introspection response is never returned unencrypted.
+                var key = (await manager.GetJsonWebKeySetAsync(application, context.CancellationToken))?.Keys.FirstOrDefault(static key =>
                     string.Equals(key.Use, JsonWebKeyUseNames.Enc, StringComparison.Ordinal) &&
                     string.Equals(key.Kty, JsonWebAlgorithmsKeyTypes.RSA, StringComparison.Ordinal) &&
-                    (string.IsNullOrEmpty(key.Alg) || string.Equals(key.Alg, SecurityAlgorithms.RsaOAEP, StringComparison.Ordinal)));
+                    (string.IsNullOrEmpty(key.Alg) || string.Equals(key.Alg, SecurityAlgorithms.RsaOAEP, StringComparison.Ordinal)))
+                    ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0553));
 
-                if (key is not null)
-                {
-                    context.EncryptionCredentials = new EncryptingCredentials(key,
-                        SecurityAlgorithms.RsaOAEP, SecurityAlgorithms.Aes256CbcHmacSha512);
-                }
+                context.EncryptionCredentials = new EncryptingCredentials(key, SecurityAlgorithms.RsaOAEP, method);
             }
         }
 

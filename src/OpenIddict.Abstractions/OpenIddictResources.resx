@@ -1888,6 +1888,13 @@ To enable DPoP, call 'services.AddOpenIddict().AddClient().EnableDPoPTokenBindin
   Error description: {1}
   Error URI: {2}</value>
   </data>
+  <data name="ID0552" xml:space="preserve">
+    <value>The '{0}' value configured for the '{1}' setting of the client application is not supported.
+Introspection responses can only be encrypted using 'RSA-OAEP' with 'A128CBC-HS256' or 'A256CBC-HS512'.</value>
+  </data>
+  <data name="ID0553" xml:space="preserve">
+    <value>The introspection response cannot be encrypted because the JSON Web Key Set of the client application doesn't contain any RSA key whose use is 'enc'.</value>
+  </data>
   <data name="ID0532" xml:space="preserve">
     <value>The backchannel authentication request was not correctly extracted.
 To extract backchannel authentication requests, create a class implementing 'IOpenIddictServerHandler&lt;ExtractBackchannelAuthenticationRequestContext&gt;' and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.</value>

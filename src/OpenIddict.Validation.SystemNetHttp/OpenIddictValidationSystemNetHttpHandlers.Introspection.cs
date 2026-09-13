@@ -122,7 +122,7 @@ public static partial class OpenIddictValidationSystemNetHttpHandlers
                     MediaTypes.IntrospectionResponseJsonWebToken, StringComparison.OrdinalIgnoreCase))
                 {
                     context.Response = new OpenIddictResponse();
-                    context.IntrospectionResponseToken = await response.Content.ReadAsStringAsync(context.CancellationToken);
+                    context.IntrospectionResponseToken = (await response.Content.ReadAsStringAsync(context.CancellationToken)).Trim();
                 }
             }
         }

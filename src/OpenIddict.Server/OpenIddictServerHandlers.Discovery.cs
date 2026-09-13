@@ -898,7 +898,7 @@ public static partial class OpenIddictServerHandlers
 
                 // If JSON Web Token introspection responses were enabled, return the signing algorithms (that are
                 // the same as the ones used for identity tokens) and, unless the degraded mode was enabled, the
-                // encryption algorithms used when the client application has an RSA encryption key registered.
+                // encryption algorithms that can be used by client applications that opted in for encrypted responses.
                 //
                 // See https://datatracker.ietf.org/doc/html/rfc9701#section-7 for more information.
                 if (context.Options.EnableJsonWebTokenIntrospectionResponses && context.IntrospectionEndpoint is not null)
@@ -909,7 +909,8 @@ public static partial class OpenIddictServerHandlers
                     if (!context.Options.EnableDegradedMode)
                     {
                         context.Metadata[Metadata.IntrospectionEncryptionAlgValuesSupported] = new JsonArray(SecurityAlgorithms.RsaOAEP);
-                        context.Metadata[Metadata.IntrospectionEncryptionEncValuesSupported] = new JsonArray(SecurityAlgorithms.Aes256CbcHmacSha512);
+                        context.Metadata[Metadata.IntrospectionEncryptionEncValuesSupported] = new JsonArray(
+                            SecurityAlgorithms.Aes128CbcHmacSha256, SecurityAlgorithms.Aes256CbcHmacSha512);
                     }
                 }
 

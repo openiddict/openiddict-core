@@ -616,7 +616,9 @@ public sealed class OpenIddictServerOptions
     /// Gets or sets a boolean indicating whether JSON Web Token introspection responses (RFC 9701) are supported.
     /// When enabled, introspection requests that include an "Accept: application/token-introspection+jwt"
     /// header receive a signed JWT whose "token_introspection" claim contains the introspection response.
-    /// The JWT is also encrypted if the client application has an RSA encryption key in its JSON Web Key Set.
+    /// The JWT is also encrypted if the client application opted in using the
+    /// <see cref="Settings.IntrospectionResponse.EncryptionAlgorithm"/> setting (the only supported value
+    /// is "RSA-OAEP") and has an RSA encryption key ("use": "enc") in its JSON Web Key Set.
     /// </summary>
     public bool EnableJsonWebTokenIntrospectionResponses { get; set; }
 

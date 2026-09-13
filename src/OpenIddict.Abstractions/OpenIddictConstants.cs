@@ -620,7 +620,14 @@ public static class OpenIddictConstants
     {
         public static class Prefixes
         {
+            public const string IntrospectionResponse = "intr_rsp:";
             public const string TokenLifetime = "tkn_lft:";
+        }
+
+        public static class IntrospectionResponse
+        {
+            public const string EncryptionAlgorithm = "intr_rsp:enc_alg";
+            public const string EncryptionMethod = "intr_rsp:enc_enc";
         }
 
         public static class TokenLifetimes
