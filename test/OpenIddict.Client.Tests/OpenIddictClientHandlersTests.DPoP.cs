@@ -1,6 +1,7 @@
 ﻿using System.Net.Http;
 using System.Security.Claims;
 using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
@@ -250,6 +251,82 @@ public class OpenIddictClientHandlersDPoPTests
         Assert.Equal("nonce", token.GetPayloadValue<string>(Claims.Nonce));
         Assert.Equal(Base64UrlEncoder.Encode(SHA256.HashData(Encoding.ASCII.GetBytes("access_token"))),
             token.GetPayloadValue<string>(Claims.DPoPAccessTokenHash));
+    }
+
+    [Theory]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    public async Task SendPushedAuthorizationRequest_DPoPKeyIsOnlyUsedWhenCertificateBindingIsNotPossible(
+        bool certificate, bool expected)
+    {
+        // Arrange
+        SigningCredentials? credentials = null;
+
+        using var provider = CreateProvider(enabled: true, options =>
+        {
+            options.AddEventHandler<PreparePushedAuthorizationRequestContext>(builder => builder.UseInlineHandler(context =>
+            {
+                credentials = context.DPoPSigningCredentials;
+                context.HandleRequest();
+
+                return ValueTask.CompletedTask;
+            }));
+
+            options.AddEventHandler<ExtractPushedAuthorizationResponseContext>(builder => builder.UseInlineHandler(context =>
+            {
+                context.Response = new OpenIddictResponse();
+                context.HandleRequest();
+
+                return ValueTask.CompletedTask;
+            }));
+
+            options.AddEventHandler<HandlePushedAuthorizationResponseContext>(builder => builder.UseInlineHandler(context =>
+            {
+                context.HandleRequest();
+
+                return ValueTask.CompletedTask;
+            }));
+        });
+
+        var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictClientOptions>>().CurrentValue;
+        options.TokenBindingMethods.Add(TokenBindingMethods.Private.TlsClientCertificate);
+
+        if (certificate)
+        {
+            options.Registrations[0].SigningCredentials.Add(new SigningCredentials(
+                new X509SecurityKey(CreateClientAuthenticationCertificate()), SecurityAlgorithms.RsaSha256));
+        }
+
+        var context = new ProcessChallengeContext(new OpenIddictClientTransaction
+        {
+            CancellationToken = CancellationToken.None,
+            Configuration = options.Registrations[0].Configuration!,
+            Options = options,
+            Registration = options.Registrations[0],
+            ServiceProvider = provider
+        })
+        {
+            PushedAuthorizationEndpoint = new Uri("https://www.contoso.com/connect/par"),
+            PushedAuthorizationRequest = new OpenIddictRequest()
+        };
+
+        // Act
+        await new SendPushedAuthorizationRequest(provider.GetRequiredService<OpenIddictClientService>()).HandleAsync(context);
+
+        // Assert
+        Assert.Equal(expected, credentials is not null);
+
+        static X509Certificate2 CreateClientAuthenticationCertificate()
+        {
+            using var algorithm = RSA.Create(keySizeInBits: 2048);
+
+            var request = new CertificateRequest("CN=OpenIddict Client Tests", algorithm, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
+            request.CertificateExtensions.Add(new X509KeyUsageExtension(X509KeyUsageFlags.DigitalSignature, critical: true));
+            request.CertificateExtensions.Add(new X509EnhancedKeyUsageExtension(
+                new OidCollection { new Oid("1.3.6.1.5.5.7.3.2") }, critical: false));
+
+            return request.CreateSelfSigned(DateTimeOffset.UtcNow.AddDays(-1), DateTimeOffset.UtcNow.AddDays(1));
+        }
     }
 
     private static async Task<JsonWebToken> ValidateProofAsync(string proof)

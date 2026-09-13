@@ -7762,11 +7762,18 @@ public static partial class OpenIddictClientHandlers
             {
                 // Note: when DPoP is enabled and supported by the server, a DPoP proof is sent to the pushed
                 // authorization endpoint to bind the authorization code to the DPoP key of the registration.
+                //
+                // Since certificate-based token binding takes precedence over DPoP when negotiating the token
+                // binding method of the token endpoint, the authorization code is not bound to the DPoP key when
+                // certificate-based token binding is also enabled, as the token request later sent to redeem
+                // the authorization code might not include a DPoP proof in this case.
                 context.PushedAuthorizationResponse = await _service.SendPushedAuthorizationRequestAsync(
                     context.Registration, context.Configuration,
                     context.PushedAuthorizationRequest, context.PushedAuthorizationEndpoint,
                     context.PushedAuthorizationEndpointClientAuthenticationMethod, certificate,
-                    IsDPoPEnabled(context.Options, context.Registration) && IsDPoPSupported(context.Registration, context.Configuration)
+                    IsDPoPEnabled(context.Options, context.Registration) &&
+                    IsDPoPSupported(context.Registration, context.Configuration) &&
+                   !IsTlsClientCertificateTokenBindingEnabled(context.Options, context.Registration)
                         ? context.Registration.DPoPSigningCredentials
                         : null,
                     context.CancellationToken);
@@ -10159,6 +10166,21 @@ public static partial class OpenIddictClientHandlers
     internal static bool IsDPoPEnabled(OpenIddictClientOptions options, OpenIddictClientRegistration registration)
         => options.TokenBindingMethods.Contains(TokenBindingMethods.Private.DPoP) &&
           (registration.TokenBindingMethods.Count is 0 || registration.TokenBindingMethods.Contains(TokenBindingMethods.Private.DPoP));
+
+    /// <summary>
+    /// Determines whether certificate-based token binding can be negotiated for the specified registration
+    /// (i.e whether it is enabled and a TLS client authentication certificate is attached to the registration).
+    /// </summary>
+    /// <param name="options">The client options.</param>
+    /// <param name="registration">The client registration.</param>
+    /// <returns><see langword="true"/> if certificate-based token binding can be used, <see langword="false"/> otherwise.</returns>
+    internal static bool IsTlsClientCertificateTokenBindingEnabled(OpenIddictClientOptions options, OpenIddictClientRegistration registration)
+        => options.TokenBindingMethods.Contains(TokenBindingMethods.Private.TlsClientCertificate) &&
+          (registration.TokenBindingMethods.Count is 0 ||
+           registration.TokenBindingMethods.Contains(TokenBindingMethods.Private.TlsClientCertificate)) &&
+           registration.SigningCredentials.Exists(static credentials =>
+               credentials.Key is X509SecurityKey { Certificate: X509Certificate2 certificate } &&
+               OpenIddictHelpers.IsClientAuthenticationCertificate(certificate));
 
     /// <summary>
     /// Determines whether the authorization server supports the algorithm of the DPoP key attached to the registration.
