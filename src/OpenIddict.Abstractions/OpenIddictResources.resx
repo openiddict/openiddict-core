@@ -1964,6 +1964,19 @@ To register them, use 'services.AddOpenIddict().AddServer().UseSaml().UseAspNetC
   <data name="ID0575" xml:space="preserve">
     <value>The SAML assertion descriptor must contain a non-empty NameID value.</value>
   </data>
+  <data name="ID0576" xml:space="preserve">
+    <value>A SAML request state can only be created from a successful validation result containing a service provider and an assertion consumer service URL.</value>
+  </data>
+  <data name="ID0577" xml:space="preserve">
+    <value>The assertion lifetime of the SAML service provider '{0}' must be positive.</value>
+  </data>
+  <data name="ID0578" xml:space="preserve">
+    <value>The OpenIddict SAML identity provider OWIN services cannot be resolved.
+To register them, use 'services.AddOpenIddict().AddServer().UseSaml().UseOwin()' and ensure the service provider is attached to the OWIN context.</value>
+  </data>
+  <data name="ID0579" xml:space="preserve">
+    <value>The authentication type used by the OpenIddict SAML identity provider OWIN integration must be set. To set it, use 'services.AddOpenIddict().AddServer().UseSaml().UseOwin().SetAuthenticationType()'.</value>
+  </data>
   <data name="ID0532" xml:space="preserve">
     <value>The backchannel authentication request was not correctly extracted.
 To extract backchannel authentication requests, create a class implementing 'IOpenIddictServerHandler&lt;ExtractBackchannelAuthenticationRequestContext&gt;' and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.</value>

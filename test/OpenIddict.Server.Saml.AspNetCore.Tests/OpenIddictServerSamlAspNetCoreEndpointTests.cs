@@ -102,6 +102,66 @@ public class OpenIddictServerSamlAspNetCoreEndpointTests
     }
 
     [Fact]
+    public async Task SingleSignOn_RestoresAuthenticationRequestAfterChallenge()
+    {
+        // Arrange
+        using var host = await CreateHostAsync(configuration: saml => saml.SetAssertionProvider<RequestBoundAssertionProvider>());
+        using var client = CreateClient(host);
+
+        var query = CreateRedirectQueryString(CreateAuthenticationRequest(id: "_restored"), certificate: ServiceProviderCertificate);
+
+        using var challenge = await client.GetAsync("/saml/sso" + query);
+        var returnUrl = QueryValue(challenge.Headers.Location!, "ReturnUrl");
+
+        using var login = await client.GetAsync("/login?ReturnUrl=" + Uri.EscapeDataString(returnUrl));
+
+        using var request = new HttpRequestMessage(HttpMethod.Get, returnUrl);
+        request.Headers.Add("Cookie", GetCookie(login));
+
+        // Act
+        using var response = await client.SendAsync(request);
+
+        // Assert
+        var (_, saml, _) = await ParseFormAsync(response);
+        AssertSuccessfulResponse(LoadResponse(saml), "_restored");
+    }
+
+    [Fact]
+    public async Task SingleSignOn_RejectsStateWhenServiceProviderWasUpdated()
+    {
+        // Arrange
+        var sp = CreateServiceProvider();
+
+        using var host = await CreateHostAsync(configuration: saml => saml.Configure(options =>
+        {
+            options.ServiceProviders.Clear();
+            options.ServiceProviders.Add(sp);
+        }));
+
+        using var client = CreateClient(host);
+
+        var query = CreateRedirectQueryString(CreateAuthenticationRequest(), certificate: ServiceProviderCertificate);
+
+        using var challenge = await client.GetAsync("/saml/sso" + query);
+        var returnUrl = QueryValue(challenge.Headers.Location!, "ReturnUrl");
+
+        using var login = await client.GetAsync("/login?ReturnUrl=" + Uri.EscapeDataString(returnUrl));
+
+        // The assertion consumer service URL is removed while the user is authenticated.
+        sp.AssertionConsumerServiceUrls.Remove(AssertionConsumerServiceUrl);
+
+        using var request = new HttpRequestMessage(HttpMethod.Get, returnUrl);
+        request.Headers.Add("Cookie", GetCookie(login));
+
+        // Act
+        using var response = await client.SendAsync(request);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Equal(SR.GetResourceString(SR.ID2263), await response.Content.ReadAsStringAsync());
+    }
+
+    [Fact]
     public async Task SingleSignOn_PostBinding_ReturnsSignedResponseForAuthenticatedUser()
     {
         // Arrange
@@ -450,5 +510,13 @@ public class OpenIddictServerSamlAspNetCoreEndpointTests
     {
         public ValueTask<OpenIddictServerSamlModels.AssertionDescriptor?> CreateAssertionAsync(OpenIddictServerSamlModels.AssertionContext context)
             => new(result: null);
+    }
+
+    public sealed class RequestBoundAssertionProvider : IOpenIddictServerSamlAssertionProvider
+    {
+        public ValueTask<OpenIddictServerSamlModels.AssertionDescriptor?> CreateAssertionAsync(OpenIddictServerSamlModels.AssertionContext context)
+            => new(context.Request is { Id: "_restored", IsSigned: true, Binding: Bindings.HttpRedirect }
+                ? new OpenIddictServerSamlModels.AssertionDescriptor { NameId = "alice" }
+                : null);
     }
 }

@@ -353,6 +353,173 @@ public class OpenIddictServerSamlServiceTests
         Assert.Equal(SR.GetResourceString(SR.ID2248), result.ErrorDescription);
     }
 
+    [Theory]
+    [InlineData("3C3F786D6C2076657273696F6E3D22312E302220656E636F64696E673D22626F677573223F3E3C612F3E")]
+    [InlineData("3C3F786D6C2076657273696F6E3D22312E302220656E636F64696E673D227574662D3332223F3E3C612F3E")]
+    [InlineData("3C3F786D6C2076657273696F6E3D22312E302220656E636F64696E673D227574662D3136223F3E3C612F3E")]
+    [InlineData("3C613EC3283C2F613E")]
+    [InlineData("FFFE3C00610020002F003E")]
+    [InlineData("FEFF003C0061")]
+    [InlineData("EFBBBFFF")]
+    [InlineData("3C6120786D6C6E733A703D22223E3C703A622F3E3C2F613E")]
+    public async Task ValidatePostAuthenticationRequestAsync_RejectsMalformedDocumentsWithoutThrowing(string payload)
+    {
+        // Arrange
+        using var provider = CreateProvider(serviceProvider: sp => sp.RequireSignedAuthenticationRequests = false);
+        var service = provider.GetRequiredService<OpenIddictServerSamlService>();
+
+        // Note: the payload is hex-encoded.
+        var bytes = Enumerable.Range(0, payload.Length / 2)
+            .Select(index => byte.Parse(payload.Substring(index * 2, 2), System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture))
+            .ToArray();
+
+        // Act
+        var result = await service.ValidatePostAuthenticationRequestAsync(Convert.ToBase64String(bytes), null, Endpoint);
+
+        // Assert
+        Assert.False(result.Succeeded);
+        Assert.False(result.CanReturnErrorToServiceProvider);
+    }
+
+    [Theory]
+    [InlineData("yyyy-MM-dd'T'HH:mm:ss", true)]
+    [InlineData("yyyy-MM-dd'T'HH:mm:ss.fffffff'Z'", true)]
+    [InlineData("yyyy-MM-dd'T'HH:mm:ss'+14:00'", false)]
+    public async Task ValidatePostAuthenticationRequestAsync_ParsesIssueInstantAsUtc(string format, bool valid)
+    {
+        // Arrange
+        using var provider = CreateProvider(serviceProvider: sp => sp.RequireSignedAuthenticationRequests = false);
+        var service = provider.GetRequiredService<OpenIddictServerSamlService>();
+
+        // Note: a UTC value formatted with a +14:00 offset represents an instant 14 hours in the past.
+        var instant = DateTimeOffset.UtcNow.UtcDateTime.ToString(format, System.Globalization.CultureInfo.InvariantCulture);
+        var xml = ReplaceIssueInstant(CreateAuthenticationRequest(), instant);
+
+        // Act
+        var result = await service.ValidatePostAuthenticationRequestAsync(EncodePost(xml), null, Endpoint);
+
+        // Assert
+        Assert.Equal(valid, result.Succeeded);
+        Assert.Equal(valid ? null : SR.GetResourceString(SR.ID2250), result.ErrorDescription);
+    }
+
+    [Theory]
+    [InlineData("9999-12-31T23:59:59-14:00")]
+    [InlineData("0001-01-01T00:00:00+14:00")]
+    [InlineData("not-a-date")]
+    public async Task ValidatePostAuthenticationRequestAsync_RejectsInvalidIssueInstantWithoutThrowing(string instant)
+    {
+        // Arrange
+        using var provider = CreateProvider(serviceProvider: sp => sp.RequireSignedAuthenticationRequests = false);
+        var service = provider.GetRequiredService<OpenIddictServerSamlService>();
+
+        var xml = ReplaceIssueInstant(CreateAuthenticationRequest(), instant);
+
+        // Act
+        var result = await service.ValidatePostAuthenticationRequestAsync(EncodePost(xml), null, Endpoint);
+
+        // Assert
+        Assert.False(result.Succeeded);
+    }
+
+    [Fact]
+    public async Task ValidateRequestStateAsync_RestoresSerializedRequest()
+    {
+        // Arrange
+        using var provider = CreateProvider();
+        var service = provider.GetRequiredService<OpenIddictServerSamlService>();
+
+        var document = SignDocument(CreateAuthenticationRequest(id: "_state", attributes: "ForceAuthn=\"true\""), ServiceProviderCertificate);
+        var validation = await service.ValidatePostAuthenticationRequestAsync(EncodePost(document.OuterXml), "relay", Endpoint);
+
+        // Act
+        var state = OpenIddictServerSamlService.DeserializeRequestState(OpenIddictServerSamlService.SerializeRequestState(
+            service.CreateRequestState(validation, TimeSpan.FromMinutes(10))));
+
+        var result = await service.ValidateRequestStateAsync(state);
+
+        // Assert
+        Assert.True(result.Succeeded, result.ErrorDescription);
+        Assert.Equal(validation.Request, result.Request);
+        Assert.Equal("_state", result.RequestId);
+        Assert.Equal("relay", result.RelayState);
+        Assert.Equal(validation.AssertionConsumerServiceUrl, result.AssertionConsumerServiceUrl);
+        Assert.Equal(0, state!.CreationDate.UtcTicks % TimeSpan.TicksPerSecond);
+    }
+
+    [Fact]
+    public void DeserializeRequestState_ReturnsNullForInvalidPayloads()
+    {
+        // Arrange
+        var state = new RequestState
+        {
+            AssertionConsumerServiceUrl = AssertionConsumerServiceUrl,
+            CreationDate = DateTimeOffset.UtcNow,
+            ExpirationDate = DateTimeOffset.UtcNow.AddMinutes(1),
+            ServiceProvider = ServiceProviderEntityId
+        };
+
+        var data = OpenIddictServerSamlService.SerializeRequestState(state);
+
+        // Act and assert
+        Assert.NotNull(OpenIddictServerSamlService.DeserializeRequestState(data));
+        Assert.Null(OpenIddictServerSamlService.DeserializeRequestState([]));
+        Assert.Null(OpenIddictServerSamlService.DeserializeRequestState(data.Take(data.Length - 1).ToArray()));
+        Assert.Null(OpenIddictServerSamlService.DeserializeRequestState([.. data, 0]));
+        Assert.Null(OpenIddictServerSamlService.DeserializeRequestState([1, .. data.Skip(1)]));
+    }
+
+    [Fact]
+    public async Task ValidateRequestStateAsync_RejectsExpiredOrOutdatedStates()
+    {
+        // Arrange
+        using var provider = CreateProvider(serviceProvider: sp => sp.AssertionConsumerServiceUrls.Remove(SecondaryAssertionConsumerServiceUrl));
+        var service = provider.GetRequiredService<OpenIddictServerSamlService>();
+
+        var request = new AuthenticationRequest
+        {
+            Binding = Bindings.HttpPost,
+            Id = "_request",
+            IssueInstant = DateTimeOffset.UtcNow,
+            Issuer = ServiceProviderEntityId,
+            IsSigned = true
+        };
+
+        var state = new RequestState
+        {
+            AssertionConsumerServiceUrl = AssertionConsumerServiceUrl,
+            CreationDate = DateTimeOffset.UtcNow,
+            ExpirationDate = DateTimeOffset.UtcNow.AddMinutes(1),
+            Request = request,
+            ServiceProvider = ServiceProviderEntityId
+        };
+
+        // Act and assert
+        Assert.True((await service.ValidateRequestStateAsync(state)).Succeeded);
+        Assert.False((await service.ValidateRequestStateAsync(null)).Succeeded);
+        Assert.False((await service.ValidateRequestStateAsync(state with { ExpirationDate = DateTimeOffset.UtcNow.AddSeconds(-1) })).Succeeded);
+        Assert.False((await service.ValidateRequestStateAsync(state with { AssertionConsumerServiceUrl = SecondaryAssertionConsumerServiceUrl })).Succeeded);
+        Assert.False((await service.ValidateRequestStateAsync(state with { ServiceProvider = "https://unknown.example.com/" })).Succeeded);
+        Assert.False((await service.ValidateRequestStateAsync(state with { Request = request with { IsSigned = false } })).Succeeded);
+        Assert.False((await service.ValidateRequestStateAsync(state with { Request = request with { Issuer = "https://other.example.com/" } })).Succeeded);
+
+        // Identity provider-initiated states are rejected when the service provider no longer allows them.
+        var unsolicited = await service.ValidateRequestStateAsync(state with { Request = null });
+        Assert.False(unsolicited.Succeeded);
+        Assert.False(unsolicited.CanReturnErrorToServiceProvider);
+    }
+
+    [Fact]
+    public void Options_RejectNonPositiveServiceProviderAssertionLifetime()
+    {
+        // Arrange
+        using var provider = CreateProvider(serviceProvider: sp => sp.AssertionLifetime = TimeSpan.Zero);
+
+        // Act and assert
+        var exception = Assert.Throws<OptionsValidationException>(() => provider.GetRequiredService<IOptions<OpenIddictServerSamlOptions>>().Value);
+        Assert.Contains(SR.FormatID0577(ServiceProviderEntityId), exception.Message, StringComparison.Ordinal);
+    }
+
     [Fact]
     public async Task ValidatePostAuthenticationRequestAsync_RejectsUnknownAssertionConsumerService()
     {
@@ -759,6 +926,16 @@ public class OpenIddictServerSamlServiceTests
         // Assert
         Assert.Equal(IdentityProviderEntityId, options.EntityId);
         Assert.Equal(IdentityProviderCertificate, Assert.Single(options.SigningCertificates));
+    }
+
+    private static string ReplaceIssueInstant(string xml, string instant)
+    {
+        const string prefix = "IssueInstant=\"";
+
+        var start = xml.IndexOf(prefix, StringComparison.Ordinal) + prefix.Length;
+        var end = xml.IndexOf('"', start);
+
+        return string.Concat(xml.Substring(0, start), instant, xml.Substring(end));
     }
 
     private static OpenIddictServerBuilder ConfigureServer(OpenIddictServerBuilder options)

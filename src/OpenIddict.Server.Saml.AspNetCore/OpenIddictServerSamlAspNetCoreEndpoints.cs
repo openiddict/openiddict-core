@@ -16,7 +16,6 @@ using static OpenIddict.Server.Saml.OpenIddictServerSamlModels;
 using Parameters = OpenIddict.Server.Saml.OpenIddictServerSamlConstants.Parameters;
 using SamlStatusCodes = OpenIddict.Server.Saml.OpenIddictServerSamlConstants.StatusCodes;
 using StatusCodes = Microsoft.AspNetCore.Http.StatusCodes;
-using RequestState = OpenIddict.Server.Saml.AspNetCore.OpenIddictServerSamlAspNetCoreStateProtector.RequestState;
 
 namespace OpenIddict.Server.Saml.AspNetCore;
 
@@ -59,7 +58,6 @@ internal static class OpenIddictServerSamlAspNetCoreEndpoints
 
         var service = GetService(context);
         var protector = context.RequestServices.GetRequiredService<OpenIddictServerSamlAspNetCoreStateProtector>();
-        var settings = context.RequestServices.GetRequiredService<IOptionsMonitor<OpenIddictServerSamlOptions>>().CurrentValue;
 
         var endpoint = GetEndpointUrl(context, options.SingleSignOnPath);
         var request = context.Request;
@@ -70,28 +68,14 @@ internal static class OpenIddictServerSamlAspNetCoreEndpoints
         if (HttpMethods.IsGet(request.Method) && request.Query.ContainsKey(Parameters.State))
         {
             state = request.Query[Parameters.State].Count is 1 ? protector.Unprotect(request.Query[Parameters.State]) : null;
-            if (state is null)
-            {
-                await WriteErrorAsync(context, SR.GetResourceString(SR.ID2263));
-                return;
-            }
 
             // Note: the service provider is resolved again to ensure it was not removed or updated.
-            var provider = await service.FindServiceProviderAsync(state.ServiceProvider, context.RequestAborted);
-            if (provider is null || !provider.AssertionConsumerServiceUrls.Contains(state.AssertionConsumerServiceUrl))
+            result = await service.ValidateRequestStateAsync(state, context.RequestAborted);
+            if (state is null || !result.Succeeded)
             {
                 await WriteErrorAsync(context, SR.GetResourceString(SR.ID2263));
                 return;
             }
-
-            result = new AuthenticationRequestResult
-            {
-                AssertionConsumerServiceUrl = state.AssertionConsumerServiceUrl,
-                CanReturnErrorToServiceProvider = true,
-                RelayState = state.RelayState,
-                RequestId = state.RequestId,
-                ServiceProvider = provider
-            };
         }
 
         else if (HttpMethods.IsGet(request.Method) && request.Query.ContainsKey(Parameters.SamlRequest))
@@ -150,7 +134,7 @@ internal static class OpenIddictServerSamlAspNetCoreEndpoints
         var authentication = await context.AuthenticateAsync(options.AuthenticationScheme);
 
         var authenticated = authentication.Succeeded && authentication.Principal.Identity?.IsAuthenticated is true;
-        if (authenticated && (state?.ForceAuthentication ?? result.Request?.ForceAuthentication) is true)
+        if (authenticated && result.Request?.ForceAuthentication is true)
         {
             // When authentication is forced, the user must have been authenticated after the request was received.
             // For requests that were just received, a challenge is always triggered.
@@ -165,24 +149,12 @@ internal static class OpenIddictServerSamlAspNetCoreEndpoints
                 return;
             }
 
-            var now = settings.TimeProvider.GetUtcNow();
-
-            // Note: authentication tickets typically store their issuance date with a precision of one second.
-            state ??= new RequestState
-            {
-                AssertionConsumerServiceUrl = result.AssertionConsumerServiceUrl!,
-                CreationDate = new DateTimeOffset(now.UtcTicks - now.UtcTicks % TimeSpan.TicksPerSecond, TimeSpan.Zero),
-                ForceAuthentication = result.Request?.ForceAuthentication is true,
-                RelayState = result.RelayState,
-                RequestId = result.RequestId,
-                ServiceProvider = result.ServiceProvider!.EntityId!
-            };
+            state ??= service.CreateRequestState(result, options.RequestStateLifetime);
 
             var properties = new AuthenticationProperties
             {
                 RedirectUri = QueryHelpers.AddQueryString(
-                    request.PathBase.Add(options.SingleSignOnPath).Value!, Parameters.State,
-                    protector.Protect(state, options.RequestStateLifetime))
+                    request.PathBase.Add(options.SingleSignOnPath).Value!, Parameters.State, protector.Protect(state))
             };
 
             await context.ChallengeAsync(options.AuthenticationScheme, properties);

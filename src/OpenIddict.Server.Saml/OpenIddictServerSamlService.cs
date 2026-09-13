@@ -24,6 +24,8 @@ namespace OpenIddict.Server.Saml;
 /// </summary>
 public sealed class OpenIddictServerSamlService
 {
+    private const byte RequestStateVersion = 2;
+
     private readonly ILogger<OpenIddictServerSamlService> _logger;
     private readonly IOptionsMonitor<OpenIddictServerSamlOptions> _options;
     private readonly IOpenIddictServerSamlServiceProviderStore _store;
@@ -236,6 +238,194 @@ public sealed class OpenIddictServerSamlService
                 ServiceProvider = provider
             };
         }
+    }
+
+    /// <summary>
+    /// Creates the state that must be persisted (and protected) by the host while the user is authenticated.
+    /// </summary>
+    /// <param name="result">The successful validation result.</param>
+    /// <param name="lifetime">The lifetime of the state.</param>
+    /// <returns>The request state.</returns>
+    public RequestState CreateRequestState(AuthenticationRequestResult result, TimeSpan lifetime)
+    {
+        ArgumentNullException.ThrowIfNull(result);
+
+        if (!result.Succeeded || result.ServiceProvider?.EntityId is not { Length: > 0 } entityId ||
+            result.AssertionConsumerServiceUrl is null)
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0576), nameof(result));
+        }
+
+        if (lifetime <= TimeSpan.Zero)
+        {
+            throw new ArgumentOutOfRangeException(nameof(lifetime));
+        }
+
+        var now = _options.CurrentValue.TimeProvider.GetUtcNow();
+
+        return new RequestState
+        {
+            AssertionConsumerServiceUrl = result.AssertionConsumerServiceUrl,
+            // Note: authentication tickets typically store their issuance date with a precision of one second.
+            CreationDate = new DateTimeOffset(now.UtcTicks - now.UtcTicks % TimeSpan.TicksPerSecond, TimeSpan.Zero),
+            ExpirationDate = now + lifetime,
+            RelayState = result.RelayState,
+            Request = result.Request,
+            ServiceProvider = entityId
+        };
+    }
+
+    /// <summary>
+    /// Validates a request state restored by the host after the user was authenticated. The service provider is resolved
+    /// again and the assertion consumer service URL, the signature requirement and the identity provider-initiated
+    /// single sign-on setting are checked again to ensure the service provider was not updated in the meantime.
+    /// </summary>
+    /// <param name="state">The request state, or <see langword="null"/> if it couldn't be restored.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns>The validation result.</returns>
+    public ValueTask<AuthenticationRequestResult> ValidateRequestStateAsync(RequestState? state, CancellationToken cancellationToken = default)
+    {
+        return ExecuteAsync(state, cancellationToken);
+
+        async ValueTask<AuthenticationRequestResult> ExecuteAsync(RequestState? state, CancellationToken cancellationToken)
+        {
+            if (state is null || state.ExpirationDate < _options.CurrentValue.TimeProvider.GetUtcNow() ||
+                string.IsNullOrEmpty(state.ServiceProvider))
+            {
+                return Reject(SR.ID2263);
+            }
+
+            if (await FindServiceProviderAsync(state.ServiceProvider, cancellationToken) is not { } provider ||
+                !provider.AssertionConsumerServiceUrls.Exists(url => IsSameUrl(url, state.AssertionConsumerServiceUrl)) ||
+                (state.Request is null && !provider.AllowIdentityProviderInitiatedSingleSignOn) ||
+                (state.Request is { IsSigned: false } && provider.RequireSignedAuthenticationRequests) ||
+                (state.Request is not null && !string.Equals(state.Request.Issuer, provider.EntityId, StringComparison.Ordinal)))
+            {
+                return Reject(SR.ID2263);
+            }
+
+            return new AuthenticationRequestResult
+            {
+                AssertionConsumerServiceUrl = state.AssertionConsumerServiceUrl,
+                CanReturnErrorToServiceProvider = true,
+                RelayState = state.RelayState,
+                Request = state.Request,
+                RequestId = state.Request?.Id,
+                ServiceProvider = provider
+            };
+        }
+    }
+
+    /// <summary>
+    /// Serializes a request state (the serialized payload must be protected by the host).
+    /// </summary>
+    /// <param name="state">The request state.</param>
+    /// <returns>The serialized state.</returns>
+    public static byte[] SerializeRequestState(RequestState state)
+    {
+        ArgumentNullException.ThrowIfNull(state);
+
+        using var stream = new MemoryStream();
+        using (var writer = new BinaryWriter(stream, Encoding.UTF8, leaveOpen: true))
+        {
+            writer.Write(RequestStateVersion);
+            writer.Write(state.ServiceProvider);
+            writer.Write(state.AssertionConsumerServiceUrl.AbsoluteUri);
+            WriteNullable(writer, state.RelayState);
+            writer.Write(state.CreationDate.UtcTicks);
+            writer.Write(state.ExpirationDate.UtcTicks);
+
+            writer.Write(state.Request is not null);
+            if (state.Request is AuthenticationRequest request)
+            {
+                writer.Write(request.Id);
+                writer.Write(request.Issuer);
+                writer.Write(request.IssueInstant.UtcTicks);
+                writer.Write(request.Binding);
+                WriteNullable(writer, request.Destination);
+                writer.Write(request.ForceAuthentication);
+                writer.Write(request.IsPassive);
+                WriteNullable(writer, request.NameIdFormat);
+                writer.Write(request.IsSigned);
+            }
+        }
+
+        return stream.ToArray();
+
+        static void WriteNullable(BinaryWriter writer, string? value)
+        {
+            writer.Write(value is not null);
+            if (value is not null)
+            {
+                writer.Write(value);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Deserializes a request state serialized using <see cref="SerializeRequestState(RequestState)"/>.
+    /// </summary>
+    /// <param name="data">The serialized state.</param>
+    /// <returns>The request state, or <see langword="null"/> if the payload is invalid.</returns>
+    public static RequestState? DeserializeRequestState(byte[] data)
+    {
+        ArgumentNullException.ThrowIfNull(data);
+
+        try
+        {
+            using var stream = new MemoryStream(data, writable: false);
+            using var reader = new BinaryReader(stream, Encoding.UTF8);
+
+            if (reader.ReadByte() is not RequestStateVersion)
+            {
+                return null;
+            }
+
+            var provider = reader.ReadString();
+            var url = new Uri(reader.ReadString(), UriKind.Absolute);
+            var relayState = ReadNullable(reader);
+            var creation = new DateTimeOffset(reader.ReadInt64(), TimeSpan.Zero);
+            var expiration = new DateTimeOffset(reader.ReadInt64(), TimeSpan.Zero);
+
+            AuthenticationRequest? request = null;
+            if (reader.ReadBoolean())
+            {
+                request = new AuthenticationRequest
+                {
+                    Id = reader.ReadString(),
+                    Issuer = reader.ReadString(),
+                    IssueInstant = new DateTimeOffset(reader.ReadInt64(), TimeSpan.Zero),
+                    Binding = reader.ReadString(),
+                    Destination = ReadNullable(reader),
+                    ForceAuthentication = reader.ReadBoolean(),
+                    IsPassive = reader.ReadBoolean(),
+                    NameIdFormat = ReadNullable(reader),
+                    IsSigned = reader.ReadBoolean()
+                };
+            }
+
+            if (stream.Position != stream.Length)
+            {
+                return null;
+            }
+
+            return new RequestState
+            {
+                AssertionConsumerServiceUrl = url,
+                CreationDate = creation,
+                ExpirationDate = expiration,
+                RelayState = relayState,
+                Request = request,
+                ServiceProvider = provider
+            };
+        }
+
+        catch (Exception exception) when (exception is ArgumentException or EndOfStreamException or FormatException or IOException)
+        {
+            return null;
+        }
+
+        static string? ReadNullable(BinaryReader reader) => reader.ReadBoolean() ? reader.ReadString() : null;
     }
 
     private async ValueTask<AuthenticationRequestResult> ValidateAsync(byte[] data, string binding, string? relayState, Uri endpoint,
@@ -684,7 +874,11 @@ public sealed class OpenIddictServerSamlService
 
     private static bool IsSameUrl(string value, Uri url)
         => Uri.TryCreate(value, UriKind.Absolute, out var candidate) &&
-           Uri.Compare(candidate, url, UriComponents.AbsoluteUri, UriFormat.UriEscaped, StringComparison.Ordinal) is 0;
+           IsSameUrl(candidate, url);
+
+    private static bool IsSameUrl(Uri left, Uri right)
+        => left.IsAbsoluteUri && right.IsAbsoluteUri &&
+           Uri.Compare(left, right, UriComponents.AbsoluteUri, UriFormat.UriEscaped, StringComparison.Ordinal) is 0;
 
     private static bool TryParseInstant(string value, out DateTimeOffset instant)
     {
@@ -697,11 +891,20 @@ public sealed class OpenIddictServerSamlService
 
         try
         {
-            instant = XmlConvert.ToDateTimeOffset(value);
+            // Note: SAML 2.0 requires UTC instants (SAML core, 1.3.3). Values without a time zone are
+            // treated as UTC (instead of local time) and values with an offset are converted to UTC.
+            var date = XmlConvert.ToDateTime(value, XmlDateTimeSerializationMode.RoundtripKind);
+
+            instant = date.Kind switch
+            {
+                DateTimeKind.Unspecified => new DateTimeOffset(DateTime.SpecifyKind(date, DateTimeKind.Utc)),
+                _                        => new DateTimeOffset(date.ToUniversalTime())
+            };
+
             return true;
         }
 
-        catch (FormatException)
+        catch (Exception exception) when (exception is FormatException or ArgumentException or OverflowException)
         {
             return false;
         }

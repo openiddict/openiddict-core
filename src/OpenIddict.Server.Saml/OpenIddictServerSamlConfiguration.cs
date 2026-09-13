@@ -145,5 +145,10 @@ public sealed class OpenIddictServerSamlConfiguration : IPostConfigureOptions<Op
         {
             throw new InvalidOperationException(SR.FormatID0569(provider.EntityId));
         }
+
+        if (provider.AssertionLifetime is TimeSpan lifetime && lifetime <= TimeSpan.Zero)
+        {
+            throw new InvalidOperationException(SR.FormatID0577(provider.EntityId));
+        }
     }
 }

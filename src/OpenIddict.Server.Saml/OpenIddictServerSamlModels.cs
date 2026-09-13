@@ -123,6 +123,42 @@ public static class OpenIddictServerSamlModels
     }
 
     /// <summary>
+    /// Represents the state of a validated request, persisted by the host while the user is authenticated.
+    /// </summary>
+    public sealed record class RequestState
+    {
+        /// <summary>
+        /// Gets the entity identifier of the service provider.
+        /// </summary>
+        public required string ServiceProvider { get; init; }
+
+        /// <summary>
+        /// Gets the validated assertion consumer service URL.
+        /// </summary>
+        public required Uri AssertionConsumerServiceUrl { get; init; }
+
+        /// <summary>
+        /// Gets the validated authentication request, or <see langword="null"/> for identity provider-initiated single sign-on.
+        /// </summary>
+        public AuthenticationRequest? Request { get; init; }
+
+        /// <summary>
+        /// Gets the relay state, if any.
+        /// </summary>
+        public string? RelayState { get; init; }
+
+        /// <summary>
+        /// Gets the date at which the request was validated (truncated to the second).
+        /// </summary>
+        public required DateTimeOffset CreationDate { get; init; }
+
+        /// <summary>
+        /// Gets the date after which the state can no longer be used.
+        /// </summary>
+        public required DateTimeOffset ExpirationDate { get; init; }
+    }
+
+    /// <summary>
     /// Represents the context used to create an assertion.
     /// </summary>
     public sealed record class AssertionContext
@@ -138,7 +174,8 @@ public static class OpenIddictServerSamlModels
         public required OpenIddictServerSamlServiceProvider ServiceProvider { get; init; }
 
         /// <summary>
-        /// Gets the authentication request, or <see langword="null"/> for identity provider-initiated single sign-on.
+        /// Gets the authentication request (also restored after the user was challenged),
+        /// or <see langword="null"/> for identity provider-initiated single sign-on.
         /// </summary>
         public AuthenticationRequest? Request { get; init; }
 
