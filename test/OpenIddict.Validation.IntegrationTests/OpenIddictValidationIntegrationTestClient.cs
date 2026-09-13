@@ -176,10 +176,33 @@ public class OpenIddictValidationIntegrationTestClient : IAsyncDisposable
         ArgumentNullException.ThrowIfNull(request);
 
         using var message = CreateRequestMessage(request, method, uri);
+
+        foreach (var header in RequestHeaders)
+        {
+            message.Headers.TryAddWithoutValidation(header.Key, header.Value);
+        }
+
         using var response = await HttpClient.SendAsync(message);
+
+        ResponseHeaders.Clear();
+
+        foreach (var header in response.Headers)
+        {
+            ResponseHeaders[header.Key] = [.. header.Value];
+        }
 
         return await GetResponseAsync(response);
     }
+
+    /// <summary>
+    /// Gets the additional headers attached to all the requests sent by this client.
+    /// </summary>
+    public Dictionary<string, string[]> RequestHeaders { get; } = new(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>
+    /// Gets the headers returned in the last response received by this client.
+    /// </summary>
+    public Dictionary<string, string[]> ResponseHeaders { get; } = new(StringComparer.OrdinalIgnoreCase);
 
     private HttpRequestMessage CreateRequestMessage(OpenIddictRequest request, HttpMethod method, Uri uri)
     {

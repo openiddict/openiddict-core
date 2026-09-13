@@ -37,6 +37,7 @@ public static class OpenIddictValidationOwinHandlers
         ExtractAccessTokenFromBodyForm.Descriptor,
         ExtractAccessTokenFromQueryString.Descriptor,
         ExtractClientCertificate.Descriptor,
+        ExtractDPoPProof.Descriptor,
 
         /*
          * Challenge processing:
@@ -102,6 +103,7 @@ public static class OpenIddictValidationOwinHandlers
 
             context.BaseUri = CreateUri(request.Scheme + Uri.SchemeDelimiter + host + request.PathBase);
             context.RequestUri = CreateUri(request.Scheme + Uri.SchemeDelimiter + host + request.PathBase + request.Path + request.QueryString);
+            context.Transaction.RequestMethod = request.Method;
 
             return ValueTask.CompletedTask;
 
@@ -195,6 +197,17 @@ public static class OpenIddictValidationOwinHandlers
             if (!string.IsNullOrEmpty(header) && header.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
             {
                 context.AccessToken = header["Bearer ".Length..];
+                context.Transaction.AccessTokenScheme = Schemes.Bearer;
+
+                return ValueTask.CompletedTask;
+            }
+
+            // Resolve the access token from the Authorization header using the "DPoP" scheme.
+            // See https://datatracker.ietf.org/doc/html/rfc9449#section-7.1 for more information.
+            if (!string.IsNullOrEmpty(header) && header.StartsWith("DPoP ", StringComparison.OrdinalIgnoreCase))
+            {
+                context.AccessToken = header["DPoP ".Length..];
+                context.Transaction.AccessTokenScheme = Schemes.DPoP;
 
                 return ValueTask.CompletedTask;
             }
@@ -358,6 +371,58 @@ public static class OpenIddictValidationOwinHandlers
     }
 
     /// <summary>
+    /// Contains the logic responsible for extracting the DPoP proof from the request headers.
+    /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
+    /// </summary>
+    public sealed class ExtractDPoPProof : IOpenIddictValidationHandler<ProcessAuthenticationContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
+            = OpenIddictValidationHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
+                .AddFilter<RequireOwinRequest>()
+                .UseSingletonHandler<ExtractDPoPProof>()
+                .SetOrder(ExtractClientCertificate.Descriptor.Order + 1_000)
+                .SetType(OpenIddictValidationHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessAuthenticationContext context)
+        {
+            ArgumentNullException.ThrowIfNull(context);
+
+            // This handler only applies to OWIN requests. If The OWIN request cannot be resolved,
+            // this may indicate that the request was incorrectly processed by another server stack.
+            var request = context.Transaction.GetOwinRequest()
+                ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0120));
+
+            var values = request.Headers.GetValues(Headers.DPoP) ?? [];
+            if (values.Count is 0)
+            {
+                return ValueTask.CompletedTask;
+            }
+
+            // Requests MUST NOT contain more than one DPoP header (or a comma-separated list of proofs).
+            //
+            // See https://datatracker.ietf.org/doc/html/rfc9449#section-4.3 for more information.
+            if (values.Count is not 1 || string.IsNullOrEmpty(values[0]) || values[0]!.Contains(',', StringComparison.Ordinal))
+            {
+                context.Reject(
+                    error: Errors.InvalidDPoPProof,
+                    description: SR.GetResourceString(SR.ID2234),
+                    uri: SR.FormatID8000(SR.ID2234));
+
+                return ValueTask.CompletedTask;
+            }
+
+            context.Transaction.DPoPProof = values[0];
+
+            return ValueTask.CompletedTask;
+        }
+    }
+
+    /// <summary>
     /// Contains the logic responsible for resolving the context-specific properties and parameters stored in the
     /// OWIN authentication properties specified by the application that triggered the challenge operation.
     /// Note: this handler is not used when the OpenID Connect request is not initially handled by OWIN.
@@ -506,6 +571,8 @@ public static class OpenIddictValidationOwinHandlers
                 null or { Length: 0 } => 200,
 
                 Errors.InvalidToken or Errors.MissingToken => 401,
+
+                Errors.InvalidDPoPProof or Errors.UseDPoPNonce => 401,
 
                 Errors.InsufficientAccess or Errors.InsufficientScope => 403,
 
@@ -744,7 +811,17 @@ public static class OpenIddictValidationOwinHandlers
                 parameters[parameter.Key] = value;
             }
 
-            var builder = new StringBuilder(Schemes.Bearer);
+            // When the access token was sent using the DPoP scheme (or when the DPoP proof was invalid),
+            // use the DPoP scheme and return the list of supported algorithms, as required by RFC 9449.
+            var scheme = string.Equals(context.Transaction.AccessTokenScheme, Schemes.DPoP, StringComparison.OrdinalIgnoreCase) ||
+                context.Transaction.Response.Error is Errors.InvalidDPoPProof or Errors.UseDPoPNonce ? Schemes.DPoP : Schemes.Bearer;
+
+            if (scheme is Schemes.DPoP && context.Options.DPoPSigningAlgorithms.Count is > 0)
+            {
+                parameters[Parameters.Algs] = string.Join(' ', context.Options.DPoPSigningAlgorithms);
+            }
+
+            var builder = new StringBuilder(scheme);
 
             foreach (var parameter in parameters)
             {

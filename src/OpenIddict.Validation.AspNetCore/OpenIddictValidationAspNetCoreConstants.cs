@@ -11,6 +11,11 @@ namespace OpenIddict.Validation.AspNetCore;
 /// </summary>
 public static class OpenIddictValidationAspNetCoreConstants
 {
+    public static class Headers
+    {
+        public const string DPoP = "DPoP";
+    }
+
     public static class Properties
     {
         public const string AccessTokenPrincipal = ".access_token_principal";

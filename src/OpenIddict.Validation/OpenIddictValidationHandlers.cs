@@ -13,7 +13,10 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text.Json.Nodes;
+using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 using static OpenIddict.Abstractions.OpenIddictExceptions;
 
@@ -29,6 +32,7 @@ public static partial class OpenIddictValidationHandlers
          */
         EvaluateValidatedTokens.Descriptor,
         ValidateRequiredTokens.Descriptor,
+        ValidateDPoPProof.Descriptor,
         ResolveServerConfiguration.Descriptor,
         EvaluateIntrospectionRequest.Descriptor,
         AttachIntrospectionEndpointClientAuthenticationMethod.Descriptor,
@@ -140,6 +144,113 @@ public static partial class OpenIddictValidationHandlers
             }
 
             return ValueTask.CompletedTask;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for validating the DPoP proof sent with access tokens using the "DPoP" scheme.
+    /// </summary>
+    public sealed class ValidateDPoPProof : IOpenIddictValidationHandler<ProcessAuthenticationContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictValidationHandlerDescriptor Descriptor { get; }
+            = OpenIddictValidationHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
+                .UseSingletonHandler<ValidateDPoPProof>()
+                .SetOrder(ValidateRequiredTokens.Descriptor.Order + 500)
+                .SetType(OpenIddictValidationHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public async ValueTask HandleAsync(ProcessAuthenticationContext context)
+        {
+            ArgumentNullException.ThrowIfNull(context);
+
+            // Note: DPoP proofs are only validated when the access token is sent using the "DPoP" scheme.
+            // Access tokens sent using the "Bearer" scheme are treated as bearer tokens (and DPoP-bound
+            // tokens are rejected when validating the proof of possession).
+            //
+            // See https://datatracker.ietf.org/doc/html/rfc9449#section-7 for more information.
+            if (string.IsNullOrEmpty(context.AccessToken) ||
+                !string.Equals(context.Transaction.AccessTokenScheme, Schemes.DPoP, StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
+
+            if (string.IsNullOrEmpty(context.Transaction.DPoPProof))
+            {
+                context.Logger.LogInformation(6311, SR.GetResourceString(SR.ID6311), SR.GetResourceString(SR.ID2228));
+
+                context.Reject(
+                    error: Errors.InvalidDPoPProof,
+                    description: SR.GetResourceString(SR.ID2228),
+                    uri: SR.FormatID8000(SR.ID2228));
+
+                return;
+            }
+
+            if (string.IsNullOrEmpty(context.Transaction.RequestMethod) || context.Transaction.RequestUri is not { IsAbsoluteUri: true } uri)
+            {
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0549));
+            }
+
+            var date = context.Options.TimeProvider.GetUtcNow();
+
+            var result = await OpenIddictDPoPHelpers.ValidateProofAsync(
+                proof     : context.Transaction.DPoPProof,
+                method    : context.Transaction.RequestMethod,
+                uri       : uri,
+                algorithms: context.Options.DPoPSigningAlgorithms,
+                date      : date,
+                lifetime  : context.Options.DPoPProofLifetime,
+                token     : context.AccessToken);
+
+            if (result is not { Error: OpenIddictDPoPHelpers.ProofError.None, Token: JsonWebToken token, Thumbprint: string thumbprint })
+            {
+                context.Logger.LogInformation(6311, SR.GetResourceString(SR.ID6311), result.Claim ?? result.Error.ToString());
+
+                context.Reject(
+                    error: Errors.InvalidDPoPProof,
+                    description: result.Claim is not null ? SR.FormatID2226(result.Claim) : SR.GetResourceString(SR.ID2225),
+                    uri: SR.FormatID8000(result.Claim is not null ? SR.ID2226 : SR.ID2225));
+
+                return;
+            }
+
+            // If a distributed cache was registered, use it to prevent the proof from being replayed.
+            if (context.ServiceProvider.GetService<IDistributedCache>() is IDistributedCache cache)
+            {
+                var key = "openiddict-validation-dpop-proof:" + thumbprint + "." + OpenIddictDPoPHelpers.GetJwtId(token);
+
+                if (await cache.GetAsync(key, context.CancellationToken) is not null)
+                {
+                    context.Logger.LogInformation(6312, SR.GetResourceString(SR.ID6312));
+
+                    context.Reject(
+                        error: Errors.InvalidDPoPProof,
+                        description: SR.GetResourceString(SR.ID2227),
+                        uri: SR.FormatID8000(SR.ID2227));
+
+                    return;
+                }
+
+                var issued = new DateTimeOffset(token.IssuedAt, TimeSpan.Zero);
+
+                await cache.SetAsync(key, [1], new DistributedCacheEntryOptions
+                {
+                    AbsoluteExpiration = (issued > date ? issued : date) + context.Options.DPoPProofLifetime
+                }, context.CancellationToken);
+            }
+
+            var principal = new ClaimsPrincipal(new ClaimsIdentity(token.Claims,
+                authenticationType: TokenValidationParameters.DefaultAuthenticationType,
+                nameType: Claims.Name,
+                roleType: Claims.Role));
+
+            principal.SetClaim(Claims.Private.DPoPJwkThumbprint, thumbprint);
+
+            context.Transaction.DPoPProofPrincipal = principal;
         }
     }
 
@@ -890,12 +1001,68 @@ public static partial class OpenIddictValidationHandlers
             var confirmation = context.AccessTokenPrincipal.GetClaim(Claims.Confirmation);
             if (string.IsNullOrEmpty(confirmation))
             {
+                // Access tokens sent using the "DPoP" authentication scheme MUST be bound to a DPoP key.
+                //
+                // See https://datatracker.ietf.org/doc/html/rfc9449#section-7.1 for more information.
+                if (string.Equals(context.Transaction.AccessTokenScheme, Schemes.DPoP, StringComparison.OrdinalIgnoreCase))
+                {
+                    context.Logger.LogInformation(6314, SR.GetResourceString(SR.ID6314));
+
+                    context.Reject(
+                        error: Errors.InvalidToken,
+                        description: SR.GetResourceString(SR.ID2232),
+                        uri: SR.FormatID8000(SR.ID2232));
+
+                    return ValueTask.CompletedTask;
+                }
+
                 return ValueTask.CompletedTask;
             }
 
             if (JsonObject.Parse(confirmation) is not JsonObject node)
             {
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID2199));
+            }
+
+            if (!node.ContainsKey(JsonWebKeyParameterNames.X5tS256) && !node.ContainsKey(Claims.JsonWebKeyThumbprint))
+            {
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID2196));
+            }
+
+            if (node.ContainsKey(Claims.JsonWebKeyThumbprint))
+            {
+                var jkt = (string?) node[Claims.JsonWebKeyThumbprint];
+                if (string.IsNullOrEmpty(jkt))
+                {
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID2199));
+                }
+
+                // If no valid DPoP proof was provided (e.g because the access token was sent using the
+                // "Bearer" scheme), return an error as the proof-of-possession cannot be validated.
+                if (context.Transaction.DPoPProofPrincipal?.GetClaim(Claims.Private.DPoPJwkThumbprint) is not { Length: > 0 } value)
+                {
+                    context.Logger.LogInformation(6314, SR.GetResourceString(SR.ID6314));
+
+                    context.Reject(
+                        error: Errors.InvalidToken,
+                        description: SR.GetResourceString(SR.ID2230),
+                        uri: SR.FormatID8000(SR.ID2230));
+
+                    return ValueTask.CompletedTask;
+                }
+
+                // If the thumbprint of the DPoP proof key doesn't match the confirmation claim, return an error.
+                if (!OpenIddictDPoPHelpers.FixedTimeEquals(value, jkt))
+                {
+                    context.Logger.LogInformation(6314, SR.GetResourceString(SR.ID6314));
+
+                    context.Reject(
+                        error: Errors.InvalidToken,
+                        description: SR.GetResourceString(SR.ID2231),
+                        uri: SR.FormatID8000(SR.ID2231));
+
+                    return ValueTask.CompletedTask;
+                }
             }
 
             if (node.ContainsKey(JsonWebKeyParameterNames.X5tS256))
@@ -940,7 +1107,7 @@ public static partial class OpenIddictValidationHandlers
                 return ValueTask.CompletedTask;
             }
 
-            throw new InvalidOperationException(SR.GetResourceString(SR.ID2196));
+            return ValueTask.CompletedTask;
         }
     }
 

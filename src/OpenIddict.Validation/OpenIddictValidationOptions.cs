@@ -157,6 +157,27 @@ public sealed class OpenIddictValidationOptions
     public HashSet<string> Audiences { get; } = new(StringComparer.Ordinal);
 
     /// <summary>
+    /// Gets or sets the maximum difference allowed between the issuance date of a DPoP proof and the current date.
+    /// </summary>
+    public TimeSpan DPoPProofLifetime { get; set; } = TimeSpan.FromMinutes(5);
+
+    /// <summary>
+    /// Gets the asymmetric signing algorithms allowed for DPoP proofs.
+    /// </summary>
+    public HashSet<string> DPoPSigningAlgorithms { get; } = new(StringComparer.Ordinal)
+    {
+        SecurityAlgorithms.EcdsaSha256,
+        SecurityAlgorithms.EcdsaSha384,
+        SecurityAlgorithms.EcdsaSha512,
+        SecurityAlgorithms.RsaSha256,
+        SecurityAlgorithms.RsaSha384,
+        SecurityAlgorithms.RsaSha512,
+        SecurityAlgorithms.RsaSsaPssSha256,
+        SecurityAlgorithms.RsaSsaPssSha384,
+        SecurityAlgorithms.RsaSsaPssSha512
+    };
+
+    /// <summary>
     /// Gets the OAuth 2.0 client authentication methods enabled for this application.
     /// </summary>
     public HashSet<string> ClientAuthenticationMethods { get; } = new(StringComparer.Ordinal)

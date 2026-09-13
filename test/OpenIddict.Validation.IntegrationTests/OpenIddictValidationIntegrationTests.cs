@@ -24,7 +24,7 @@ using static OpenIddict.Validation.OpenIddictValidationHandlers.Protection;
 
 namespace OpenIddict.Validation.IntegrationTests;
 
-public abstract class OpenIddictValidationIntegrationTests
+public abstract partial class OpenIddictValidationIntegrationTests
 {
     protected OpenIddictValidationIntegrationTests(ITestOutputHelper outputHelper)
     {

@@ -624,6 +624,22 @@ public sealed class OpenIddictValidationBuilder
         => Configure(options => options.ClientAssertionLifetime = lifetime);
 
     /// <summary>
+    /// Sets the maximum difference allowed between the issuance date of a DPoP proof and the current date.
+    /// </summary>
+    /// <remarks>
+    /// Note: when an <see cref="Microsoft.Extensions.Caching.Distributed.IDistributedCache"/> implementation
+    /// is registered in the dependency injection container, it is used to prevent DPoP proofs from being replayed.
+    /// </remarks>
+    /// <param name="lifetime">The DPoP proof lifetime.</param>
+    /// <returns>The <see cref="OpenIddictValidationBuilder"/> instance.</returns>
+    public OpenIddictValidationBuilder SetDPoPProofLifetime(TimeSpan lifetime)
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(lifetime, TimeSpan.Zero);
+
+        return Configure(options => options.DPoPProofLifetime = lifetime);
+    }
+
+    /// <summary>
     /// Sets a static OpenID Connect server configuration, that will be used to
     /// resolve the metadata/introspection endpoints and the issuer signing keys.
     /// </summary>
