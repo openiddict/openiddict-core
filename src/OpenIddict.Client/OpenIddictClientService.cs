@@ -26,6 +26,9 @@ namespace OpenIddict.Client;
 public class OpenIddictClientService
 {
     private readonly ConcurrentDictionary<string, string> _nonces = new(StringComparer.OrdinalIgnoreCase);
+    private readonly ConcurrentDictionary<string, (OpenIddictClientRegistration Registration, DateTimeOffset ExpirationDate)> _registrations
+        = new(StringComparer.Ordinal);
+    private ImmutableArray<IOpenIddictClientRegistrationProvider> _registrationProviders;
     private readonly IServiceProvider _provider;
 
     /// <summary>
@@ -91,10 +94,11 @@ public class OpenIddictClientService
     }
 
     /// <summary>
-    /// Gets all the client registrations that were registered in the client options.
+    /// Gets all the client registrations that were registered in the client options
+    /// or that are returned by the registered <see cref="IOpenIddictClientRegistrationProvider"/> instances.
     /// </summary>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
-    /// <returns>The client registrations that were registered in the client options.</returns>
+    /// <returns>The client registrations.</returns>
     public virtual ValueTask<ImmutableArray<OpenIddictClientRegistration>> GetClientRegistrationsAsync(
         CancellationToken cancellationToken = default)
     {
@@ -103,12 +107,9 @@ public class OpenIddictClientService
             return new(Task.FromCanceled<ImmutableArray<OpenIddictClientRegistration>>(cancellationToken));
         }
 
-        var options = _provider.GetRequiredService<IOptionsMonitor<OpenIddictClientOptions>>();
-        return new(options.CurrentValue.Registrations switch
-        {
-            [  ]               => [],
-            [..] registrations => [.. registrations]
-        });
+        return ResolveClientRegistrationsAsync(
+            static (provider, state, cancellationToken) => provider.ListAsync(cancellationToken),
+            state: (object?) null, cancellationToken);
     }
 
     /// <summary>
@@ -134,18 +135,19 @@ public class OpenIddictClientService
             return new(Task.FromCanceled<OpenIddictClientRegistration>(cancellationToken));
         }
 
-        var options = _provider.GetRequiredService<IOptionsMonitor<OpenIddictClientOptions>>();
+        return ExecuteAsync(uri, cancellationToken);
 
-        return options.CurrentValue.Registrations.FindAll(registration => registration.Issuer == uri) switch
-        {
-            [var registration] => new(registration),
+        async ValueTask<OpenIddictClientRegistration> ExecuteAsync(Uri uri, CancellationToken cancellationToken)
+            => await ResolveClientRegistrationsAsync(
+                static (provider, uri, cancellationToken) => provider.FindByIssuerAsync(uri, cancellationToken),
+                uri, cancellationToken) switch
+            {
+                [var registration] => registration,
 
-            [] => new(Task.FromException<OpenIddictClientRegistration>(
-                new InvalidOperationException(SR.GetResourceString(SR.ID0292)))),
+                [] => throw new InvalidOperationException(SR.GetResourceString(SR.ID0292)),
 
-            _ => new(Task.FromException<OpenIddictClientRegistration>(
-                new InvalidOperationException(SR.GetResourceString(SR.ID0404))))
-        };
+                _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0404))
+            };
     }
 
     /// <summary>
@@ -171,19 +173,19 @@ public class OpenIddictClientService
             return new(Task.FromCanceled<OpenIddictClientRegistration>(cancellationToken));
         }
 
-        var options = _provider.GetRequiredService<IOptionsMonitor<OpenIddictClientOptions>>();
+        return ExecuteAsync(name, cancellationToken);
 
-        return options.CurrentValue.Registrations.FindAll(registration => string.Equals(
-            registration.ProviderName, name, StringComparison.Ordinal)) switch
-        {
-            [var registration] => new(registration),
+        async ValueTask<OpenIddictClientRegistration> ExecuteAsync(string name, CancellationToken cancellationToken)
+            => await ResolveClientRegistrationsAsync(
+                static (provider, name, cancellationToken) => provider.FindByProviderNameAsync(name, cancellationToken),
+                name, cancellationToken) switch
+            {
+                [var registration] => registration,
 
-            [] => new(Task.FromException<OpenIddictClientRegistration>(
-                new InvalidOperationException(SR.GetResourceString(SR.ID0397)))),
+                [] => throw new InvalidOperationException(SR.GetResourceString(SR.ID0397)),
 
-            _ => new(Task.FromException<OpenIddictClientRegistration>(
-                new InvalidOperationException(SR.GetResourceString(SR.ID0409))))
-        };
+                _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0409))
+            };
     }
 
     /// <summary>
@@ -206,11 +208,166 @@ public class OpenIddictClientService
             return new(Task.FromCanceled<OpenIddictClientRegistration>(cancellationToken));
         }
 
-        var options = _provider.GetRequiredService<IOptionsMonitor<OpenIddictClientOptions>>();
+        var options = _provider.GetRequiredService<IOptionsMonitor<OpenIddictClientOptions>>().CurrentValue;
 
-        return new(options.CurrentValue.Registrations.Find(registration => string.Equals(
-            registration.RegistrationId, identifier, StringComparison.Ordinal))
-            ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0410)));
+        // Static registrations are always preferred to dynamic registrations.
+        if (options.Registrations.Find(registration => string.Equals(
+            registration.RegistrationId, identifier, StringComparison.Ordinal)) is OpenIddictClientRegistration registration)
+        {
+            return new(registration);
+        }
+
+        // If the dynamic registration was already resolved and is still cached, return it.
+        if (_registrations.TryGetValue(identifier, out var entry) && entry.ExpirationDate > options.TimeProvider.GetUtcNow())
+        {
+            return new(entry.Registration);
+        }
+
+        return ExecuteAsync(identifier, cancellationToken);
+
+        async ValueTask<OpenIddictClientRegistration> ExecuteAsync(string identifier, CancellationToken cancellationToken)
+        {
+            foreach (var provider in GetRegistrationProviders())
+            {
+                if (await provider.FindByIdAsync(identifier, cancellationToken) is not OpenIddictClientRegistration registration)
+                {
+                    continue;
+                }
+
+                registration = InitializeClientRegistration(registration);
+
+                // Note: the identifier of the resolved registration MUST match the requested identifier
+                // (e.g the identifier stored in state tokens), as it's used to resolve it in later requests.
+                if (!string.Equals(registration.RegistrationId, identifier, StringComparison.Ordinal))
+                {
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0558));
+                }
+
+                return registration;
+            }
+
+            throw new InvalidOperationException(SR.GetResourceString(SR.ID0410));
+        }
+    }
+
+    /// <summary>
+    /// Resolves the client registrations returned by all the registration providers and initializes them.
+    /// </summary>
+    private async ValueTask<ImmutableArray<OpenIddictClientRegistration>> ResolveClientRegistrationsAsync<TState>(
+        Func<IOpenIddictClientRegistrationProvider, TState, CancellationToken, ValueTask<ImmutableArray<OpenIddictClientRegistration>>> resolver,
+        TState state, CancellationToken cancellationToken)
+    {
+        var builder = ImmutableArray.CreateBuilder<OpenIddictClientRegistration>();
+
+        foreach (var provider in GetRegistrationProviders())
+        {
+            foreach (var registration in await resolver(provider, state, cancellationToken))
+            {
+                var result = InitializeClientRegistration(registration);
+
+                // Note: the same registration may be returned by multiple providers (or by the
+                // cache when multiple instances share the same identifier): only add it once.
+                if (!Contains(builder, result))
+                {
+                    builder.Add(result);
+                }
+            }
+        }
+
+        return builder.ToImmutable();
+
+        static bool Contains(ImmutableArray<OpenIddictClientRegistration>.Builder builder, OpenIddictClientRegistration registration)
+        {
+            for (var index = 0; index < builder.Count; index++)
+            {
+                if (ReferenceEquals(builder[index], registration))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Resolves the registration providers.
+    /// </summary>
+    private ImmutableArray<IOpenIddictClientRegistrationProvider> GetRegistrationProviders()
+    {
+        if (_registrationProviders.IsDefault)
+        {
+            _registrationProviders = [.. _provider.GetServices<IOpenIddictClientRegistrationProvider>()];
+        }
+
+        return _registrationProviders;
+    }
+
+    /// <summary>
+    /// Initializes and validates the specified dynamic client registration and caches it, if applicable.
+    /// </summary>
+    /// <param name="registration">The client registration.</param>
+    /// <returns>The initialized client registration or the equivalent cached instance.</returns>
+    private OpenIddictClientRegistration InitializeClientRegistration(OpenIddictClientRegistration registration)
+    {
+        var options = _provider.GetRequiredService<IOptionsMonitor<OpenIddictClientOptions>>().CurrentValue;
+
+        // Note: static registrations are initialized and validated when the client options are built.
+        if (options.Registrations.Exists(item => ReferenceEquals(item, registration)))
+        {
+            return registration;
+        }
+
+        OpenIddictClientConfiguration.ConfigureRegistration(_provider, options, registration);
+
+        var now = options.TimeProvider.GetUtcNow();
+
+        // If an equivalent registration was already resolved, return the cached instance
+        // to ensure the same configuration manager (and server configuration) is reused.
+        if (!string.IsNullOrEmpty(registration.RegistrationId) &&
+            _registrations.TryGetValue(registration.RegistrationId, out var entry) && entry.ExpirationDate > now)
+        {
+            return entry.Registration;
+        }
+
+        var builder = new ValidateOptionsResultBuilder();
+
+        OpenIddictClientConfiguration.ValidateRegistration(options, registration, builder);
+
+        // Note: the redirection and post-logout redirection endpoints are resolved from the client options: to ensure
+        // callbacks can be handled by OpenIddict, dynamic registrations can only use URIs declared in the options.
+        if (registration.RedirectUri is not null && !options.RedirectionEndpointUris.Contains(registration.RedirectUri))
+        {
+            builder.AddError(SR.GetResourceString(SR.ID0555));
+        }
+
+        if (registration.PostLogoutRedirectUri is not null &&
+            !options.PostLogoutRedirectionEndpointUris.Contains(registration.PostLogoutRedirectUri))
+        {
+            builder.AddError(SR.GetResourceString(SR.ID0556));
+        }
+
+        // Note: a string comparer ignoring casing is deliberately used for consistency with the static registrations.
+        if (!string.IsNullOrEmpty(registration.RegistrationId) && options.Registrations.Exists(item =>
+            string.Equals(item.RegistrationId, registration.RegistrationId, StringComparison.OrdinalIgnoreCase)))
+        {
+            builder.AddError(SR.GetResourceString(SR.ID0557));
+        }
+
+        if (builder.Build() is { Failed: true } result)
+        {
+            throw new InvalidOperationException(SR.FormatID0554(Environment.NewLine, result.FailureMessage));
+        }
+
+        if (options.DynamicRegistrationCacheLifetime is not TimeSpan lifetime || lifetime <= TimeSpan.Zero)
+        {
+            return registration;
+        }
+
+        var expiration = now + lifetime;
+        _registrations[registration.RegistrationId!] = (registration, expiration);
+
+        return registration;
     }
 
     /// <summary>

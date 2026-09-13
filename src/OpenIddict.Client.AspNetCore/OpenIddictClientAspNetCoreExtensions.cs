@@ -4,6 +4,7 @@
  * the license and the contributors participating to this project.
  */
 
+using System.Diagnostics;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using OpenIddict.Client;
@@ -27,6 +28,10 @@ public static class OpenIddictClientAspNetCoreExtensions
         ArgumentNullException.ThrowIfNull(builder);
 
         builder.Services.AddAuthentication();
+
+        // Decorate the authentication scheme provider to resolve the provider names
+        // of dynamic client registrations as forwarded authentication schemes.
+        DecorateAuthenticationSchemeProvider(builder.Services);
 
         builder.Services.TryAddScoped<OpenIddictClientAspNetCoreForwarder>();
         builder.Services.TryAddScoped<OpenIddictClientAspNetCoreHandler>();
@@ -67,6 +72,39 @@ public static class OpenIddictClientAspNetCoreExtensions
             IOptionsChangeTokenSource<OpenIddictClientAspNetCoreOptions>, OpenIddictClientAspNetCoreConfiguration>());
 
         return new OpenIddictClientAspNetCoreBuilder(builder.Services);
+
+        static void DecorateAuthenticationSchemeProvider(IServiceCollection services)
+        {
+            var descriptor = services.LastOrDefault(static descriptor =>
+                descriptor.ServiceType == typeof(IAuthenticationSchemeProvider) && !descriptor.IsKeyedService);
+
+            if (descriptor is null || descriptor.ImplementationFactory?.Target is SchemeProviderFactory)
+            {
+                return;
+            }
+
+            services[services.IndexOf(descriptor)] = ServiceDescriptor.Describe(
+                serviceType: typeof(IAuthenticationSchemeProvider),
+                implementationFactory: new SchemeProviderFactory(descriptor).Create,
+                lifetime: descriptor.Lifetime);
+        }
+    }
+
+    /// <summary>
+    /// Creates <see cref="OpenIddictClientAspNetCoreSchemeProvider"/> instances wrapping the original scheme provider.
+    /// </summary>
+    private sealed class SchemeProviderFactory(ServiceDescriptor descriptor)
+    {
+        public object Create(IServiceProvider provider) => new OpenIddictClientAspNetCoreSchemeProvider(
+            inner: (IAuthenticationSchemeProvider) (descriptor switch
+            {
+                { ImplementationInstance: object instance } => instance,
+                { ImplementationFactory: Func<IServiceProvider, object> factory } => factory(provider),
+                { ImplementationType: Type type } => ActivatorUtilities.CreateInstance(provider, type),
+
+                _ => throw new UnreachableException()
+            }),
+            provider: provider);
     }
 
     /// <summary>

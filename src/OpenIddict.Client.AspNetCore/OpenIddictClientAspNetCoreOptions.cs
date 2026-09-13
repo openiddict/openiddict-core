@@ -20,6 +20,8 @@ public sealed class OpenIddictClientAspNetCoreOptions
     /// <see cref="IAuthenticationService.ChallengeAsync(HttpContext, string, AuthenticationProperties)"/>
     /// cannot directly use the provider name associated to a client registration as the authentication
     /// scheme and must set the provider name (or the issuer) as an authentication property instead.
+    /// When enabled, the provider names of dynamic client registrations resolved from
+    /// <see cref="IOpenIddictClientRegistrationProvider"/> implementations are also resolved as schemes.
     /// </summary>
     public bool DisableAutomaticAuthenticationSchemeForwarding { get; set; }
 

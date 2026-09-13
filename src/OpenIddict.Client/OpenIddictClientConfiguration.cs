@@ -42,55 +42,7 @@ public sealed class OpenIddictClientConfiguration : IPostConfigureOptions<OpenId
 
         foreach (var registration in options.Registrations)
         {
-            // If no explicit registration identifier was set, compute a stable
-            // hash based on the issuer URI and the provider name, if available.
-            if (registration.Issuer is not null && string.IsNullOrEmpty(registration.RegistrationId))
-            {
-                registration.RegistrationId = ComputeDefaultRegistrationId(registration);
-            }
-
-            // If no client type was explicitly set, assume the client is confidential if a client secret
-            // or a signing key/certificate (typically used with private_key_jwt, tls_client_auth or
-            // self_signed_tls_client_auth) has been attached to the client registration.
-            if (string.IsNullOrEmpty(registration.ClientType))
-            {
-                registration.ClientType =
-                    !string.IsNullOrEmpty(registration.ClientSecret) || registration.SigningCredentials.Count is > 0
-                    ? ClientTypes.Confidential
-                    : ClientTypes.Public;
-            }
-
-            // If DPoP token binding was enabled and no DPoP key was attached to the registration, generate an ephemeral key.
-            if (options.TokenBindingMethods.Contains(TokenBindingMethods.Private.DPoP) && registration.DPoPSigningCredentials is null &&
-               (registration.TokenBindingMethods.Count is 0 || registration.TokenBindingMethods.Contains(TokenBindingMethods.Private.DPoP)))
-            {
-                registration.DPoPSigningCredentials = new SigningCredentials(
-                    new ECDsaSecurityKey(ECDsa.Create(ECCurve.NamedCurves.nistP256)), SecurityAlgorithms.EcdsaSha256);
-            }
-
-            if (registration.ConfigurationManager is null)
-            {
-                if (registration.Configuration is not null)
-                {
-                    registration.Configuration.Issuer ??= registration.Issuer;
-                    registration.ConfigurationManager = new StaticConfigurationManager<OpenIddictConfiguration>(registration.Configuration);
-                }
-
-                else if (registration.Issuer is not null)
-                {
-                    registration.ConfigurationEndpoint ??= OpenIddictHelpers.CreateAbsoluteUri(
-                        registration.Issuer,
-                        registration.ConfigurationEndpoint ?? new Uri(".well-known/openid-configuration", UriKind.Relative));
-
-                    registration.ConfigurationManager = new ConfigurationManager<OpenIddictConfiguration>(
-                        registration.ConfigurationEndpoint.AbsoluteUri,
-                        new OpenIddictClientRetriever(_provider.GetRequiredService<OpenIddictClientService>(), registration))
-                    {
-                        AutomaticRefreshInterval = ConfigurationManager<OpenIddictConfiguration>.DefaultAutomaticRefreshInterval,
-                        RefreshInterval = ConfigurationManager<OpenIddictConfiguration>.DefaultRefreshInterval
-                    };
-                }
-            }
+            ConfigureRegistration(_provider, options, registration);
         }
 
         // Implicitly add the redirect_uri attached to the client registrations
@@ -214,31 +166,6 @@ public sealed class OpenIddictClientConfiguration : IPostConfigureOptions<OpenId
                 return identifier[.. Math.Min(identifier.Length, 40)].ToUpperInvariant();
             }
         }
-
-        static string ComputeDefaultRegistrationId(OpenIddictClientRegistration registration)
-        {
-            Debug.Assert(registration.Issuer is { IsAbsoluteUri: true }, SR.GetResourceString(SR.ID4013));
-
-            using var algorithm = SHA256.Create();
-
-            TransformBlock(algorithm, registration.Issuer.AbsoluteUri);
-
-            if (!string.IsNullOrEmpty(registration.ProviderName))
-            {
-                TransformBlock(algorithm, registration.ProviderName);
-            }
-
-            algorithm.TransformFinalBlock([], 0, 0);
-
-            return Base64Url.EncodeToString(algorithm.Hash);
-
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            static void TransformBlock(HashAlgorithm algorithm, string input)
-            {
-                var buffer = Encoding.UTF8.GetBytes(input);
-                algorithm.TransformBlock(buffer, 0, buffer.Length, outputBuffer: null, outputOffset: 0);
-            }
-        }
     }
 
     /// <inheritdoc/>
@@ -255,53 +182,7 @@ public sealed class OpenIddictClientConfiguration : IPostConfigureOptions<OpenId
 
         foreach (var registration in options.Registrations)
         {
-            if (string.IsNullOrEmpty(registration.RegistrationId))
-            {
-                builder.AddError(SR.GetResourceString(SR.ID0521));
-            }
-
-            // Ensure the registration identifier doesn't contain U+001E or U+001F separators as they are
-            // used by the System.Net.Http integration to separate properties in the HTTP client names.
-            else if (registration.RegistrationId.Any(static character => character is '\u001e' or '\u001f'))
-            {
-                builder.AddError(SR.GetResourceString(SR.ID0455));
-            }
-
-            if (registration.Issuer is null)
-            {
-                builder.AddError(string.IsNullOrEmpty(registration.ProviderType)
-                    ? SR.GetResourceString(SR.ID0405)
-                    : SR.GetResourceString(SR.ID0411));
-            }
-
-            else if (!registration.Issuer.IsAbsoluteUri || OpenIddictHelpers.IsImplicitFileUri(registration.Issuer))
-            {
-                builder.AddError(SR.GetResourceString(SR.ID0136));
-            }
-
-            else if (!string.IsNullOrEmpty(registration.Issuer.Fragment) || !string.IsNullOrEmpty(registration.Issuer.Query))
-            {
-                builder.AddError(SR.GetResourceString(SR.ID0137));
-            }
-
-            // If an issuer was attached to the static configuration, ensure it matches the issuer specified in the client registration.
-            if (registration.Configuration?.Issuer is not null && registration.Configuration.Issuer != registration.Issuer)
-            {
-                builder.AddError(SR.GetResourceString(SR.ID0395));
-            }
-
-            if (registration.ConfigurationManager is null)
-            {
-                builder.AddError(SR.GetResourceString(SR.ID0522));
-            }
-
-            // If a non-static configuration manager is used, ensure that the required discovery handlers are registered.
-            else if (!typeof(StaticConfigurationManager<OpenIddictConfiguration>).IsAssignableFrom(registration.ConfigurationManager.GetType()) &&
-                    (!options.Handlers.Exists(static descriptor => descriptor.ContextType == typeof(ApplyConfigurationRequestContext)) ||
-                     !options.Handlers.Exists(static descriptor => descriptor.ContextType == typeof(ApplyJsonWebKeySetRequestContext))))
-            {
-                builder.AddError(SR.GetResourceString(SR.ID0313));
-            }
+            ValidateRegistration(options, registration, builder);
         }
 
         // Ensure at least one flow has been enabled.
@@ -378,6 +259,150 @@ public sealed class OpenIddictClientConfiguration : IPostConfigureOptions<OpenId
                 .ToList();
 
             return uris.Count == uris.Distinct().Count();
+        }
+    }
+
+    /// <summary>
+    /// Populates the default properties of the specified client registration (e.g registration
+    /// identifier, client type or configuration manager), if they were not explicitly set.
+    /// </summary>
+    /// <param name="provider">The service provider.</param>
+    /// <param name="options">The client options.</param>
+    /// <param name="registration">The client registration.</param>
+    internal static void ConfigureRegistration(IServiceProvider provider,
+        OpenIddictClientOptions options, OpenIddictClientRegistration registration)
+    {
+        // If no explicit registration identifier was set, compute a stable
+        // hash based on the issuer URI and the provider name, if available.
+        if (registration.Issuer is not null && string.IsNullOrEmpty(registration.RegistrationId))
+        {
+            registration.RegistrationId = ComputeDefaultRegistrationId(registration);
+        }
+
+        // If no client type was explicitly set, assume the client is confidential if a client secret
+        // or a signing key/certificate (typically used with private_key_jwt, tls_client_auth or
+        // self_signed_tls_client_auth) has been attached to the client registration.
+        if (string.IsNullOrEmpty(registration.ClientType))
+        {
+            registration.ClientType =
+                !string.IsNullOrEmpty(registration.ClientSecret) || registration.SigningCredentials.Count is > 0
+                ? ClientTypes.Confidential
+                : ClientTypes.Public;
+        }
+
+        // If DPoP token binding was enabled and no DPoP key was attached to the registration, generate an ephemeral key.
+        if (options.TokenBindingMethods.Contains(TokenBindingMethods.Private.DPoP) && registration.DPoPSigningCredentials is null &&
+           (registration.TokenBindingMethods.Count is 0 || registration.TokenBindingMethods.Contains(TokenBindingMethods.Private.DPoP)))
+        {
+            registration.DPoPSigningCredentials = new SigningCredentials(
+                new ECDsaSecurityKey(ECDsa.Create(ECCurve.NamedCurves.nistP256)), SecurityAlgorithms.EcdsaSha256);
+        }
+
+        if (registration.ConfigurationManager is null)
+        {
+            if (registration.Configuration is not null)
+            {
+                registration.Configuration.Issuer ??= registration.Issuer;
+                registration.ConfigurationManager = new StaticConfigurationManager<OpenIddictConfiguration>(registration.Configuration);
+            }
+
+            else if (registration.Issuer is not null)
+            {
+                registration.ConfigurationEndpoint ??= OpenIddictHelpers.CreateAbsoluteUri(
+                    registration.Issuer,
+                    registration.ConfigurationEndpoint ?? new Uri(".well-known/openid-configuration", UriKind.Relative));
+
+                registration.ConfigurationManager = new ConfigurationManager<OpenIddictConfiguration>(
+                    registration.ConfigurationEndpoint.AbsoluteUri,
+                    new OpenIddictClientRetriever(provider.GetRequiredService<OpenIddictClientService>(), registration))
+                {
+                    AutomaticRefreshInterval = ConfigurationManager<OpenIddictConfiguration>.DefaultAutomaticRefreshInterval,
+                    RefreshInterval = ConfigurationManager<OpenIddictConfiguration>.DefaultRefreshInterval
+                };
+            }
+        }
+    }
+
+    /// <summary>
+    /// Validates the specified client registration.
+    /// </summary>
+    /// <param name="options">The client options.</param>
+    /// <param name="registration">The client registration.</param>
+    /// <param name="builder">The builder used to collect the validation errors.</param>
+    internal static void ValidateRegistration(OpenIddictClientOptions options,
+        OpenIddictClientRegistration registration, ValidateOptionsResultBuilder builder)
+    {
+        if (string.IsNullOrEmpty(registration.RegistrationId))
+        {
+            builder.AddError(SR.GetResourceString(SR.ID0521));
+        }
+
+        // Ensure the registration identifier doesn't contain U+001E or U+001F separators as they are
+        // used by the System.Net.Http integration to separate properties in the HTTP client names.
+        else if (registration.RegistrationId.Any(static character => character is '\u001e' or '\u001f'))
+        {
+            builder.AddError(SR.GetResourceString(SR.ID0455));
+        }
+
+        if (registration.Issuer is null)
+        {
+            builder.AddError(string.IsNullOrEmpty(registration.ProviderType)
+                ? SR.GetResourceString(SR.ID0405)
+                : SR.GetResourceString(SR.ID0411));
+        }
+
+        else if (!registration.Issuer.IsAbsoluteUri || OpenIddictHelpers.IsImplicitFileUri(registration.Issuer))
+        {
+            builder.AddError(SR.GetResourceString(SR.ID0136));
+        }
+
+        else if (!string.IsNullOrEmpty(registration.Issuer.Fragment) || !string.IsNullOrEmpty(registration.Issuer.Query))
+        {
+            builder.AddError(SR.GetResourceString(SR.ID0137));
+        }
+
+        // If an issuer was attached to the static configuration, ensure it matches the issuer specified in the client registration.
+        if (registration.Configuration?.Issuer is not null && registration.Configuration.Issuer != registration.Issuer)
+        {
+            builder.AddError(SR.GetResourceString(SR.ID0395));
+        }
+
+        if (registration.ConfigurationManager is null)
+        {
+            builder.AddError(SR.GetResourceString(SR.ID0522));
+        }
+
+        // If a non-static configuration manager is used, ensure that the required discovery handlers are registered.
+        else if (!typeof(StaticConfigurationManager<OpenIddictConfiguration>).IsAssignableFrom(registration.ConfigurationManager.GetType()) &&
+                (!options.Handlers.Exists(static descriptor => descriptor.ContextType == typeof(ApplyConfigurationRequestContext)) ||
+                 !options.Handlers.Exists(static descriptor => descriptor.ContextType == typeof(ApplyJsonWebKeySetRequestContext))))
+        {
+            builder.AddError(SR.GetResourceString(SR.ID0313));
+        }
+    }
+
+    private static string ComputeDefaultRegistrationId(OpenIddictClientRegistration registration)
+    {
+        Debug.Assert(registration.Issuer is { IsAbsoluteUri: true }, SR.GetResourceString(SR.ID4013));
+
+        using var algorithm = SHA256.Create();
+
+        TransformBlock(algorithm, registration.Issuer.AbsoluteUri);
+
+        if (!string.IsNullOrEmpty(registration.ProviderName))
+        {
+            TransformBlock(algorithm, registration.ProviderName);
+        }
+
+        algorithm.TransformFinalBlock([], 0, 0);
+
+        return Base64Url.EncodeToString(algorithm.Hash);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static void TransformBlock(HashAlgorithm algorithm, string input)
+        {
+            var buffer = Encoding.UTF8.GetBytes(input);
+            algorithm.TransformBlock(buffer, 0, buffer.Length, outputBuffer: null, outputOffset: 0);
         }
     }
 }

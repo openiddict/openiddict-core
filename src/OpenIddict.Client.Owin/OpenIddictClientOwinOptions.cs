@@ -20,6 +20,8 @@ public sealed class OpenIddictClientOwinOptions
     /// <see cref="IAuthenticationManager.Challenge(AuthenticationProperties, string[])"/>
     /// cannot directly use the provider name associated to a client registration as the authentication
     /// scheme and must set the provider name (or the issuer) as an authentication property instead.
+    /// When enabled, the provider names of dynamic client registrations resolved from
+    /// <see cref="IOpenIddictClientRegistrationProvider"/> implementations are also resolved as types.
     /// </summary>
     public bool DisableAutomaticAuthenticationTypeForwarding { get; set; }
 

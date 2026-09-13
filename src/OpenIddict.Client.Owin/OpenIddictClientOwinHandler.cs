@@ -6,9 +6,7 @@
 
 using System.Collections.Immutable;
 using System.ComponentModel;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using System.Runtime.CompilerServices;
 using System.Security.Claims;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -291,16 +289,17 @@ public sealed class OpenIddictClientOwinHandler : AuthenticationHandler<Authenti
         // to the response stream when a response grant (sign-in/out or challenge) was applied.
 
         var dispatcher = _provider.GetRequiredService<IOpenIddictClientDispatcher>();
-        var options = _provider.GetRequiredService<IOptionsMonitor<OpenIddictClientOwinOptions>>();
-        var descriptions = options.CurrentValue.ForwardedAuthenticationTypes;
+        var options = _provider.GetRequiredService<IOptionsMonitor<OpenIddictClientOwinOptions>>().CurrentValue;
 
         // Note: unlike the ASP.NET Core host, the OWIN host MUST check whether the status code
         // corresponds to a challenge response, as LookupChallenge() will always return a non-null
         // value when active authentication is used, even if no challenge was actually triggered.
-        var challenge = Helper.LookupChallenge(Options.AuthenticationType, Options.AuthenticationMode)
-            ?? LookupForwardedChallenge(Context.Authentication, descriptions);
+        var challenge = Response.StatusCode is 401 or 403
+            ? Helper.LookupChallenge(Options.AuthenticationType, Options.AuthenticationMode)
+                ?? await LookupForwardedChallengeAsync(_provider, options, Context.Authentication, Request.CallCancelled)
+            : null;
 
-        if (challenge is not null && Response.StatusCode is 401 or 403)
+        if (challenge is not null)
         {
             var transaction = Context.Get<OpenIddictClientTransaction>(typeof(OpenIddictClientTransaction).FullName)
                 ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0315));
@@ -342,7 +341,7 @@ public sealed class OpenIddictClientOwinHandler : AuthenticationHandler<Authenti
         }
 
         var signout = Helper.LookupSignOut(Options.AuthenticationType, Options.AuthenticationMode)
-            ?? LookupForwardedSignOut(Context.Authentication, descriptions);
+            ?? await LookupForwardedSignOutAsync(_provider, options, Context.Authentication, Request.CallCancelled);
 
         if (signout is not null)
         {
@@ -385,8 +384,8 @@ public sealed class OpenIddictClientOwinHandler : AuthenticationHandler<Authenti
             }
         }
 
-        static AuthenticationResponseChallenge? LookupForwardedChallenge(
-            IAuthenticationManager manager, IReadOnlyList<AuthenticationDescription> descriptions)
+        static async ValueTask<AuthenticationResponseChallenge?> LookupForwardedChallengeAsync(IServiceProvider provider,
+            OpenIddictClientOwinOptions options, IAuthenticationManager manager, CancellationToken cancellationToken)
         {
             // Note: unlike its server counterpart, the OpenIddict OWIN client authentication handler allows
             // associating additional authentication types to trigger a provider-specific challenge. For that,
@@ -398,7 +397,7 @@ public sealed class OpenIddictClientOwinHandler : AuthenticationHandler<Authenti
             {
                 foreach (var type in types)
                 {
-                    if (TryGetForwardedAuthenticationType(descriptions, type, out _))
+                    if (await OpenIddictClientOwinForwardedTypes.FindAsync(provider, options, type, cancellationToken) is not null)
                     {
                         // Ensure no client registration information was attached to the authentication properties.
                         if (manager.AuthenticationResponseChallenge.Properties is AuthenticationProperties properties &&
@@ -424,8 +423,8 @@ public sealed class OpenIddictClientOwinHandler : AuthenticationHandler<Authenti
             return null;
         }
 
-        static AuthenticationResponseRevoke? LookupForwardedSignOut(
-            IAuthenticationManager manager, IReadOnlyList<AuthenticationDescription> descriptions)
+        static async ValueTask<AuthenticationResponseRevoke?> LookupForwardedSignOutAsync(IServiceProvider provider,
+            OpenIddictClientOwinOptions options, IAuthenticationManager manager, CancellationToken cancellationToken)
         {
             // Note: unlike its server counterpart, the OpenIddict OWIN client authentication handler allows
             // associating additional authentication types to trigger a provider-specific sign-out. For that,
@@ -437,7 +436,7 @@ public sealed class OpenIddictClientOwinHandler : AuthenticationHandler<Authenti
             {
                 foreach (var type in types)
                 {
-                    if (TryGetForwardedAuthenticationType(descriptions, type, out _))
+                    if (await OpenIddictClientOwinForwardedTypes.FindAsync(provider, options, type, cancellationToken) is not null)
                     {
                         // Ensure no client registration information was attached to the authentication properties.
                         if (manager.AuthenticationResponseRevoke.Properties is AuthenticationProperties properties &&
@@ -461,24 +460,6 @@ public sealed class OpenIddictClientOwinHandler : AuthenticationHandler<Authenti
             }
 
             return null;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static bool TryGetForwardedAuthenticationType(IReadOnlyList<AuthenticationDescription> descriptions,
-            string type, [NotNullWhen(true)] out AuthenticationDescription? result)
-        {
-            for (var index = 0; index < descriptions.Count; index++)
-            {
-                var description = descriptions[index];
-                if (string.Equals(description.AuthenticationType, type, StringComparison.Ordinal))
-                {
-                    result = description;
-                    return true;
-                }
-            }
-
-            result = null;
-            return false;
         }
     }
 }

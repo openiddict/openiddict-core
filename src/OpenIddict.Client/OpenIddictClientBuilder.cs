@@ -878,6 +878,42 @@ public sealed class OpenIddictClientBuilder
     }
 
     /// <summary>
+    /// Registers a provider resolving client registrations at runtime (e.g from a database).
+    /// </summary>
+    /// <remarks>
+    /// Dynamic registrations MUST only use redirect and post-logout redirect URIs declared in the
+    /// client options (e.g using <see cref="SetRedirectionEndpointUris(Uri[])"/>).
+    /// </remarks>
+    /// <typeparam name="TProvider">The type of the provider, registered as a singleton.</typeparam>
+    /// <returns>The <see cref="OpenIddictClientBuilder"/> instance.</returns>
+    public OpenIddictClientBuilder AddRegistrationProvider<
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TProvider>()
+        where TProvider : class, IOpenIddictClientRegistrationProvider
+    {
+        Services.TryAddEnumerable(ServiceDescriptor.Singleton<IOpenIddictClientRegistrationProvider, TProvider>());
+
+        return this;
+    }
+
+    /// <summary>
+    /// Registers a provider resolving client registrations at runtime (e.g from a database).
+    /// </summary>
+    /// <remarks>
+    /// Dynamic registrations MUST only use redirect and post-logout redirect URIs declared in the
+    /// client options (e.g using <see cref="SetRedirectionEndpointUris(Uri[])"/>).
+    /// </remarks>
+    /// <param name="provider">The provider instance.</param>
+    /// <returns>The <see cref="OpenIddictClientBuilder"/> instance.</returns>
+    public OpenIddictClientBuilder AddRegistrationProvider(IOpenIddictClientRegistrationProvider provider)
+    {
+        ArgumentNullException.ThrowIfNull(provider);
+
+        Services.AddSingleton(provider);
+
+        return this;
+    }
+
+    /// <summary>
     /// Disables token storage, so that no database entry is created
     /// for the tokens and codes returned by the OpenIddict client.
     /// Using this option is generally NOT recommended.
@@ -1174,6 +1210,16 @@ public sealed class OpenIddictClientBuilder
     /// <returns>The <see cref="OpenIddictClientBuilder"/> instance.</returns>
     public OpenIddictClientBuilder SetStateTokenLifetime(TimeSpan? lifetime)
         => Configure(options => options.StateTokenLifetime = lifetime);
+
+    /// <summary>
+    /// Sets the duration during which the dynamic client registrations resolved from
+    /// <see cref="IOpenIddictClientRegistrationProvider"/> implementations are cached.
+    /// <see langword="null"/> or <see cref="TimeSpan.Zero"/> can be specified to disable caching.
+    /// </summary>
+    /// <param name="lifetime">The cache lifetime.</param>
+    /// <returns>The <see cref="OpenIddictClientBuilder"/> instance.</returns>
+    public OpenIddictClientBuilder SetDynamicRegistrationCacheLifetime(TimeSpan? lifetime)
+        => Configure(options => options.DynamicRegistrationCacheLifetime = lifetime);
 
     /// <summary>
     /// Sets the client URI, which is used as the value of the "issuer" claim.

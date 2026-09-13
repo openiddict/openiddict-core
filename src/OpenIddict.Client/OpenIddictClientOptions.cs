@@ -104,7 +104,18 @@ public sealed class OpenIddictClientOptions
     /// <summary>
     /// Gets the static client registrations used by the OpenIddict client services.
     /// </summary>
+    /// <remarks>
+    /// Registrations can also be resolved at runtime using <see cref="IOpenIddictClientRegistrationProvider"/>.
+    /// </remarks>
     public List<OpenIddictClientRegistration> Registrations { get; } = [];
+
+    /// <summary>
+    /// Gets or sets the duration during which the dynamic client registrations resolved from
+    /// <see cref="IOpenIddictClientRegistrationProvider"/> implementations are cached by identifier
+    /// (with their server configuration manager). If set to <see langword="null"/> or <see cref="TimeSpan.Zero"/>,
+    /// dynamic registrations are not cached. Static registrations are never cached.
+    /// </summary>
+    public TimeSpan? DynamicRegistrationCacheLifetime { get; set; } = TimeSpan.FromMinutes(30);
 
     /// <summary>
     /// Gets the token validation parameters used by the OpenIddict client services.

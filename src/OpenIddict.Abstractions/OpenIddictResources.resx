@@ -1895,6 +1895,21 @@ Introspection responses can only be encrypted using 'RSA-OAEP' with 'A128CBC-HS2
   <data name="ID0553" xml:space="preserve">
     <value>The introspection response cannot be encrypted because the JSON Web Key Set of the client application doesn't contain any RSA key whose use is 'enc'.</value>
   </data>
+  <data name="ID0554" xml:space="preserve">
+    <value>The dynamic client registration returned by the registration provider is invalid:{0}{1}</value>
+  </data>
+  <data name="ID0555" xml:space="preserve">
+    <value>The redirect_uri attached to a dynamic client registration must be declared in the client options. To register it, use 'services.AddOpenIddict().AddClient().SetRedirectionEndpointUris()'.</value>
+  </data>
+  <data name="ID0556" xml:space="preserve">
+    <value>The post_logout_redirect_uri attached to a dynamic client registration must be declared in the client options. To register it, use 'services.AddOpenIddict().AddClient().SetPostLogoutRedirectionEndpointUris()'.</value>
+  </data>
+  <data name="ID0557" xml:space="preserve">
+    <value>The identifier of a dynamic client registration cannot be the identifier of a static client registration.</value>
+  </data>
+  <data name="ID0558" xml:space="preserve">
+    <value>The identifier of the client registration returned by the registration provider doesn't match the requested identifier.</value>
+  </data>
   <data name="ID0532" xml:space="preserve">
     <value>The backchannel authentication request was not correctly extracted.
 To extract backchannel authentication requests, create a class implementing 'IOpenIddictServerHandler&lt;ExtractBackchannelAuthenticationRequestContext&gt;' and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.</value>

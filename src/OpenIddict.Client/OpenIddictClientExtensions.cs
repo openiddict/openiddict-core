@@ -31,6 +31,11 @@ public static class OpenIddictClientExtensions
         builder.Services.TryAddSingleton<IOpenIddictClientDispatcher, OpenIddictClientDispatcher>();
         builder.Services.TryAddSingleton<OpenIddictClientService>();
 
+        // Note: the static registration provider is always registered first so that static
+        // registrations are preferred to the registrations returned by dynamic providers.
+        builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<
+            IOpenIddictClientRegistrationProvider, OpenIddictClientRegistrationProvider>());
+
         // Register the built-in filters used by the default OpenIddict client event handlers.
         builder.Services.TryAddSingleton<RequireAuthorizationCodeValidated>();
         builder.Services.TryAddSingleton<RequireBackchannelAccessTokenValidated>();

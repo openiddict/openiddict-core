@@ -5,8 +5,6 @@
  */
 
 using System.ComponentModel;
-using System.Diagnostics.CodeAnalysis;
-using System.Runtime.CompilerServices;
 using System.Security.Claims;
 using System.Security.Principal;
 using Microsoft.Extensions.DependencyInjection;
@@ -71,7 +69,8 @@ public sealed class OpenIddictClientOwinMiddleware : AuthenticationMiddleware<Au
                 // In this case, iterate all the forwarded authentication types and call the callback action for each type.
                 if (types is null)
                 {
-                    foreach (var description in options.ForwardedAuthenticationTypes)
+                    foreach (var description in await OpenIddictClientOwinForwardedTypes.ListAsync(
+                        _provider, options, context.Request.CallCancelled))
                     {
                         callback(null, null, description.Properties, state);
                     }
@@ -84,9 +83,8 @@ public sealed class OpenIddictClientOwinMiddleware : AuthenticationMiddleware<Au
                         // If the specified authentication types don't match a forwarded authentication type
                         // managed by the OpenIddict OWIN client host, don't invoke the callback and let the
                         // corresponding authentication middleware handle it if it matches a registered type.
-                        if (string.IsNullOrEmpty(type) ||
-                            string.Equals(type, OpenIddictClientOwinDefaults.AuthenticationType, StringComparison.Ordinal) ||
-                            !TryGetForwardedAuthenticationType(options.ForwardedAuthenticationTypes, type, out AuthenticationDescription? description))
+                        if (await OpenIddictClientOwinForwardedTypes.FindAsync(_provider, options, type, context.Request.CallCancelled)
+                            is not AuthenticationDescription description)
                         {
                             continue;
                         }
@@ -129,24 +127,6 @@ public sealed class OpenIddictClientOwinMiddleware : AuthenticationMiddleware<Au
         {
             // Restore the original authentication delegate.
             context.Set("security.Authenticate", function);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static bool TryGetForwardedAuthenticationType(IReadOnlyList<AuthenticationDescription> descriptions,
-            string type, [NotNullWhen(true)] out AuthenticationDescription? result)
-        {
-            for (var index = 0; index < descriptions.Count; index++)
-            {
-                var description = descriptions[index];
-                if (string.Equals(description.AuthenticationType, type, StringComparison.Ordinal))
-                {
-                    result = description;
-                    return true;
-                }
-            }
-
-            result = null;
-            return false;
         }
     }
 

@@ -429,15 +429,6 @@ public static partial class OpenIddictClientHandlers
                             break;
                     }
 
-                    if (context.Registration is null && string.IsNullOrEmpty(context.RegistrationId) &&
-                        context.Issuer       is null && string.IsNullOrEmpty(context.ProviderName) &&
-                        context.Options.Registrations.Count is not 1)
-                    {
-                        throw context.Options.Registrations.Count is 0
-                            ? new InvalidOperationException(SR.GetResourceString(SR.ID0304))
-                            : new InvalidOperationException(SR.GetResourceString(SR.ID0355));
-                    }
-
                     break;
 
                 default: throw new InvalidOperationException(SR.GetResourceString(SR.ID0290));
@@ -504,12 +495,15 @@ public static partial class OpenIddictClientHandlers
                 { ProviderName: string name } when !string.IsNullOrEmpty(name)
                     => await _service.GetClientRegistrationByProviderNameAsync(name, context.CancellationToken),
 
-                // Otherwise, default to the unique registration available, if possible.
-                { Options.Registrations: [OpenIddictClientRegistration registration] } => registration,
+                // Otherwise, default to the unique registration available (static or dynamic), if possible.
+                _ => await _service.GetClientRegistrationsAsync(context.CancellationToken) switch
+                {
+                    [OpenIddictClientRegistration registration] => registration,
 
-                // If no registration was added or multiple registrations are present, throw an exception.
-                { Options.Registrations: [] } => throw new InvalidOperationException(SR.GetResourceString(SR.ID0304)),
-                { Options.Registrations: _  } => throw new InvalidOperationException(SR.GetResourceString(SR.ID0355))
+                    // If no registration was added or multiple registrations are present, throw an exception.
+                    [] => throw new InvalidOperationException(SR.GetResourceString(SR.ID0304)),
+                    _  => throw new InvalidOperationException(SR.GetResourceString(SR.ID0355))
+                }
             };
 
             if (!string.IsNullOrEmpty(context.RegistrationId) &&
@@ -1142,9 +1136,9 @@ public static partial class OpenIddictClientHandlers
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0291));
             }
 
-            // Note: if the static registration cannot be found in the options, this may indicate
-            // the client was removed after the authorization dance started and thus, can no longer
-            // be used to authenticate users. In this case, throw an exception to abort the flow.
+            // Note: if the registration cannot be found in the options or resolved from a registration provider,
+            // this may indicate the client was removed after the authorization dance started and thus, can no
+            // longer be used to authenticate users. In this case, throw an exception to abort the flow.
             context.Registration ??= await _service.GetClientRegistrationByIdAsync(context.RegistrationId, context.CancellationToken);
 
             // Resolve and attach the server configuration to the context if none has been set already.
@@ -4951,15 +4945,6 @@ public static partial class OpenIddictClientHandlers
                 }
             }
 
-            if (context.Registration is null && string.IsNullOrEmpty(context.RegistrationId) &&
-                context.Issuer       is null && string.IsNullOrEmpty(context.ProviderName) &&
-                context.Options.Registrations.Count is not 1)
-            {
-                throw context.Options.Registrations.Count is 0
-                    ? new InvalidOperationException(SR.GetResourceString(SR.ID0304))
-                    : new InvalidOperationException(SR.GetResourceString(SR.ID0305));
-            }
-
             if (context.Principal is not { Identity: ClaimsIdentity })
             {
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0011));
@@ -5047,12 +5032,15 @@ public static partial class OpenIddictClientHandlers
                 { ProviderName: string name } when !string.IsNullOrEmpty(name)
                     => await _service.GetClientRegistrationByProviderNameAsync(name, context.CancellationToken),
 
-                // Otherwise, default to the unique registration available, if possible.
-                { Options.Registrations: [OpenIddictClientRegistration registration] } => registration,
+                // Otherwise, default to the unique registration available (static or dynamic), if possible.
+                _ => await _service.GetClientRegistrationsAsync(context.CancellationToken) switch
+                {
+                    [OpenIddictClientRegistration registration] => registration,
 
-                // If no registration was added or multiple registrations are present, throw an exception.
-                { Options.Registrations: [] } => throw new InvalidOperationException(SR.GetResourceString(SR.ID0304)),
-                { Options.Registrations: _  } => throw new InvalidOperationException(SR.GetResourceString(SR.ID0305))
+                    // If no registration was added or multiple registrations are present, throw an exception.
+                    [] => throw new InvalidOperationException(SR.GetResourceString(SR.ID0304)),
+                    _  => throw new InvalidOperationException(SR.GetResourceString(SR.ID0305))
+                }
             };
 
             if (!string.IsNullOrEmpty(context.RegistrationId) &&
@@ -7987,15 +7975,6 @@ public static partial class OpenIddictClientHandlers
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0458));
             }
 
-            if (context.Registration is null && string.IsNullOrEmpty(context.RegistrationId) &&
-                context.Issuer       is null && string.IsNullOrEmpty(context.ProviderName) &&
-                context.Options.Registrations.Count is not 1)
-            {
-                throw context.Options.Registrations.Count is 0
-                    ? new InvalidOperationException(SR.GetResourceString(SR.ID0304))
-                    : new InvalidOperationException(SR.GetResourceString(SR.ID0305));
-            }
-
             return ValueTask.CompletedTask;
         }
     }
@@ -8038,12 +8017,15 @@ public static partial class OpenIddictClientHandlers
                 { ProviderName: string name } when !string.IsNullOrEmpty(name)
                     => await _service.GetClientRegistrationByProviderNameAsync(name, context.CancellationToken),
 
-                // Otherwise, default to the unique registration available, if possible.
-                { Options.Registrations: [OpenIddictClientRegistration registration] } => registration,
+                // Otherwise, default to the unique registration available (static or dynamic), if possible.
+                _ => await _service.GetClientRegistrationsAsync(context.CancellationToken) switch
+                {
+                    [OpenIddictClientRegistration registration] => registration,
 
-                // If no registration was added or multiple registrations are present, throw an exception.
-                { Options.Registrations: [] } => throw new InvalidOperationException(SR.GetResourceString(SR.ID0304)),
-                { Options.Registrations: _  } => throw new InvalidOperationException(SR.GetResourceString(SR.ID0305))
+                    // If no registration was added or multiple registrations are present, throw an exception.
+                    [] => throw new InvalidOperationException(SR.GetResourceString(SR.ID0304)),
+                    _  => throw new InvalidOperationException(SR.GetResourceString(SR.ID0305))
+                }
             };
 
             if (!string.IsNullOrEmpty(context.RegistrationId) &&
@@ -8792,15 +8774,6 @@ public static partial class OpenIddictClientHandlers
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0459));
             }
 
-            if (context.Registration is null && string.IsNullOrEmpty(context.RegistrationId) &&
-                context.Issuer       is null && string.IsNullOrEmpty(context.ProviderName) &&
-                context.Options.Registrations.Count is not 1)
-            {
-                throw context.Options.Registrations.Count is 0 ?
-                    new InvalidOperationException(SR.GetResourceString(SR.ID0304)) :
-                    new InvalidOperationException(SR.GetResourceString(SR.ID0305));
-            }
-
             return ValueTask.CompletedTask;
         }
     }
@@ -8843,12 +8816,15 @@ public static partial class OpenIddictClientHandlers
                 { ProviderName: string name } when !string.IsNullOrEmpty(name)
                     => await _service.GetClientRegistrationByProviderNameAsync(name, context.CancellationToken),
 
-                // Otherwise, default to the unique registration available, if possible.
-                { Options.Registrations: [OpenIddictClientRegistration registration] } => registration,
+                // Otherwise, default to the unique registration available (static or dynamic), if possible.
+                _ => await _service.GetClientRegistrationsAsync(context.CancellationToken) switch
+                {
+                    [OpenIddictClientRegistration registration] => registration,
 
-                // If no registration was added or multiple registrations are present, throw an exception.
-                { Options.Registrations: [] } => throw new InvalidOperationException(SR.GetResourceString(SR.ID0304)),
-                { Options.Registrations: _  } => throw new InvalidOperationException(SR.GetResourceString(SR.ID0305))
+                    // If no registration was added or multiple registrations are present, throw an exception.
+                    [] => throw new InvalidOperationException(SR.GetResourceString(SR.ID0304)),
+                    _  => throw new InvalidOperationException(SR.GetResourceString(SR.ID0305))
+                }
             };
 
             if (!string.IsNullOrEmpty(context.RegistrationId) &&
@@ -9530,15 +9506,6 @@ public static partial class OpenIddictClientHandlers
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0358));
             }
 
-            if (context.Registration is null && string.IsNullOrEmpty(context.RegistrationId) &&
-                context.Issuer       is null && string.IsNullOrEmpty(context.ProviderName) &&
-                context.Options.Registrations.Count is not 1)
-            {
-                throw context.Options.Registrations.Count is 0
-                    ? new InvalidOperationException(SR.GetResourceString(SR.ID0304))
-                    : new InvalidOperationException(SR.GetResourceString(SR.ID0305));
-            }
-
             if (context.Principal is not { Identity: ClaimsIdentity })
             {
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0011));
@@ -9626,12 +9593,15 @@ public static partial class OpenIddictClientHandlers
                 { ProviderName: string name } when !string.IsNullOrEmpty(name)
                     => await _service.GetClientRegistrationByProviderNameAsync(name, context.CancellationToken),
 
-                // Otherwise, default to the unique registration available, if possible.
-                { Options.Registrations: [OpenIddictClientRegistration registration] } => registration,
+                // Otherwise, default to the unique registration available (static or dynamic), if possible.
+                _ => await _service.GetClientRegistrationsAsync(context.CancellationToken) switch
+                {
+                    [OpenIddictClientRegistration registration] => registration,
 
-                // If no registration was added or multiple registrations are present, throw an exception.
-                { Options.Registrations: [] } => throw new InvalidOperationException(SR.GetResourceString(SR.ID0304)),
-                { Options.Registrations: _  } => throw new InvalidOperationException(SR.GetResourceString(SR.ID0305))
+                    // If no registration was added or multiple registrations are present, throw an exception.
+                    [] => throw new InvalidOperationException(SR.GetResourceString(SR.ID0304)),
+                    _  => throw new InvalidOperationException(SR.GetResourceString(SR.ID0305))
+                }
             };
 
             if (!string.IsNullOrEmpty(context.RegistrationId) &&
