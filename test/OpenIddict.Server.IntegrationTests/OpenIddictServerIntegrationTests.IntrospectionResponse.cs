@@ -273,6 +273,41 @@ public abstract partial class OpenIddictServerIntegrationTests
     }
 
     [Fact]
+    public async Task ApplyIntrospectionResponse_JsonResponseIsReturnedToPublicClients()
+    {
+        // Arrange
+        var application = new OpenIddictApplication();
+
+        var manager = CreateApplicationManager(mock =>
+        {
+            mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
+                .ReturnsAsync(application);
+
+            mock.Setup(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(true);
+        });
+
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.EnableJsonWebTokenIntrospectionResponses();
+            options.Services.AddSingleton(manager);
+
+            ConfigureIntrospectedToken(options);
+        });
+
+        await using var client = await server.CreateClientAsync();
+        client.RequestHeaders["Accept"] = [IntrospectionResponseMediaType];
+
+        // Act
+        var response = await client.PostAsync("/connect/introspect", CreateIntrospectionRequest());
+
+        // Assert
+        Assert.Equal("application/json", client.ResponseMediaType);
+        Assert.True((bool) response[Claims.Active]);
+        Assert.Null(client.ResponseToken);
+    }
+
+    [Fact]
     public async Task ApplyIntrospectionResponse_TokenContainsCustomParameters()
     {
         // Arrange

@@ -1021,6 +1021,25 @@ public static partial class OpenIddictServerHandlers
                     return;
                 }
 
+                // Since public clients cannot be authenticated, return a JSON response to public clients.
+                //
+                // See https://datatracker.ietf.org/doc/html/rfc9701#section-4 for more information.
+                if (!context.Options.EnableDegradedMode)
+                {
+                    var manager = context.ServiceProvider.GetService<IOpenIddictApplicationManager>()
+                        ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
+
+                    var application = await manager.FindByClientIdAsync(context.Request.ClientId, context.CancellationToken)
+                        ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
+
+                    if (await manager.HasClientTypeAsync(application, ClientTypes.Public, context.CancellationToken))
+                    {
+                        context.Logger.LogInformation(6316, SR.GetResourceString(SR.ID6316));
+
+                        return;
+                    }
+                }
+
                 var principal = new ClaimsPrincipal(new ClaimsIdentity(TokenValidationParameters.DefaultAuthenticationType))
                     .SetCreationDate(context.Options.TimeProvider.GetUtcNow())
                     .SetAudiences(context.Request.ClientId)

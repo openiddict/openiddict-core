@@ -3531,7 +3531,7 @@ This may indicate that the hashed entry is corrupted or malformed.</value>
     <value>The introspection response token was rejected: {Error} ({Description}).</value>
   </data>
   <data name="ID6316" xml:space="preserve">
-    <value>No JSON Web Token introspection response was generated because the caller is not a known client application.</value>
+    <value>No JSON Web Token introspection response was generated because the caller is not an authenticated client application.</value>
   </data>
   <data name="ID8000" xml:space="preserve">
     <value>https://documentation.openiddict.com/errors/{0}</value>
