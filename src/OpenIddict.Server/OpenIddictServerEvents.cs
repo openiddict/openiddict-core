@@ -368,6 +368,15 @@ public static partial class OpenIddictServerEvents
         public bool ExtractDeviceCode { get; set; }
 
         /// <summary>
+        /// Gets or sets a boolean indicating whether an authentication
+        /// request identifier should be extracted from the current context.
+        /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
+        public bool ExtractAuthenticationRequestId { get; set; }
+
+        /// <summary>
         /// Gets or sets a boolean indicating whether a generic
         /// token should be extracted from the current context.
         /// </summary>
@@ -465,6 +474,15 @@ public static partial class OpenIddictServerEvents
         /// Note: overriding the value of this property is generally not recommended.
         /// </remarks>
         public bool RequireDeviceCode { get; set; }
+
+        /// <summary>
+        /// Gets or sets a boolean indicating whether an authentication request identifier
+        /// must be resolved for the authentication to be considered valid.
+        /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
+        public bool RequireAuthenticationRequestId { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether a generic token
@@ -566,6 +584,15 @@ public static partial class OpenIddictServerEvents
         public bool ValidateDeviceCode { get; set; }
 
         /// <summary>
+        /// Gets or sets a boolean indicating whether the authentication request
+        /// identifier extracted from the current request should be validated.
+        /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
+        public bool ValidateAuthenticationRequestId { get; set; }
+
+        /// <summary>
         /// Gets or sets a boolean indicating whether the generic
         /// token extracted from the current request should be validated.
         /// </summary>
@@ -663,6 +690,15 @@ public static partial class OpenIddictServerEvents
         /// Note: overriding the value of this property is generally not recommended.
         /// </remarks>
         public bool RejectDeviceCode { get; set; }
+
+        /// <summary>
+        /// Gets or sets a boolean indicating whether an invalid authentication request identifier
+        /// will cause the authentication demand to be rejected or will be ignored.
+        /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
+        public bool RejectAuthenticationRequestId { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether an invalid generic token
@@ -777,6 +813,16 @@ public static partial class OpenIddictServerEvents
         /// Gets or sets the principal extracted from the device code, if applicable.
         /// </summary>
         public ClaimsPrincipal? DeviceCodePrincipal { get; set; }
+
+        /// <summary>
+        /// Gets or sets the authentication request identifier to validate, if applicable.
+        /// </summary>
+        public string? AuthenticationRequestId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the principal extracted from the authentication request identifier, if applicable.
+        /// </summary>
+        public ClaimsPrincipal? AuthenticationRequestIdPrincipal { get; set; }
 
         /// <summary>
         /// Gets or sets the generic token to validate, if applicable.
@@ -960,6 +1006,15 @@ public static partial class OpenIddictServerEvents
         public bool GenerateDeviceCode { get; set; }
 
         /// <summary>
+        /// Gets or sets a boolean indicating whether an authentication request
+        /// identifier should be generated (and optionally returned to the client).
+        /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
+        public bool GenerateAuthenticationRequestId { get; set; }
+
+        /// <summary>
         /// Gets or sets a boolean indicating whether an issued token
         /// should be generated (and optionally returned to the client).
         /// </summary>
@@ -1030,6 +1085,15 @@ public static partial class OpenIddictServerEvents
         /// Note: overriding the value of this property is generally not recommended.
         /// </remarks>
         public bool IncludeDeviceCode { get; set; }
+
+        /// <summary>
+        /// Gets or sets a boolean indicating whether the generated authentication request
+        /// identifier should be returned to the client application as part of the response.
+        /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
+        public bool IncludeAuthenticationRequestId { get; set; }
 
         /// <summary>
         /// Gets or sets a boolean indicating whether the generated issued token
@@ -1114,6 +1178,19 @@ public static partial class OpenIddictServerEvents
         /// will be used to create the device code, if applicable.
         /// </summary>
         public ClaimsPrincipal? DeviceCodePrincipal { get; set; }
+
+        /// <summary>
+        /// Gets or sets the generated authentication request identifier, if applicable.
+        /// The identifier will only be returned if <see cref="IncludeAuthenticationRequestId"/>
+        /// is set to <see langword="true"/>.
+        /// </summary>
+        public string? AuthenticationRequestId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the principal containing the claims that will be
+        /// used to create the authentication request identifier, if applicable.
+        /// </summary>
+        public ClaimsPrincipal? AuthenticationRequestIdPrincipal { get; set; }
 
         /// <summary>
         /// Gets or sets the generated issued token, if applicable.

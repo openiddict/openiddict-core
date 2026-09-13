@@ -46,6 +46,7 @@ public static class OpenIddictServerOwinExtensions
         builder.Services.TryAddSingleton<RequireTokenEndpointPassthroughEnabled>();
         builder.Services.TryAddSingleton<RequireUserInfoEndpointPassthroughEnabled>();
         builder.Services.TryAddSingleton<RequireVerificationEndpointPassthroughEnabled>();
+        builder.Services.TryAddSingleton<RequireBackchannelAuthenticationEndpointPassthroughEnabled>();
 
         // Register the option initializers used by the OpenIddict OWIN server integration services.
         // Note: TryAddEnumerable() is used here to ensure the initializers are only registered once.

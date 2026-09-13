@@ -27,6 +27,22 @@ public sealed class OpenIddictConfiguration
     public bool? AuthorizationResponseIssParameterSupported { get; set; }
 
     /// <summary>
+    /// Gets or sets the URI of the backchannel authentication endpoint.
+    /// </summary>
+    public Uri? BackchannelAuthenticationEndpoint { get; set; }
+
+    /// <summary>
+    /// Gets the backchannel token delivery modes supported by the server.
+    /// </summary>
+    public HashSet<string> BackchannelTokenDeliveryModesSupported { get; } = new(StringComparer.Ordinal);
+
+    /// <summary>
+    /// Gets or sets a boolean indicating whether the "user_code" parameter
+    /// is supported by the backchannel authentication endpoint.
+    /// </summary>
+    public bool? BackchannelUserCodeParameterSupported { get; set; }
+
+    /// <summary>
     /// Gets the code challenge methods supported by the server.
     /// </summary>
     public HashSet<string> CodeChallengeMethodsSupported { get; } = new(StringComparer.Ordinal);

@@ -75,6 +75,16 @@ public sealed class OpenIddictServerOwinBuilder
         => Configure(options => options.EnableAuthorizationEndpointPassthrough = true);
 
     /// <summary>
+    /// Enables the pass-through mode for the OpenID Connect backchannel authentication endpoint.
+    /// When the pass-through mode is used, OpenID Connect requests are initially handled by OpenIddict.
+    /// Once validated, the rest of the request processing pipeline is invoked, so that OpenID Connect requests
+    /// can be handled at a later stage (in a custom middleware or in a MVC controller, for instance).
+    /// </summary>
+    /// <returns>The <see cref="OpenIddictServerOwinBuilder"/> instance.</returns>
+    public OpenIddictServerOwinBuilder EnableBackchannelAuthenticationEndpointPassthrough()
+        => Configure(options => options.EnableBackchannelAuthenticationEndpointPassthrough = true);
+
+    /// <summary>
     /// Enables the pass-through mode for the OpenID Connect end session endpoint.
     /// When the pass-through mode is used, OpenID Connect requests are initially handled by OpenIddict.
     /// Once validated, the rest of the request processing pipeline is invoked, so that OpenID Connect requests

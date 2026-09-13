@@ -501,6 +501,19 @@ public static class OpenIddictExtensions
     }
 
     /// <summary>
+    /// Determines whether the "grant_type" parameter corresponds to the Client-Initiated Backchannel Authentication grant.
+    /// See https://openid.net/specs/openid-client-initiated-backchannel-authentication-core-1_0.html for more information.
+    /// </summary>
+    /// <param name="request">The <see cref="OpenIddictRequest"/> instance.</param>
+    /// <returns><see langword="true"/> if the request is a CIBA grant request, <see langword="false"/> otherwise.</returns>
+    public static bool IsCibaGrantType(this OpenIddictRequest request)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+
+        return string.Equals(request.GrantType, GrantTypes.Ciba, StringComparison.Ordinal);
+    }
+
+    /// <summary>
     /// Determines whether the "grant_type" parameter corresponds to the password grant.
     /// See http://tools.ietf.org/html/rfc6749#section-4.3.2 for more information.
     /// </summary>
@@ -2565,6 +2578,22 @@ public static class OpenIddictExtensions
         => GetLifetime(principal, Claims.Private.AuthorizationCodeLifetime);
 
     /// <summary>
+    /// Gets the authentication request identifier lifetime associated with the claims identity.
+    /// </summary>
+    /// <param name="identity">The claims identity.</param>
+    /// <returns>The authentication request identifier lifetime or <see langword="null"/> if the claim cannot be found.</returns>
+    public static TimeSpan? GetAuthenticationRequestIdLifetime(this ClaimsIdentity identity)
+        => GetLifetime(identity, Claims.Private.AuthenticationRequestIdLifetime);
+
+    /// <summary>
+    /// Gets the authentication request identifier lifetime associated with the claims principal.
+    /// </summary>
+    /// <param name="principal">The claims principal.</param>
+    /// <returns>The authentication request identifier lifetime or <see langword="null"/> if the claim cannot be found.</returns>
+    public static TimeSpan? GetAuthenticationRequestIdLifetime(this ClaimsPrincipal principal)
+        => GetLifetime(principal, Claims.Private.AuthenticationRequestIdLifetime);
+
+    /// <summary>
     /// Gets the device code lifetime associated with the claims identity.
     /// </summary>
     /// <param name="identity">The claims identity.</param>
@@ -3233,6 +3262,24 @@ public static class OpenIddictExtensions
     /// <returns>The claims principal.</returns>
     public static ClaimsPrincipal SetDeviceCodeLifetime(this ClaimsPrincipal principal, TimeSpan? lifetime)
         => principal.SetClaim(Claims.Private.DeviceCodeLifetime, (long?) lifetime?.TotalSeconds);
+
+    /// <summary>
+    /// Sets the authentication request identifier lifetime associated with the claims identity.
+    /// </summary>
+    /// <param name="identity">The claims identity.</param>
+    /// <param name="lifetime">The authentication request identifier lifetime to store.</param>
+    /// <returns>The claims identity.</returns>
+    public static ClaimsIdentity SetAuthenticationRequestIdLifetime(this ClaimsIdentity identity, TimeSpan? lifetime)
+        => identity.SetClaim(Claims.Private.AuthenticationRequestIdLifetime, (long?) lifetime?.TotalSeconds);
+
+    /// <summary>
+    /// Sets the authentication request identifier lifetime associated with the claims principal.
+    /// </summary>
+    /// <param name="principal">The claims principal.</param>
+    /// <param name="lifetime">The authentication request identifier lifetime to store.</param>
+    /// <returns>The claims principal.</returns>
+    public static ClaimsPrincipal SetAuthenticationRequestIdLifetime(this ClaimsPrincipal principal, TimeSpan? lifetime)
+        => principal.SetClaim(Claims.Private.AuthenticationRequestIdLifetime, (long?) lifetime?.TotalSeconds);
 
     /// <summary>
     /// Sets the identity token lifetime associated with the claims identity.

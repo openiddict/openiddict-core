@@ -126,8 +126,10 @@ public static class OpenIddictConstants
         {
             public const string AccessTokenLifetime = "oi_act_lft";
             public const string Audience = "oi_aud";
+            public const string AuthenticationRequestIdLifetime = "oi_arid_lft";
             public const string AuthorizationCodeLifetime = "oi_auc_lft";
             public const string AuthorizationId = "oi_au_id";
+            public const string BindingMessage = "oi_bdg_msg";
             public const string ClaimDestinationsMap = "oi_cl_dstn";
             public const string CodeChallenge = "oi_cd_chlg";
             public const string CodeChallengeMethod = "oi_cd_chlg_meth";
@@ -165,6 +167,13 @@ public static class OpenIddictConstants
         }
     }
  
+    public static class BackchannelTokenDeliveryModes
+    {
+        public const string Ping = "ping";
+        public const string Poll = "poll";
+        public const string Push = "push";
+    }
+
     public static class ClaimRequestMembers
     {
         public const string Essential = "essential";
@@ -224,10 +233,12 @@ public static class OpenIddictConstants
         public const string AccountSelectionRequired = "account_selection_required";
         public const string AuthorizationPending = "authorization_pending";
         public const string ConsentRequired = "consent_required";
+        public const string ExpiredLoginHintToken = "expired_login_hint_token";
         public const string ExpiredToken = "expired_token";
         public const string InsufficientAccess = "insufficient_access";
         public const string InsufficientScope = "insufficient_scope";
         public const string InteractionRequired = "interaction_required";
+        public const string InvalidBindingMessage = "invalid_binding_message";
         public const string InvalidClient = "invalid_client";
         public const string InvalidGrant = "invalid_grant";
         public const string InvalidRequest = "invalid_request";
@@ -236,8 +247,10 @@ public static class OpenIddictConstants
         public const string InvalidScope = "invalid_scope";
         public const string InvalidTarget = "invalid_target";
         public const string InvalidToken = "invalid_token";
+        public const string InvalidUserCode = "invalid_user_code";
         public const string LoginRequired = "login_required";
         public const string MissingToken = "missing_token";
+        public const string MissingUserCode = "missing_user_code";
         public const string RegistrationNotSupported = "registration_not_supported";
         public const string RequestNotSupported = "request_not_supported";
         public const string RequestUriNotSupported = "request_uri_not_supported";
@@ -245,6 +258,7 @@ public static class OpenIddictConstants
         public const string SlowDown = "slow_down";
         public const string TemporarilyUnavailable = "temporarily_unavailable";
         public const string UnauthorizedClient = "unauthorized_client";
+        public const string UnknownUserId = "unknown_user_id";
         public const string UnmetAuthenticationRequirements = "unmet_authentication_requirements";
         public const string UnsupportedGrantType = "unsupported_grant_type";
         public const string UnsupportedResponseType = "unsupported_response_type";
@@ -254,6 +268,7 @@ public static class OpenIddictConstants
     public static class GrantTypes
     {
         public const string AuthorizationCode = "authorization_code";
+        public const string Ciba = "urn:openid:params:grant-type:ciba";
         public const string ClientCredentials = "client_credentials";
         public const string DeviceCode = "urn:ietf:params:oauth:grant-type:device_code";
         public const string Implicit = "implicit";
@@ -277,6 +292,7 @@ public static class OpenIddictConstants
 
         public static class Private
         {
+            public const string AuthenticationRequestId = "oi_arid+jwt";
             public const string AuthorizationCode = "oi_auc+jwt";
             public const string DeviceCode = "oi_dvc+jwt";
             public const string RefreshToken = "oi_reft+jwt";
@@ -291,6 +307,10 @@ public static class OpenIddictConstants
         public const string AcrValuesSupported = "acr_values_supported";
         public const string AuthorizationEndpoint = "authorization_endpoint";
         public const string AuthorizationResponseIssParameterSupported = "authorization_response_iss_parameter_supported";
+        public const string BackchannelAuthenticationEndpoint = "backchannel_authentication_endpoint";
+        public const string BackchannelAuthenticationRequestSigningAlgValuesSupported = "backchannel_authentication_request_signing_alg_values_supported";
+        public const string BackchannelTokenDeliveryModesSupported = "backchannel_token_delivery_modes_supported";
+        public const string BackchannelUserCodeParameterSupported = "backchannel_user_code_parameter_supported";
         public const string ClaimsLocalesSupported = "claims_locales_supported";
         public const string ClaimsParameterSupported = "claims_parameter_supported";
         public const string ClaimsSupported = "claims_supported";
@@ -365,11 +385,14 @@ public static class OpenIddictConstants
         public const string ActorTokenType = "actor_token_type";
         public const string Assertion = "assertion";
         public const string Audience = "audience";
+        public const string AuthReqId = "auth_req_id";
+        public const string BindingMessage = "binding_message";
         public const string Claims = "claims";
         public const string ClaimsLocales = "claims_locales";
         public const string ClientAssertion = "client_assertion";
         public const string ClientAssertionType = "client_assertion_type";
         public const string ClientId = "client_id";
+        public const string ClientNotificationToken = "client_notification_token";
         public const string ClientSecret = "client_secret";
         public const string Code = "code";
         public const string CodeChallenge = "code_challenge";
@@ -389,6 +412,7 @@ public static class OpenIddictConstants
         public const string Iss = "iss";
         public const string IssuedTokenType = "issued_token_type";
         public const string LoginHint = "login_hint";
+        public const string LoginHintToken = "login_hint_token";
         public const string Keys = "keys";
         public const string MaxAge = "max_age";
         public const string Nonce = "nonce";
@@ -400,6 +424,7 @@ public static class OpenIddictConstants
         public const string RefreshToken = "refresh_token";
         public const string Registration = "registration";
         public const string Request = "request";
+        public const string RequestedExpiry = "requested_expiry";
         public const string RequestedTokenType = "requested_token_type";
         public const string RequestUri = "request_uri";
         public const string Resource = "resource";
@@ -424,6 +449,7 @@ public static class OpenIddictConstants
         public static class Endpoints
         {
             public const string Authorization = "ept:authorization";
+            public const string BackchannelAuthentication = "ept:backchannel_authentication";
             public const string DeviceAuthorization = "ept:device_authorization";
             public const string EndSession = "ept:end_session";
             public const string Introspection = "ept:introspection";
@@ -435,6 +461,7 @@ public static class OpenIddictConstants
         public static class GrantTypes
         {
             public const string AuthorizationCode = "gt:authorization_code";
+            public const string Ciba = "gt:urn:openid:params:grant-type:ciba";
             public const string ClientCredentials = "gt:client_credentials";
             public const string DeviceCode = "gt:urn:ietf:params:oauth:grant-type:device_code";
             public const string Implicit = "gt:implicit";
@@ -487,6 +514,7 @@ public static class OpenIddictConstants
     public static class Properties
     {
         public const string Destinations = ".destinations";
+        public const string LastPollingDate = ".last_polling_date";
     }
 
     public static class RequestTokenTypes
@@ -579,6 +607,7 @@ public static class OpenIddictConstants
         public static class TokenLifetimes
         {
             public const string AccessToken = "tkn_lft:act";
+            public const string AuthenticationRequestId = "tkn_lft:arid";
             public const string AuthorizationCode = "tkn_lft:auc";
             public const string DeviceCode = "tkn_lft:dvc";
             public const string IdentityToken = "tkn_lft:idt";
@@ -647,6 +676,7 @@ public static class OpenIddictConstants
 
         public static class Private
         {
+            public const string AuthenticationRequestId = "urn:openiddict:params:oauth:token-type:auth_req_id";
             public const string AuthorizationCode = "urn:openiddict:params:oauth:token-type:authorization_code";
             public const string ClientAssertion = "urn:openiddict:params:oauth:token-type:client_assertion";
             public const string DeviceCode = "urn:openiddict:params:oauth:token-type:device_code";

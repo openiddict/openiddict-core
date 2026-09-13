@@ -50,6 +50,7 @@ public static partial class OpenIddictServerOwinHandlers
         ResolveHostSignOutProperties.Descriptor,
 
         .. Authentication.DefaultHandlers,
+        .. Backchannel.DefaultHandlers,
         .. Device.DefaultHandlers,
         .. Discovery.DefaultHandlers,
         .. Exchange.DefaultHandlers,

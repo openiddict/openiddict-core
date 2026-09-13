@@ -222,6 +222,7 @@ public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenId
         }
 
         var uris = options.AuthorizationEndpointUris.Distinct()
+            .Concat(options.BackchannelAuthenticationEndpointUris.Distinct())
             .Concat(options.ConfigurationEndpointUris.Distinct())
             .Concat(options.JsonWebKeySetEndpointUris.Distinct())
             .Concat(options.DeviceAuthorizationEndpointUris.Distinct())
@@ -257,6 +258,7 @@ public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenId
         // Ensure the token endpoint has been enabled when the authorization code,
         // client credentials, device, password or refresh token grants are supported.
         if (options.TokenEndpointUris.Count is 0 && (options.GrantTypes.Contains(GrantTypes.AuthorizationCode) ||
+                                                     options.GrantTypes.Contains(GrantTypes.Ciba) ||
                                                      options.GrantTypes.Contains(GrantTypes.ClientCredentials) ||
                                                      options.GrantTypes.Contains(GrantTypes.DeviceCode) ||
                                                      options.GrantTypes.Contains(GrantTypes.Password) ||
@@ -275,6 +277,25 @@ public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenId
         if (options.DeviceAuthorizationEndpointUris.Count is > 0 && !options.GrantTypes.Contains(GrantTypes.DeviceCode))
         {
             builder.AddError(SR.GetResourceString(SR.ID0084));
+        }
+
+        // Ensure the backchannel authentication endpoint and the CIBA grant are always enabled together.
+        if (options.BackchannelAuthenticationEndpointUris.Count is 0 && options.GrantTypes.Contains(GrantTypes.Ciba))
+        {
+            builder.AddError(SR.GetResourceString(SR.ID0527));
+        }
+
+        if (options.BackchannelAuthenticationEndpointUris.Count is > 0 && !options.GrantTypes.Contains(GrantTypes.Ciba))
+        {
+            builder.AddError(SR.GetResourceString(SR.ID0528));
+        }
+
+        // Ensure the CIBA grant is not used with the degraded mode, with token storage disabled or without an explicit
+        // issuer, as authentication requests are persisted and completed outside the context of an HTTP request.
+        if (options.GrantTypes.Contains(GrantTypes.Ciba) &&
+            (options.EnableDegradedMode || options.DisableTokenStorage || options.Issuer is null))
+        {
+            builder.AddError(SR.GetResourceString(SR.ID0529));
         }
 
         // Ensure the grant types/response types configuration is consistent.
@@ -298,7 +319,8 @@ public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenId
         }
 
         // Ensure at least one client authentication method is enabled (unless no non-interactive endpoint was enabled).
-        if (options.ClientAuthenticationMethods.Count is 0 && (options.DeviceAuthorizationEndpointUris.Count is not 0 ||
+        if (options.ClientAuthenticationMethods.Count is 0 && (options.BackchannelAuthenticationEndpointUris.Count is not 0 ||
+                                                               options.DeviceAuthorizationEndpointUris.Count is not 0 ||
                                                                options.IntrospectionEndpointUris.Count       is not 0 ||
                                                                options.PushedAuthorizationEndpointUris.Count is not 0 ||
                                                                options.RevocationEndpointUris.Count          is not 0 ||

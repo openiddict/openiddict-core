@@ -30,6 +30,7 @@ public static class OpenIddictServerExtensions
         builder.Services.AddOptions();
 
         builder.Services.TryAddSingleton<IOpenIddictServerDispatcher, OpenIddictServerDispatcher>();
+        builder.Services.TryAddScoped<OpenIddictServerService>();
 
         // Register the built-in server event handlers used by the OpenIddict server components.
         // Note: the order used here is not important, as the actual order is set in the options.
@@ -53,6 +54,9 @@ public static class OpenIddictServerExtensions
         builder.Services.TryAddSingleton<RequireClientSecretParameter>();
         builder.Services.TryAddSingleton<RequireConfigurationRequest>();
         builder.Services.TryAddSingleton<RequireDegradedModeDisabled>();
+        builder.Services.TryAddSingleton<RequireAuthenticationRequestIdGenerated>();
+        builder.Services.TryAddSingleton<RequireAuthenticationRequestIdValidated>();
+        builder.Services.TryAddSingleton<RequireBackchannelAuthenticationRequest>();
         builder.Services.TryAddSingleton<RequireDeviceAuthorizationRequest>();
         builder.Services.TryAddSingleton<RequireDeviceCodeGenerated>();
         builder.Services.TryAddSingleton<RequireDeviceCodeValidated>();

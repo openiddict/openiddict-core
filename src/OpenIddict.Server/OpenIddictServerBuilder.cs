@@ -914,7 +914,7 @@ public sealed class OpenIddictServerBuilder
             GrantTypes.AuthorizationCode or GrantTypes.ClientCredentials or
             GrantTypes.DeviceCode        or GrantTypes.Implicit          or
             GrantTypes.Password          or GrantTypes.RefreshToken      or
-            GrantTypes.TokenExchange
+            GrantTypes.TokenExchange     or GrantTypes.Ciba
                 => throw new ArgumentException(SR.FormatID0517(type), nameof(type)),
 
             _ => Configure(options => options.GrantTypes.Add(type))
@@ -928,6 +928,15 @@ public sealed class OpenIddictServerBuilder
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
     public OpenIddictServerBuilder AllowDeviceAuthorizationFlow()
         => Configure(options => options.GrantTypes.Add(GrantTypes.DeviceCode));
+
+    /// <summary>
+    /// Enables OpenID Connect Client-Initiated Backchannel Authentication (CIBA) flow support (poll mode).
+    /// For more information about this specific flow, visit
+    /// https://openid.net/specs/openid-client-initiated-backchannel-authentication-core-1_0.html.
+    /// </summary>
+    /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
+    public OpenIddictServerBuilder AllowClientInitiatedBackchannelAuthenticationFlow()
+        => Configure(options => options.GrantTypes.Add(GrantTypes.Ciba));
 
     /// <summary>
     /// Enables hybrid flow support. For more information
@@ -1051,6 +1060,49 @@ public sealed class OpenIddictServerBuilder
         {
             options.AuthorizationEndpointUris.Clear();
             options.AuthorizationEndpointUris.AddRange(uris);
+        });
+    }
+
+    /// <summary>
+    /// Sets the relative or absolute URIs associated to the backchannel authentication endpoint.
+    /// If an empty array is specified, the endpoint will be considered disabled.
+    /// Note: only the first URI will be returned as part of the discovery document.
+    /// </summary>
+    /// <param name="uris">The URIs associated to the endpoint.</param>
+    /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
+    public OpenIddictServerBuilder SetBackchannelAuthenticationEndpointUris(
+        [StringSyntax(StringSyntaxAttribute.Uri)] params string[] uris)
+    {
+        ArgumentNullException.ThrowIfNull(uris);
+
+        return SetBackchannelAuthenticationEndpointUris([.. uris.Select(uri => new Uri(uri, UriKind.RelativeOrAbsolute))]);
+    }
+
+    /// <summary>
+    /// Sets the relative or absolute URIs associated to the backchannel authentication endpoint.
+    /// If an empty array is specified, the endpoint will be considered disabled.
+    /// Note: only the first URI will be returned as part of the discovery document.
+    /// </summary>
+    /// <param name="uris">The URIs associated to the endpoint.</param>
+    /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
+    public OpenIddictServerBuilder SetBackchannelAuthenticationEndpointUris(params Uri[] uris)
+    {
+        ArgumentNullException.ThrowIfNull(uris);
+
+        if (Array.Exists(uris, OpenIddictHelpers.IsImplicitFileUri))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0072), nameof(uris));
+        }
+
+        if (Array.Exists(uris, static uri => uri.OriginalString.StartsWith("~", StringComparison.OrdinalIgnoreCase)))
+        {
+            throw new ArgumentException(SR.FormatID0081("~"), nameof(uris));
+        }
+
+        return Configure(options =>
+        {
+            options.BackchannelAuthenticationEndpointUris.Clear();
+            options.BackchannelAuthenticationEndpointUris.AddRange(uris);
         });
     }
 
@@ -1791,6 +1843,25 @@ public sealed class OpenIddictServerBuilder
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
     public OpenIddictServerBuilder SetDeviceCodeLifetime(TimeSpan? lifetime)
         => Configure(options => options.DeviceCodeLifetime = lifetime);
+
+    /// <summary>
+    /// Sets the authentication request identifier lifetime, after which client applications
+    /// are unable to send a grant_type=urn:openid:params:grant-type:ciba token request.
+    /// While discouraged, <see langword="null"/> can be specified to issue identifiers that never expire.
+    /// </summary>
+    /// <param name="lifetime">The authentication request identifier lifetime.</param>
+    /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
+    public OpenIddictServerBuilder SetAuthenticationRequestIdLifetime(TimeSpan? lifetime)
+        => Configure(options => options.AuthenticationRequestIdLifetime = lifetime);
+
+    /// <summary>
+    /// Sets the minimum polling interval client applications must respect when using the device code
+    /// or CIBA grants. If <see langword="null"/> is specified, the polling interval is not enforced.
+    /// </summary>
+    /// <param name="interval">The polling interval.</param>
+    /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
+    public OpenIddictServerBuilder SetPollingInterval(TimeSpan? interval)
+        => Configure(options => options.PollingInterval = interval);
 
     /// <summary>
     /// Sets the identity token lifetime, after which client

@@ -69,5 +69,10 @@ public enum OpenIddictServerEndpointType
     /// <summary>
     /// Pushed authorization endpoint.
     /// </summary>
-    PushedAuthorization = 11
+    PushedAuthorization = 11,
+
+    /// <summary>
+    /// Backchannel authentication endpoint.
+    /// </summary>
+    BackchannelAuthentication = 12
 }

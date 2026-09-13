@@ -250,6 +250,58 @@ public class OpenIddictServerConfigurationTests
     }
 
     [Fact]
+    public void Validate_ReturnsAnErrorWhenBackchannelAuthenticationEndpointIsMissingForCibaGrant()
+    {
+        // Arrange
+        var configuration = new OpenIddictServerConfiguration(new ServiceCollection().BuildServiceProvider());
+        var options = CreateBaseOptions();
+        options.GrantTypes.Add(GrantTypes.Ciba);
+
+        // Act
+        var result = configuration.Validate(name: null, options);
+
+        // Assert
+        Assert.Contains(SR.GetResourceString(SR.ID0527), result.Failures!, StringComparer.Ordinal);
+    }
+
+    [Fact]
+    public void Validate_ReturnsAnErrorWhenCibaGrantIsMissingForBackchannelAuthenticationEndpoint()
+    {
+        // Arrange
+        var configuration = new OpenIddictServerConfiguration(new ServiceCollection().BuildServiceProvider());
+        var options = CreateBaseOptions();
+        options.BackchannelAuthenticationEndpointUris.Add(new Uri("connect/ciba", UriKind.Relative));
+
+        // Act
+        var result = configuration.Validate(name: null, options);
+
+        // Assert
+        Assert.Contains(SR.GetResourceString(SR.ID0528), result.Failures!, StringComparer.Ordinal);
+    }
+
+    [Theory]
+    [InlineData(true, false, true)]
+    [InlineData(false, true, true)]
+    [InlineData(false, false, false)]
+    public void Validate_ReturnsAnErrorWhenCibaGrantIsUsedWithIncompatibleSettings(bool degraded, bool storage, bool issuer)
+    {
+        // Arrange
+        var configuration = new OpenIddictServerConfiguration(new ServiceCollection().BuildServiceProvider());
+        var options = CreateBaseOptions();
+        options.GrantTypes.Add(GrantTypes.Ciba);
+        options.BackchannelAuthenticationEndpointUris.Add(new Uri("connect/ciba", UriKind.Relative));
+        options.EnableDegradedMode = degraded;
+        options.DisableTokenStorage = storage;
+        options.Issuer = issuer ? new Uri("https://www.contoso.com/", UriKind.Absolute) : null;
+
+        // Act
+        var result = configuration.Validate(name: null, options);
+
+        // Assert
+        Assert.Contains(SR.GetResourceString(SR.ID0529), result.Failures!, StringComparer.Ordinal);
+    }
+
+    [Fact]
     public void Validate_ReturnsAnErrorWhenSignedRequestObjectsAreRequiredWithoutRequestObjectSupport()
     {
         // Arrange

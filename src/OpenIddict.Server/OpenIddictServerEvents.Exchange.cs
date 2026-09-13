@@ -73,6 +73,11 @@ public static partial class OpenIddictServerEvents
         public ClaimsPrincipal? DeviceCodePrincipal { get; set; }
 
         /// <summary>
+        /// Gets or sets the security principal extracted from the authentication request identifier, if applicable.
+        /// </summary>
+        public ClaimsPrincipal? AuthenticationRequestIdPrincipal { get; set; }
+
+        /// <summary>
         /// Gets or sets the security principal extracted from the refresh token, if applicable.
         /// </summary>
         public ClaimsPrincipal? RefreshTokenPrincipal { get; set; }
@@ -120,6 +125,11 @@ public static partial class OpenIddictServerEvents
         /// Gets or sets the security principal extracted from the device code, if applicable.
         /// </summary>
         public ClaimsPrincipal? DeviceCodePrincipal { get; set; }
+
+        /// <summary>
+        /// Gets or sets the security principal extracted from the authentication request identifier, if applicable.
+        /// </summary>
+        public ClaimsPrincipal? AuthenticationRequestIdPrincipal { get; set; }
 
         /// <summary>
         /// Gets or sets the security principal extracted from the refresh token, if applicable.

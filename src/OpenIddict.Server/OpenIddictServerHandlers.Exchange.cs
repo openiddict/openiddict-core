@@ -413,6 +413,7 @@ public static partial class OpenIddictServerHandlers
                 ArgumentNullException.ThrowIfNull(context);
 
                 if (!context.Request.IsAuthorizationCodeGrantType() &&
+                    !context.Request.IsCibaGrantType() &&
                     !context.Request.IsClientCredentialsGrantType() &&
                     !context.Request.IsDeviceCodeGrantType())
                 {
@@ -604,6 +605,18 @@ public static partial class OpenIddictServerHandlers
                         error: Errors.InvalidRequest,
                         description: SR.FormatID2058(Parameters.DeviceCode),
                         uri: SR.FormatID8000(SR.ID2058));
+
+                    return ValueTask.CompletedTask;
+                }
+
+                // Reject grant_type=urn:openid:params:grant-type:ciba requests missing the authentication request identifier.
+                // See https://openid.net/specs/openid-client-initiated-backchannel-authentication-core-1_0.html#rfc.section.10.1.
+                if (context.Request.IsCibaGrantType() && string.IsNullOrEmpty(context.Request.AuthReqId))
+                {
+                    context.Reject(
+                        error: Errors.InvalidRequest,
+                        description: SR.FormatID2216(Parameters.AuthReqId),
+                        uri: SR.FormatID8000(SR.ID2216));
 
                     return ValueTask.CompletedTask;
                 }
@@ -885,6 +898,7 @@ public static partial class OpenIddictServerHandlers
                 //
                 // For more information, see https://tools.ietf.org/html/rfc6749#section-6.
                 if (!string.IsNullOrEmpty(context.Request.Scope) && (context.Request.IsAuthorizationCodeGrantType() ||
+                                                                     context.Request.IsCibaGrantType() ||
                                                                      context.Request.IsDeviceCodeGrantType()))
                 {
                     context.Logger.LogInformation(6094, SR.GetResourceString(SR.ID6094), Parameters.Scope);
@@ -929,6 +943,7 @@ public static partial class OpenIddictServerHandlers
                 // Prevent audiences parameters from being attached to token requests that don't use the
                 // OAuth 2.0 Token Exchange grant type, unless the specified grant type is a custom value.
                 if (context.Request.IsAuthorizationCodeGrantType() || context.Request.IsClientCredentialsGrantType() ||
+                    context.Request.IsCibaGrantType()              ||
                     context.Request.IsDeviceCodeGrantType()        || context.Request.IsImplicitFlow()               ||
                     context.Request.IsPasswordGrantType()          || context.Request.IsRefreshTokenGrantType())
                 {
@@ -1214,6 +1229,7 @@ public static partial class OpenIddictServerHandlers
                 context.ActorTokenPrincipal = notification.ActorTokenPrincipal;
                 context.AuthorizationCodePrincipal = notification.AuthorizationCodePrincipal;
                 context.DeviceCodePrincipal = notification.DeviceCodePrincipal;
+                context.AuthenticationRequestIdPrincipal = notification.AuthenticationRequestIdPrincipal;
                 context.RefreshTokenPrincipal = notification.RefreshTokenPrincipal;
                 context.SubjectTokenPrincipal = notification.SubjectTokenPrincipal;
             }
@@ -1570,12 +1586,14 @@ public static partial class OpenIddictServerHandlers
                 ArgumentNullException.ThrowIfNull(context);
 
                 if (context.Request.IsAuthorizationCodeGrantType() ||
+                    context.Request.IsCibaGrantType() ||
                     context.Request.IsDeviceCodeGrantType() ||
                     context.Request.IsRefreshTokenGrantType())
                 {
                     var principal = context.Request.GrantType switch
                     {
                         GrantTypes.AuthorizationCode => context.AuthorizationCodePrincipal,
+                        GrantTypes.Ciba              => context.AuthenticationRequestIdPrincipal,
                         GrantTypes.DeviceCode        => context.DeviceCodePrincipal,
                         GrantTypes.RefreshToken      => context.RefreshTokenPrincipal,
 
@@ -1593,7 +1611,7 @@ public static partial class OpenIddictServerHandlers
                             throw new InvalidOperationException(SR.GetResourceString(SR.ID0043));
                         }
 
-                        if (context.Request.IsDeviceCodeGrantType())
+                        if (context.Request.IsCibaGrantType() || context.Request.IsDeviceCodeGrantType())
                         {
                             throw new InvalidOperationException(SR.GetResourceString(SR.ID0044));
                         }
@@ -2082,6 +2100,7 @@ public static partial class OpenIddictServerHandlers
                 ArgumentNullException.ThrowIfNull(context);
 
                 if (!context.Request.IsAuthorizationCodeGrantType() &&
+                    !context.Request.IsCibaGrantType() &&
                     !context.Request.IsDeviceCodeGrantType() &&
                     !context.Request.IsRefreshTokenGrantType() &&
                     !context.Request.IsTokenExchangeGrantType())
@@ -2094,6 +2113,7 @@ public static partial class OpenIddictServerHandlers
                     ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0007));
 
                 context.ActorTokenPrincipal = notification.ActorTokenPrincipal;
+                context.AuthenticationRequestIdPrincipal = notification.AuthenticationRequestIdPrincipal;
                 context.AuthorizationCodePrincipal = notification.AuthorizationCodePrincipal;
                 context.DeviceCodePrincipal = notification.DeviceCodePrincipal;
                 context.RefreshTokenPrincipal = notification.RefreshTokenPrincipal;
@@ -2104,6 +2124,7 @@ public static partial class OpenIddictServerHandlers
                 context.Principal ??= context.Request.GrantType switch
                 {
                     GrantTypes.AuthorizationCode => notification.AuthorizationCodePrincipal,
+                    GrantTypes.Ciba              => notification.AuthenticationRequestIdPrincipal,
                     GrantTypes.DeviceCode        => notification.DeviceCodePrincipal,
                     GrantTypes.RefreshToken      => notification.RefreshTokenPrincipal,
 
@@ -2150,6 +2171,7 @@ public static partial class OpenIddictServerHandlers
                 // If the error indicates an invalid token, return a standard invalid_grant.
 
                 if (context.Request is null || !(context.Request.IsAuthorizationCodeGrantType() ||
+                                                 context.Request.IsCibaGrantType() ||
                                                  context.Request.IsDeviceCodeGrantType() ||
                                                  context.Request.IsRefreshTokenGrantType() ||
                                                  context.Request.IsTokenExchangeGrantType()))
@@ -2161,6 +2183,9 @@ public static partial class OpenIddictServerHandlers
                 {
                     // Keep "expired_token" errors as-is if the request is a device code token request.
                     Errors.ExpiredToken when context.Request.IsDeviceCodeGrantType() => Errors.ExpiredToken,
+
+                    // Similarly, keep "expired_token" errors as-is if the request is a CIBA token request.
+                    Errors.ExpiredToken when context.Request.IsCibaGrantType() => Errors.ExpiredToken,
 
                     // Convert "invalid_token" errors to "invalid_grant".
                     Errors.InvalidToken => Errors.InvalidGrant,

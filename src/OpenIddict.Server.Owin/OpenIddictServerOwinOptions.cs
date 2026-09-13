@@ -28,6 +28,14 @@ public sealed class OpenIddictServerOwinOptions
     public bool EnableAuthorizationEndpointPassthrough { get; set; }
 
     /// <summary>
+    /// Gets or sets a boolean indicating whether the pass-through mode is enabled for the backchannel authentication endpoint.
+    /// When the pass-through mode is used, OpenID Connect requests are initially handled by OpenIddict.
+    /// Once validated, the rest of the request processing pipeline is invoked, so that OpenID Connect requests
+    /// can be handled at a later stage (in a custom middleware or in a MVC controller, for instance).
+    /// </summary>
+    public bool EnableBackchannelAuthenticationEndpointPassthrough { get; set; }
+
+    /// <summary>
     /// Gets or sets a boolean indicating whether the pass-through mode is enabled for the end session endpoint.
     /// When the pass-through mode is used, OpenID Connect requests are initially handled by OpenIddict.
     /// Once validated, the rest of the request processing pipeline is invoked, so that OpenID Connect requests

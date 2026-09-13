@@ -13,6 +13,7 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -256,6 +257,9 @@ public static partial class OpenIddictServerHandlers
 
                             // For device codes, only the short "oi_dvc+jwt" form is valid.
                             TokenTypeIdentifiers.Private.DeviceCode => [JsonWebTokenTypes.Private.DeviceCode],
+
+                            // For authentication request identifiers, only the short "oi_arid+jwt" form is valid.
+                            TokenTypeIdentifiers.Private.AuthenticationRequestId => [JsonWebTokenTypes.Private.AuthenticationRequestId],
 
                             // For refresh tokens, only the short "oi_reft+jwt" form is valid.
                             TokenTypeIdentifiers.RefreshToken => [JsonWebTokenTypes.Private.RefreshToken],
@@ -585,6 +589,7 @@ public static partial class OpenIddictServerHandlers
 
                     JsonWebTokenTypes.Private.AuthorizationCode => TokenTypeIdentifiers.Private.AuthorizationCode,
                     JsonWebTokenTypes.Private.DeviceCode        => TokenTypeIdentifiers.Private.DeviceCode,
+                    JsonWebTokenTypes.Private.AuthenticationRequestId => TokenTypeIdentifiers.Private.AuthenticationRequestId,
                     JsonWebTokenTypes.Private.RefreshToken      => TokenTypeIdentifiers.RefreshToken,
                     JsonWebTokenTypes.Private.RequestToken      => TokenTypeIdentifiers.Private.RequestToken,
                     JsonWebTokenTypes.Private.UserCode          => TokenTypeIdentifiers.Private.UserCode,
@@ -984,6 +989,7 @@ public static partial class OpenIddictServerHandlers
                         {
                             TokenTypeIdentifiers.Private.ClientAssertion => Errors.InvalidClient,
                             TokenTypeIdentifiers.Private.DeviceCode      => Errors.ExpiredToken,
+                            TokenTypeIdentifiers.Private.AuthenticationRequestId => Errors.ExpiredToken,
                             _                                            => Errors.InvalidToken
                         },
                         description: context.Principal.GetTokenType() switch
@@ -1298,6 +1304,24 @@ public static partial class OpenIddictServerHandlers
                 // If the token is not marked as valid yet, return an authorization_pending error.
                 if (await manager.HasStatusAsync(token, Statuses.Inactive, context.CancellationToken))
                 {
+                    // If a polling interval was configured, return a slow_down error if the client
+                    // application polls the token endpoint more frequently than what is allowed.
+                    if (context.EndpointType is OpenIddictServerEndpointType.Token &&
+                        context.Options.PollingInterval is TimeSpan interval &&
+                        context.Principal.GetTokenType() is TokenTypeIdentifiers.Private.AuthenticationRequestId or
+                                                            TokenTypeIdentifiers.Private.DeviceCode &&
+                        !await TryUpdatePollingDateAsync(token, interval))
+                    {
+                        context.Logger.LogInformation(6299, SR.GetResourceString(SR.ID6299), context.TokenId);
+
+                        context.Reject(
+                            error: Errors.SlowDown,
+                            description: SR.GetResourceString(SR.ID2213),
+                            uri: SR.FormatID8000(SR.ID2213));
+
+                        return;
+                    }
+
                     context.Logger.LogInformation(6003, SR.GetResourceString(SR.ID6003), context.TokenId);
 
                     context.Reject(
@@ -1350,6 +1374,40 @@ public static partial class OpenIddictServerHandlers
                         });
 
                     return;
+                }
+
+                async ValueTask<bool> TryUpdatePollingDateAsync(object token, TimeSpan interval)
+                {
+                    var now = context.Options.TimeProvider.GetUtcNow();
+
+                    var properties = await manager.GetPropertiesAsync(token, context.CancellationToken);
+                    if (properties.TryGetValue(Properties.LastPollingDate, out JsonElement element) &&
+                        element.ValueKind is JsonValueKind.Number && element.TryGetInt64(out long value) &&
+                        now < DateTimeOffset.FromUnixTimeSeconds(value) + interval)
+                    {
+                        return false;
+                    }
+
+                    var descriptor = new OpenIddictTokenDescriptor();
+                    await manager.PopulateAsync(descriptor, token, context.CancellationToken);
+
+                    using var document = JsonDocument.Parse(now.ToUnixTimeSeconds().ToString(CultureInfo.InvariantCulture));
+                    descriptor.Properties[Properties.LastPollingDate] = document.RootElement.Clone();
+
+                    try
+                    {
+                        await manager.UpdateAsync(token, descriptor, context.CancellationToken);
+                    }
+
+                    // If the entry was concurrently updated (e.g because the client application sent concurrent polling
+                    // requests or because the end user approved the demand at the same time), consider the request as
+                    // too frequent: a subsequent polling request will be able to retrieve the updated token entry.
+                    catch (OpenIddictExceptions.ConcurrencyException)
+                    {
+                        return false;
+                    }
+
+                    return true;
                 }
 
                 async ValueTask<bool> IsReusableAsync(object token)
@@ -1568,6 +1626,10 @@ public static partial class OpenIddictServerHandlers
                     // corresponding the user, which allows the client to redeem the device code.
                     TokenTypeIdentifiers.Private.DeviceCode => Statuses.Inactive,
 
+                    // Similarly, authentication request identifiers are marked as inactive until the end user
+                    // approves the backchannel authentication request using the OpenIddict server service.
+                    TokenTypeIdentifiers.Private.AuthenticationRequestId => Statuses.Inactive,
+
                     // For all other tokens, "valid" is the default status.
                     _ => Statuses.Valid
                 };
@@ -1737,6 +1799,7 @@ public static partial class OpenIddictServerHandlers
                 // For authorization/device/user codes and refresh tokens,
                 // attach claims destinations to the JWT claims collection.
                 if (context.TokenType is TokenTypeIdentifiers.Private.AuthorizationCode or TokenTypeIdentifiers.Private.DeviceCode or
+                                         TokenTypeIdentifiers.Private.AuthenticationRequestId or
                                          TokenTypeIdentifiers.RefreshToken              or TokenTypeIdentifiers.Private.UserCode   or
                                          TokenTypeIdentifiers.Private.RequestToken)
                 {
@@ -1758,6 +1821,7 @@ public static partial class OpenIddictServerHandlers
                     TokenTypeIdentifiers.AccessToken               => JsonWebTokenTypes.AccessToken,
                     TokenTypeIdentifiers.Private.AuthorizationCode => JsonWebTokenTypes.Private.AuthorizationCode,
                     TokenTypeIdentifiers.Private.DeviceCode        => JsonWebTokenTypes.Private.DeviceCode,
+                    TokenTypeIdentifiers.Private.AuthenticationRequestId => JsonWebTokenTypes.Private.AuthenticationRequestId,
                     TokenTypeIdentifiers.IdentityToken             => JsonWebTokenTypes.GenericJsonWebToken,
                     TokenTypeIdentifiers.RefreshToken              => JsonWebTokenTypes.Private.RefreshToken,
                     TokenTypeIdentifiers.Private.RequestToken      => JsonWebTokenTypes.Private.RequestToken,

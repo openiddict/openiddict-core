@@ -123,6 +123,24 @@ public class OpenIddictResponse : OpenIddictMessage
     }
 
     /// <summary>
+    /// Gets or sets the "auth_req_id" parameter.
+    /// </summary>
+    public string? AuthReqId
+    {
+        get => (string?) GetParameter(OpenIddictConstants.Parameters.AuthReqId);
+        set => SetParameter(OpenIddictConstants.Parameters.AuthReqId, value);
+    }
+
+    /// <summary>
+    /// Gets or sets the "interval" parameter.
+    /// </summary>
+    public long? Interval
+    {
+        get => (long?) GetParameter(OpenIddictConstants.Parameters.Interval);
+        set => SetParameter(OpenIddictConstants.Parameters.Interval, value);
+    }
+
+    /// <summary>
     /// Gets or sets the "device_code" parameter.
     /// </summary>
     public string? DeviceCode

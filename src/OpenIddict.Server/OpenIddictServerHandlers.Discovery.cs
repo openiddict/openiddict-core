@@ -238,6 +238,9 @@ public static partial class OpenIddictServerHandlers
                     [Metadata.UserInfoEndpoint] = notification.UserInfoEndpoint?.AbsoluteUri,
                     [Metadata.DeviceAuthorizationEndpoint] = notification.DeviceAuthorizationEndpoint?.AbsoluteUri,
                     [Metadata.PushedAuthorizationRequestEndpoint] = notification.PushedAuthorizationEndpoint?.AbsoluteUri,
+                    [Metadata.BackchannelAuthenticationEndpoint] = notification.BackchannelAuthenticationEndpoint?.AbsoluteUri,
+                    [Metadata.BackchannelTokenDeliveryModesSupported] = notification.BackchannelTokenDeliveryModes.ToImmutableArray<string?>(),
+                    [Metadata.BackchannelUserCodeParameterSupported] = notification.BackchannelAuthenticationEndpoint is not null ? false : null,
                     [Metadata.MtlsEndpointAliases] = CreateMtlsEndpointAliases(notification),
                     [Metadata.JwksUri] = notification.JsonWebKeySetEndpoint?.AbsoluteUri,
                     [Metadata.GrantTypesSupported] = notification.GrantTypes.ToImmutableArray<string?>(),
@@ -406,6 +409,15 @@ public static partial class OpenIddictServerHandlers
 
                 context.AuthorizationEndpoint ??= OpenIddictHelpers.CreateAbsoluteUri(
                     context.BaseUri, context.Options.AuthorizationEndpointUris.FirstOrDefault());
+
+                context.BackchannelAuthenticationEndpoint ??= OpenIddictHelpers.CreateAbsoluteUri(
+                    context.BaseUri, context.Options.BackchannelAuthenticationEndpointUris.FirstOrDefault());
+
+                // Note: OpenIddict only supports the poll delivery mode.
+                if (context.BackchannelAuthenticationEndpoint is not null)
+                {
+                    context.BackchannelTokenDeliveryModes.Add(BackchannelTokenDeliveryModes.Poll);
+                }
 
                 context.DeviceAuthorizationEndpoint ??= OpenIddictHelpers.CreateAbsoluteUri(
                     context.BaseUri, context.Options.DeviceAuthorizationEndpointUris.FirstOrDefault());

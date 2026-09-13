@@ -250,6 +250,48 @@ public static class OpenIddictServerHandlerFilters
     }
 
     /// <summary>
+    /// Represents a filter that excludes the associated handlers if no authentication request identifier is generated.
+    /// </summary>
+    public sealed class RequireAuthenticationRequestIdGenerated : IOpenIddictServerHandlerFilter<ProcessSignInContext>
+    {
+        /// <inheritdoc/>
+        public ValueTask<bool> IsActiveAsync(ProcessSignInContext context)
+        {
+            ArgumentNullException.ThrowIfNull(context);
+
+            return new(context.GenerateAuthenticationRequestId);
+        }
+    }
+
+    /// <summary>
+    /// Represents a filter that excludes the associated handlers if no authentication request identifier is validated.
+    /// </summary>
+    public sealed class RequireAuthenticationRequestIdValidated : IOpenIddictServerHandlerFilter<ProcessAuthenticationContext>
+    {
+        /// <inheritdoc/>
+        public ValueTask<bool> IsActiveAsync(ProcessAuthenticationContext context)
+        {
+            ArgumentNullException.ThrowIfNull(context);
+
+            return new(context.ValidateAuthenticationRequestId);
+        }
+    }
+
+    /// <summary>
+    /// Represents a filter that excludes the associated handlers if the request is not a backchannel authentication request.
+    /// </summary>
+    public sealed class RequireBackchannelAuthenticationRequest : IOpenIddictServerHandlerFilter<BaseContext>
+    {
+        /// <inheritdoc/>
+        public ValueTask<bool> IsActiveAsync(BaseContext context)
+        {
+            ArgumentNullException.ThrowIfNull(context);
+
+            return new(context.EndpointType is OpenIddictServerEndpointType.BackchannelAuthentication);
+        }
+    }
+
+    /// <summary>
     /// Represents a filter that excludes the associated handlers if the request is not a device request.
     /// </summary>
     public sealed class RequireDeviceAuthorizationRequest : IOpenIddictServerHandlerFilter<BaseContext>

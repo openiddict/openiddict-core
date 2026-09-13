@@ -256,6 +256,51 @@ public class OpenIddictRequest : OpenIddictMessage
     }
 
     /// <summary>
+    /// Gets or sets the "auth_req_id" parameter.
+    /// </summary>
+    public string? AuthReqId
+    {
+        get => (string?) GetParameter(OpenIddictConstants.Parameters.AuthReqId);
+        set => SetParameter(OpenIddictConstants.Parameters.AuthReqId, value);
+    }
+
+    /// <summary>
+    /// Gets or sets the "binding_message" parameter.
+    /// </summary>
+    public string? BindingMessage
+    {
+        get => (string?) GetParameter(OpenIddictConstants.Parameters.BindingMessage);
+        set => SetParameter(OpenIddictConstants.Parameters.BindingMessage, value);
+    }
+
+    /// <summary>
+    /// Gets or sets the "client_notification_token" parameter.
+    /// </summary>
+    public string? ClientNotificationToken
+    {
+        get => (string?) GetParameter(OpenIddictConstants.Parameters.ClientNotificationToken);
+        set => SetParameter(OpenIddictConstants.Parameters.ClientNotificationToken, value);
+    }
+
+    /// <summary>
+    /// Gets or sets the "login_hint_token" parameter.
+    /// </summary>
+    public string? LoginHintToken
+    {
+        get => (string?) GetParameter(OpenIddictConstants.Parameters.LoginHintToken);
+        set => SetParameter(OpenIddictConstants.Parameters.LoginHintToken, value);
+    }
+
+    /// <summary>
+    /// Gets or sets the "requested_expiry" parameter.
+    /// </summary>
+    public long? RequestedExpiry
+    {
+        get => (long?) GetParameter(OpenIddictConstants.Parameters.RequestedExpiry);
+        set => SetParameter(OpenIddictConstants.Parameters.RequestedExpiry, value);
+    }
+
+    /// <summary>
     /// Gets or sets the "device_code" parameter.
     /// </summary>
     public string? DeviceCode

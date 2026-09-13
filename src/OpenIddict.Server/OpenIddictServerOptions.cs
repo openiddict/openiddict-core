@@ -64,6 +64,11 @@ public sealed class OpenIddictServerOptions
     public List<Uri> AuthorizationEndpointUris { get; } = [];
 
     /// <summary>
+    /// Gets the absolute and relative URIs associated to the backchannel authentication endpoint.
+    /// </summary>
+    public List<Uri> BackchannelAuthenticationEndpointUris { get; } = [];
+
+    /// <summary>
     /// Gets the absolute and relative URIs associated to the configuration endpoint.
     /// </summary>
     public List<Uri> ConfigurationEndpointUris { get; } =
@@ -250,6 +255,21 @@ public sealed class OpenIddictServerOptions
     /// While not recommended, this property can be set to <see langword="null"/> to issue access tokens that never expire.
     /// </summary>
     public TimeSpan? AccessTokenLifetime { get; set; } = TimeSpan.FromHours(1);
+
+    /// <summary>
+    /// Gets or sets the period of time authentication request identifiers (auth_req_id) returned by the backchannel
+    /// authentication endpoint remain valid after being issued. The default value is 5 minutes. While not recommended,
+    /// this property can be set to <see langword="null"/> to issue authentication request identifiers that never expire.
+    /// </summary>
+    public TimeSpan? AuthenticationRequestIdLifetime { get; set; } = TimeSpan.FromMinutes(5);
+
+    /// <summary>
+    /// Gets or sets the minimum period of time client applications must wait between two polling token requests made
+    /// using the device code or the Client-Initiated Backchannel Authentication grants. The default value is 5 seconds.
+    /// Token requests sent before this period has elapsed are rejected with a "slow_down" error. If this property is
+    /// set to <see langword="null"/>, the polling interval is neither returned to the client nor enforced.
+    /// </summary>
+    public TimeSpan? PollingInterval { get; set; } = TimeSpan.FromSeconds(5);
 
     /// <summary>
     /// Gets or sets the period of time device codes remain valid after being issued. The default value is 10 minutes.

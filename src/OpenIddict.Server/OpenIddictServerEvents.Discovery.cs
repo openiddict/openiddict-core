@@ -97,6 +97,16 @@ public static partial class OpenIddictServerEvents
         public Uri? AuthorizationEndpoint { get; set; }
 
         /// <summary>
+        /// Gets or sets the backchannel authentication endpoint URI.
+        /// </summary>
+        public Uri? BackchannelAuthenticationEndpoint { get; set; }
+
+        /// <summary>
+        /// Gets the backchannel token delivery modes supported by the authorization server.
+        /// </summary>
+        public HashSet<string> BackchannelTokenDeliveryModes { get; } = new(StringComparer.Ordinal);
+
+        /// <summary>
         /// Gets or sets the JSON Web Key Set endpoint URI.
         /// </summary>
         public Uri? JsonWebKeySetEndpoint { get; set; }

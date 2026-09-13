@@ -175,7 +175,8 @@ public sealed class OpenIddictServerOwinHandler : AuthenticationHandler<Authenti
             // To return the most appropriate one, the principal is selected based on the endpoint type.
             var principal = context.EndpointType switch
             {
-                OpenIddictServerEndpointType.Authorization or OpenIddictServerEndpointType.EndSession
+                OpenIddictServerEndpointType.Authorization or OpenIddictServerEndpointType.EndSession or
+                OpenIddictServerEndpointType.BackchannelAuthentication
                     => context.IdentityTokenPrincipal,
 
                 OpenIddictServerEndpointType.EndUserVerification => context.UserCodePrincipal,
@@ -187,6 +188,8 @@ public sealed class OpenIddictServerOwinHandler : AuthenticationHandler<Authenti
                     => context.AuthorizationCodePrincipal,
                 OpenIddictServerEndpointType.Token when context.Request.IsDeviceCodeGrantType()
                     => context.DeviceCodePrincipal,
+                OpenIddictServerEndpointType.Token when context.Request.IsCibaGrantType()
+                    => context.AuthenticationRequestIdPrincipal,
                 OpenIddictServerEndpointType.Token when context.Request.IsRefreshTokenGrantType()
                     => context.RefreshTokenPrincipal,
                 OpenIddictServerEndpointType.Token when context.Request.IsTokenExchangeGrantType()

@@ -52,6 +52,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
         ResolveHostSignOutProperties.Descriptor,
 
         .. Authentication.DefaultHandlers,
+        .. Backchannel.DefaultHandlers,
         .. Device.DefaultHandlers,
         .. Discovery.DefaultHandlers,
         .. Exchange.DefaultHandlers,

@@ -1871,6 +1871,82 @@ public class OpenIddictServerBuilderTests
     }
 
     [Fact]
+    public void AllowClientInitiatedBackchannelAuthenticationFlow_CibaGrantIsAdded()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act
+        builder.AllowClientInitiatedBackchannelAuthenticationFlow();
+
+        var options = GetOptions(services);
+
+        // Assert
+        Assert.Contains(GrantTypes.Ciba, options.GrantTypes);
+    }
+
+    [Fact]
+    public void AllowCustomFlow_ThrowsAnExceptionForCibaGrant()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentException>(() => builder.AllowCustomFlow(GrantTypes.Ciba));
+        Assert.Equal("type", exception.ParamName);
+    }
+
+    [Fact]
+    public void SetBackchannelAuthenticationEndpointUris_AddsUris()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act
+        builder.SetBackchannelAuthenticationEndpointUris("http://localhost/endpoint-path");
+
+        var options = GetOptions(services);
+
+        // Assert
+        Assert.Contains(new Uri("http://localhost/endpoint-path"), options.BackchannelAuthenticationEndpointUris);
+    }
+
+    [Fact]
+    public void SetAuthenticationRequestIdLifetime_LifetimeIsReplaced()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act
+        builder.SetAuthenticationRequestIdLifetime(TimeSpan.FromMinutes(42));
+
+        var options = GetOptions(services);
+
+        // Assert
+        Assert.Equal(TimeSpan.FromMinutes(42), options.AuthenticationRequestIdLifetime);
+    }
+
+    [Fact]
+    public void SetPollingInterval_IntervalIsReplaced()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act
+        builder.SetPollingInterval(null);
+
+        var options = GetOptions(services);
+
+        // Assert
+        Assert.Null(options.PollingInterval);
+    }
+
+    [Fact]
     public void EnableRequestObjectSupport_RequestObjectSupportIsEnabled()
     {
         // Arrange
