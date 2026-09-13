@@ -32,7 +32,7 @@ Baseline `dev@dd0d5d7d` (8.0.0-preview.5, fork of upstream). **Plan only — do 
 | P8b CIBA client | ✅ | `b67cf1f3` | `OpenIddictClientService.ChallengeUsingBackchannelAsync` / `AuthenticateWithBackchannelAsync` |
 | P10 key management | ✅ | `4d19d539` | RSA-2048 sig (RS256) + enc (RSA-OAEP) keys. Key entity in EF Core/EF6/MongoDB. `OpenIddictServerKeyRing` resolves credentials per transaction (`Transaction.Credentials`). Protector: `IOpenIddictServerKeyProtector` (in `OpenIddict.Server`, default via `UseDataProtection()`). Quartz pruning is opt-in (`EnableKeyPruning`). |
 | P5 DPoP | ✅ server + validation + client | `0dae3a9d`, `0a732595`, `dbc144f5` | Opt-in (`EnableDPoPSupport`, `EnableDPoPTokenBinding`). Shared helper `shared/OpenIddict.Extensions/IdentityModel/OpenIddictDPoPHelpers.cs`. Server replay: redeemed token entry (reference id = `jkt.jti`). Nonces: signed JWT (server keys), server only. Validation replay: optional `IDistributedCache`. See deviations below. |
-| P12 JWT introspection | ✅ server + client + validation | `f1ff44d8`, `811b913a`, `a2c44c5a`, `9d913f9a`, `0152298e` | Opt-in (`EnableJsonWebTokenIntrospectionResponses`, `RequireJsonWebTokenIntrospectionResponses`). Token generated through `GenerateTokenContext` (`TokenTypeIdentifiers.Private.IntrospectionResponse`), signed with the first asymmetric key from `OpenIddictServerKeyRing.ResolveCredentialsAsync`. See deviations below. |
+| P12 JWT introspection | ✅ server + client + validation | `f1ff44d8`, `811b913a`, `a2c44c5a`, `9d913f9a`, `0152298e`, `f1a9a312` | Opt-in (`EnableJsonWebTokenIntrospectionResponses`, `RequireJsonWebTokenIntrospectionResponses`). Token generated through `GenerateTokenContext` (`TokenTypeIdentifiers.Private.IntrospectionResponse`), signed with the first asymmetric key from `OpenIddictServerKeyRing.ResolveCredentialsAsync`. See deviations below. |
 | P11.x | ⏳ | — | — |
 
 **P5 deviations**
@@ -54,10 +54,11 @@ Baseline `dev@dd0d5d7d` (8.0.0-preview.5, fork of upstream). **Plan only — do 
 |---|---|
 | Opt-in | No per-client permission; any authenticated confidential client sending `Accept: application/token-introspection+jwt` gets a JWT when the option is on |
 | JSON fallback | Errors, anonymous callers (no `client_id`) and public clients (non-degraded mode) get plain JSON |
-| Encryption | Only when the client JWKS has an RSA `use: enc` key (`alg` absent or `RSA-OAEP`); fixed RSA-OAEP / A256CBC-HS512; no `introspection_encrypted_response_*` client metadata; not in degraded mode |
+| Encryption | Opt-in per application: setting `intr_rsp:enc_alg` = `RSA-OAEP` (only value), `intr_rsp:enc_enc` = `A128CBC-HS256` (default) or `A256CBC-HS512` (stand-ins for RFC 9701 `introspection_encrypted_response_*`). Key: first RSA `use: enc` JWK (`alg` absent or `RSA-OAEP`). Bad setting / no key → exception (ID0552/ID0553), never plaintext. Not in degraded mode |
 | Claims | `iss`, `aud`, `iat`, `token_introspection` only (no `exp`/`jti`) |
 | Accept parsing | Explicit media type only (`*/*` ignored, `q=0` honoured) |
-| Client/validation | Decryption uses the client/validation encryption credentials; `Accept` is replaced (not appended); JSON error responses still accepted |
+| Client/validation | Decryption uses the client/validation encryption credentials; `Accept` is replaced (not appended); JSON error responses still accepted; `introspection_signing_alg_values_supported` not enforced |
+| Review fixes (`f1a9a312`) | Encryption made opt-in (was automatic when an RSA `enc` key existed); A128CBC-HS256 default; response body trimmed; tests for local-key-signed and unsigned JWE tokens |
 
 ## 0. Blocking — verify before coding
 
