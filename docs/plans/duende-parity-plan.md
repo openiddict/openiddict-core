@@ -43,6 +43,9 @@ Baseline `dev@dd0d5d7d` (8.0.0-preview.5, fork of upstream). **Plan only — do 
 | Nonces | Returned only with `use_dpop_nonce` errors; not issued by the validation stack |
 | Confidential clients | Refresh tokens not bound; no Bearer-downgrade check on refresh |
 | Client | One `use_dpop_nonce` retry; nonces cached per authority in memory; `dpop_jkt` not sent automatically (use `GetDPoPJsonWebKeyThumbprint`); ephemeral key lost on restart |
+| Client PAR + mTLS | PAR codes aren't DPoP-bound when mTLS binding can be negotiated (a client-auth certificate is registered), since mTLS wins at the token endpoint |
+| Client retry | `use_dpop_nonce` retry resends the same `client_assertion`; servers with assertion `jti` replay checks reject it |
+| Review fixes | Proof key resolved from a minimal JWK (`x5c` key substitution); `alg` must match `kty`/`crv` |
 
 ## 0. Blocking — verify before coding
 
