@@ -37,7 +37,7 @@ Legend: ✅ available · 🟢 implemented in this fork (not upstream) · ⚠️ 
 | Dynamic client registration (RFC 7591) | ✅ (Configuration API) | ❌ | ⏸ P9 (upstream #2404) |
 | DCR management (RFC 7592) | ❌ | ❌ | Included in P9 |
 | Automatic key management | ✅ signing keys (90 d rotate / 14 d announce / 14 d retain) | 🟢 signing + encryption | Done (P10) |
-| Dynamic external providers (OIDC/SAML) | ✅ | ⚠️ static client registrations | P11.2 |
+| Dynamic external providers (OIDC/SAML) | ✅ | 🟢 OIDC via `IOpenIddictClientRegistrationProvider` (no store entity) | Done (P11.2); SAML with P11.6 |
 | BFF | ✅ Duende.BFF 4.2 | ⚠️ manual token refresh (sample) | P11.3 |
 | UI templates | ✅ | ⚠️ sandbox only | P11.4 |
 | Admin UI | ❌ (third-party) | ❌ | P11.5 (API only) |
@@ -63,6 +63,7 @@ Legend: ✅ available · 🟢 implemented in this fork (not upstream) · ⚠️ 
 | P8b CIBA (client) | `b67cf1f3` | `AllowClientInitiatedBackchannelAuthenticationFlow()`, `OpenIddictClientService.ChallengeUsingBackchannelAsync` / `AuthenticateWithBackchannelAsync`, discovery extraction. | Poll mode only. PAR requirement now enforced only for interactive flows. |
 | P5 DPoP | `0dae3a9d` `0a732595` `dbc144f5` | Server: `EnableDPoPSupport()`, `RequireDPoP()`, `RequireDPoPNonces()`, per-client `ft:dpop`, `dpop_jkt`, discovery `dpop_signing_alg_values_supported`. Validation: `DPoP` scheme, optional `IDistributedCache` replay cache. Client: `EnableDPoPTokenBinding()`, `DPoPSigningCredentials`, `CreateDPoPProofAsync`. | Opt-in. `cnf.jkt` on access tokens and public-client refresh tokens; `token_type=DPoP`. Server replay check writes one token entry per proof (token storage only). |
 | P12 JWT introspection | `f1ff44d8` `811b913a` `a2c44c5a` `0152298e` `f1a9a312` | Server: `EnableJsonWebTokenIntrospectionResponses()`, `application/token-introspection+jwt` in ASP.NET Core/OWIN, discovery `introspection_signing_alg_values_supported` / `introspection_encryption_*`. Client: `OpenIddictClientRegistration.RequireJsonWebTokenIntrospectionResponses`. Validation: `RequireJsonWebTokenIntrospectionResponses()`. | Opt-in. Errors, anonymous and public clients get JSON. Encrypted only if the application sets `intr_rsp:enc_alg` (`RSA-OAEP`) and its JWKS has an RSA `enc` key. |
+| P11.2 dynamic providers | `ad43bd3a` `5315d310` | Client: `IOpenIddictClientRegistrationProvider`, `AddRegistrationProvider<T>()`, `SetDynamicRegistrationCacheLifetime()`; all registration lookups go through the providers. ASP.NET Core: decorated `IAuthenticationSchemeProvider`. OWIN: dynamic forwarded authentication types. | No persistence entity (custom providers). Dynamic registrations must use redirect URIs declared in options; cached by id (30 min default). |
 | P10 automatic key management | `4d19d539` | New **Key** entity (EF Core `OpenIddictKeys` table, EF6, MongoDB `openiddict.keys`), `IOpenIddictKeyManager`. Server: `EnableAutomaticKeyManagement()`, `OpenIddictServerKeyRing`, `IOpenIddictServerKeyProtector` (in `OpenIddict.Server`; Data Protection implementation via `UseDataProtection()`). Local validation follows rotation. Quartz: `EnableKeyPruning()`. | Schema change for every EF user. Static keys still used, after the active auto key. `UseDataProtection()` also switches token formats unless `PreferDefaultTokenFormat()`. |
 
 Latest runs, all green (P12 suites from `0152298e`, MongoDB/Quartz/EF/core from `4d19d539`): server unit 706 · ASP.NET Core integration 1,586 · OWIN integration 1,556 · core 661 · client 196 · abstractions 1,451 · MongoDB 36 · Quartz 34 · validation 118 · validation ASP.NET Core / OWIN integration 30 / 30 · EF Core 10 · EF6 7 · Data Protection 1.
@@ -71,16 +72,15 @@ Latest runs, all green (P12 suites from `0152298e`, MongoDB/Quartz/EF/core from 
 
 | # | Phase | Size | Dependency / risk |
 |---|---|---|---|
-| 1 | P11.2 dynamic providers | M | Client registration lifecycle refactor |
-| 2 | P11.3 BFF | M | YARP dependency (approved) |
-| 3 | P11.4 / P11.5 templates, admin API | M | New template pack (approved) |
-| 4 | P11.6 SAML | XL | New package; XML signature attack surface |
+| 1 | P11.3 BFF | M | YARP dependency (approved) |
+| 2 | P11.4 / P11.5 templates, admin API | M | New template pack (approved) |
+| 3 | P11.6 SAML | XL | New package; XML signature attack surface |
 | — | P1, P2, P4, P9, P11.1 | L | Blocked until upstream `8.0.0-preview.5` is merged |
 
 ## 6. Risks
 
 - **Divergence from upstream:** keep fork-only features isolated per branch; rebase when preview.5 ships.
 - **Schema changes** (sessions, keys, provider registrations): batch them into one preview.
-- **Behaviour changes** needing release notes: device-flow `interval`/`slow_down`; PAR requirement limited to interactive flows; `OpenIddictKeys` table appears in EF migrations even when key management is off.
+- **Behaviour changes** needing release notes: device-flow `interval`/`slow_down`; PAR requirement limited to interactive flows; `OpenIddictKeys` table appears in EF migrations even when key management is off; client `IAuthenticationSchemeProvider` is decorated by `UseAspNetCore()`.
 - **Key management:** losing the Data Protection key ring makes stored keys unreadable (they are skipped, new ones are created); concurrent first start on several instances can create extra keys (all published, same active key chosen).
 - **Scope:** every phase is independently shippable, and P11.4–P11.6 can be dropped.

@@ -33,7 +33,8 @@ Baseline `dev@dd0d5d7d` (8.0.0-preview.5, fork of upstream). **Plan only — do 
 | P10 key management | ✅ | `4d19d539` | RSA-2048 sig (RS256) + enc (RSA-OAEP) keys. Key entity in EF Core/EF6/MongoDB. `OpenIddictServerKeyRing` resolves credentials per transaction (`Transaction.Credentials`). Protector: `IOpenIddictServerKeyProtector` (in `OpenIddict.Server`, default via `UseDataProtection()`). Quartz pruning is opt-in (`EnableKeyPruning`). |
 | P5 DPoP | ✅ server + validation + client | `0dae3a9d`, `0a732595`, `dbc144f5` | Opt-in (`EnableDPoPSupport`, `EnableDPoPTokenBinding`). Shared helper `shared/OpenIddict.Extensions/IdentityModel/OpenIddictDPoPHelpers.cs`. Server replay: redeemed token entry (reference id = `jkt.jti`). Nonces: signed JWT (server keys), server only. Validation replay: optional `IDistributedCache`. See deviations below. |
 | P12 JWT introspection | ✅ server + client + validation | `f1ff44d8`, `811b913a`, `a2c44c5a`, `9d913f9a`, `0152298e`, `f1a9a312` | Opt-in (`EnableJsonWebTokenIntrospectionResponses`, `RequireJsonWebTokenIntrospectionResponses`). Token generated through `GenerateTokenContext` (`TokenTypeIdentifiers.Private.IntrospectionResponse`), signed with the first asymmetric key from `OpenIddictServerKeyRing.ResolveCredentialsAsync`. See deviations below. |
-| P11.x | ⏳ | — | — |
+| P11.2 dynamic providers | ✅ client + ASP.NET Core + OWIN | `ad43bd3a`, `5315d310` | `IOpenIddictClientRegistrationProvider` (`AddRegistrationProvider`), static provider registered by default. Registration init/validation extracted to `OpenIddictClientConfiguration.ConfigureRegistration`/`ValidateRegistration`. See deviations below. |
+| P11.x (others) | ⏳ | — | — |
 
 **P5 deviations**
 
@@ -59,6 +60,21 @@ Baseline `dev@dd0d5d7d` (8.0.0-preview.5, fork of upstream). **Plan only — do 
 | Accept parsing | Explicit media type only (`*/*` ignored, `q=0` honoured) |
 | Client/validation | Decryption uses the client/validation encryption credentials; `Accept` is replaced (not appended); JSON error responses still accepted; `introspection_signing_alg_values_supported` not enforced |
 | Review fixes (`f1a9a312`) | Encryption made opt-in (was automatic when an RSA `enc` key existed); A128CBC-HS256 default; response body trimmed; tests for local-key-signed and unsigned JWE tokens |
+
+**P11.2 deviations**
+
+| Item | Behaviour |
+|---|---|
+| Persistence | No `ClientRegistration` entity: custom (e.g. DB-backed or in-memory) providers only |
+| Provider lifetime | Resolved from the root container (singleton); scoped dependencies need `IServiceScopeFactory` |
+| Resolution order | Static options first; id lookups: static → cache → providers in registration order. Issuer/provider-name/list lookups query every provider each time |
+| Cache | By `RegistrationId`, `DynamicRegistrationCacheLifetime` (default 30 min, `null`/zero disables). Keeps the configuration manager. No invalidation API: removed/changed registrations live until expiry |
+| Validation | Same per-registration checks as static ones, plus: `RedirectUri`/`PostLogoutRedirectUri` must be in `RedirectionEndpointUris`/`PostLogoutRedirectionEndpointUris` (ID0555/ID0556), id must not match a static one (ID0557, case-insensitive), id returned for `FindByIdAsync` must match (ID0558). Failure → `InvalidOperationException` ID0554 |
+| Demand validation | Sync "0 or >1 registrations" checks removed from `Validate*Demand`; the resolve handlers throw the same ID0304/ID0305/ID0355 |
+| Web providers | `ConfigureProvider`/`ValidateProvider` now `[EditorBrowsable(Advanced)]`; dynamic web-provider registrations must call them (not idempotent: once per instance) |
+| ASP.NET Core | `IAuthenticationSchemeProvider` decorated (`OpenIddictClientAspNetCoreSchemeProvider`): unknown scheme → forwarder scheme if exactly one registration has that provider name; also listed in `GetAllSchemesAsync`. Off with `DisableAutomaticAuthenticationSchemeForwarding`. Replacing the scheme provider after `UseAspNetCore()` bypasses it |
+| OWIN | Forwarded challenge/sign-out/authenticate and `GetAuthenticationTypes()` fall back to dynamic provider names (`OpenIddictClientOwinForwardedTypes`); forwarded challenge lookup now only runs on 401/403 |
+| Uniqueness | Dynamic provider-name duplicates aren't rejected at startup; ambiguous names aren't forwarded and fail with ID0409 when used |
 
 ## 0. Blocking — verify before coding
 
