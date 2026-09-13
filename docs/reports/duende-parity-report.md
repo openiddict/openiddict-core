@@ -39,8 +39,8 @@ Legend: ✅ available · 🟢 implemented in this fork (not upstream) · ⚠️ 
 | Automatic key management | ✅ signing keys (90 d rotate / 14 d announce / 14 d retain) | 🟢 signing + encryption | Done (P10) |
 | Dynamic external providers (OIDC/SAML) | ✅ | 🟢 OIDC via `IOpenIddictClientRegistrationProvider` (no store entity) | Done (P11.2); SAML with P11.6 |
 | BFF | ✅ Duende.BFF 4.2 | 🟢 `OpenIddict.Client.AspNetCore.Bff` (refresh, token handlers, YARP, session endpoints, back-channel logout) | Done (P11.3) |
-| UI templates | ✅ | ⚠️ sandbox only | P11.4 |
-| Admin UI | ❌ (third-party) | ❌ | P11.5 (API only) |
+| UI templates | ✅ | 🟢 `OpenIddict.Templates` (Identity server, empty server, BFF) | Done (P11.4) |
+| Admin UI | ❌ (third-party) | 🟡 admin API only (`MapOpenIddictAdminApi`), no UI | Done (P11.5, API only) |
 | SAML 2.0 IdP | ✅ built-in (v8) | ❌ | P11.6 — separate plan needed |
 | FAPI 2.0 conformance report | ✅ | ❌ | Prerequisites done (DPoP, key management); conformance run pending |
 | Multi-issuer hosting | ✅ add-on | ❌ | Not planned |
@@ -65,15 +65,16 @@ Legend: ✅ available · 🟢 implemented in this fork (not upstream) · ⚠️ 
 | P12 JWT introspection | `f1ff44d8` `811b913a` `a2c44c5a` `0152298e` `f1a9a312` | Server: `EnableJsonWebTokenIntrospectionResponses()`, `application/token-introspection+jwt` in ASP.NET Core/OWIN, discovery `introspection_signing_alg_values_supported` / `introspection_encryption_*`. Client: `OpenIddictClientRegistration.RequireJsonWebTokenIntrospectionResponses`. Validation: `RequireJsonWebTokenIntrospectionResponses()`. | Opt-in. Errors, anonymous and public clients get JSON. Encrypted only if the application sets `intr_rsp:enc_alg` (`RSA-OAEP`) and its JWKS has an RSA `enc` key. |
 | P11.2 dynamic providers | `ad43bd3a` `5315d310` | Client: `IOpenIddictClientRegistrationProvider`, `AddRegistrationProvider<T>()`, `SetDynamicRegistrationCacheLifetime()`; all registration lookups go through the providers. ASP.NET Core: decorated `IAuthenticationSchemeProvider`. OWIN: dynamic forwarded authentication types. | No persistence entity (custom providers). Dynamic registrations must use redirect URIs declared in options; cached by id (30 min default). |
 | P11.3 BFF | `6e1aca1f` `36a6a9b2` | New package `OpenIddict.Client.AspNetCore.Bff` (YARP 2.3.0): `UseBff()`, cookie auto-refresh, `MapOpenIddictBffEndpoints()` (login, logout, user, callbacks, back-channel logout), `UseOpenIddictBff()` antiforgery middleware, `AddOpenIddictBff*AccessTokenHandler()`, `AddOpenIddictBffTransforms()`, `IOpenIddictClientAspNetCoreBffSessionStore`. Client hosts store `backchannel_access_token_type`. | `UseBff()` enables redirection/post-logout passthrough and adds `/bff/callback/*` URIs. Refresh single-flight and replay caches are in-memory (per instance). Back-channel logout removes sessions only with a BFF-aware ticket store. |
+| P11.4 templates | `56cd9786` | New template pack `templates/OpenIddict.Templates.csproj`: `openiddict-server-identity` (Identity UI + EF Core, MVC authorization/device/end session/userinfo), `openiddict-server-empty` (minimal APIs, pass-through), `openiddict-bff` (client + BFF + YARP). `templates/verify.sh`. | Default OpenIddict version checked at pack time. Empty server login is a development-only placeholder. |
+| P11.5 admin API | `e4cc3771` | `Server.AspNetCore`: `MapOpenIddictAdminApi(policy, prefix)` — applications/scopes CRUD, authorizations (list/get/create/delete/revoke), tokens (list/get/delete/revoke), keys (list/get/revoke). | Policy required; JSON content type required for POST/PATCH; secrets, token payloads and key material never returned. No UI. |
 | P10 automatic key management | `4d19d539` | New **Key** entity (EF Core `OpenIddictKeys` table, EF6, MongoDB `openiddict.keys`), `IOpenIddictKeyManager`. Server: `EnableAutomaticKeyManagement()`, `OpenIddictServerKeyRing`, `IOpenIddictServerKeyProtector` (in `OpenIddict.Server`; Data Protection implementation via `UseDataProtection()`). Local validation follows rotation. Quartz: `EnableKeyPruning()`. | Schema change for every EF user. Static keys still used, after the active auto key. `UseDataProtection()` also switches token formats unless `PreferDefaultTokenFormat()`. |
 
-Latest runs, all green (P12 suites from `0152298e`, MongoDB/Quartz/EF/core from `4d19d539`): server unit 706 · ASP.NET Core integration 1,586 · OWIN integration 1,556 · core 661 · client 196 · abstractions 1,451 · MongoDB 36 · Quartz 34 · validation 118 · validation ASP.NET Core / OWIN integration 30 / 30 · EF Core 10 · EF6 7 · Data Protection 1. P11.3 (`feature/bff`): BFF 60 · client 219 · client ASP.NET Core / OWIN integration 3 / 5 · abstractions 1,451.
+Latest runs, all green (P12 suites from `0152298e`, MongoDB/Quartz/EF/core from `4d19d539`): server unit 706 · ASP.NET Core integration 1,586 · OWIN integration 1,556 · core 661 · client 196 · abstractions 1,451 · MongoDB 36 · Quartz 34 · validation 118 · validation ASP.NET Core / OWIN integration 30 / 30 · EF Core 10 · EF6 7 · Data Protection 1. P11.3 (`feature/bff`): BFF 60 · client 219 · client ASP.NET Core / OWIN integration 3 / 5 · abstractions 1,451. P11.4/P11.5 (`feature/templates-admin-api`): ASP.NET Core integration 1,619 (29 admin API) · OWIN integration 1,560 · abstractions 1,451 · `templates/verify.sh` 3 builds + 15 smoke checks.
 
 ## 5. Remaining work (ordered)
 
 | # | Phase | Size | Dependency / risk |
 |---|---|---|---|
-| 2 | P11.4 / P11.5 templates, admin API | M | New template pack (approved) |
 | 3 | P11.6 SAML | XL | New package; XML signature attack surface |
 | — | P1, P2, P4, P9, P11.1 | L | Blocked until upstream `8.0.0-preview.5` is merged |
 
