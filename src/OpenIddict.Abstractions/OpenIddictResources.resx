@@ -1926,6 +1926,10 @@ To register them, use 'services.AddOpenIddict().AddClient().UseBff()'.</value>
   <data name="ID0563" xml:space="preserve">
     <value>The backend-for-frontend antiforgery header name and value cannot be null or empty.</value>
   </data>
+  <data name="ID0564" xml:space="preserve">
+    <value>The OpenIddict admin API requires the core services.
+To register the OpenIddict core services, reference the 'OpenIddict.Core' package and call 'services.AddOpenIddict().AddCore()' from 'ConfigureServices'.</value>
+  </data>
   <data name="ID0532" xml:space="preserve">
     <value>The backchannel authentication request was not correctly extracted.
 To extract backchannel authentication requests, create a class implementing 'IOpenIddictServerHandler&lt;ExtractBackchannelAuthenticationRequestContext&gt;' and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.</value>
@@ -2655,6 +2659,21 @@ To apply backchannel authentication responses, create a class implementing 'IOpe
   </data>
   <data name="ID2240" xml:space="preserve">
     <value>The specified logout token is invalid.</value>
+  </data>
+  <data name="ID2241" xml:space="preserve">
+    <value>The request must use the 'application/json' content type and its body, if present, must be a JSON object.</value>
+  </data>
+  <data name="ID2242" xml:space="preserve">
+    <value>The '{0}' property is invalid.</value>
+  </data>
+  <data name="ID2243" xml:space="preserve">
+    <value>The '{0}' query string parameter is invalid.</value>
+  </data>
+  <data name="ID2244" xml:space="preserve">
+    <value>The entry was concurrently updated or deleted and the operation cannot be completed.</value>
+  </data>
+  <data name="ID2245" xml:space="preserve">
+    <value>The entry is invalid.</value>
   </data>
   <data name="ID4000" xml:space="preserve">
     <value>The '{0}' parameter shouldn't be null or empty at this point.</value>

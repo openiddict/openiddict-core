@@ -15,4 +15,9 @@ public static class OpenIddictServerAspNetCoreDefaults
     /// Default value for <see cref="AuthenticationScheme.Name"/>.
     /// </summary>
     public const string AuthenticationScheme = "OpenIddict.Server.AspNetCore";
+
+    /// <summary>
+    /// Default route prefix used by the OpenIddict admin API endpoints.
+    /// </summary>
+    public const string AdminApiRoutePrefix = "/openiddict/admin";
 }

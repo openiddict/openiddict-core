@@ -11,6 +11,68 @@ namespace OpenIddict.Server.AspNetCore;
 /// </summary>
 public static class OpenIddictServerAspNetCoreConstants
 {
+    public static class AdminApi
+    {
+        public static class Paths
+        {
+            public const string Applications = "applications";
+            public const string Authorizations = "authorizations";
+            public const string Keys = "keys";
+            public const string Revoke = "revoke";
+            public const string Scopes = "scopes";
+            public const string Tokens = "tokens";
+        }
+
+        public static class Fields
+        {
+            public const string ActivationDate = "activation_date";
+            public const string Algorithm = "algorithm";
+            public const string ApplicationId = "application_id";
+            public const string ApplicationType = "application_type";
+            public const string AuthorizationId = "authorization_id";
+            public const string ClientId = "client_id";
+            public const string ClientSecret = "client_secret";
+            public const string ClientType = "client_type";
+            public const string ConsentType = "consent_type";
+            public const string CreationDate = "creation_date";
+            public const string Description = "description";
+            public const string Descriptions = "descriptions";
+            public const string DisplayName = "display_name";
+            public const string DisplayNames = "display_names";
+            public const string Errors = "errors";
+            public const string ExpirationDate = "expiration_date";
+            public const string Id = "id";
+            public const string JsonWebKeySet = "json_web_key_set";
+            public const string KeyId = "key_id";
+            public const string Name = "name";
+            public const string Permissions = "permissions";
+            public const string PostLogoutRedirectUris = "post_logout_redirect_uris";
+            public const string Properties = "properties";
+            public const string RedemptionDate = "redemption_date";
+            public const string RedirectUris = "redirect_uris";
+            public const string Requirements = "requirements";
+            public const string Resources = "resources";
+            public const string RetirementDate = "retirement_date";
+            public const string Scopes = "scopes";
+            public const string SessionId = "session_id";
+            public const string Settings = "settings";
+            public const string Status = "status";
+            public const string Subject = "subject";
+            public const string Type = "type";
+            public const string Usage = "usage";
+        }
+
+        public static class QueryStringParameters
+        {
+            public const string ApplicationId = "application_id";
+            public const string Count = "count";
+            public const string Offset = "offset";
+            public const string Status = "status";
+            public const string Subject = "subject";
+            public const string Type = "type";
+        }
+    }
+
     public static class Headers
     {
         public const string DPoP = "DPoP";
