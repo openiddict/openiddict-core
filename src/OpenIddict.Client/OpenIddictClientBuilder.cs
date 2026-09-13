@@ -1134,6 +1134,16 @@ public sealed class OpenIddictClientBuilder
     }
 
     /// <summary>
+    /// Enables DPoP (RFC 9449) token binding, which allows the client to send DPoP proofs to the token,
+    /// pushed authorization and userinfo endpoints of authorization servers that advertise DPoP support.
+    /// DPoP proofs are signed using <see cref="OpenIddictClientRegistration.DPoPSigningCredentials"/>
+    /// or, if no key was explicitly configured, an ephemeral P-256 key generated for each registration.
+    /// </summary>
+    /// <returns>The <see cref="OpenIddictClientBuilder"/> instance.</returns>
+    public OpenIddictClientBuilder EnableDPoPTokenBinding()
+        => Configure(options => options.TokenBindingMethods.Add(TokenBindingMethods.Private.DPoP));
+
+    /// <summary>
     /// Sets the client assertion lifetime, after which backchannel requests
     /// using an expired client assertion should be automatically rejected by the server.
     /// Using long-lived client assertion or assertions that never expire is not recommended.

@@ -43,6 +43,7 @@ public static partial class OpenIddictClientHandlers
             ExtractResponseModes.Descriptor,
             ExtractResponseTypes.Descriptor,
             ExtractCodeChallengeMethods.Descriptor,
+            ExtractDPoPSigningAlgorithms.Descriptor,
             ExtractScopes.Descriptor,
             ExtractIssuerParameterRequirement.Descriptor,
             ExtractTlsClientCertificateAccessTokenBindingRequirement.Descriptor,
@@ -125,6 +126,7 @@ public static partial class OpenIddictClientHandlers
                     // The following parameters MUST be formatted as arrays of strings:
                     Metadata.BackchannelTokenDeliveryModesSupported                 or
                     Metadata.CodeChallengeMethodsSupported                          or
+                    Metadata.DPoPSigningAlgValuesSupported                          or
                     Metadata.DeviceAuthorizationEndpointAuthMethodsSupported        or
                     Metadata.GrantTypesSupported                                    or
                     Metadata.PushedAuthorizationRequestEndpointAuthMethodsSupported or
@@ -1010,6 +1012,38 @@ public static partial class OpenIddictClientHandlers
                     if (!string.IsNullOrEmpty(method))
                     {
                         context.Configuration.CodeChallengeMethodsSupported.Add(method);
+                    }
+                }
+
+                return ValueTask.CompletedTask;
+            }
+        }
+
+        /// <summary>
+        /// Contains the logic responsible for extracting the DPoP signing algorithms from the discovery document.
+        /// </summary>
+        public sealed class ExtractDPoPSigningAlgorithms : IOpenIddictClientHandler<HandleConfigurationResponseContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+                = OpenIddictClientHandlerDescriptor.CreateBuilder<HandleConfigurationResponseContext>()
+                    .UseSingletonHandler<ExtractDPoPSigningAlgorithms>()
+                    .SetOrder(ExtractCodeChallengeMethods.Descriptor.Order + 500)
+                    .SetType(OpenIddictClientHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(HandleConfigurationResponseContext context)
+            {
+                ArgumentNullException.ThrowIfNull(context);
+
+                foreach (var algorithm in (ImmutableArray<string?>?) context.Response[Metadata.DPoPSigningAlgValuesSupported] ?? [])
+                {
+                    if (!string.IsNullOrEmpty(algorithm))
+                    {
+                        context.Configuration.DPoPSigningAlgValuesSupported.Add(algorithm);
                     }
                 }
 

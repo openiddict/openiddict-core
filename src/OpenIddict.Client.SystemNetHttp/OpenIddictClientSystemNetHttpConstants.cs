@@ -24,6 +24,12 @@ public static class OpenIddictClientSystemNetHttpConstants
         public const string Identity = "identity";
     }
 
+    public static class Headers
+    {
+        public const string DPoP = "DPoP";
+        public const string DPoPNonce = "DPoP-Nonce";
+    }
+
     public static class MediaTypes
     {
         public const string Json = "application/json";

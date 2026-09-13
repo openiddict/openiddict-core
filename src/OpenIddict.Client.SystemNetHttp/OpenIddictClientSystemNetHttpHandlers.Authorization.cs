@@ -25,12 +25,14 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
             AttachFromHeader<PreparePushedAuthorizationRequestContext>.Descriptor,
             AttachBasicAuthenticationCredentials<PreparePushedAuthorizationRequestContext>.Descriptor,
             AttachHttpParameters<PreparePushedAuthorizationRequestContext>.Descriptor,
+            AttachDPoPProof<PreparePushedAuthorizationRequestContext>.Descriptor,
             SendHttpRequest<ApplyPushedAuthorizationRequestContext>.Descriptor,
             DisposeHttpRequest<ApplyPushedAuthorizationRequestContext>.Descriptor,
 
             /*
              * Pushed authorization response processing:
              */
+            ExtractDPoPNonce<ExtractPushedAuthorizationResponseContext>.Descriptor,
             DecompressResponseContent<ExtractPushedAuthorizationResponseContext>.Descriptor,
             ExtractJsonHttpResponse<ExtractPushedAuthorizationResponseContext>.Descriptor,
             ExtractWwwAuthenticateHeader<ExtractPushedAuthorizationResponseContext>.Descriptor,

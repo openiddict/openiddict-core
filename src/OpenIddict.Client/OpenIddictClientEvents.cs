@@ -10,6 +10,7 @@ using System.Security.Claims;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Tokens;
 
 namespace OpenIddict.Client;
 
@@ -169,6 +170,23 @@ public static partial class OpenIddictClientEvents
         /// this peer when communicating with the external endpoint, if applicable.
         /// </summary>
         public X509Certificate2? LocalCertificate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the signing credentials used to create the DPoP proof
+        /// attached to the request sent to the external endpoint, if applicable.
+        /// </summary>
+        public SigningCredentials? DPoPSigningCredentials { get; set; }
+
+        /// <summary>
+        /// Gets or sets the DPoP proof attached to the request sent to the external endpoint, if applicable.
+        /// </summary>
+        public string? DPoPProof { get; set; }
+
+        /// <summary>
+        /// Gets or sets the DPoP nonce included in the DPoP proof or returned
+        /// by the external endpoint in the "DPoP-Nonce" header, if applicable.
+        /// </summary>
+        public string? DPoPNonce { get; set; }
     }
 
     /// <summary>

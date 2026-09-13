@@ -29,12 +29,14 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
             AttachFromHeader<PrepareUserInfoRequestContext>.Descriptor,
             AttachBearerAccessToken.Descriptor,
             AttachHttpParameters<PrepareUserInfoRequestContext>.Descriptor,
+            AttachDPoPProof<PrepareUserInfoRequestContext>.Descriptor,
             SendHttpRequest<ApplyUserInfoRequestContext>.Descriptor,
             DisposeHttpRequest<ApplyUserInfoRequestContext>.Descriptor,
 
             /*
              * UserInfo response processing:
              */
+            ExtractDPoPNonce<ExtractUserInfoResponseContext>.Descriptor,
             DecompressResponseContent<ExtractUserInfoResponseContext>.Descriptor,
             ExtractUserInfoTokenHttpResponse.Descriptor,
             ExtractJsonHttpResponse<ExtractUserInfoResponseContext>.Descriptor,
@@ -72,7 +74,11 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
                     ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0173));
 
                 // Attach the authorization header containing the access token to the HTTP request.
-                request.Headers.Authorization = new AuthenticationHeaderValue(Schemes.Bearer, context.Request.AccessToken);
+                //
+                // Note: when a DPoP proof is going to be sent, the "DPoP" scheme is used instead of "Bearer".
+                request.Headers.Authorization = new AuthenticationHeaderValue(
+                    context.DPoPSigningCredentials is not null || !string.IsNullOrEmpty(context.DPoPProof) ? Schemes.DPoP : Schemes.Bearer,
+                    context.Request.AccessToken);
 
                 // Remove the access token from the request payload to ensure it's not sent twice.
                 context.Request.AccessToken = null;

@@ -4,9 +4,11 @@
  * the license and the contributors participating to this project.
  */
 
+using System.Collections.Concurrent;
 using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Security.Claims;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.Extensions.DependencyInjection;
@@ -23,6 +25,7 @@ namespace OpenIddict.Client;
 /// </summary>
 public class OpenIddictClientService
 {
+    private readonly ConcurrentDictionary<string, string> _nonces = new(StringComparer.OrdinalIgnoreCase);
     private readonly IServiceProvider _provider;
 
     /// <summary>
@@ -31,6 +34,61 @@ public class OpenIddictClientService
     /// <param name="provider">The service provider.</param>
     public OpenIddictClientService(IServiceProvider provider)
         => _provider = provider ?? throw new ArgumentNullException(nameof(provider));
+
+    /// <summary>
+    /// Creates a DPoP proof (RFC 9449) for the specified HTTP request using the DPoP key attached to the client
+    /// registration (e.g to call a resource server using an access token returned with the "DPoP" token type).
+    /// </summary>
+    /// <param name="registration">The client registration.</param>
+    /// <param name="method">The HTTP method of the request (e.g "GET").</param>
+    /// <param name="uri">The absolute URI of the request.</param>
+    /// <param name="token">The access token sent with the request, if applicable.</param>
+    /// <param name="nonce">The nonce returned by the server using the "DPoP-Nonce" header, if applicable.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns>The DPoP proof, that must be sent using the "DPoP" request header.</returns>
+    /// <exception cref="InvalidOperationException">No DPoP signing credentials were attached to the registration.</exception>
+    public virtual ValueTask<string> CreateDPoPProofAsync(OpenIddictClientRegistration registration,
+        string method, Uri uri, string? token = null, string? nonce = null, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(registration);
+        ArgumentException.ThrowIfNullOrEmpty(method);
+        ArgumentNullException.ThrowIfNull(uri);
+
+        if (!uri.IsAbsoluteUri || OpenIddictHelpers.IsImplicitFileUri(uri))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0144), nameof(uri));
+        }
+
+        if (cancellationToken.IsCancellationRequested)
+        {
+            return new(Task.FromCanceled<string>(cancellationToken));
+        }
+
+        if (registration.DPoPSigningCredentials is not SigningCredentials credentials)
+        {
+            throw new InvalidOperationException(SR.GetResourceString(SR.ID0550));
+        }
+
+        var options = _provider.GetRequiredService<IOptionsMonitor<OpenIddictClientOptions>>();
+
+        return new(OpenIddictDPoPHelpers.CreateProof(credentials, method, uri,
+            options.CurrentValue.TimeProvider.GetUtcNow(), token, nonce ?? GetDPoPNonce(uri)));
+    }
+
+    /// <summary>
+    /// Computes the RFC 7638 thumbprint of the DPoP key attached to the client registration
+    /// (e.g to send it as the "dpop_jkt" parameter of an authorization request).
+    /// </summary>
+    /// <param name="registration">The client registration.</param>
+    /// <returns>The base64url-encoded thumbprint.</returns>
+    /// <exception cref="InvalidOperationException">No DPoP signing credentials were attached to the registration.</exception>
+    public virtual string GetDPoPJsonWebKeyThumbprint(OpenIddictClientRegistration registration)
+    {
+        ArgumentNullException.ThrowIfNull(registration);
+
+        return OpenIddictDPoPHelpers.ComputeJsonWebKeyThumbprint(registration.DPoPSigningCredentials
+            ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0550)));
+    }
 
     /// <summary>
     /// Gets all the client registrations that were registered in the client options.
@@ -2123,12 +2181,13 @@ public class OpenIddictClientService
     /// <param name="uri">The uri of the remote pushed authorization endpoint.</param>
     /// <param name="method">The client authentication method, if applicable.</param>
     /// <param name="certificate">The client certificate, if applicable.</param>
+    /// <param name="credentials">The DPoP signing credentials, if applicable.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>The token response.</returns>
     internal async ValueTask<OpenIddictResponse> SendPushedAuthorizationRequestAsync(
         OpenIddictClientRegistration registration, OpenIddictConfiguration configuration,
         OpenIddictRequest request, Uri uri, string? method,
-        X509Certificate2? certificate, CancellationToken cancellationToken = default)
+        X509Certificate2? certificate, SigningCredentials? credentials, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(registration);
         ArgumentNullException.ThrowIfNull(configuration);
@@ -2142,120 +2201,142 @@ public class OpenIddictClientService
 
         cancellationToken.ThrowIfCancellationRequested();
 
-        await using var scope = _provider.CreateAsyncScope();
+        var nonce = credentials is not null ? GetDPoPNonce(uri) : null;
+        var original = request;
 
-        var dispatcher = scope.ServiceProvider.GetRequiredService<IOpenIddictClientDispatcher>();
-        var options = scope.ServiceProvider.GetRequiredService<IOptionsMonitor<OpenIddictClientOptions>>();
-
-        var transaction = new OpenIddictClientTransaction
+        for (var attempt = 0; ; attempt++)
         {
-            CancellationToken = cancellationToken,
-            Options = options.CurrentValue,
-            ServiceProvider = scope.ServiceProvider
-        };
+            // Note: when DPoP is used, a copy of the request is sent to ensure the original
+            // request can be sent again if the server requires using a new DPoP nonce.
+            request = credentials is null ? original : new OpenIddictRequest(original.GetParameters());
 
-        request = await PreparePushedAuthorizationRequestAsync();
-        request = await ApplyPushedAuthorizationRequestAsync();
+            string? received = null;
 
-        var response = await ExtractPushedAuthorizationResponseAsync();
+            await using var scope = _provider.CreateAsyncScope();
 
-        return await HandlePushedAuthorizationResponseAsync();
+            var dispatcher = scope.ServiceProvider.GetRequiredService<IOpenIddictClientDispatcher>();
+            var options = scope.ServiceProvider.GetRequiredService<IOptionsMonitor<OpenIddictClientOptions>>();
 
-        async ValueTask<OpenIddictRequest> PreparePushedAuthorizationRequestAsync()
-        {
-            var context = new PreparePushedAuthorizationRequestContext(transaction)
+            var transaction = new OpenIddictClientTransaction
             {
-                ClientAuthenticationMethod = method,
-                RemoteUri = uri,
-                Configuration = configuration,
-                Registration = registration,
-                Request = request,
-                LocalCertificate = certificate
+                CancellationToken = cancellationToken,
+                Options = options.CurrentValue,
+                ServiceProvider = scope.ServiceProvider
             };
 
-            await dispatcher.DispatchAsync(context);
+            request = await PreparePushedAuthorizationRequestAsync();
+            request = await ApplyPushedAuthorizationRequestAsync();
 
-            if (context.IsRejected)
+            var response = await ExtractPushedAuthorizationResponseAsync();
+
+            if (UpdateDPoPNonce(uri, credentials, attempt, response, nonce, received))
             {
-                throw new ProtocolException(
-                    SR.FormatID0461(context.Error, context.ErrorDescription, context.ErrorUri),
-                    context.Error, context.ErrorDescription, context.ErrorUri);
+                nonce = received;
+                continue;
             }
 
-            return context.Request;
-        }
+            return await HandlePushedAuthorizationResponseAsync();
 
-        async ValueTask<OpenIddictRequest> ApplyPushedAuthorizationRequestAsync()
-        {
-            var context = new ApplyPushedAuthorizationRequestContext(transaction)
+            async ValueTask<OpenIddictRequest> PreparePushedAuthorizationRequestAsync()
             {
-                RemoteUri = uri,
-                Configuration = configuration,
-                Registration = registration,
-                Request = request
-            };
+                var context = new PreparePushedAuthorizationRequestContext(transaction)
+                {
+                    DPoPSigningCredentials = credentials,
+                    DPoPNonce = nonce,
+                    ClientAuthenticationMethod = method,
+                    RemoteUri = uri,
+                    Configuration = configuration,
+                    Registration = registration,
+                    Request = request,
+                    LocalCertificate = certificate
+                };
 
-            await dispatcher.DispatchAsync(context);
+                await dispatcher.DispatchAsync(context);
 
-            if (context.IsRejected)
-            {
-                throw new ProtocolException(
-                    SR.FormatID0462(context.Error, context.ErrorDescription, context.ErrorUri),
-                    context.Error, context.ErrorDescription, context.ErrorUri);
+                if (context.IsRejected)
+                {
+                    throw new ProtocolException(
+                        SR.FormatID0461(context.Error, context.ErrorDescription, context.ErrorUri),
+                        context.Error, context.ErrorDescription, context.ErrorUri);
+                }
+
+                return context.Request;
             }
 
-            context.Logger.LogInformation(6235, SR.GetResourceString(SR.ID6235), context.RemoteUri, context.Request);
-
-            return context.Request;
-        }
-
-        async ValueTask<OpenIddictResponse> ExtractPushedAuthorizationResponseAsync()
-        {
-            var context = new ExtractPushedAuthorizationResponseContext(transaction)
+            async ValueTask<OpenIddictRequest> ApplyPushedAuthorizationRequestAsync()
             {
-                RemoteUri = uri,
-                Configuration = configuration,
-                Registration = registration,
-                Request = request
-            };
+                var context = new ApplyPushedAuthorizationRequestContext(transaction)
+                {
+                    RemoteUri = uri,
+                    Configuration = configuration,
+                    Registration = registration,
+                    Request = request
+                };
 
-            await dispatcher.DispatchAsync(context);
+                await dispatcher.DispatchAsync(context);
 
-            if (context.IsRejected)
-            {
-                throw new ProtocolException(
-                    SR.FormatID0463(context.Error, context.ErrorDescription, context.ErrorUri),
-                    context.Error, context.ErrorDescription, context.ErrorUri);
+                if (context.IsRejected)
+                {
+                    throw new ProtocolException(
+                        SR.FormatID0462(context.Error, context.ErrorDescription, context.ErrorUri),
+                        context.Error, context.ErrorDescription, context.ErrorUri);
+                }
+
+                context.Logger.LogInformation(6235, SR.GetResourceString(SR.ID6235), context.RemoteUri, context.Request);
+
+                return context.Request;
             }
 
-            Debug.Assert(context.Response is not null, SR.GetResourceString(SR.ID4007));
-
-            context.Logger.LogInformation(6236, SR.GetResourceString(SR.ID6236), context.RemoteUri, context.Response);
-
-            return context.Response;
-        }
-
-        async ValueTask<OpenIddictResponse> HandlePushedAuthorizationResponseAsync()
-        {
-            var context = new HandlePushedAuthorizationResponseContext(transaction)
+            async ValueTask<OpenIddictResponse> ExtractPushedAuthorizationResponseAsync()
             {
-                RemoteUri = uri,
-                Configuration = configuration,
-                Registration = registration,
-                Request = request,
-                Response = response
-            };
+                var context = new ExtractPushedAuthorizationResponseContext(transaction)
+                {
+                    RemoteUri = uri,
+                    Configuration = configuration,
+                    Registration = registration,
+                    Request = request
+                };
 
-            await dispatcher.DispatchAsync(context);
+                await dispatcher.DispatchAsync(context);
 
-            if (context.IsRejected)
-            {
-                throw new ProtocolException(
-                    SR.FormatID0464(context.Error, context.ErrorDescription, context.ErrorUri),
-                    context.Error, context.ErrorDescription, context.ErrorUri);
+                received = context.DPoPNonce;
+
+                if (context.IsRejected)
+                {
+                    throw new ProtocolException(
+                        SR.FormatID0463(context.Error, context.ErrorDescription, context.ErrorUri),
+                        context.Error, context.ErrorDescription, context.ErrorUri);
+                }
+
+                Debug.Assert(context.Response is not null, SR.GetResourceString(SR.ID4007));
+
+                context.Logger.LogInformation(6236, SR.GetResourceString(SR.ID6236), context.RemoteUri, context.Response);
+
+                return context.Response;
             }
 
-            return context.Response;
+            async ValueTask<OpenIddictResponse> HandlePushedAuthorizationResponseAsync()
+            {
+                var context = new HandlePushedAuthorizationResponseContext(transaction)
+                {
+                    RemoteUri = uri,
+                    Configuration = configuration,
+                    Registration = registration,
+                    Request = request,
+                    Response = response
+                };
+
+                await dispatcher.DispatchAsync(context);
+
+                if (context.IsRejected)
+                {
+                    throw new ProtocolException(
+                        SR.FormatID0464(context.Error, context.ErrorDescription, context.ErrorUri),
+                        context.Error, context.ErrorDescription, context.ErrorUri);
+                }
+
+                return context.Response;
+            }
         }
     }
 
@@ -2412,12 +2493,13 @@ public class OpenIddictClientService
     /// <param name="uri">The uri of the remote token endpoint.</param>
     /// <param name="method">The client authentication method, if applicable.</param>
     /// <param name="certificate">The client certificate, if applicable.</param>
+    /// <param name="credentials">The DPoP signing credentials, if applicable.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>The token response.</returns>
     internal async ValueTask<OpenIddictResponse> SendTokenRequestAsync(
         OpenIddictClientRegistration registration, OpenIddictConfiguration configuration,
         OpenIddictRequest request, Uri uri, string? method,
-        X509Certificate2? certificate, CancellationToken cancellationToken = default)
+        X509Certificate2? certificate, SigningCredentials? credentials, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(registration);
         ArgumentNullException.ThrowIfNull(configuration);
@@ -2431,123 +2513,145 @@ public class OpenIddictClientService
 
         cancellationToken.ThrowIfCancellationRequested();
 
-        await using var scope = _provider.CreateAsyncScope();
+        var nonce = credentials is not null ? GetDPoPNonce(uri) : null;
+        var original = request;
 
-        var dispatcher = scope.ServiceProvider.GetRequiredService<IOpenIddictClientDispatcher>();
-        var options = scope.ServiceProvider.GetRequiredService<IOptionsMonitor<OpenIddictClientOptions>>();
-
-        var transaction = new OpenIddictClientTransaction
+        for (var attempt = 0; ; attempt++)
         {
-            CancellationToken = cancellationToken,
-            Options = options.CurrentValue,
-            ServiceProvider = scope.ServiceProvider
-        };
+            // Note: when DPoP is used, a copy of the request is sent to ensure the original
+            // request can be sent again if the server requires using a new DPoP nonce.
+            request = credentials is null ? original : new OpenIddictRequest(original.GetParameters());
 
-        request = await PrepareTokenRequestAsync();
-        request = await ApplyTokenRequestAsync();
+            string? received = null;
 
-        var response = await ExtractTokenResponseAsync();
+            await using var scope = _provider.CreateAsyncScope();
 
-        return await HandleTokenResponseAsync();
+            var dispatcher = scope.ServiceProvider.GetRequiredService<IOpenIddictClientDispatcher>();
+            var options = scope.ServiceProvider.GetRequiredService<IOptionsMonitor<OpenIddictClientOptions>>();
 
-        async ValueTask<OpenIddictRequest> PrepareTokenRequestAsync()
-        {
-            var context = new PrepareTokenRequestContext(transaction)
+            var transaction = new OpenIddictClientTransaction
             {
-                ClientAuthenticationMethod = method,
-                Configuration = configuration,
-                Registration = registration,
-                RemoteUri = uri,
-                Request = request,
-                LocalCertificate = certificate
+                CancellationToken = cancellationToken,
+                Options = options.CurrentValue,
+                ServiceProvider = scope.ServiceProvider
             };
 
-            await dispatcher.DispatchAsync(context);
+            request = await PrepareTokenRequestAsync();
+            request = await ApplyTokenRequestAsync();
 
-            if (context.IsRejected)
+            var response = await ExtractTokenResponseAsync();
+
+            if (UpdateDPoPNonce(uri, credentials, attempt, response, nonce, received))
             {
-                throw new ProtocolException(
-                    SR.FormatID0320(context.Error, context.ErrorDescription, context.ErrorUri),
-                    context.Error, context.ErrorDescription, context.ErrorUri);
+                nonce = received;
+                continue;
             }
 
-            return context.Request;
-        }
+            return await HandleTokenResponseAsync();
 
-        async ValueTask<OpenIddictRequest> ApplyTokenRequestAsync()
-        {
-            var context = new ApplyTokenRequestContext(transaction)
+            async ValueTask<OpenIddictRequest> PrepareTokenRequestAsync()
             {
-                Configuration = configuration,
-                Registration = registration,
-                RemoteUri = uri,
-                Request = request,
-                LocalCertificate = certificate
-            };
+                var context = new PrepareTokenRequestContext(transaction)
+                {
+                    DPoPSigningCredentials = credentials,
+                    DPoPNonce = nonce,
+                    ClientAuthenticationMethod = method,
+                    Configuration = configuration,
+                    Registration = registration,
+                    RemoteUri = uri,
+                    Request = request,
+                    LocalCertificate = certificate
+                };
 
-            await dispatcher.DispatchAsync(context);
+                await dispatcher.DispatchAsync(context);
 
-            if (context.IsRejected)
-            {
-                throw new ProtocolException(
-                    SR.FormatID0321(context.Error, context.ErrorDescription, context.ErrorUri),
-                    context.Error, context.ErrorDescription, context.ErrorUri);
+                if (context.IsRejected)
+                {
+                    throw new ProtocolException(
+                        SR.FormatID0320(context.Error, context.ErrorDescription, context.ErrorUri),
+                        context.Error, context.ErrorDescription, context.ErrorUri);
+                }
+
+                return context.Request;
             }
 
-            context.Logger.LogInformation(6192, SR.GetResourceString(SR.ID6192), context.RemoteUri, context.Request);
-
-            return context.Request;
-        }
-
-        async ValueTask<OpenIddictResponse> ExtractTokenResponseAsync()
-        {
-            var context = new ExtractTokenResponseContext(transaction)
+            async ValueTask<OpenIddictRequest> ApplyTokenRequestAsync()
             {
-                Configuration = configuration,
-                Registration = registration,
-                RemoteUri = uri,
-                Request = request,
-                LocalCertificate = certificate
-            };
+                var context = new ApplyTokenRequestContext(transaction)
+                {
+                    Configuration = configuration,
+                    Registration = registration,
+                    RemoteUri = uri,
+                    Request = request,
+                    LocalCertificate = certificate
+                };
 
-            await dispatcher.DispatchAsync(context);
+                await dispatcher.DispatchAsync(context);
 
-            if (context.IsRejected)
-            {
-                throw new ProtocolException(
-                    SR.FormatID0322(context.Error, context.ErrorDescription, context.ErrorUri),
-                    context.Error, context.ErrorDescription, context.ErrorUri);
+                if (context.IsRejected)
+                {
+                    throw new ProtocolException(
+                        SR.FormatID0321(context.Error, context.ErrorDescription, context.ErrorUri),
+                        context.Error, context.ErrorDescription, context.ErrorUri);
+                }
+
+                context.Logger.LogInformation(6192, SR.GetResourceString(SR.ID6192), context.RemoteUri, context.Request);
+
+                return context.Request;
             }
 
-            Debug.Assert(context.Response is not null, SR.GetResourceString(SR.ID4007));
-
-            context.Logger.LogInformation(6193, SR.GetResourceString(SR.ID6193), context.RemoteUri, context.Response);
-
-            return context.Response;
-        }
-
-        async ValueTask<OpenIddictResponse> HandleTokenResponseAsync()
-        {
-            var context = new HandleTokenResponseContext(transaction)
+            async ValueTask<OpenIddictResponse> ExtractTokenResponseAsync()
             {
-                Configuration = configuration,
-                Registration = registration,
-                RemoteUri = uri,
-                Request = request,
-                Response = response,
-                LocalCertificate = certificate
-            };
+                var context = new ExtractTokenResponseContext(transaction)
+                {
+                    Configuration = configuration,
+                    Registration = registration,
+                    RemoteUri = uri,
+                    Request = request,
+                    LocalCertificate = certificate
+                };
 
-            await dispatcher.DispatchAsync(context);
+                await dispatcher.DispatchAsync(context);
 
-            if (context.IsRejected)
-            {
-                throw new ProtocolException(
-                    SR.FormatID0323(context.Error, context.ErrorDescription, context.ErrorUri),
-                    context.Error, context.ErrorDescription, context.ErrorUri);
+                received = context.DPoPNonce;
+
+                if (context.IsRejected)
+                {
+                    throw new ProtocolException(
+                        SR.FormatID0322(context.Error, context.ErrorDescription, context.ErrorUri),
+                        context.Error, context.ErrorDescription, context.ErrorUri);
+                }
+
+                Debug.Assert(context.Response is not null, SR.GetResourceString(SR.ID4007));
+
+                context.Logger.LogInformation(6193, SR.GetResourceString(SR.ID6193), context.RemoteUri, context.Response);
+
+                return context.Response;
             }
 
-            return context.Response;
+            async ValueTask<OpenIddictResponse> HandleTokenResponseAsync()
+            {
+                var context = new HandleTokenResponseContext(transaction)
+                {
+                    Configuration = configuration,
+                    Registration = registration,
+                    RemoteUri = uri,
+                    Request = request,
+                    Response = response,
+                    LocalCertificate = certificate
+                };
+
+                await dispatcher.DispatchAsync(context);
+
+                if (context.IsRejected)
+                {
+                    throw new ProtocolException(
+                        SR.FormatID0323(context.Error, context.ErrorDescription, context.ErrorUri),
+                        context.Error, context.ErrorDescription, context.ErrorUri);
+                }
+
+                return context.Response;
+            }
         }
     }
 
@@ -2559,12 +2663,13 @@ public class OpenIddictClientService
     /// <param name="request">The userinfo request.</param>
     /// <param name="uri">The uri of the remote userinfo endpoint.</param>
     /// <param name="certificate">The client certificate, if applicable.</param>
+    /// <param name="credentials">The DPoP signing credentials, if applicable.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>The response and the principal extracted from the userinfo response or the userinfo token.</returns>
     internal async ValueTask<(OpenIddictResponse Response, (ClaimsPrincipal? Principal, string? Token))> SendUserInfoRequestAsync(
         OpenIddictClientRegistration registration, OpenIddictConfiguration configuration,
         OpenIddictRequest request, Uri uri,
-        X509Certificate2? certificate, CancellationToken cancellationToken = default)
+        X509Certificate2? certificate, SigningCredentials? credentials, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(registration);
         ArgumentNullException.ThrowIfNull(configuration);
@@ -2577,120 +2682,178 @@ public class OpenIddictClientService
 
         cancellationToken.ThrowIfCancellationRequested();
 
-        await using var scope = _provider.CreateAsyncScope();
+        var nonce = credentials is not null ? GetDPoPNonce(uri) : null;
+        var original = request;
 
-        var dispatcher = scope.ServiceProvider.GetRequiredService<IOpenIddictClientDispatcher>();
-        var options = scope.ServiceProvider.GetRequiredService<IOptionsMonitor<OpenIddictClientOptions>>();
-
-        var transaction = new OpenIddictClientTransaction
+        for (var attempt = 0; ; attempt++)
         {
-            CancellationToken = cancellationToken,
-            Options = options.CurrentValue,
-            ServiceProvider = scope.ServiceProvider
-        };
+            // Note: when DPoP is used, a copy of the request is sent to ensure the original
+            // request can be sent again if the server requires using a new DPoP nonce.
+            request = credentials is null ? original : new OpenIddictRequest(original.GetParameters());
 
-        request = await PrepareUserInfoRequestAsync();
-        request = await ApplyUserInfoRequestAsync();
+            string? received = null;
 
-        var (response, token) = await ExtractUserInfoResponseAsync();
+            await using var scope = _provider.CreateAsyncScope();
 
-        return await HandleUserInfoResponseAsync();
+            var dispatcher = scope.ServiceProvider.GetRequiredService<IOpenIddictClientDispatcher>();
+            var options = scope.ServiceProvider.GetRequiredService<IOptionsMonitor<OpenIddictClientOptions>>();
 
-        async ValueTask<OpenIddictRequest> PrepareUserInfoRequestAsync()
-        {
-            var context = new PrepareUserInfoRequestContext(transaction)
+            var transaction = new OpenIddictClientTransaction
             {
-                Configuration = configuration,
-                RemoteUri = uri,
-                Registration = registration,
-                Request = request,
-                LocalCertificate = certificate
+                CancellationToken = cancellationToken,
+                Options = options.CurrentValue,
+                ServiceProvider = scope.ServiceProvider
             };
 
-            await dispatcher.DispatchAsync(context);
+            request = await PrepareUserInfoRequestAsync();
+            request = await ApplyUserInfoRequestAsync();
 
-            if (context.IsRejected)
+            var (response, token) = await ExtractUserInfoResponseAsync();
+
+            if (UpdateDPoPNonce(uri, credentials, attempt, response, nonce, received))
             {
-                throw new ProtocolException(
-                    SR.FormatID0324(context.Error, context.ErrorDescription, context.ErrorUri),
-                    context.Error, context.ErrorDescription, context.ErrorUri);
+                nonce = received;
+                continue;
             }
 
-            return context.Request;
-        }
+            return await HandleUserInfoResponseAsync();
 
-        async ValueTask<OpenIddictRequest> ApplyUserInfoRequestAsync()
+            async ValueTask<OpenIddictRequest> PrepareUserInfoRequestAsync()
+            {
+                var context = new PrepareUserInfoRequestContext(transaction)
+                {
+                    DPoPSigningCredentials = credentials,
+                    DPoPNonce = nonce,
+                    Configuration = configuration,
+                    RemoteUri = uri,
+                    Registration = registration,
+                    Request = request,
+                    LocalCertificate = certificate
+                };
+
+                await dispatcher.DispatchAsync(context);
+
+                if (context.IsRejected)
+                {
+                    throw new ProtocolException(
+                        SR.FormatID0324(context.Error, context.ErrorDescription, context.ErrorUri),
+                        context.Error, context.ErrorDescription, context.ErrorUri);
+                }
+
+                return context.Request;
+            }
+
+            async ValueTask<OpenIddictRequest> ApplyUserInfoRequestAsync()
+            {
+                var context = new ApplyUserInfoRequestContext(transaction)
+                {
+                    Configuration = configuration,
+                    RemoteUri = uri,
+                    Registration = registration,
+                    Request = request
+                };
+
+                await dispatcher.DispatchAsync(context);
+
+                if (context.IsRejected)
+                {
+                    throw new ProtocolException(
+                        SR.FormatID0325(context.Error, context.ErrorDescription, context.ErrorUri),
+                        context.Error, context.ErrorDescription, context.ErrorUri);
+                }
+
+                context.Logger.LogInformation(6194, SR.GetResourceString(SR.ID6194), context.RemoteUri, context.Request);
+
+                return context.Request;
+            }
+
+            async ValueTask<(OpenIddictResponse, string?)> ExtractUserInfoResponseAsync()
+            {
+                var context = new ExtractUserInfoResponseContext(transaction)
+                {
+                    Configuration = configuration,
+                    RemoteUri = uri,
+                    Registration = registration,
+                    Request = request
+                };
+
+                await dispatcher.DispatchAsync(context);
+
+                received = context.DPoPNonce;
+
+                if (context.IsRejected)
+                {
+                    throw new ProtocolException(
+                        SR.FormatID0326(context.Error, context.ErrorDescription, context.ErrorUri),
+                        context.Error, context.ErrorDescription, context.ErrorUri);
+                }
+
+                Debug.Assert(context.Response is not null, SR.GetResourceString(SR.ID4007));
+
+                context.Logger.LogInformation(6195, SR.GetResourceString(SR.ID6195), context.RemoteUri, context.Response);
+
+                return (context.Response, context.UserInfoToken);
+            }
+
+            async ValueTask<(OpenIddictResponse, (ClaimsPrincipal?, string?))> HandleUserInfoResponseAsync()
+            {
+                var context = new HandleUserInfoResponseContext(transaction)
+                {
+                    Configuration = configuration,
+                    Registration = registration,
+                    RemoteUri = uri,
+                    Request = request,
+                    Response = response,
+                    UserInfoToken = token
+                };
+
+                await dispatcher.DispatchAsync(context);
+
+                if (context.IsRejected)
+                {
+                    throw new ProtocolException(
+                        SR.FormatID0327(context.Error, context.ErrorDescription, context.ErrorUri),
+                        context.Error, context.ErrorDescription, context.ErrorUri);
+                }
+
+                return (context.Response, (context.Principal, context.UserInfoToken));
+            }
+        }
+    }
+
+    /// <summary>
+    /// Resolves the last DPoP nonce returned by the server hosting the specified endpoint, if available.
+    /// </summary>
+    /// <param name="uri">The endpoint URI.</param>
+    /// <returns>The nonce, if available.</returns>
+    private string? GetDPoPNonce(Uri uri)
+        => _nonces.TryGetValue(uri.GetLeftPart(UriPartial.Authority), out var nonce) ? nonce : null;
+
+    /// <summary>
+    /// Stores the DPoP nonce returned by the server and determines whether the request must be sent again.
+    /// </summary>
+    /// <param name="uri">The endpoint URI.</param>
+    /// <param name="credentials">The DPoP signing credentials, if applicable.</param>
+    /// <param name="attempt">The attempt number.</param>
+    /// <param name="response">The response returned by the server.</param>
+    /// <param name="nonce">The nonce used to create the DPoP proof, if applicable.</param>
+    /// <param name="received">The nonce returned by the server, if applicable.</param>
+    /// <returns><see langword="true"/> if the request must be sent again with the new nonce, <see langword="false"/> otherwise.</returns>
+    private bool UpdateDPoPNonce(Uri uri, SigningCredentials? credentials, int attempt,
+        OpenIddictResponse response, string? nonce, [NotNullWhen(true)] string? received)
+    {
+        if (credentials is null || string.IsNullOrEmpty(received))
         {
-            var context = new ApplyUserInfoRequestContext(transaction)
-            {
-                Configuration = configuration,
-                RemoteUri = uri,
-                Registration = registration,
-                Request = request
-            };
-
-            await dispatcher.DispatchAsync(context);
-
-            if (context.IsRejected)
-            {
-                throw new ProtocolException(
-                    SR.FormatID0325(context.Error, context.ErrorDescription, context.ErrorUri),
-                    context.Error, context.ErrorDescription, context.ErrorUri);
-            }
-
-            context.Logger.LogInformation(6194, SR.GetResourceString(SR.ID6194), context.RemoteUri, context.Request);
-
-            return context.Request;
+            return false;
         }
 
-        async ValueTask<(OpenIddictResponse, string?)> ExtractUserInfoResponseAsync()
-        {
-            var context = new ExtractUserInfoResponseContext(transaction)
-            {
-                Configuration = configuration,
-                RemoteUri = uri,
-                Registration = registration,
-                Request = request
-            };
+        _nonces[uri.GetLeftPart(UriPartial.Authority)] = received;
 
-            await dispatcher.DispatchAsync(context);
-
-            if (context.IsRejected)
-            {
-                throw new ProtocolException(
-                    SR.FormatID0326(context.Error, context.ErrorDescription, context.ErrorUri),
-                    context.Error, context.ErrorDescription, context.ErrorUri);
-            }
-
-            Debug.Assert(context.Response is not null, SR.GetResourceString(SR.ID4007));
-
-            context.Logger.LogInformation(6195, SR.GetResourceString(SR.ID6195), context.RemoteUri, context.Response);
-
-            return (context.Response, context.UserInfoToken);
-        }
-
-        async ValueTask<(OpenIddictResponse, (ClaimsPrincipal?, string?))> HandleUserInfoResponseAsync()
-        {
-            var context = new HandleUserInfoResponseContext(transaction)
-            {
-                Configuration = configuration,
-                Registration = registration,
-                RemoteUri = uri,
-                Request = request,
-                Response = response,
-                UserInfoToken = token
-            };
-
-            await dispatcher.DispatchAsync(context);
-
-            if (context.IsRejected)
-            {
-                throw new ProtocolException(
-                    SR.FormatID0327(context.Error, context.ErrorDescription, context.ErrorUri),
-                    context.Error, context.ErrorDescription, context.ErrorUri);
-            }
-
-            return (context.Response, (context.Principal, context.UserInfoToken));
-        }
+        // If the server rejected the proof because it didn't contain the expected nonce, send the request
+        // again using the new nonce (but only once, to prevent infinite loops with misbehaving servers).
+        //
+        // See https://datatracker.ietf.org/doc/html/rfc9449#section-8 for more information.
+        return attempt is 0 && string.Equals(response.Error, Errors.UseDPoPNonce, StringComparison.Ordinal) &&
+            !string.Equals(received, nonce, StringComparison.Ordinal);
     }
 }

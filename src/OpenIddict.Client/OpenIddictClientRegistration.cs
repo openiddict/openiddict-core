@@ -88,6 +88,15 @@ public sealed class OpenIddictClientRegistration
     public List<SigningCredentials> SigningCredentials { get; } = [];
 
     /// <summary>
+    /// Gets or sets the asymmetric signing credentials used to create DPoP proofs for this client.
+    /// If DPoP token binding is enabled and no value is explicitly set, an ephemeral P-256 key is generated.
+    /// </summary>
+    /// <remarks>
+    /// Note: when using an ephemeral key, DPoP-bound refresh tokens can't be used after the application restarts.
+    /// </remarks>
+    public SigningCredentials? DPoPSigningCredentials { get; set; }
+
+    /// <summary>
     /// Gets the client authentication methods allowed by the client instance.
     /// If no value is explicitly set, all the methods enabled in the client options can be used.
     /// </summary>

@@ -2555,6 +2555,11 @@ public static partial class OpenIddictClientHandlers
                         OpenIddictHelpers.IsSelfIssuedCertificate(certificate))
                     => TokenBindingMethods.Private.SelfSignedTlsClientCertificate,
 
+                // If DPoP is enabled for this client and supported by the server, use it.
+                { Count: > 0 } client when client.Contains(TokenBindingMethods.Private.DPoP) &&
+                    IsDPoPSupported(context.Registration, context.Configuration)
+                    => TokenBindingMethods.Private.DPoP,
+
                 _ => null
             };
 
@@ -3071,8 +3076,11 @@ public static partial class OpenIddictClientHandlers
             {
                 context.TokenResponse = await _service.SendTokenRequestAsync(
                     context.Registration, context.Configuration, context.TokenRequest,
-                    context.TokenEndpoint, context.TokenEndpointClientAuthenticationMethod,
-                    certificate, context.CancellationToken);
+                    context.TokenEndpoint, context.TokenEndpointClientAuthenticationMethod, certificate,
+                    context.TokenEndpointTokenBindingMethod is TokenBindingMethods.Private.DPoP
+                        ? context.Registration.DPoPSigningCredentials
+                        : null,
+                    context.CancellationToken);
             }
 
             catch (ProtocolException exception)
@@ -4193,6 +4201,12 @@ public static partial class OpenIddictClientHandlers
                     ? TokenBindingMethods.Private.SelfSignedTlsClientCertificate
                     : TokenBindingMethods.Private.TlsClientCertificate,
 
+                // If DPoP was used but the authorization server didn't return a DPoP-bound
+                // access token, send the access token to the userinfo endpoint as a bearer token.
+                _ when context.TokenEndpointTokenBindingMethod is TokenBindingMethods.Private.DPoP &&
+                      !string.Equals(context.TokenResponse?.TokenType, TokenTypes.DPoP, StringComparison.OrdinalIgnoreCase)
+                    => null,
+
                 // Otherwise, assume the token binding method used for the
                 // token endpoint is also used for the userinfo endpoint.
                 _ => context.TokenEndpointTokenBindingMethod
@@ -4392,8 +4406,11 @@ public static partial class OpenIddictClientHandlers
                 (context.UserInfoResponse, (context.UserInfoTokenPrincipal, context.UserInfoToken)) =
                     await _service.SendUserInfoRequestAsync(
                         context.Registration, context.Configuration,
-                        context.UserInfoRequest, context.UserInfoEndpoint,
-                        certificate, context.CancellationToken);
+                        context.UserInfoRequest, context.UserInfoEndpoint, certificate,
+                        context.UserInfoEndpointTokenBindingMethod is TokenBindingMethods.Private.DPoP
+                            ? context.Registration.DPoPSigningCredentials
+                            : null,
+                        context.CancellationToken);
             }
 
             catch (ProtocolException exception)
@@ -7743,11 +7760,16 @@ public static partial class OpenIddictClientHandlers
 
             try
             {
+                // Note: when DPoP is enabled and supported by the server, a DPoP proof is sent to the pushed
+                // authorization endpoint to bind the authorization code to the DPoP key of the registration.
                 context.PushedAuthorizationResponse = await _service.SendPushedAuthorizationRequestAsync(
                     context.Registration, context.Configuration,
                     context.PushedAuthorizationRequest, context.PushedAuthorizationEndpoint,
-                    context.PushedAuthorizationEndpointClientAuthenticationMethod,
-                    certificate, context.CancellationToken);
+                    context.PushedAuthorizationEndpointClientAuthenticationMethod, certificate,
+                    IsDPoPEnabled(context.Options, context.Registration) && IsDPoPSupported(context.Registration, context.Configuration)
+                        ? context.Registration.DPoPSigningCredentials
+                        : null,
+                    context.CancellationToken);
             }
 
             catch (ProtocolException exception)
@@ -10127,4 +10149,24 @@ public static partial class OpenIddictClientHandlers
             return ValueTask.CompletedTask;
         }
     }
+
+    /// <summary>
+    /// Determines whether DPoP token binding is enabled for the specified registration.
+    /// </summary>
+    /// <param name="options">The client options.</param>
+    /// <param name="registration">The client registration.</param>
+    /// <returns><see langword="true"/> if DPoP is enabled, <see langword="false"/> otherwise.</returns>
+    internal static bool IsDPoPEnabled(OpenIddictClientOptions options, OpenIddictClientRegistration registration)
+        => options.TokenBindingMethods.Contains(TokenBindingMethods.Private.DPoP) &&
+          (registration.TokenBindingMethods.Count is 0 || registration.TokenBindingMethods.Contains(TokenBindingMethods.Private.DPoP));
+
+    /// <summary>
+    /// Determines whether the authorization server supports the algorithm of the DPoP key attached to the registration.
+    /// </summary>
+    /// <param name="registration">The client registration.</param>
+    /// <param name="configuration">The server configuration.</param>
+    /// <returns><see langword="true"/> if DPoP can be used, <see langword="false"/> otherwise.</returns>
+    internal static bool IsDPoPSupported(OpenIddictClientRegistration registration, OpenIddictConfiguration configuration)
+        => registration.DPoPSigningCredentials is { Algorithm: { Length: > 0 } algorithm } &&
+           configuration.DPoPSigningAlgValuesSupported.Contains(algorithm);
 }

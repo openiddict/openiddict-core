@@ -25,12 +25,14 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
             AttachFromHeader<PrepareTokenRequestContext>.Descriptor,
             AttachBasicAuthenticationCredentials<PrepareTokenRequestContext>.Descriptor,
             AttachHttpParameters<PrepareTokenRequestContext>.Descriptor,
+            AttachDPoPProof<PrepareTokenRequestContext>.Descriptor,
             SendHttpRequest<ApplyTokenRequestContext>.Descriptor,
             DisposeHttpRequest<ApplyTokenRequestContext>.Descriptor,
 
             /*
              * Token response processing:
              */
+            ExtractDPoPNonce<ExtractTokenResponseContext>.Descriptor,
             DecompressResponseContent<ExtractTokenResponseContext>.Descriptor,
             ExtractJsonHttpResponse<ExtractTokenResponseContext>.Descriptor,
             ExtractWwwAuthenticateHeader<ExtractTokenResponseContext>.Descriptor,

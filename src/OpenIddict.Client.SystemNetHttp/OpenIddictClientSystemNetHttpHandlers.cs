@@ -14,6 +14,7 @@ using System.Text;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
+using Microsoft.IdentityModel.Tokens;
 using static OpenIddict.Client.SystemNetHttp.OpenIddictClientSystemNetHttpConstants;
 
 namespace OpenIddict.Client.SystemNetHttp;
@@ -231,6 +232,90 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
             // Note: for security reasons, HTTP compression is never opted-in by default. Providers
             // that require using HTTP compression can register a custom event handler to send an
             // Accept-Encoding header containing the supported algorithms (e.g GZip/Deflate/Brotli).
+
+            return ValueTask.CompletedTask;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for creating and attaching the DPoP proof to the HTTP request, if applicable.
+    /// </summary>
+    public sealed class AttachDPoPProof<TContext> : IOpenIddictClientHandler<TContext> where TContext : BaseExternalContext
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<TContext>()
+                .AddFilter<RequireHttpUri>()
+                .UseSingletonHandler<AttachDPoPProof<TContext>>()
+                .SetOrder(AttachHttpParameters<TContext>.Descriptor.Order - 250)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(TContext context)
+        {
+            ArgumentNullException.ThrowIfNull(context);
+
+            // This handler only applies to System.Net.Http requests. If the HTTP request cannot be resolved,
+            // this may indicate that the request was incorrectly processed by another client stack.
+            var request = context.Transaction.GetHttpRequestMessage()
+                ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0173));
+
+            if (string.IsNullOrEmpty(context.DPoPProof) && context.DPoPSigningCredentials is SigningCredentials credentials)
+            {
+                // Note: when an access token is sent using the DPoP scheme, its hash is included in the proof.
+                context.DPoPProof = OpenIddictDPoPHelpers.CreateProof(
+                    credentials: credentials,
+                    method     : request.Method.Method,
+                    uri        : request.RequestUri ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0173)),
+                    date       : context.Options.TimeProvider.GetUtcNow(),
+                    token      : request.Headers.Authorization is { Scheme: Schemes.DPoP, Parameter: string token } ? token : null,
+                    nonce      : context.DPoPNonce);
+            }
+
+            if (!string.IsNullOrEmpty(context.DPoPProof))
+            {
+                request.Headers.Remove(Headers.DPoP);
+                request.Headers.TryAddWithoutValidation(Headers.DPoP, context.DPoPProof);
+            }
+
+            return ValueTask.CompletedTask;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for extracting the DPoP nonce returned by the server, if applicable.
+    /// </summary>
+    public sealed class ExtractDPoPNonce<TContext> : IOpenIddictClientHandler<TContext> where TContext : BaseExternalContext
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<TContext>()
+                .AddFilter<RequireHttpUri>()
+                .UseSingletonHandler<ExtractDPoPNonce<TContext>>()
+                .SetOrder(DecompressResponseContent<TContext>.Descriptor.Order - 500)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(TContext context)
+        {
+            ArgumentNullException.ThrowIfNull(context);
+
+            // This handler only applies to System.Net.Http requests. If the HTTP response cannot be resolved,
+            // this may indicate that the request was incorrectly processed by another client stack.
+            var response = context.Transaction.GetHttpResponseMessage()
+                ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0173));
+
+            if (response.Headers.TryGetValues(Headers.DPoPNonce, out var values) &&
+                values.FirstOrDefault() is { Length: > 0 } nonce)
+            {
+                context.DPoPNonce = nonce;
+            }
 
             return ValueTask.CompletedTask;
         }

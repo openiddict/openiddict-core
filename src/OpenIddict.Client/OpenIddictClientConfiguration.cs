@@ -60,6 +60,14 @@ public sealed class OpenIddictClientConfiguration : IPostConfigureOptions<OpenId
                     : ClientTypes.Public;
             }
 
+            // If DPoP token binding was enabled and no DPoP key was attached to the registration, generate an ephemeral key.
+            if (options.TokenBindingMethods.Contains(TokenBindingMethods.Private.DPoP) && registration.DPoPSigningCredentials is null &&
+               (registration.TokenBindingMethods.Count is 0 || registration.TokenBindingMethods.Contains(TokenBindingMethods.Private.DPoP)))
+            {
+                registration.DPoPSigningCredentials = new SigningCredentials(
+                    new ECDsaSecurityKey(ECDsa.Create(ECCurve.NamedCurves.nistP256)), SecurityAlgorithms.EcdsaSha256);
+            }
+
             if (registration.ConfigurationManager is null)
             {
                 if (registration.Configuration is not null)

@@ -6,6 +6,11 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\OpenIddict.Client\OpenIddict.Client.csproj" />
+    <ProjectReference Include="..\..\src\OpenIddict.Client.SystemNetHttp\OpenIddict.Client.SystemNetHttp.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\shared\OpenIddict.Extensions\IdentityModel\*.cs" Visible="false" />
   </ItemGroup>
 
   <ItemGroup>
