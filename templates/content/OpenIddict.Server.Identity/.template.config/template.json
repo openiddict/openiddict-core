@@ -1,0 +1,46 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "OpenIddict",
+  "classifications": [ "Web", "OpenIddict", "OAuth", "OpenID Connect", "Identity" ],
+  "identity": "OpenIddict.Templates.Server.Identity",
+  "groupIdentity": "OpenIddict.Templates.Server.Identity",
+  "name": "OpenIddict authorization server (ASP.NET Core Identity)",
+  "description": "OpenID Connect server using ASP.NET Core Identity, Entity Framework Core (SQLite) and MVC authorization, device verification, end session and userinfo endpoints.",
+  "shortName": "openiddict-server-identity",
+  "sourceName": "Company.Server",
+  "preferNameDirectory": true,
+  "defaultName": "AuthorizationServer",
+  "tags": {
+    "language": "C#",
+    "type": "project"
+  },
+  "symbols": {
+    "OpenIddictVersion": {
+      "type": "parameter",
+      "datatype": "text",
+      "description": "The version of the OpenIddict packages referenced by the project.",
+      "defaultValue": "8.0.0-preview.5",
+      "replaces": "OPENIDDICT_VERSION"
+    },
+    "HttpsPort": {
+      "type": "generated",
+      "generator": "port",
+      "parameters": { "low": 44300, "high": 44399 },
+      "replaces": "44310"
+    },
+    "HttpPort": {
+      "type": "generated",
+      "generator": "port",
+      "parameters": { "low": 5000, "high": 5300 },
+      "replaces": "5010"
+    }
+  },
+  "sources": [
+    {
+      "modifiers": [
+        { "exclude": [ "bin/**", "obj/**", "**/*.user", "**/*.sqlite3*" ] }
+      ]
+    }
+  ],
+  "primaryOutputs": [ { "path": "Company.Server.csproj" } ]
+}

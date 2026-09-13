@@ -1,0 +1,16 @@
+@page
+@{
+    ViewData["Title"] = "Home";
+}
+
+<h1>Company.Server</h1>
+
+<p class="lead">OpenID Connect server powered by OpenIddict and ASP.NET Core Identity.</p>
+
+<ul>
+    <li><a href="~/.well-known/openid-configuration">Discovery document</a></li>
+    <li><a href="~/.well-known/jwks">JSON Web Key Set</a></li>
+    <li><a href="~/connect/verify">Device verification</a></li>
+</ul>
+
+<p>Client applications are registered from the <code>OpenIddict:Clients</code> configuration section at startup.</p>

@@ -48,6 +48,12 @@
     <Project Path="shared/OpenIddict.Extensions/OpenIddict.Extensions.csproj" />
   </Folder>
 
+  <Folder Name="/templates/">
+    <Project Path="templates/OpenIddict.Templates.csproj" />
+    <File Path="templates/README.md" />
+    <File Path="templates/verify.sh" />
+  </Folder>
+
   <Folder Name="/src/">
     <Project Path="src/OpenIddict.Abstractions/OpenIddict.Abstractions.csproj" />
     <Project Path="src/OpenIddict.AspNetCore/OpenIddict.AspNetCore.csproj" />

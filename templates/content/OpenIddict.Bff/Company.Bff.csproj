@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <OpenIddictVersion>OPENIDDICT_VERSION</OpenIddictVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="OpenIddict.Client.AspNetCore.Bff" Version="$(OpenIddictVersion)" />
+    <PackageReference Include="OpenIddict.Client.SystemNetHttp" Version="$(OpenIddictVersion)" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>Company.Bff</title>
+</head>
+<body>
+    <h1>Company.Bff</h1>
+
+    <p id="status">Loading...</p>
+
+    <p>
+        <a id="login" href="/bff/login" hidden>Log in</a>
+        <a id="logout" href="#" hidden>Log out</a>
+        <button id="call" hidden>Call /api/me</button>
+    </p>
+
+    <pre id="output"></pre>
+
+    <script>
+        // Note: the "X-CSRF" header is required by the BFF endpoints to mitigate CSRF attacks.
+        const headers = { "X-CSRF": "1" };
+
+        async function load() {
+            const response = await fetch("/bff/user", { headers });
+            if (response.status !== 200) {
+                document.getElementById("status").textContent = "Not logged in.";
+                document.getElementById("login").hidden = false;
+                return;
+            }
+
+            const claims = await response.json();
+            const name = claims.find(claim => claim.type === "name")?.value ?? claims.find(claim => claim.type === "sub")?.value;
+
+            document.getElementById("status").textContent = `Logged in as ${name}.`;
+            document.getElementById("logout").href = claims.find(claim => claim.type === "bff:logout_url").value;
+            document.getElementById("logout").hidden = false;
+            document.getElementById("call").hidden = false;
+        }
+
+        document.getElementById("call").addEventListener("click", async () => {
+            const response = await fetch("/api/me", { headers });
+            document.getElementById("output").textContent = response.ok
+                ? JSON.stringify(await response.json(), null, 2)
+                : `${response.status} ${response.statusText}`;
+        });
+
+        load();
+    </script>
+</body>
+</html>

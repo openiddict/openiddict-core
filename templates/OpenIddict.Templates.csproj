@@ -1,0 +1,51 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <PackageType>Template</PackageType>
+    <IsPackable>true</IsPackable>
+    <IsShipping>true</IsShipping>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <IncludeSymbols>false</IncludeSymbols>
+    <EnableDefaultItems>false</EnableDefaultItems>
+    <NoDefaultExcludes>true</NoDefaultExcludes>
+    <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <SignAssembly>false</SignAssembly>
+    <NoWarn>$(NoWarn);NU5128;NU5110;NU5111</NoWarn>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Description>dotnet new templates for OpenIddict: authorization server (ASP.NET Core Identity), minimal authorization server and backend-for-frontend (BFF).</Description>
+    <PackageTags>$(PackageTags);templates;aspnetcore;server;bff</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="content\**\*"
+          Exclude="content\*.props;content\*.targets;content\**\bin\**;content\**\obj\**;content\**\*.user;content\**\*.sqlite3*"
+          Pack="true" PackagePath="content" />
+  </ItemGroup>
+
+  <!--
+    Note: the OpenIddict package version used by default by the generated projects is hardcoded in the
+    template.json files. To ensure it is not forgotten when bumping the version, the pack fails if it differs.
+  -->
+
+  <Target Name="EnsureTemplateVersionsMatch" BeforeTargets="GenerateNuspec"
+          Condition=" '$(PreReleaseVersionLabel)' != '' And '$(DotNetFinalVersionKind)' != 'release' ">
+    <PropertyGroup>
+      <_OpenIddictTemplateVersion>$(VersionPrefix)-$(PreReleaseVersionLabel).$(PreReleaseVersionIteration)</_OpenIddictTemplateVersion>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <_OpenIddictTemplateManifest Include="$(MSBuildProjectDirectory)\content\OpenIddict.*\.template.config\template.json" />
+      <_OpenIddictInvalidTemplateManifest Include="@(_OpenIddictTemplateManifest)"
+        Condition=" !$([System.IO.File]::ReadAllText('%(FullPath)').Contains('&quot;defaultValue&quot;: &quot;$(_OpenIddictTemplateVersion)&quot;')) " />
+    </ItemGroup>
+
+    <Error Condition=" '@(_OpenIddictTemplateManifest)' == '' " Text="No template manifest was found." />
+    <Error Condition=" '@(_OpenIddictInvalidTemplateManifest)' != '' "
+           Text="The template manifests must use '$(_OpenIddictTemplateVersion)' as the default OpenIddict version: @(_OpenIddictInvalidTemplateManifest)." />
+  </Target>
+
+</Project>

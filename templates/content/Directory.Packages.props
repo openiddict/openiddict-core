@@ -1,0 +1,6 @@
+<Project>
+  <!-- Isolates the template sources from the repository central package management (not included in the template pack). -->
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+</Project>

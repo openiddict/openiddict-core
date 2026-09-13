@@ -1,0 +1,17 @@
+@* Note: this partial view is also used by the default ASP.NET Core Identity UI layout. *@
+<ul class="navbar-nav ms-auto">
+    @if (User.Identity?.IsAuthenticated is true)
+    {
+        <li class="nav-item"><a class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Manage/Index">@User.Identity.Name</a></li>
+        <li class="nav-item">
+            <form asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="/" method="post">
+                <button type="submit" class="btn btn-link nav-link text-dark">Log out</button>
+            </form>
+        </li>
+    }
+    else
+    {
+        <li class="nav-item"><a class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Register">Register</a></li>
+        <li class="nav-item"><a class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Login">Log in</a></li>
+    }
+</ul>
