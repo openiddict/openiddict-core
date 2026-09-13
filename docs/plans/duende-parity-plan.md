@@ -32,7 +32,8 @@ Baseline `dev@dd0d5d7d` (8.0.0-preview.5, fork of upstream). **Plan only — do 
 | P8b CIBA client | ✅ | `b67cf1f3` | `OpenIddictClientService.ChallengeUsingBackchannelAsync` / `AuthenticateWithBackchannelAsync` |
 | P10 key management | ✅ | `4d19d539` | RSA-2048 sig (RS256) + enc (RSA-OAEP) keys. Key entity in EF Core/EF6/MongoDB. `OpenIddictServerKeyRing` resolves credentials per transaction (`Transaction.Credentials`). Protector: `IOpenIddictServerKeyProtector` (in `OpenIddict.Server`, default via `UseDataProtection()`). Quartz pruning is opt-in (`EnableKeyPruning`). |
 | P5 DPoP | ✅ server + validation + client | `0dae3a9d`, `0a732595`, `dbc144f5` | Opt-in (`EnableDPoPSupport`, `EnableDPoPTokenBinding`). Shared helper `shared/OpenIddict.Extensions/IdentityModel/OpenIddictDPoPHelpers.cs`. Server replay: redeemed token entry (reference id = `jkt.jti`). Nonces: signed JWT (server keys), server only. Validation replay: optional `IDistributedCache`. See deviations below. |
-| P12, P11.x | ⏳ | — | — |
+| P12 JWT introspection | ✅ server + client + validation | `f1ff44d8`, `811b913a`, `a2c44c5a`, `9d913f9a`, `0152298e` | Opt-in (`EnableJsonWebTokenIntrospectionResponses`, `RequireJsonWebTokenIntrospectionResponses`). Token generated through `GenerateTokenContext` (`TokenTypeIdentifiers.Private.IntrospectionResponse`), signed with the first asymmetric key from `OpenIddictServerKeyRing.ResolveCredentialsAsync`. See deviations below. |
+| P11.x | ⏳ | — | — |
 
 **P5 deviations**
 
@@ -46,6 +47,17 @@ Baseline `dev@dd0d5d7d` (8.0.0-preview.5, fork of upstream). **Plan only — do 
 | Client PAR + mTLS | PAR codes aren't DPoP-bound when mTLS binding can be negotiated (a client-auth certificate is registered), since mTLS wins at the token endpoint |
 | Client retry | `use_dpop_nonce` retry resends the same `client_assertion`; servers with assertion `jti` replay checks reject it |
 | Review fixes | Proof key resolved from a minimal JWK (`x5c` key substitution); `alg` must match `kty`/`crv` |
+
+**P12 deviations**
+
+| Item | Behaviour |
+|---|---|
+| Opt-in | No per-client permission; any authenticated confidential client sending `Accept: application/token-introspection+jwt` gets a JWT when the option is on |
+| JSON fallback | Errors, anonymous callers (no `client_id`) and public clients (non-degraded mode) get plain JSON |
+| Encryption | Only when the client JWKS has an RSA `use: enc` key (`alg` absent or `RSA-OAEP`); fixed RSA-OAEP / A256CBC-HS512; no `introspection_encrypted_response_*` client metadata; not in degraded mode |
+| Claims | `iss`, `aud`, `iat`, `token_introspection` only (no `exp`/`jti`) |
+| Accept parsing | Explicit media type only (`*/*` ignored, `q=0` honoured) |
+| Client/validation | Decryption uses the client/validation encryption credentials; `Accept` is replaced (not appended); JSON error responses still accepted |
 
 ## 0. Blocking — verify before coding
 
