@@ -75,6 +75,7 @@ Baseline `dev@dd0d5d7d` (8.0.0-preview.5, fork of upstream). **Plan only — do 
 | ASP.NET Core | `IAuthenticationSchemeProvider` decorated (`OpenIddictClientAspNetCoreSchemeProvider`): unknown scheme → forwarder scheme if exactly one registration has that provider name; also listed in `GetAllSchemesAsync`. Off with `DisableAutomaticAuthenticationSchemeForwarding`. Replacing the scheme provider after `UseAspNetCore()` bypasses it |
 | OWIN | Forwarded challenge/sign-out/authenticate and `GetAuthenticationTypes()` fall back to dynamic provider names (`OpenIddictClientOwinForwardedTypes`); forwarded challenge lookup now only runs on 401/403 |
 | Uniqueness | Dynamic provider-name duplicates aren't rejected at startup; ambiguous names aren't forwarded and fail with ID0409 when used |
+| Review fixes | Cached instance reused only if issuer/provider name/client id are unchanged (was: same id → stale registration returned for another issuer); cache checked before allocating configuration manager/DPoP key; expired entries purged on insert |
 
 ## 0. Blocking — verify before coding
 

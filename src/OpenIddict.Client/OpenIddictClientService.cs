@@ -318,17 +318,29 @@ public class OpenIddictClientService
             return registration;
         }
 
-        OpenIddictClientConfiguration.ConfigureRegistration(_provider, options, registration);
+        // Note: the default registration identifier is computed before checking the cache to avoid
+        // allocating resources (e.g configuration managers or DPoP keys) for registrations already cached.
+        if (registration.Issuer is not null && string.IsNullOrEmpty(registration.RegistrationId))
+        {
+            registration.RegistrationId = OpenIddictClientConfiguration.ComputeDefaultRegistrationId(registration);
+        }
 
         var now = options.TimeProvider.GetUtcNow();
 
         // If an equivalent registration was already resolved, return the cached instance
         // to ensure the same configuration manager (and server configuration) is reused.
+        //
+        // Note: if the registration returned by the provider was changed (e.g its issuer was updated),
+        // the cached instance is not returned to prevent returning a registration that doesn't match
+        // the lookup criteria (e.g the issuer): the new registration is validated and replaces it.
         if (!string.IsNullOrEmpty(registration.RegistrationId) &&
-            _registrations.TryGetValue(registration.RegistrationId, out var entry) && entry.ExpirationDate > now)
+            _registrations.TryGetValue(registration.RegistrationId, out var entry) && entry.ExpirationDate > now &&
+            IsEquivalent(entry.Registration, registration))
         {
             return entry.Registration;
         }
+
+        OpenIddictClientConfiguration.ConfigureRegistration(_provider, options, registration);
 
         var builder = new ValidateOptionsResultBuilder();
 
@@ -364,10 +376,25 @@ public class OpenIddictClientService
             return registration;
         }
 
-        var expiration = now + lifetime;
-        _registrations[registration.RegistrationId!] = (registration, expiration);
+        // Remove the expired entries to prevent the cache from growing indefinitely when the
+        // registrations returned by the providers change over time (e.g tenants are removed).
+        foreach (var item in _registrations)
+        {
+            if (item.Value.ExpirationDate <= now)
+            {
+                ((ICollection<KeyValuePair<string, (OpenIddictClientRegistration Registration, DateTimeOffset ExpirationDate)>>)
+                    _registrations).Remove(item);
+            }
+        }
+
+        _registrations[registration.RegistrationId!] = (registration, now + lifetime);
 
         return registration;
+
+        static bool IsEquivalent(OpenIddictClientRegistration left, OpenIddictClientRegistration right)
+            => ReferenceEquals(left, right) || (left.Issuer == right.Issuer &&
+                string.Equals(left.ProviderName, right.ProviderName, StringComparison.Ordinal) &&
+                string.Equals(left.ClientId, right.ClientId, StringComparison.Ordinal));
     }
 
     /// <summary>

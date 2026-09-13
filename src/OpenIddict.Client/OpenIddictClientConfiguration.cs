@@ -381,7 +381,7 @@ public sealed class OpenIddictClientConfiguration : IPostConfigureOptions<OpenId
         }
     }
 
-    private static string ComputeDefaultRegistrationId(OpenIddictClientRegistration registration)
+    internal static string ComputeDefaultRegistrationId(OpenIddictClientRegistration registration)
     {
         Debug.Assert(registration.Issuer is { IsAbsoluteUri: true }, SR.GetResourceString(SR.ID4013));
 

@@ -124,6 +124,53 @@ public class OpenIddictClientRegistrationProviderTests
     }
 
     [Fact]
+    public async Task GetClientRegistrationByIssuerAsync_DoesNotReturnStaleCachedRegistrationWhenIssuerChanged()
+    {
+        // Arrange
+        var issuer = DynamicIssuer;
+        var source = new TestRegistrationProvider(() =>
+        {
+            var registration = CreateDynamicRegistration();
+            registration.Issuer = issuer;
+            registration.Configuration!.Issuer = issuer;
+            return registration;
+        });
+
+        using var provider = CreateProvider(source);
+        var service = provider.GetRequiredService<OpenIddictClientService>();
+
+        var first = await service.GetClientRegistrationByIdAsync("tenant1");
+        issuer = new Uri("https://tenant1.northwind.com/", UriKind.Absolute);
+
+        // Act
+        var second = await service.GetClientRegistrationByIssuerAsync(issuer);
+        var third = await service.GetClientRegistrationByIdAsync("tenant1");
+
+        // Assert
+        Assert.NotSame(first, second);
+        Assert.Equal(issuer, second.Issuer);
+        Assert.Equal(issuer, (await second.ConfigurationManager!.GetConfigurationAsync(default)).Issuer);
+        Assert.Same(second, third);
+    }
+
+    [Fact]
+    public async Task GetClientRegistrationByIssuerAsync_ReturnsCachedRegistrationWhenUnchanged()
+    {
+        // Arrange
+        var source = new TestRegistrationProvider(() => CreateDynamicRegistration(identifier: null));
+        using var provider = CreateProvider(source);
+        var service = provider.GetRequiredService<OpenIddictClientService>();
+
+        // Act
+        var first = await service.GetClientRegistrationByIssuerAsync(DynamicIssuer);
+        var second = await service.GetClientRegistrationByIssuerAsync(DynamicIssuer);
+
+        // Assert
+        Assert.Same(first, second);
+        Assert.Same(first.ConfigurationManager, second.ConfigurationManager);
+    }
+
+    [Fact]
     public async Task GetClientRegistrationByIdAsync_ThrowsAnExceptionForUnknownIdentifier()
     {
         // Arrange
