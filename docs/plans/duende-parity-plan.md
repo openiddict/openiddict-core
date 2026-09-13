@@ -23,6 +23,15 @@ Baseline `dev@dd0d5d7d` (8.0.0-preview.5, fork of upstream). **Plan only — do 
 
 **Execution order:** P6 → P8 → P10 → P5 → P12 → P11.2 → P11.3 → P11.4 → P11.5 → P11.6; then, after upstream preview.5: P1 → P2 → P4 → P9 → P11.1.
 
+## Progress
+
+| Phase | Status | Commit | Notes |
+|---|---|---|---|
+| P6 JAR | ✅ server + client | `ad3476ee` | Request objects are validated via a direct `ValidateTokenContext` dispatch before `ValidateAuthentication`, so the PAR handler order is unchanged. External `request_uri` is not supported. |
+| P8 CIBA | ✅ server (poll) | `30193eb8` | Requires `SetIssuer`, token storage and non-degraded mode (ID0529). Completion goes through `OpenIddictServerService`. `slow_down`/`interval` also apply to the device flow. Signed CIBA requests and mTLS alias are not implemented. |
+| P8b CIBA client | ⏳ next | — | `OpenIddictClientService.ChallengeUsingBackchannelAsync` / `AuthenticateWithBackchannelAsync` |
+| P10, P5, P12, P11.x | ⏳ | — | — |
+
 ## 0. Blocking — verify before coding
 
 | # | Verify | How |
