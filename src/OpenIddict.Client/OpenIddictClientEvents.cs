@@ -797,6 +797,12 @@ public static partial class OpenIddictClientEvents
         public string? BackchannelIdentityToken { get; set; }
 
         /// <summary>
+        /// Gets or sets the authentication request identifier (auth_req_id)
+        /// used with the CIBA grant, if applicable.
+        /// </summary>
+        public string? AuthenticationRequestId { get; set; }
+
+        /// <summary>
         /// Gets or sets the device code to validate, if applicable.
         /// </summary>
         public string? DeviceCode { get; set; }
@@ -1173,6 +1179,60 @@ public static partial class OpenIddictClientEvents
         /// Gets the set of scopes that will be requested to the authorization server.
         /// </summary>
         public HashSet<string> Scopes { get; } = new(StringComparer.Ordinal);
+
+        /// <summary>
+        /// Gets or sets the optional login hint token that will be sent to the authorization server, if applicable.
+        /// </summary>
+        public string? LoginHintToken { get; set; }
+
+        /// <summary>
+        /// Gets or sets the optional binding message that will be sent to
+        /// the backchannel authentication endpoint, if applicable.
+        /// </summary>
+        public string? BindingMessage { get; set; }
+
+        /// <summary>
+        /// Gets or sets the optional requested expiry that will be sent to
+        /// the backchannel authentication endpoint, if applicable.
+        /// </summary>
+        public TimeSpan? RequestedExpiry { get; set; }
+
+        /// <summary>
+        /// Gets or sets the URI of the backchannel authentication endpoint, if applicable.
+        /// </summary>
+        public Uri? BackchannelAuthenticationEndpoint { get; set; }
+
+        /// <summary>
+        /// Gets or sets the client authentication method used when communicating
+        /// with the backchannel authentication endpoint, if applicable.
+        /// </summary>
+        public string? BackchannelAuthenticationEndpointClientAuthenticationMethod { get; set; }
+
+        /// <summary>
+        /// Gets or sets the X.509 client certificate used when communicating
+        /// with the backchannel authentication endpoint, if applicable.
+        /// </summary>
+        public X509Certificate2? BackchannelAuthenticationEndpointClientCertificate { get; set; }
+
+        /// <summary>
+        /// Gets or sets a boolean indicating whether a backchannel authentication request should be sent.
+        /// </summary>
+        public bool SendBackchannelAuthenticationRequest { get; set; }
+
+        /// <summary>
+        /// Gets or sets the request sent to the backchannel authentication endpoint, if applicable.
+        /// </summary>
+        public OpenIddictRequest? BackchannelAuthenticationRequest { get; set; }
+
+        /// <summary>
+        /// Gets or sets the response returned by the backchannel authentication endpoint, if applicable.
+        /// </summary>
+        public OpenIddictResponse? BackchannelAuthenticationResponse { get; set; }
+
+        /// <summary>
+        /// Gets or sets the authentication request identifier returned by the backchannel authentication endpoint, if applicable.
+        /// </summary>
+        public string? AuthenticationRequestId { get; set; }
 
         /// <summary>
         /// Gets or sets the URI of the device authorization endpoint, if applicable.

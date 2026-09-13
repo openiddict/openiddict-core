@@ -24,6 +24,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
     public static ImmutableArray<OpenIddictClientHandlerDescriptor> DefaultHandlers { get; } =
     [
         .. Authorization.DefaultHandlers,
+        .. Backchannel.DefaultHandlers,
         .. Device.DefaultHandlers,
         .. Discovery.DefaultHandlers,
         .. Exchange.DefaultHandlers,

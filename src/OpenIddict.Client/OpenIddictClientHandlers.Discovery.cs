@@ -26,6 +26,7 @@ public static partial class OpenIddictClientHandlers
             ExtractAuthorizationEndpoint.Descriptor,
             ExtractJsonWebKeySetEndpoint.Descriptor,
             ExtractDeviceAuthorizationEndpoint.Descriptor,
+            ExtractBackchannelAuthenticationEndpoint.Descriptor,
             ExtractIntrospectionEndpoint.Descriptor,
             ExtractEndSessionEndpoint.Descriptor,
             ExtractMtlsDeviceAuthorizationEndpoint.Descriptor,
@@ -111,6 +112,7 @@ public static partial class OpenIddictClientHandlers
 
                     // The following parameters MUST be formatted as unique strings:
                     Metadata.AuthorizationEndpoint              or
+                    Metadata.BackchannelAuthenticationEndpoint  or
                     Metadata.DeviceAuthorizationEndpoint        or
                     Metadata.EndSessionEndpoint                 or
                     Metadata.Issuer                             or
@@ -121,6 +123,7 @@ public static partial class OpenIddictClientHandlers
                         => ((JsonElement) value).ValueKind is JsonValueKind.String,
 
                     // The following parameters MUST be formatted as arrays of strings:
+                    Metadata.BackchannelTokenDeliveryModesSupported                 or
                     Metadata.CodeChallengeMethodsSupported                          or
                     Metadata.DeviceAuthorizationEndpointAuthMethodsSupported        or
                     Metadata.GrantTypesSupported                                    or
@@ -141,6 +144,7 @@ public static partial class OpenIddictClientHandlers
 
                     // The following parameters MUST be formatted as booleans:
                     Metadata.AuthorizationResponseIssParameterSupported or
+                    Metadata.BackchannelUserCodeParameterSupported      or
                     Metadata.RequestParameterSupported                  or
                     Metadata.RequirePushedAuthorizationRequests         or
                     Metadata.RequireSignedRequestObject                 or
@@ -387,6 +391,58 @@ public static partial class OpenIddictClientHandlers
 
                     context.Configuration.DeviceAuthorizationEndpoint = uri;
                 }
+
+                return ValueTask.CompletedTask;
+            }
+        }
+
+        /// <summary>
+        /// Contains the logic responsible for extracting the backchannel authentication
+        /// endpoint URI and the associated metadata from the discovery document.
+        /// </summary>
+        public sealed class ExtractBackchannelAuthenticationEndpoint : IOpenIddictClientHandler<HandleConfigurationResponseContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+                = OpenIddictClientHandlerDescriptor.CreateBuilder<HandleConfigurationResponseContext>()
+                    .UseSingletonHandler<ExtractBackchannelAuthenticationEndpoint>()
+                    .SetOrder(ExtractDeviceAuthorizationEndpoint.Descriptor.Order + 500)
+                    .SetType(OpenIddictClientHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(HandleConfigurationResponseContext context)
+            {
+                ArgumentNullException.ThrowIfNull(context);
+
+                var endpoint = (string?) context.Response[Metadata.BackchannelAuthenticationEndpoint];
+                if (!string.IsNullOrEmpty(endpoint))
+                {
+                    if (!Uri.TryCreate(endpoint, UriKind.Absolute, out Uri? uri) || OpenIddictHelpers.IsImplicitFileUri(uri))
+                    {
+                        context.Reject(
+                            error: Errors.ServerError,
+                            description: SR.FormatID2100(Metadata.BackchannelAuthenticationEndpoint),
+                            uri: SR.FormatID8000(SR.ID2100));
+
+                        return ValueTask.CompletedTask;
+                    }
+
+                    context.Configuration.BackchannelAuthenticationEndpoint = uri;
+                }
+
+                foreach (var mode in (ImmutableArray<string?>?) context.Response[Metadata.BackchannelTokenDeliveryModesSupported] ?? [])
+                {
+                    if (!string.IsNullOrEmpty(mode))
+                    {
+                        context.Configuration.BackchannelTokenDeliveryModesSupported.Add(mode);
+                    }
+                }
+
+                context.Configuration.BackchannelUserCodeParameterSupported = (bool?)
+                    context.Response[Metadata.BackchannelUserCodeParameterSupported];
 
                 return ValueTask.CompletedTask;
             }

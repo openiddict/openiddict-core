@@ -652,6 +652,229 @@ public static class OpenIddictClientModels
     }
 
     /// <summary>
+    /// Represents a backchannel authentication request (CIBA token polling).
+    /// </summary>
+    public sealed record class BackchannelAuthenticationRequest
+    {
+        /// <summary>
+        /// Gets or sets the parameters that will be added to the token request.
+        /// </summary>
+        public Dictionary<string, OpenIddictParameter>? AdditionalTokenRequestParameters { get; init; }
+
+        /// <summary>
+        /// Gets or sets the authentication request identifier returned during the challenge phase.
+        /// </summary>
+        public required string AuthenticationRequestId { get; init; }
+
+        /// <summary>
+        /// Gets or sets the cancellation token that will be
+        /// used to determine if the operation was aborted.
+        /// </summary>
+        public CancellationToken CancellationToken { get; init; }
+
+        /// <summary>
+        /// Gets or sets a boolean indicating whether userinfo should be disabled.
+        /// </summary>
+        public bool DisableUserInfo { get; init; }
+
+        /// <summary>
+        /// Gets or sets the interval at which token requests will be sent (typically, the same
+        /// value as the one returned by the authorization server during the challenge phase).
+        /// </summary>
+        public required TimeSpan Interval { get; init; }
+
+        /// <summary>
+        /// Gets or sets the issuer used to resolve the client registration.
+        /// </summary>
+        public Uri? Issuer { get; init; }
+
+        /// <summary>
+        /// Gets or sets the application-specific properties that will be added to the context.
+        /// </summary>
+        public Dictionary<string, string?>? Properties { get; init; }
+
+        /// <summary>
+        /// Gets or sets the provider name used to resolve the client registration.
+        /// </summary>
+        public string? ProviderName { get; init; }
+
+        /// <summary>
+        /// Gets or sets the unique identifier of the client registration that will be used.
+        /// </summary>
+        public string? RegistrationId { get; init; }
+
+        /// <summary>
+        /// Gets or sets the maximum duration during which token requests will be sent (typically, the
+        /// same value as the "expires_in" parameter returned during the challenge phase or a lower value).
+        /// </summary>
+        public required TimeSpan Timeout { get; init; }
+
+        /// <summary>
+        /// Gets or sets the X.509 client certificate used to bind the access and/or
+        /// refresh tokens issued by the authorization server, if applicable.
+        /// </summary>
+        [EditorBrowsable(EditorBrowsableState.Advanced)]
+        public X509Certificate2? TokenBindingCertificate { get; init; }
+    }
+
+    /// <summary>
+    /// Represents a backchannel authentication result.
+    /// </summary>
+    public sealed record class BackchannelAuthenticationResult
+    {
+        /// <summary>
+        /// Gets or sets the access token.
+        /// </summary>
+        public required string AccessToken { get; init; }
+
+        /// <summary>
+        /// Gets or sets the expiration date of the access token, if available.
+        /// </summary>
+        public required DateTimeOffset? AccessTokenExpirationDate { get; init; }
+
+        /// <summary>
+        /// Gets or sets the identity token, if available.
+        /// </summary>
+        public required string? IdentityToken { get; init; }
+
+        /// <summary>
+        /// Gets or sets the principal extracted from the identity token, if available.
+        /// </summary>
+        [EditorBrowsable(EditorBrowsableState.Advanced)]
+        public required ClaimsPrincipal? IdentityTokenPrincipal { get; init; }
+
+        /// <summary>
+        /// Gets or sets a merged principal containing all the claims
+        /// extracted from the identity token and userinfo token principals.
+        /// </summary>
+        public required ClaimsPrincipal Principal { get; init; }
+
+        /// <summary>
+        /// Gets or sets the application-specific properties that were present in the context.
+        /// </summary>
+        public required Dictionary<string, string?> Properties { get; init; }
+
+        /// <summary>
+        /// Gets or sets the refresh token, if available.
+        /// </summary>
+        public required string? RefreshToken { get; init; }
+
+        /// <summary>
+        /// Gets or sets the token response.
+        /// </summary>
+        public required OpenIddictResponse TokenResponse { get; init; }
+
+        /// <summary>
+        /// Gets or sets the userinfo token, if available.
+        /// </summary>
+        public required string? UserInfoToken { get; init; }
+
+        /// <summary>
+        /// Gets or sets the principal extracted from the userinfo token or response, if available.
+        /// </summary>
+        [EditorBrowsable(EditorBrowsableState.Advanced)]
+        public required ClaimsPrincipal? UserInfoTokenPrincipal { get; init; }
+    }
+
+    /// <summary>
+    /// Represents a backchannel challenge request (CIBA authentication request).
+    /// </summary>
+    public sealed record class BackchannelChallengeRequest
+    {
+        /// <summary>
+        /// Gets or sets the parameters that will be added to the backchannel authentication request.
+        /// </summary>
+        public Dictionary<string, OpenIddictParameter>? AdditionalBackchannelAuthenticationRequestParameters { get; init; }
+
+        /// <summary>
+        /// Gets or sets the binding message displayed to the end user, if applicable.
+        /// </summary>
+        public string? BindingMessage { get; init; }
+
+        /// <summary>
+        /// Gets or sets the cancellation token that will be
+        /// used to determine if the operation was aborted.
+        /// </summary>
+        public CancellationToken CancellationToken { get; init; }
+
+        /// <summary>
+        /// Gets or sets the identity token hint used to identify the end user, if applicable.
+        /// </summary>
+        public string? IdentityTokenHint { get; init; }
+
+        /// <summary>
+        /// Gets or sets the issuer used to resolve the client registration.
+        /// </summary>
+        public Uri? Issuer { get; init; }
+
+        /// <summary>
+        /// Gets or sets the login hint used to identify the end user, if applicable.
+        /// </summary>
+        public string? LoginHint { get; init; }
+
+        /// <summary>
+        /// Gets or sets the login hint token used to identify the end user, if applicable.
+        /// </summary>
+        public string? LoginHintToken { get; init; }
+
+        /// <summary>
+        /// Gets or sets the application-specific properties that will be added to the context.
+        /// </summary>
+        public Dictionary<string, string?>? Properties { get; init; }
+
+        /// <summary>
+        /// Gets or sets the provider name used to resolve the client registration.
+        /// </summary>
+        public string? ProviderName { get; init; }
+
+        /// <summary>
+        /// Gets or sets the unique identifier of the client registration that will be used.
+        /// </summary>
+        public string? RegistrationId { get; init; }
+
+        /// <summary>
+        /// Gets or sets the requested lifetime of the authentication request identifier, if applicable.
+        /// </summary>
+        public TimeSpan? RequestedExpiry { get; init; }
+
+        /// <summary>
+        /// Gets the scopes that will be sent to the authorization server.
+        /// </summary>
+        public List<string>? Scopes { get; init; }
+    }
+
+    /// <summary>
+    /// Represents a backchannel challenge result.
+    /// </summary>
+    public sealed record class BackchannelChallengeResult
+    {
+        /// <summary>
+        /// Gets or sets the authentication request identifier.
+        /// </summary>
+        public required string AuthenticationRequestId { get; init; }
+
+        /// <summary>
+        /// Gets or sets the backchannel authentication response.
+        /// </summary>
+        public required OpenIddictResponse BackchannelAuthenticationResponse { get; init; }
+
+        /// <summary>
+        /// Gets or sets the remaining lifetime of the authentication request identifier.
+        /// </summary>
+        public required TimeSpan ExpiresIn { get; init; }
+
+        /// <summary>
+        /// Gets or sets the interval at which token requests should be sent.
+        /// </summary>
+        public required TimeSpan Interval { get; init; }
+
+        /// <summary>
+        /// Gets or sets the application-specific properties that were present in the context.
+        /// </summary>
+        public required Dictionary<string, string?> Properties { get; init; }
+    }
+
+    /// <summary>
     /// Represents a device authentication request.
     /// </summary>
     public sealed record class DeviceAuthenticationRequest

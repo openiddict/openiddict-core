@@ -351,6 +351,20 @@ public static class OpenIddictClientHandlerFilters
     }
 
     /// <summary>
+    /// Represents a filter that excludes the associated handlers if no backchannel authentication request is expected to be sent.
+    /// </summary>
+    public sealed class RequireBackchannelAuthenticationRequest : IOpenIddictClientHandlerFilter<ProcessChallengeContext>
+    {
+        /// <inheritdoc/>
+        public ValueTask<bool> IsActiveAsync(ProcessChallengeContext context)
+        {
+            ArgumentNullException.ThrowIfNull(context);
+
+            return new(context.SendBackchannelAuthenticationRequest);
+        }
+    }
+
+    /// <summary>
     /// Represents a filter that excludes the associated handlers if no request object is expected to be sent.
     /// </summary>
     public sealed class RequireRequestObject : IOpenIddictClientHandlerFilter<ProcessChallengeContext>

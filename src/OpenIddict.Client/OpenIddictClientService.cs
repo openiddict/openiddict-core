@@ -583,6 +583,179 @@ public class OpenIddictClientService
     }
 
     /// <summary>
+    /// Authenticates using the specified authentication request identifier (CIBA poll mode).
+    /// </summary>
+    /// <param name="request">The backchannel authentication request.</param>
+    /// <returns>The backchannel authentication result.</returns>
+    public async ValueTask<BackchannelAuthenticationResult> AuthenticateWithBackchannelAsync(BackchannelAuthenticationRequest request)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+
+        using var source = CancellationTokenSource.CreateLinkedTokenSource(request.CancellationToken);
+        source.CancelAfter(request.Timeout);
+
+        var interval = request.Interval;
+
+        while (true)
+        {
+            source.Token.ThrowIfCancellationRequested();
+
+            try
+            {
+                await using var scope = _provider.CreateAsyncScope();
+
+                var dispatcher = scope.ServiceProvider.GetRequiredService<IOpenIddictClientDispatcher>();
+                var options = scope.ServiceProvider.GetRequiredService<IOptionsMonitor<OpenIddictClientOptions>>();
+
+                var transaction = new OpenIddictClientTransaction
+                {
+                    CancellationToken = request.CancellationToken,
+                    Options = options.CurrentValue,
+                    ServiceProvider = scope.ServiceProvider
+                };
+
+                var context = new ProcessAuthenticationContext(transaction)
+                {
+                    AuthenticationRequestId = request.AuthenticationRequestId,
+                    DisableUserInfoRetrieval = request.DisableUserInfo,
+                    DisableUserInfoValidation = request.DisableUserInfo,
+                    GrantType = GrantTypes.Ciba,
+                    Issuer = request.Issuer,
+                    ProviderName = request.ProviderName,
+                    RegistrationId = request.RegistrationId,
+                    Request = new(),
+                    TokenEndpointClientCertificate = request.TokenBindingCertificate,
+                    TokenRequest = request.AdditionalTokenRequestParameters
+                        is Dictionary<string, OpenIddictParameter> parameters ? new(parameters) : new()
+                };
+
+                if (request.Properties is { Count: > 0 })
+                {
+                    foreach (var property in request.Properties)
+                    {
+                        context.Properties[property.Key] = property.Value;
+                    }
+                }
+
+                await dispatcher.DispatchAsync(context);
+
+                if (context.IsRejected)
+                {
+                    throw new ProtocolException(
+                        SR.FormatID0374(context.Error, context.ErrorDescription, context.ErrorUri),
+                        context.Error, context.ErrorDescription, context.ErrorUri);
+                }
+
+                return new()
+                {
+                    AccessToken = context.BackchannelAccessToken!,
+                    AccessTokenExpirationDate = context.BackchannelAccessTokenExpirationDate,
+                    IdentityToken = context.BackchannelIdentityToken,
+                    IdentityTokenPrincipal = context.BackchannelIdentityTokenPrincipal,
+                    Principal = context.MergedPrincipal,
+                    Properties = context.Properties,
+                    RefreshToken = context.RefreshToken,
+                    TokenResponse = context.TokenResponse ?? new(),
+                    UserInfoToken = context.UserInfoToken,
+                    UserInfoTokenPrincipal = context.UserInfoTokenPrincipal
+                };
+            }
+
+            catch (ProtocolException exception) when (exception.Error is Errors.AuthorizationPending)
+            {
+#if NET
+                await Task.Delay(interval, TimeProvider.System, source.Token);
+#else
+                await Task.Delay(interval, source.Token);
+#endif
+            }
+
+            catch (ProtocolException exception) when (exception.Error is Errors.SlowDown)
+            {
+                // When the error indicates that token requests are sent too frequently,
+                // slow down the token redeeming process by increasing the interval.
+#if NET
+                await Task.Delay(interval += TimeSpan.FromSeconds(5), TimeProvider.System, source.Token);
+#else
+                await Task.Delay(interval += TimeSpan.FromSeconds(5), source.Token);
+#endif
+            }
+        }
+    }
+
+    /// <summary>
+    /// Initiates a Client-Initiated Backchannel Authentication (CIBA) process.
+    /// </summary>
+    /// <param name="request">The backchannel challenge request.</param>
+    /// <returns>The backchannel challenge result.</returns>
+    public async ValueTask<BackchannelChallengeResult> ChallengeUsingBackchannelAsync(BackchannelChallengeRequest request)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+
+        request.CancellationToken.ThrowIfCancellationRequested();
+
+        await using var scope = _provider.CreateAsyncScope();
+
+        var dispatcher = scope.ServiceProvider.GetRequiredService<IOpenIddictClientDispatcher>();
+        var options = scope.ServiceProvider.GetRequiredService<IOptionsMonitor<OpenIddictClientOptions>>();
+
+        var transaction = new OpenIddictClientTransaction
+        {
+            CancellationToken = request.CancellationToken,
+            Options = options.CurrentValue,
+            ServiceProvider = scope.ServiceProvider
+        };
+
+        var context = new ProcessChallengeContext(transaction)
+        {
+            BackchannelAuthenticationRequest = request.AdditionalBackchannelAuthenticationRequestParameters
+                is Dictionary<string, OpenIddictParameter> parameters ? new(parameters) : new(),
+            BindingMessage = request.BindingMessage,
+            GrantType = GrantTypes.Ciba,
+            IdentityTokenHint = request.IdentityTokenHint,
+            Issuer = request.Issuer,
+            LoginHint = request.LoginHint,
+            LoginHintToken = request.LoginHintToken,
+            Principal = new ClaimsPrincipal(new ClaimsIdentity()),
+            ProviderName = request.ProviderName,
+            RegistrationId = request.RegistrationId,
+            Request = new(),
+            RequestedExpiry = request.RequestedExpiry
+        };
+
+        if (request.Scopes is { Count: > 0 })
+        {
+            context.Scopes.UnionWith(request.Scopes);
+        }
+
+        if (request.Properties is { Count: > 0 })
+        {
+            foreach (var property in request.Properties)
+            {
+                context.Properties[property.Key] = property.Value;
+            }
+        }
+
+        await dispatcher.DispatchAsync(context);
+
+        if (context.IsRejected)
+        {
+            throw new ProtocolException(
+                SR.FormatID0374(context.Error, context.ErrorDescription, context.ErrorUri),
+                context.Error, context.ErrorDescription, context.ErrorUri);
+        }
+
+        return new()
+        {
+            AuthenticationRequestId = context.AuthenticationRequestId!,
+            BackchannelAuthenticationResponse = context.BackchannelAuthenticationResponse ?? new(),
+            ExpiresIn = TimeSpan.FromSeconds((double) context.BackchannelAuthenticationResponse?.ExpiresIn!),
+            Interval = TimeSpan.FromSeconds((long?) context.BackchannelAuthenticationResponse?[Parameters.Interval] ?? 5),
+            Properties = context.Properties
+        };
+    }
+
+    /// <summary>
     /// Authenticates using the specified device authorization code.
     /// </summary>
     /// <param name="request">The device authentication request.</param>
@@ -1643,6 +1816,151 @@ public class OpenIddictClientService
             {
                 throw new ProtocolException(
                     SR.FormatID0401(context.Error, context.ErrorDescription, context.ErrorUri),
+                    context.Error, context.ErrorDescription, context.ErrorUri);
+            }
+
+            return context.Response;
+        }
+    }
+
+    /// <summary>
+    /// Sends the backchannel authentication request and retrieves the corresponding response.
+    /// </summary>
+    /// <param name="registration">The client registration.</param>
+    /// <param name="configuration">The server configuration.</param>
+    /// <param name="request">The backchannel authentication request.</param>
+    /// <param name="uri">The uri of the remote backchannel authentication endpoint.</param>
+    /// <param name="method">The client authentication method, if applicable.</param>
+    /// <param name="certificate">The client certificate, if applicable.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns>The backchannel authentication response.</returns>
+    internal async ValueTask<OpenIddictResponse> SendBackchannelAuthenticationRequestAsync(
+        OpenIddictClientRegistration registration, OpenIddictConfiguration configuration,
+        OpenIddictRequest request, Uri uri, string? method,
+        X509Certificate2? certificate, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(registration);
+        ArgumentNullException.ThrowIfNull(configuration);
+        ArgumentNullException.ThrowIfNull(request);
+        ArgumentNullException.ThrowIfNull(uri);
+
+        if (!uri.IsAbsoluteUri || OpenIddictHelpers.IsImplicitFileUri(uri))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0144), nameof(uri));
+        }
+
+        cancellationToken.ThrowIfCancellationRequested();
+
+        await using var scope = _provider.CreateAsyncScope();
+
+        var dispatcher = scope.ServiceProvider.GetRequiredService<IOpenIddictClientDispatcher>();
+        var options = scope.ServiceProvider.GetRequiredService<IOptionsMonitor<OpenIddictClientOptions>>();
+
+        var transaction = new OpenIddictClientTransaction
+        {
+            CancellationToken = cancellationToken,
+            Options = options.CurrentValue,
+            ServiceProvider = scope.ServiceProvider
+        };
+
+        request = await PrepareBackchannelAuthenticationRequestAsync();
+        request = await ApplyBackchannelAuthenticationRequestAsync();
+
+        var response = await ExtractBackchannelAuthenticationResponseAsync();
+
+        return await HandleBackchannelAuthenticationResponseAsync();
+
+        async ValueTask<OpenIddictRequest> PrepareBackchannelAuthenticationRequestAsync()
+        {
+            var context = new PrepareBackchannelAuthenticationRequestContext(transaction)
+            {
+                ClientAuthenticationMethod = method,
+                Configuration = configuration,
+                RemoteUri = uri,
+                Registration = registration,
+                Request = request,
+                LocalCertificate = certificate
+            };
+
+            await dispatcher.DispatchAsync(context);
+
+            if (context.IsRejected)
+            {
+                throw new ProtocolException(
+                    SR.FormatID0537(context.Error, context.ErrorDescription, context.ErrorUri),
+                    context.Error, context.ErrorDescription, context.ErrorUri);
+            }
+
+            return context.Request;
+        }
+
+        async ValueTask<OpenIddictRequest> ApplyBackchannelAuthenticationRequestAsync()
+        {
+            var context = new ApplyBackchannelAuthenticationRequestContext(transaction)
+            {
+                RemoteUri = uri,
+                Configuration = configuration,
+                Registration = registration,
+                Request = request
+            };
+
+            await dispatcher.DispatchAsync(context);
+
+            if (context.IsRejected)
+            {
+                throw new ProtocolException(
+                    SR.FormatID0538(context.Error, context.ErrorDescription, context.ErrorUri),
+                    context.Error, context.ErrorDescription, context.ErrorUri);
+            }
+
+            context.Logger.LogInformation(6307, SR.GetResourceString(SR.ID6307), context.RemoteUri, context.Request);
+
+            return context.Request;
+        }
+
+        async ValueTask<OpenIddictResponse> ExtractBackchannelAuthenticationResponseAsync()
+        {
+            var context = new ExtractBackchannelAuthenticationResponseContext(transaction)
+            {
+                RemoteUri = uri,
+                Configuration = configuration,
+                Registration = registration,
+                Request = request
+            };
+
+            await dispatcher.DispatchAsync(context);
+
+            if (context.IsRejected)
+            {
+                throw new ProtocolException(
+                    SR.FormatID0539(context.Error, context.ErrorDescription, context.ErrorUri),
+                    context.Error, context.ErrorDescription, context.ErrorUri);
+            }
+
+            Debug.Assert(context.Response is not null, SR.GetResourceString(SR.ID4007));
+
+            context.Logger.LogInformation(6308, SR.GetResourceString(SR.ID6308), context.RemoteUri, context.Response);
+
+            return context.Response;
+        }
+
+        async ValueTask<OpenIddictResponse> HandleBackchannelAuthenticationResponseAsync()
+        {
+            var context = new HandleBackchannelAuthenticationResponseContext(transaction)
+            {
+                RemoteUri = uri,
+                Configuration = configuration,
+                Registration = registration,
+                Request = request,
+                Response = response
+            };
+
+            await dispatcher.DispatchAsync(context);
+
+            if (context.IsRejected)
+            {
+                throw new ProtocolException(
+                    SR.FormatID0540(context.Error, context.ErrorDescription, context.ErrorUri),
                     context.Error, context.ErrorDescription, context.ErrorUri);
             }
 

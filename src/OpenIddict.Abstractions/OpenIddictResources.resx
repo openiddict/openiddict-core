@@ -1821,6 +1821,36 @@ To attach it, enable the pass-through mode or register a custom event handler fo
   <data name="ID0535" xml:space="preserve">
     <value>The authentication request identifier could not be generated: {0} ({1}).</value>
   </data>
+  <data name="ID0536" xml:space="preserve">
+    <value>An authentication request identifier must be specified when using the Client-Initiated Backchannel Authentication grant.</value>
+  </data>
+  <data name="ID0537" xml:space="preserve">
+    <value>An error occurred while preparing the backchannel authentication request.
+  Error: {0}
+  Error description: {1}
+  Error URI: {2}</value>
+  </data>
+  <data name="ID0538" xml:space="preserve">
+    <value>An error occurred while sending the backchannel authentication request.
+  Error: {0}
+  Error description: {1}
+  Error URI: {2}</value>
+  </data>
+  <data name="ID0539" xml:space="preserve">
+    <value>An error occurred while extracting the backchannel authentication response.
+  Error: {0}
+  Error description: {1}
+  Error URI: {2}</value>
+  </data>
+  <data name="ID0540" xml:space="preserve">
+    <value>An error occurred while handling the backchannel authentication response.
+  Error: {0}
+  Error description: {1}
+  Error URI: {2}</value>
+  </data>
+  <data name="ID0541" xml:space="preserve">
+    <value>Exactly one of the login hint, login hint token or identity token hint must be specified when using the Client-Initiated Backchannel Authentication grant.</value>
+  </data>
   <data name="ID0532" xml:space="preserve">
     <value>The backchannel authentication request was not correctly extracted.
 To extract backchannel authentication requests, create a class implementing 'IOpenIddictServerHandler&lt;ExtractBackchannelAuthenticationRequestContext&gt;' and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.</value>
@@ -2484,6 +2514,9 @@ To apply backchannel authentication responses, create a class implementing 'IOpe
   </data>
   <data name="ID2218" xml:space="preserve">
     <value>The client application is not allowed to use the Client-Initiated Backchannel Authentication flow.</value>
+  </data>
+  <data name="ID2219" xml:space="preserve">
+    <value>The backchannel authentication request was rejected by the remote server.</value>
   </data>
   <data name="ID4000" xml:space="preserve">
     <value>The '{0}' parameter shouldn't be null or empty at this point.</value>
@@ -3372,6 +3405,15 @@ This may indicate that the hashed entry is corrupted or malformed.</value>
   </data>
   <data name="ID6305" xml:space="preserve">
     <value>The backchannel authentication request was rejected because invalid scopes were specified: {Scopes}.</value>
+  </data>
+  <data name="ID6306" xml:space="preserve">
+    <value>The backchannel authentication request was rejected by the remote authorization server: {Response}.</value>
+  </data>
+  <data name="ID6307" xml:space="preserve">
+    <value>The backchannel authentication request was successfully sent to {Uri}: {Request}.</value>
+  </data>
+  <data name="ID6308" xml:space="preserve">
+    <value>The backchannel authentication response returned by {Uri} was successfully extracted: {Response}.</value>
   </data>
   <data name="ID8000" xml:space="preserve">
     <value>https://documentation.openiddict.com/errors/{0}</value>

@@ -946,6 +946,15 @@ public sealed class OpenIddictClientBuilder
         => Configure(options => options.GrantTypes.Add(GrantTypes.DeviceCode));
 
     /// <summary>
+    /// Enables OpenID Connect Client-Initiated Backchannel Authentication (CIBA) flow support (poll mode).
+    /// For more information about this specific flow, visit
+    /// https://openid.net/specs/openid-client-initiated-backchannel-authentication-core-1_0.html.
+    /// </summary>
+    /// <returns>The <see cref="OpenIddictClientBuilder"/> instance.</returns>
+    public OpenIddictClientBuilder AllowClientInitiatedBackchannelAuthenticationFlow()
+        => Configure(options => options.GrantTypes.Add(GrantTypes.Ciba));
+
+    /// <summary>
     /// Enables hybrid flow support. For more information
     /// about this specific OpenID Connect flow, visit
     /// http://openid.net/specs/openid-connect-core-1_0.html#HybridFlowAuth.

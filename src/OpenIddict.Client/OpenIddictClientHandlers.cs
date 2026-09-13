@@ -143,6 +143,14 @@ public static partial class OpenIddictClientHandlers
         ResolveDeviceAuthorizationEndpoint.Descriptor,
         AttachDeviceAuthorizationRequestParameters.Descriptor,
 
+        EvaluateBackchannelAuthenticationRequest.Descriptor,
+        AttachBackchannelAuthenticationEndpointClientAuthenticationMethod.Descriptor,
+        AttachBackchannelAuthenticationEndpointClientCertificate.Descriptor,
+        ResolveBackchannelAuthenticationEndpoint.Descriptor,
+        AttachBackchannelAuthenticationRequestParameters.Descriptor,
+        AttachBackchannelAuthenticationRequestClientCredentials.Descriptor,
+        SendBackchannelAuthenticationRequest.Descriptor,
+
         EvaluatePushedAuthorizationRequest.Descriptor,
         AttachPushedAuthorizationEndpointClientAuthenticationMethod.Descriptor,
         AttachPushedAuthorizationEndpointClientCertificate.Descriptor,
@@ -229,6 +237,7 @@ public static partial class OpenIddictClientHandlers
         AttachCustomErrorParameters.Descriptor,
 
         .. Authentication.DefaultHandlers,
+        .. Backchannel.DefaultHandlers,
         .. Device.DefaultHandlers,
         .. Discovery.DefaultHandlers,
         .. Exchange.DefaultHandlers,
@@ -376,6 +385,9 @@ public static partial class OpenIddictClientHandlers
                     {
                         case GrantTypes.DeviceCode when string.IsNullOrEmpty(context.DeviceCode):
                             throw new InvalidOperationException(SR.GetResourceString(SR.ID0396));
+
+                        case GrantTypes.Ciba when string.IsNullOrEmpty(context.AuthenticationRequestId):
+                            throw new InvalidOperationException(SR.GetResourceString(SR.ID0536));
 
                         case GrantTypes.Password:
                             if (string.IsNullOrEmpty(context.Username))
@@ -2283,12 +2295,14 @@ public static partial class OpenIddictClientHandlers
                 null when context.ResponseType is ResponseTypes.None => false,
 
                 // For the non-interactive grant types, always send a token request.
+                GrantTypes.Ciba              or
                 GrantTypes.ClientCredentials or GrantTypes.DeviceCode   or
                 GrantTypes.Password          or GrantTypes.RefreshToken or
                 GrantTypes.TokenExchange => true,
 
                 // By default, always send a token request for custom grant types.
                 not null and not (GrantTypes.AuthorizationCode or GrantTypes.ClientCredentials or
+                                  GrantTypes.Ciba              or
                                   GrantTypes.DeviceCode        or GrantTypes.Implicit          or
                                   GrantTypes.Password          or GrantTypes.RefreshToken      or
                                   GrantTypes.TokenExchange) => true,
@@ -2685,7 +2699,7 @@ public static partial class OpenIddictClientHandlers
                 string value => value
             };
 
-            if (context.TokenRequest.GrantType is not (GrantTypes.AuthorizationCode or GrantTypes.DeviceCode))
+            if (context.TokenRequest.GrantType is not (GrantTypes.AuthorizationCode or GrantTypes.Ciba or GrantTypes.DeviceCode))
             {
                 if (context.Audiences.Count is > 0)
                 {
@@ -2724,6 +2738,14 @@ public static partial class OpenIddictClientHandlers
                 Debug.Assert(!string.IsNullOrEmpty(context.DeviceCode), SR.GetResourceString(SR.ID4010));
 
                 context.TokenRequest.DeviceCode = context.DeviceCode;
+            }
+
+            // If the token request uses the CIBA grant, attach the authentication request identifier to the request.
+            else if (context.TokenRequest.GrantType is GrantTypes.Ciba)
+            {
+                Debug.Assert(!string.IsNullOrEmpty(context.AuthenticationRequestId), SR.GetResourceString(SR.ID4010));
+
+                context.TokenRequest.AuthReqId = context.AuthenticationRequestId;
             }
 
             // If the token request uses a resource owner password credentials grant, attach the credentials to the request.
@@ -3103,8 +3125,9 @@ public static partial class OpenIddictClientHandlers
                     types.Contains(ResponseTypes.Code)
                     => (true, true, false, false),
 
-                // An access token is always returned as part of client credentials, device
+                // An access token is always returned as part of CIBA, client credentials, device
                 // code, resource owner password credentials and refresh token responses.
+                GrantTypes.Ciba              or
                 GrantTypes.ClientCredentials or GrantTypes.DeviceCode or
                 GrantTypes.Password          or GrantTypes.RefreshToken
                    => (true, true, false, false),
@@ -3118,6 +3141,7 @@ public static partial class OpenIddictClientHandlers
                 // By default, always extract and require a backchannel
                 // access token for custom grant types, but don't validate it.
                 not null and not (GrantTypes.AuthorizationCode or GrantTypes.ClientCredentials or
+                                  GrantTypes.Ciba              or
                                   GrantTypes.DeviceCode        or GrantTypes.Implicit          or
                                   GrantTypes.Password          or GrantTypes.RefreshToken      or
                                   GrantTypes.TokenExchange)
@@ -3142,6 +3166,9 @@ public static partial class OpenIddictClientHandlers
                     context.StateTokenPrincipal is ClaimsPrincipal principal &&
                     principal.HasScope(Scopes.OpenId) => (true, true, true, true),
 
+                // CIBA is an OpenID Connect flow: an identity token is always returned as part of token responses.
+                GrantTypes.Ciba => (true, true, true, true),
+
                 // The client credentials, device code, resource owner password credentials and token
                 // exchange grants don't have an equivalent in OpenID Connect so an identity token is
                 // typically never returned when using them. However, certain server implementations
@@ -3161,6 +3188,7 @@ public static partial class OpenIddictClientHandlers
                 // By default, try to extract a backchannel identity token for custom grant
                 // types and validate it when present, but don't require that one be returned.
                 not null and not (GrantTypes.AuthorizationCode or GrantTypes.ClientCredentials or
+                                  GrantTypes.Ciba              or
                                   GrantTypes.DeviceCode        or GrantTypes.Implicit          or
                                   GrantTypes.Password          or GrantTypes.RefreshToken      or
                                   GrantTypes.TokenExchange)
@@ -3203,6 +3231,7 @@ public static partial class OpenIddictClientHandlers
                 // resource owner password credentials, refresh token and token exchange responses
                 // depending on the policy adopted by the remote authorization server. As such,
                 // a refresh token is never considered required for such token responses.
+                GrantTypes.Ciba              or
                 GrantTypes.ClientCredentials or GrantTypes.DeviceCode   or
                 GrantTypes.Password          or GrantTypes.RefreshToken or
                 GrantTypes.TokenExchange
@@ -3211,6 +3240,7 @@ public static partial class OpenIddictClientHandlers
                 // By default, always try to extract a refresh token for
                 // custom grant types, but don't require or validate it.
                 not null and not (GrantTypes.AuthorizationCode or GrantTypes.ClientCredentials or
+                                  GrantTypes.Ciba              or
                                   GrantTypes.DeviceCode        or GrantTypes.Implicit          or
                                   GrantTypes.Password          or GrantTypes.RefreshToken      or
                                   GrantTypes.TokenExchange)
@@ -4058,7 +4088,8 @@ public static partial class OpenIddictClientHandlers
                 // For the well-known grant types involving users, send a userinfo request if the
                 // userinfo endpoint is available and if a frontchannel or backchannel access token
                 // is available, unless userinfo retrieval was explicitly disabled by the user.
-                GrantTypes.AuthorizationCode or GrantTypes.DeviceCode or GrantTypes.Implicit or
+                GrantTypes.AuthorizationCode or GrantTypes.Ciba         or
+                GrantTypes.DeviceCode        or GrantTypes.Implicit     or
                 GrantTypes.Password          or GrantTypes.RefreshToken
                     when context.Configuration.UserInfoEndpoint is not null && !context.DisableUserInfoRetrieval &&
                     (!string.IsNullOrEmpty(context.BackchannelAccessToken) ||
@@ -4072,6 +4103,7 @@ public static partial class OpenIddictClientHandlers
 
                 // Apply the same logic for custom grant types.
                 not null and not (GrantTypes.AuthorizationCode or GrantTypes.ClientCredentials or
+                                  GrantTypes.Ciba              or
                                   GrantTypes.DeviceCode        or GrantTypes.Implicit          or
                                   GrantTypes.Password          or GrantTypes.RefreshToken      or
                                   GrantTypes.TokenExchange)
@@ -4098,6 +4130,9 @@ public static partial class OpenIddictClientHandlers
                 // userinfo validation, unless the "openid" scope was explicitly requested by the application.
                 GrantTypes.DeviceCode or GrantTypes.Password => !context.Scopes.Contains(Scopes.OpenId),
 
+                // CIBA is an OpenID Connect-only flow: always validate userinfo responses.
+                GrantTypes.Ciba => false,
+
                 // Note: when using grant_type=refresh_token, it is not possible to determine whether the refresh token
                 // was issued during an OAuth 2.0-only or OpenID Connect flow. In this case, only validate userinfo
                 // responses if the openid scope was explicitly added by the user to the list of requested scopes.
@@ -4110,6 +4145,7 @@ public static partial class OpenIddictClientHandlers
 
                 // For unknown grant types, disable userinfo validation unless the openid scope was explicitly added.
                 not null and not (GrantTypes.AuthorizationCode or GrantTypes.ClientCredentials or
+                                  GrantTypes.Ciba              or
                                   GrantTypes.DeviceCode        or GrantTypes.Implicit          or
                                   GrantTypes.Password          or GrantTypes.RefreshToken      or
                                   GrantTypes.TokenExchange)
@@ -4400,6 +4436,7 @@ public static partial class OpenIddictClientHandlers
                 // By default, OpenIddict doesn't require that userinfo tokens be used even for
                 // user flows but they are extracted and validated when a userinfo request was sent.
                 GrantTypes.AuthorizationCode or GrantTypes.Implicit or
+                GrantTypes.Ciba              or
                 GrantTypes.DeviceCode        or GrantTypes.Password or
                 GrantTypes.RefreshToken      or GrantTypes.TokenExchange
                     when context.SendUserInfoRequest => (true, false, true, true),
@@ -4412,6 +4449,7 @@ public static partial class OpenIddictClientHandlers
                 // By default, don't require userinfo tokens for custom grants
                 // but extract and validate them when a userinfo request was sent.
                 not null and not (GrantTypes.AuthorizationCode or GrantTypes.ClientCredentials or
+                                  GrantTypes.Ciba              or
                                   GrantTypes.DeviceCode        or GrantTypes.Implicit          or
                                   GrantTypes.Password          or GrantTypes.RefreshToken      or
                                   GrantTypes.TokenExchange)
@@ -4857,7 +4895,7 @@ public static partial class OpenIddictClientHandlers
             if (!string.IsNullOrEmpty(context.GrantType))
             {
                 if (context.GrantType is not (
-                    GrantTypes.AuthorizationCode or GrantTypes.DeviceCode or GrantTypes.Implicit))
+                    GrantTypes.AuthorizationCode or GrantTypes.Ciba or GrantTypes.DeviceCode or GrantTypes.Implicit))
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0296));
                 }
@@ -4883,7 +4921,7 @@ public static partial class OpenIddictClientHandlers
             }
 
             // Ensure signing/and encryption credentials are present as they are required to protect state tokens.
-            if (context.GrantType is not GrantTypes.DeviceCode)
+            if (context.GrantType is not (GrantTypes.Ciba or GrantTypes.DeviceCode))
             {
                 if (context.Options.EncryptionCredentials.Count is 0)
                 {
@@ -5369,7 +5407,8 @@ public static partial class OpenIddictClientHandlers
 
                 // Note: the client identifier is required for the authorization code/hybrid/implicit and device authorization flows.
                 // If no client identifier was attached to the registration, abort the challenge demand immediately.
-                _ when context.GrantType is GrantTypes.AuthorizationCode or GrantTypes.DeviceCode or GrantTypes.Implicit
+                _ when context.GrantType is GrantTypes.AuthorizationCode or GrantTypes.Ciba or
+                                            GrantTypes.DeviceCode        or GrantTypes.Implicit
                     => throw new InvalidOperationException(SR.GetResourceString(SR.ID0418)),
 
                 // Note: the client identifier is also required for the special response_type=none flow.
@@ -6835,6 +6874,7 @@ public static partial class OpenIddictClientHandlers
                 // If the private_key_jwt client authentication method could be negotiated,
                 // generate a client assertion that will be used to authenticate the client.
                 { DeviceAuthorizationEndpointClientAuthenticationMethod: ClientAuthenticationMethods.PrivateKeyJwt } => (true, true),
+                { BackchannelAuthenticationEndpointClientAuthenticationMethod: ClientAuthenticationMethods.PrivateKeyJwt } => (true, true),
                 { PushedAuthorizationEndpointClientAuthenticationMethod: ClientAuthenticationMethods.PrivateKeyJwt } => (true, true),
 
                 _ => (false, false)
@@ -7208,6 +7248,375 @@ public static partial class OpenIddictClientHandlers
     }
 
     /// <summary>
+    /// Contains the logic responsible for determining whether a backchannel authentication request should be sent.
+    /// </summary>
+    public sealed class EvaluateBackchannelAuthenticationRequest : IOpenIddictClientHandler<ProcessChallengeContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
+                .UseSingletonHandler<EvaluateBackchannelAuthenticationRequest>()
+                .SetOrder(EvaluateDeviceAuthorizationRequest.Descriptor.Order + 500)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessChallengeContext context)
+        {
+            ArgumentNullException.ThrowIfNull(context);
+
+            context.SendBackchannelAuthenticationRequest = context.GrantType is GrantTypes.Ciba;
+
+            if (context.SendBackchannelAuthenticationRequest)
+            {
+                // Backchannel authentication requests MUST contain exactly one hint identifying the end user.
+                var count = (string.IsNullOrEmpty(context.LoginHint)         ? 0 : 1) +
+                            (string.IsNullOrEmpty(context.LoginHintToken)    ? 0 : 1) +
+                            (string.IsNullOrEmpty(context.IdentityTokenHint) ? 0 : 1);
+
+                if (count is not 1)
+                {
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0541));
+                }
+            }
+
+            return ValueTask.CompletedTask;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for negotiating the best backchannel authentication endpoint
+    /// client authentication method supported by both the client and the authorization server.
+    /// </summary>
+    public sealed class AttachBackchannelAuthenticationEndpointClientAuthenticationMethod : IOpenIddictClientHandler<ProcessChallengeContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
+                .AddFilter<RequireBackchannelAuthenticationRequest>()
+                .UseSingletonHandler<AttachBackchannelAuthenticationEndpointClientAuthenticationMethod>()
+                .SetOrder(AttachDeviceAuthorizationEndpointClientAuthenticationMethod.Descriptor.Order + 500)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessChallengeContext context)
+        {
+            ArgumentNullException.ThrowIfNull(context);
+
+            // If an explicit client authentication method was attached, don't overwrite it.
+            if (!string.IsNullOrEmpty(context.BackchannelAuthenticationEndpointClientAuthenticationMethod))
+            {
+                return ValueTask.CompletedTask;
+            }
+
+            // If the client is a public application, do not negotiate a client authentication method.
+            if (context.Registration.ClientType is ClientTypes.Public)
+            {
+                context.BackchannelAuthenticationEndpointClientAuthenticationMethod = ClientAuthenticationMethods.None;
+
+                return ValueTask.CompletedTask;
+            }
+
+            // Note: the CIBA specification requires using the same client authentication
+            // methods as the token endpoint, whose supported methods are used here.
+            context.BackchannelAuthenticationEndpointClientAuthenticationMethod = (
+                Client: context.Registration.ClientAuthenticationMethods.Count switch
+                {
+                    0 => context.Options.ClientAuthenticationMethods as ICollection<string>,
+                    _ => context.Options.ClientAuthenticationMethods.Intersect(context.Registration.ClientAuthenticationMethods, StringComparer.Ordinal).ToList()
+                },
+                Server: context.Configuration.TokenEndpointAuthMethodsSupported) switch
+            {
+                // If a TLS client authentication certificate can be resolved and both
+                // the client and the server explicitly support tls_client_auth, prefer it.
+                ({ Count: > 0 } client, { Count: > 0 } server) when
+                    client.Contains(ClientAuthenticationMethods.TlsClientAuth) &&
+                    server.Contains(ClientAuthenticationMethods.TlsClientAuth) &&
+                    context.Configuration.BackchannelAuthenticationEndpoint is Uri endpoint &&
+                    string.Equals(endpoint.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase) &&
+                    context.Registration.SigningCredentials.Exists(static credentials =>
+                        credentials.Key is X509SecurityKey { Certificate: X509Certificate2 certificate } &&
+                        OpenIddictHelpers.IsClientAuthenticationCertificate(certificate) &&
+                       !OpenIddictHelpers.IsSelfIssuedCertificate(certificate))
+                    => ClientAuthenticationMethods.TlsClientAuth,
+
+                ({ Count: > 0 } client, { Count: > 0 } server) when
+                    client.Contains(ClientAuthenticationMethods.SelfSignedTlsClientAuth) &&
+                    server.Contains(ClientAuthenticationMethods.SelfSignedTlsClientAuth) &&
+                    context.Configuration.BackchannelAuthenticationEndpoint is Uri endpoint &&
+                    string.Equals(endpoint.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase) &&
+                    context.Registration.SigningCredentials.Exists(static credentials =>
+                        credentials.Key is X509SecurityKey { Certificate: X509Certificate2 certificate } &&
+                        OpenIddictHelpers.IsClientAuthenticationCertificate(certificate) &&
+                        OpenIddictHelpers.IsSelfIssuedCertificate(certificate))
+                    => ClientAuthenticationMethods.SelfSignedTlsClientAuth,
+
+                // If at least one asymmetric signing key was attached to the client registration
+                // and both the client and the server explicitly support private_key_jwt, use it.
+                ({ Count: > 0 } client, { Count: > 0 } server) when
+                    client.Contains(ClientAuthenticationMethods.PrivateKeyJwt) &&
+                    server.Contains(ClientAuthenticationMethods.PrivateKeyJwt) &&
+                    context.Registration.SigningCredentials.Exists(static credentials => credentials.Key is AsymmetricSecurityKey)
+                    => ClientAuthenticationMethods.PrivateKeyJwt,
+
+                ({ Count: > 0 } client, { Count: > 0 } server) when !string.IsNullOrEmpty(context.Registration.ClientSecret) &&
+                    client.Contains(ClientAuthenticationMethods.ClientSecretPost) &&
+                    server.Contains(ClientAuthenticationMethods.ClientSecretPost)
+                    => ClientAuthenticationMethods.ClientSecretPost,
+
+                ({ Count: > 0 } client, { Count: > 0 } server) when !string.IsNullOrEmpty(context.Registration.ClientSecret) &&
+                    client.Contains(ClientAuthenticationMethods.ClientSecretBasic) &&
+                    server.Contains(ClientAuthenticationMethods.ClientSecretBasic)
+                    => ClientAuthenticationMethods.ClientSecretBasic,
+
+                ({ Count: > 0 } client, { Count: 0 }) when !string.IsNullOrEmpty(context.Registration.ClientSecret) &&
+                    client.Contains(ClientAuthenticationMethods.ClientSecretBasic)
+                    => ClientAuthenticationMethods.ClientSecretBasic,
+
+                _ => null
+            };
+
+            return ValueTask.CompletedTask;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for attaching the client certificate used for
+    /// the backchannel authentication endpoint to the challenge context, if applicable.
+    /// </summary>
+    public sealed class AttachBackchannelAuthenticationEndpointClientCertificate : IOpenIddictClientHandler<ProcessChallengeContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
+                .AddFilter<RequireBackchannelAuthenticationRequest>()
+                .UseSingletonHandler<AttachBackchannelAuthenticationEndpointClientCertificate>()
+                .SetOrder(AttachDeviceAuthorizationEndpointClientCertificate.Descriptor.Order + 500)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessChallengeContext context)
+        {
+            ArgumentNullException.ThrowIfNull(context);
+
+            context.BackchannelAuthenticationEndpointClientCertificate ??= context.BackchannelAuthenticationEndpointClientAuthenticationMethod switch
+            {
+                ClientAuthenticationMethods.TlsClientAuth => context.Registration.SigningCredentials
+                    .Select(static credentials => (credentials.Key as X509SecurityKey)?.Certificate)
+                    .FirstOrDefault(static certificate => certificate is not null &&
+                        OpenIddictHelpers.IsClientAuthenticationCertificate(certificate) &&
+                       !OpenIddictHelpers.IsSelfIssuedCertificate(certificate))
+                        ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0512)),
+
+                ClientAuthenticationMethods.SelfSignedTlsClientAuth => context.Registration.SigningCredentials
+                    .Select(static credentials => (credentials.Key as X509SecurityKey)?.Certificate)
+                    .FirstOrDefault(static certificate => certificate is not null &&
+                        OpenIddictHelpers.IsClientAuthenticationCertificate(certificate) &&
+                        OpenIddictHelpers.IsSelfIssuedCertificate(certificate))
+                        ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0512)),
+
+                _ => null
+            };
+
+            return ValueTask.CompletedTask;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for resolving the URI of the backchannel authentication endpoint.
+    /// </summary>
+    public sealed class ResolveBackchannelAuthenticationEndpoint : IOpenIddictClientHandler<ProcessChallengeContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
+                .AddFilter<RequireBackchannelAuthenticationRequest>()
+                .UseSingletonHandler<ResolveBackchannelAuthenticationEndpoint>()
+                .SetOrder(ResolveDeviceAuthorizationEndpoint.Descriptor.Order + 500)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessChallengeContext context)
+        {
+            ArgumentNullException.ThrowIfNull(context);
+
+            context.BackchannelAuthenticationEndpoint ??= context.Configuration.BackchannelAuthenticationEndpoint is { IsAbsoluteUri: true } uri &&
+                !OpenIddictHelpers.IsImplicitFileUri(uri) ? uri : null;
+
+            return ValueTask.CompletedTask;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for attaching the parameters to the backchannel authentication request, if applicable.
+    /// </summary>
+    public sealed class AttachBackchannelAuthenticationRequestParameters : IOpenIddictClientHandler<ProcessChallengeContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
+                .AddFilter<RequireBackchannelAuthenticationRequest>()
+                .UseSingletonHandler<AttachBackchannelAuthenticationRequestParameters>()
+                .SetOrder(AttachDeviceAuthorizationRequestParameters.Descriptor.Order + 500)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessChallengeContext context)
+        {
+            ArgumentNullException.ThrowIfNull(context);
+
+            // Attach a new request instance if necessary.
+            context.BackchannelAuthenticationRequest ??= new OpenIddictRequest();
+
+            // Note: backchannel authentication requests MUST include the "openid" scope.
+            var scopes = new HashSet<string>(context.Scopes, StringComparer.Ordinal) { Scopes.OpenId };
+            context.BackchannelAuthenticationRequest.Scope = string.Join(Separators.Space[0],
+                scopes.OrderBy(static scope => scope is Scopes.OpenId ? 0 : 1).ThenBy(static scope => scope, StringComparer.Ordinal));
+
+            context.BackchannelAuthenticationRequest.IdTokenHint = context.IdentityTokenHint;
+            context.BackchannelAuthenticationRequest.LoginHint = context.LoginHint;
+            context.BackchannelAuthenticationRequest.LoginHintToken = context.LoginHintToken;
+            context.BackchannelAuthenticationRequest.BindingMessage = context.BindingMessage;
+
+            if (context.RequestedExpiry is TimeSpan expiry)
+            {
+                context.BackchannelAuthenticationRequest.RequestedExpiry = (long) Math.Ceiling(expiry.TotalSeconds);
+            }
+
+            return ValueTask.CompletedTask;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for attaching the client credentials to the backchannel authentication request, if applicable.
+    /// </summary>
+    public sealed class AttachBackchannelAuthenticationRequestClientCredentials : IOpenIddictClientHandler<ProcessChallengeContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
+                .AddFilter<RequireBackchannelAuthenticationRequest>()
+                .UseSingletonHandler<AttachBackchannelAuthenticationRequestClientCredentials>()
+                .SetOrder(AttachDeviceAuthorizationRequestClientCredentials.Descriptor.Order + 500)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessChallengeContext context)
+        {
+            ArgumentNullException.ThrowIfNull(context);
+
+            Debug.Assert(context.BackchannelAuthenticationRequest is not null, SR.GetResourceString(SR.ID4008));
+
+            // Always attach the client_id to the request, even if an assertion is sent or mTLS is used.
+            context.BackchannelAuthenticationRequest.ClientId = context.ClientId;
+
+            // Note: client authentication methods are mutually exclusive so the client_assertion
+            // and client_secret parameters MUST never be sent at the same time.
+            if (context.IncludeClientAssertion)
+            {
+                context.BackchannelAuthenticationRequest.ClientAssertion = context.ClientAssertion;
+                context.BackchannelAuthenticationRequest.ClientAssertionType = context.ClientAssertionType;
+            }
+
+            else if (context.BackchannelAuthenticationEndpointClientAuthenticationMethod is
+                ClientAuthenticationMethods.ClientSecretBasic or
+                ClientAuthenticationMethods.ClientSecretPost)
+            {
+                context.BackchannelAuthenticationRequest.ClientSecret = context.Registration.ClientSecret;
+            }
+
+            return ValueTask.CompletedTask;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for sending the backchannel authentication request, if applicable.
+    /// </summary>
+    public sealed class SendBackchannelAuthenticationRequest : IOpenIddictClientHandler<ProcessChallengeContext>
+    {
+        private readonly OpenIddictClientService _service;
+
+        public SendBackchannelAuthenticationRequest(OpenIddictClientService service)
+            => _service = service ?? throw new ArgumentNullException(nameof(service));
+
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
+                .AddFilter<RequireBackchannelAuthenticationRequest>()
+                .UseSingletonHandler<SendBackchannelAuthenticationRequest>()
+                .SetOrder(SendDeviceAuthorizationRequest.Descriptor.Order + 500)
+                .Build();
+
+        /// <inheritdoc/>
+        public async ValueTask HandleAsync(ProcessChallengeContext context)
+        {
+            ArgumentNullException.ThrowIfNull(context);
+
+            Debug.Assert(context.BackchannelAuthenticationRequest is not null, SR.GetResourceString(SR.ID4008));
+
+            // Ensure the backchannel authentication endpoint is present and is a valid absolute URI.
+            if (context.BackchannelAuthenticationEndpoint is not { IsAbsoluteUri: true } ||
+                OpenIddictHelpers.IsImplicitFileUri(context.BackchannelAuthenticationEndpoint))
+            {
+                throw new InvalidOperationException(SR.FormatID0301(Metadata.BackchannelAuthenticationEndpoint));
+            }
+
+            var certificate = context.BackchannelAuthenticationEndpointClientAuthenticationMethod switch
+            {
+                ClientAuthenticationMethods.TlsClientAuth when context.BackchannelAuthenticationEndpointClientCertificate is not null =>
+                    OpenIddictHelpers.IsSelfIssuedCertificate(context.BackchannelAuthenticationEndpointClientCertificate)
+                        ? throw new InvalidOperationException(SR.GetResourceString(SR.ID0513))
+                        : context.BackchannelAuthenticationEndpointClientCertificate,
+
+                ClientAuthenticationMethods.SelfSignedTlsClientAuth when context.BackchannelAuthenticationEndpointClientCertificate is not null =>
+                    OpenIddictHelpers.IsSelfIssuedCertificate(context.BackchannelAuthenticationEndpointClientCertificate)
+                        ? context.BackchannelAuthenticationEndpointClientCertificate
+                        : throw new InvalidOperationException(SR.GetResourceString(SR.ID0513)),
+
+                _ => null
+            };
+
+            try
+            {
+                context.BackchannelAuthenticationResponse = await _service.SendBackchannelAuthenticationRequestAsync(
+                    context.Registration, context.Configuration,
+                    context.BackchannelAuthenticationRequest, context.BackchannelAuthenticationEndpoint,
+                    context.BackchannelAuthenticationEndpointClientAuthenticationMethod,
+                    certificate, context.CancellationToken);
+            }
+
+            catch (ProtocolException exception)
+            {
+                context.Reject(
+                    error: exception.Error,
+                    description: exception.ErrorDescription,
+                    uri: exception.ErrorUri);
+
+                return;
+            }
+
+            context.AuthenticationRequestId = context.BackchannelAuthenticationResponse.AuthReqId;
+        }
+    }
+
+    /// <summary>
     /// Contains the logic responsible for attaching the client credentials to the pushed authorization endpoint request, if applicable.
     /// </summary>
     public sealed class AttachPushedAuthorizationRequestClientCredentials : IOpenIddictClientHandler<ProcessChallengeContext>
@@ -7263,6 +7672,8 @@ public static partial class OpenIddictClientHandlers
         /// </summary>
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
+                // Note: pushed authorization requests only apply to interactive flows (e.g device or CIBA flows are not affected).
+                .AddFilter<RequireInteractiveGrantType>()
                 .UseSingletonHandler<ValidatePushedAuthorizationRequirement>()
                 .SetOrder(AttachPushedAuthorizationRequestClientCredentials.Descriptor.Order + 1_000)
                 .Build();
