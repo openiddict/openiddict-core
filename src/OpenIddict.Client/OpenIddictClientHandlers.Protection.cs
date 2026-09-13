@@ -183,6 +183,22 @@ public static partial class OpenIddictClientHandlers
                     // are expected to be made by specialized handlers later in the token validation processing.
                     parameters.ValidTypes = null;
 
+                    // Introspection responses MUST use the "token-introspection+jwt" type and can be encrypted
+                    // by the authorization server using the public encryption keys registered for the client.
+                    //
+                    // See https://datatracker.ietf.org/doc/html/rfc9701#section-5 for more information.
+                    if (context.ValidTokenTypes.Count is 1 &&
+                        context.ValidTokenTypes.Contains(TokenTypeIdentifiers.Private.IntrospectionResponse))
+                    {
+                        parameters.ValidTypes =
+                        [
+                            JsonWebTokenTypes.IntrospectionResponse,
+                            JsonWebTokenTypes.Prefixes.Application + JsonWebTokenTypes.IntrospectionResponse
+                        ];
+
+                        parameters.TokenDecryptionKeys = context.Options.TokenValidationParameters.TokenDecryptionKeys;
+                    }
+
                     return parameters;
                 }
             }

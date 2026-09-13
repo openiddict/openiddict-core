@@ -2068,7 +2068,7 @@ public class OpenIddictClientService
         request = await PrepareIntrospectionRequestAsync();
         request = await ApplyIntrospectionRequestAsync();
 
-        var response = await ExtractIntrospectionResponseAsync();
+        var (response, token) = await ExtractIntrospectionResponseAsync();
 
         return await HandleIntrospectionResponseAsync();
 
@@ -2120,7 +2120,7 @@ public class OpenIddictClientService
             return context.Request;
         }
 
-        async ValueTask<OpenIddictResponse> ExtractIntrospectionResponseAsync()
+        async ValueTask<(OpenIddictResponse, string?)> ExtractIntrospectionResponseAsync()
         {
             var context = new ExtractIntrospectionResponseContext(transaction)
             {
@@ -2143,7 +2143,7 @@ public class OpenIddictClientService
 
             context.Logger.LogInformation(6191, SR.GetResourceString(SR.ID6191), context.RemoteUri, context.Response);
 
-            return context.Response;
+            return (context.Response, context.IntrospectionResponseToken);
         }
 
         async ValueTask<(OpenIddictResponse, ClaimsPrincipal)> HandleIntrospectionResponseAsync()
@@ -2151,6 +2151,7 @@ public class OpenIddictClientService
             var context = new HandleIntrospectionResponseContext(transaction)
             {
                 Configuration = configuration,
+                IntrospectionResponseToken = token,
                 Registration = registration,
                 RemoteUri = uri,
                 Request = request,

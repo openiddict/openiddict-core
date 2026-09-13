@@ -97,6 +97,16 @@ public sealed class OpenIddictClientRegistration
     public SigningCredentials? DPoPSigningCredentials { get; set; }
 
     /// <summary>
+    /// Gets or sets a boolean indicating whether introspection responses must be returned as JSON Web Tokens (RFC 9701).
+    /// When enabled, introspection requests are sent with an "Accept: application/token-introspection+jwt" header
+    /// and successful responses that are not signed by the authorization server are rejected.
+    /// </summary>
+    /// <remarks>
+    /// Note: encrypted responses are decrypted using the encryption credentials registered in the client options.
+    /// </remarks>
+    public bool RequireJsonWebTokenIntrospectionResponses { get; set; }
+
+    /// <summary>
     /// Gets the client authentication methods allowed by the client instance.
     /// If no value is explicitly set, all the methods enabled in the client options can be used.
     /// </summary>
