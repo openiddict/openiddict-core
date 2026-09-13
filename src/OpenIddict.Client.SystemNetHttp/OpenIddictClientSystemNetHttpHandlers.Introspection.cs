@@ -5,6 +5,7 @@
  */
 
 using System.Collections.Immutable;
+using System.Net.Http;
 using System.Net.Http.Headers;
 using static OpenIddict.Client.SystemNetHttp.OpenIddictClientSystemNetHttpConstants;
 
