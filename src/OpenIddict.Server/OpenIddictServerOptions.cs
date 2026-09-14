@@ -765,6 +765,32 @@ public sealed class OpenIddictServerOptions
     public TimeSpan? SessionLifetime { get; set; }
 
     /// <summary>
+    /// Gets or sets a boolean indicating whether JWT Secured Authorization Response Modes (JARM) are supported.
+    /// When enabled, the "jwt", "query.jwt", "fragment.jwt" and "form_post.jwt" response modes can be used
+    /// (as long as the corresponding "query", "fragment" or "form_post" response mode is also enabled) and
+    /// the authorization response parameters are returned in a signed JWT sent using the "response" parameter.
+    /// The JWT is also encrypted if the client application opted in using the
+    /// <see cref="Settings.AuthorizationResponse.EncryptionAlgorithm"/> setting.
+    /// </summary>
+    public bool EnableJwtSecuredAuthorizationResponses { get; set; }
+
+    /// <summary>
+    /// Gets or sets a boolean indicating whether authorization and pushed authorization requests
+    /// must use one of the JWT Secured Authorization Response Modes (JARM).
+    /// </summary>
+    /// <remarks>
+    /// Note: this option requires enabling JARM support using <see cref="EnableJwtSecuredAuthorizationResponses"/>.
+    /// </remarks>
+    public bool RequireJwtSecuredAuthorizationResponses { get; set; }
+
+    /// <summary>
+    /// Gets or sets the period of time JWT authorization responses (JARM) remain valid after being issued.
+    /// The default value is 5 minutes. As required by the JARM specification, the "exp" claim is always
+    /// included in the JWT and this value cannot be <see langword="null"/>.
+    /// </summary>
+    public TimeSpan AuthorizationResponseLifetime { get; set; } = TimeSpan.FromMinutes(5);
+
+    /// <summary>
     /// Gets or sets a boolean indicating whether all token requests must include a valid DPoP proof.
     /// </summary>
     /// <remarks>

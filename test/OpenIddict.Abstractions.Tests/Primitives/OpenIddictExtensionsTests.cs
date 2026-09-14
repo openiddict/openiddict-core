@@ -870,6 +870,42 @@ public class OpenIddictExtensionsTests
     }
 
     [Fact]
+    public void IsJwtResponseMode_ThrowsAnExceptionForNullRequest()
+    {
+        // Arrange
+        var request = (OpenIddictRequest) null!;
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentNullException>(() => request.IsJwtResponseMode());
+
+        Assert.Equal("request", exception.ParamName);
+    }
+
+    [Theory]
+    [InlineData(null, false)]
+    [InlineData("unknown", false)]
+    [InlineData("query", false)]
+    [InlineData("fragment", false)]
+    [InlineData("form_post", false)]
+    [InlineData("jwt", true)]
+    [InlineData("query.jwt", true)]
+    [InlineData("fragment.jwt", true)]
+    [InlineData("form_post.jwt", true)]
+    [InlineData(" jwt", false)]
+    [InlineData("QUERY.JWT", false)]
+    public void IsJwtResponseMode_ReturnsExpectedResult(string? mode, bool result)
+    {
+        // Arrange
+        var request = new OpenIddictRequest
+        {
+            ResponseMode = mode
+        };
+
+        // Act and assert
+        Assert.Equal(result, request.IsJwtResponseMode());
+    }
+
+    [Fact]
     public void IsAuthorizationCodeGrantType_ThrowsAnExceptionForNullRequest()
     {
         // Arrange

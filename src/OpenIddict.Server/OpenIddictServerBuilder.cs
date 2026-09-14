@@ -2194,6 +2194,49 @@ public sealed class OpenIddictServerBuilder
     }
 
     /// <summary>
+    /// Enables JWT Secured Authorization Response Modes (JARM) support: authorization requests can use the
+    /// "jwt", "query.jwt", "fragment.jwt" and "form_post.jwt" response modes, in which case the authorization
+    /// response parameters (including errors) are returned in a JWT signed by the server and sent using the
+    /// "response" parameter. The JWT is also encrypted if the client application opted in using the
+    /// <see cref="Settings.AuthorizationResponse.EncryptionAlgorithm"/> setting.
+    /// </summary>
+    /// <remarks>
+    /// Note: the JWT variants are only available when the corresponding base response modes are enabled.
+    /// </remarks>
+    /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
+    public OpenIddictServerBuilder EnableJwtSecuredAuthorizationResponses()
+        => Configure(options => options.EnableJwtSecuredAuthorizationResponses = true);
+
+    /// <summary>
+    /// Configures OpenIddict to force client applications to use one of the JWT Secured Authorization
+    /// Response Modes (JARM) in their authorization and pushed authorization requests.
+    /// When enforced, requests that don't specify a JWT response mode are rejected.
+    /// </summary>
+    /// <remarks>
+    /// Note: JARM support must be enabled using <see cref="EnableJwtSecuredAuthorizationResponses"/>.
+    /// </remarks>
+    /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
+    public OpenIddictServerBuilder RequireJwtSecuredAuthorizationResponses()
+        => Configure(options => options.RequireJwtSecuredAuthorizationResponses = true);
+
+    /// <summary>
+    /// Sets the lifetime of the JWT authorization responses returned when using JARM. Using short
+    /// lifetimes is strongly recommended. The default value is 5 minutes.
+    /// </summary>
+    /// <param name="lifetime">The JWT authorization response lifetime.</param>
+    /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="lifetime"/> is not positive.</exception>
+    public OpenIddictServerBuilder SetAuthorizationResponseLifetime(TimeSpan lifetime)
+    {
+        if (lifetime <= TimeSpan.Zero)
+        {
+            throw new ArgumentOutOfRangeException(nameof(lifetime));
+        }
+
+        return Configure(options => options.AuthorizationResponseLifetime = lifetime);
+    }
+
+    /// <summary>
     /// Configures OpenIddict to require a valid DPoP proof for all token requests.
     /// </summary>
     /// <remarks>

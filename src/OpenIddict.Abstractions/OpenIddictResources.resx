@@ -2016,6 +2016,36 @@ To send signed backchannel authentication requests, attach an asymmetric signing
   <data name="ID0611" xml:space="preserve">
     <value>The client notification token must conform to the syntax of Bearer credentials defined in RFC 6750 section 2.1.</value>
   </data>
+  <data name="ID0640" xml:space="preserve">
+    <value>JWT Secured Authorization Response Modes (JARM) cannot be required when JARM support is not enabled.
+To enable JARM support, call 'services.AddOpenIddict().AddServer().EnableJwtSecuredAuthorizationResponses()'.</value>
+  </data>
+  <data name="ID0641" xml:space="preserve">
+    <value>The lifetime of JWT authorization responses must be a positive value.</value>
+  </data>
+  <data name="ID0642" xml:space="preserve">
+    <value>The JWT authorization response cannot be generated because the authorization request doesn't contain a client identifier.</value>
+  </data>
+  <data name="ID0643" xml:space="preserve">
+    <value>An error occurred while generating the JWT authorization response.
+  Error: {0}
+  Error description: {1}
+  Error URI: {2}</value>
+  </data>
+  <data name="ID0644" xml:space="preserve">
+    <value>The '{0}' value configured for the '{1}' setting of the client application doesn't match the algorithm of any asymmetric signing credentials registered in the server options.</value>
+  </data>
+  <data name="ID0645" xml:space="preserve">
+    <value>The '{0}' value configured for the '{1}' setting of the client application is not supported.
+JWT authorization responses can only be encrypted using 'RSA-OAEP' with 'A128CBC-HS256' or 'A256CBC-HS512'.</value>
+  </data>
+  <data name="ID0646" xml:space="preserve">
+    <value>The JWT authorization response cannot be encrypted because the JSON Web Key Set of the client application doesn't contain any RSA key whose use is 'enc'.</value>
+  </data>
+  <data name="ID0647" xml:space="preserve">
+    <value>The '{0}' JWT Secured Authorization Response Mode required by the client registration is not supported by the authorization server.
+Ensure the server configuration lists this response mode in 'response_modes_supported' or set 'OpenIddictClientRegistration.RequireJwtSecuredAuthorizationResponses' to false.</value>
+  </data>
   <data name="ID0532" xml:space="preserve">
     <value>The backchannel authentication request was not correctly extracted.
 To extract backchannel authentication requests, create a class implementing 'IOpenIddictServerHandler&lt;ExtractBackchannelAuthenticationRequestContext&gt;' and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.</value>
@@ -3093,6 +3123,21 @@ Error URI: {2}</value>
   <data name="ID2419" xml:space="preserve">
     <value>The request payload must be a valid JSON object.</value>
   </data>
+  <data name="ID2320" xml:space="preserve">
+    <value>The '{0}' parameter must specify a JWT Secured Authorization Response Mode ('jwt', 'query.jwt', 'fragment.jwt' or 'form_post.jwt').</value>
+  </data>
+  <data name="ID2321" xml:space="preserve">
+    <value>The authorization response was not returned as a JWT using the 'response' parameter.</value>
+  </data>
+  <data name="ID2322" xml:space="preserve">
+    <value>The JWT authorization response is invalid.</value>
+  </data>
+  <data name="ID2323" xml:space="preserve">
+    <value>The audience of the JWT authorization response doesn't match the client identifier.</value>
+  </data>
+  <data name="ID2324" xml:space="preserve">
+    <value>The JWT authorization response doesn't contain the mandatory '{0}' claim.</value>
+  </data>
   <data name="ID4000" xml:space="preserve">
     <value>The '{0}' parameter shouldn't be null or empty at this point.</value>
   </data>
@@ -3161,6 +3206,9 @@ Error URI: {2}</value>
   </data>
   <data name="ID4022" xml:space="preserve">
     <value>The session identifier shouldn't be null or empty at this point.</value>
+  </data>
+  <data name="ID4120" xml:space="preserve">
+    <value>The response mode should be a JWT Secured Authorization Response Mode at this point.</value>
   </data>
   <data name="ID6000" xml:space="preserve">
     <value>An error occurred while validating the token '{Token}'.</value>
@@ -4229,6 +4277,24 @@ This may indicate that the hashed entry is corrupted or malformed.</value>
   </data>
   <data name="ID6613" xml:space="preserve">
     <value>The registration access token revoked before a rejected update operation couldn't be restored.</value>
+  </data>
+  <data name="ID6440" xml:space="preserve">
+    <value>The authorization request was rejected because the '{ResponseMode}' response mode is not a JWT Secured Authorization Response Mode, which is required by the server configuration.</value>
+  </data>
+  <data name="ID6441" xml:space="preserve">
+    <value>The pushed authorization request was rejected because the '{ResponseMode}' response mode is not a JWT Secured Authorization Response Mode, which is required by the server configuration.</value>
+  </data>
+  <data name="ID6442" xml:space="preserve">
+    <value>The authorization request was rejected because the client application requires a JWT Secured Authorization Response Mode or an encrypted JWT response for the 'response_type'/'response_mode' combination: {ResponseType} ; {ResponseMode}.</value>
+  </data>
+  <data name="ID6443" xml:space="preserve">
+    <value>The authorization response was returned as a JWT using the '{ResponseMode}' response mode to the client application '{ClientId}'.</value>
+  </data>
+  <data name="ID6444" xml:space="preserve">
+    <value>The pushed authorization request was rejected because the client application requires a JWT Secured Authorization Response Mode or an encrypted JWT response for the 'response_type'/'response_mode' combination: {ResponseType} ; {ResponseMode}.</value>
+  </data>
+  <data name="ID6445" xml:space="preserve">
+    <value>The JWT authorization response was rejected: {Error} ({Description}).</value>
   </data>
   <data name="ID8000" xml:space="preserve">
     <value>https://documentation.openiddict.com/errors/{0}</value>

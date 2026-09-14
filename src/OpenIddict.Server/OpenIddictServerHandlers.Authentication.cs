@@ -18,7 +18,7 @@ namespace OpenIddict.Server;
 
 public static partial class OpenIddictServerHandlers
 {
-    public static class Authentication
+    public static partial class Authentication
     {
         public static ImmutableArray<OpenIddictServerHandlerDescriptor> DefaultHandlers { get; } =
         [
@@ -62,6 +62,7 @@ public static partial class OpenIddictServerHandlers
             ValidateResourcePermissions.Descriptor,
             ValidatePushedAuthorizationRequestsRequirement.Descriptor,
             ValidateSignedRequestObjectsRequirement.Descriptor,
+            ValidateJwtSecuredAuthorizationResponsesRequirement.Descriptor,
             ValidateProofKeyForCodeExchangeRequirement.Descriptor,
             ValidateAuthorizedParty.Descriptor,
 
@@ -77,6 +78,8 @@ public static partial class OpenIddictServerHandlers
             InferResponseMode.Descriptor,
             AttachResponseState.Descriptor,
             AttachIssuer.Descriptor,
+            GenerateAuthorizationResponseToken.Descriptor,
+            AttachAuthorizationResponseSecurityCredentials.Descriptor,
 
             /*
              * Pushed authorization request top-level processing:
@@ -116,6 +119,7 @@ public static partial class OpenIddictServerHandlers
             ValidatePushedScopePermissions.Descriptor,
             ValidatePushedResourcePermissions.Descriptor,
             ValidatePushedSignedRequestObjectsRequirement.Descriptor,
+            ValidatePushedJwtSecuredAuthorizationResponsesRequirement.Descriptor,
             ValidatePushedProofKeyForCodeExchangeRequirement.Descriptor,
             ValidatePushedAuthorizedParty.Descriptor,
 
@@ -1044,6 +1048,36 @@ public static partial class OpenIddictServerHandlers
                     return ValueTask.CompletedTask;
                 }
 
+                // Reject requests that don't use a JWT response mode if JARM was globally enforced.
+                if (!ValidateJwtResponseModeRequirement(context.Request, context.Options))
+                {
+                    context.Logger.LogInformation(6440, SR.GetResourceString(SR.ID6440), context.Request.ResponseMode);
+
+                    context.Reject(
+                        error: Errors.InvalidRequest,
+                        description: SR.FormatID2320(Parameters.ResponseMode),
+                        uri: SR.FormatID8000(SR.ID2320));
+
+                    return ValueTask.CompletedTask;
+                }
+
+                // Note: when the degraded mode is enabled, the settings of the client application cannot be
+                // resolved to determine whether the JWT response will be encrypted, which is required to use
+                // response_mode=query.jwt with a response_type containing id_token or token (JARM, section 2.3.1).
+                // In this case, the request is rejected immediately. Otherwise, the settings of the client
+                // application are checked later by the ValidateJwtSecuredAuthorizationResponsesRequirement handler.
+                if (context.Options.EnableDegradedMode && IsUnencryptedQueryJwtCombinationCandidate(context.Request))
+                {
+                    context.Logger.LogInformation(6037, SR.GetResourceString(SR.ID6037), context.Request.ResponseType, context.Request.ResponseMode);
+
+                    context.Reject(
+                        error: Errors.InvalidRequest,
+                        description: SR.FormatID2033(Parameters.ResponseType, Parameters.ResponseMode),
+                        uri: SR.FormatID8000(SR.ID2033));
+
+                    return ValueTask.CompletedTask;
+                }
+
                 return ValueTask.CompletedTask;
 
                 static bool ValidateResponseMode(OpenIddictRequest request, OpenIddictServerOptions options)
@@ -1052,6 +1086,11 @@ public static partial class OpenIddictServerHandlers
                     // when using the implicit/hybrid and code flows if no explicit value was set.
                     // To ensure requests are rejected if the default response mode was manually disabled,
                     // the fragment and query response modes are checked first using the appropriate extensions.
+
+                    if (request.IsJwtResponseMode())
+                    {
+                        return ValidateJwtResponseMode(request, options);
+                    }
 
                     if (request.IsFragmentResponseMode())
                     {
@@ -2312,6 +2351,17 @@ public static partial class OpenIddictServerHandlers
 
                 context.ResponseMode = context.Request.ResponseMode;
 
+                // When JWT Secured Authorization Response Modes are enabled, resolve response_mode=jwt to the
+                // JWT variant of the default response mode of the requested response type: "query.jwt" for
+                // the authorization code flow (and response_type=none), "fragment.jwt" for the other flows.
+                //
+                // See https://openid.net/specs/oauth-v2-jarm.html#section-2.3.4 for more information.
+                if (context.Options.EnableJwtSecuredAuthorizationResponses &&
+                    string.Equals(context.ResponseMode, ResponseModes.Jwt, StringComparison.Ordinal))
+                {
+                    context.ResponseMode = ResolveJwtResponseMode(context.Request);
+                }
+
                 // If the response_mode parameter was not specified, try to infer it.
                 if (!string.IsNullOrEmpty(context.RedirectUri) && string.IsNullOrEmpty(context.ResponseMode))
                 {
@@ -3103,6 +3153,33 @@ public static partial class OpenIddictServerHandlers
                     return ValueTask.CompletedTask;
                 }
 
+                // Reject requests that don't use a JWT response mode if JARM was globally enforced.
+                if (!ValidateJwtResponseModeRequirement(context.Request, context.Options))
+                {
+                    context.Logger.LogInformation(6441, SR.GetResourceString(SR.ID6441), context.Request.ResponseMode);
+
+                    context.Reject(
+                        error: Errors.InvalidRequest,
+                        description: SR.FormatID2320(Parameters.ResponseMode),
+                        uri: SR.FormatID8000(SR.ID2320));
+
+                    return ValueTask.CompletedTask;
+                }
+
+                // Note: when the degraded mode is enabled, response_mode=query.jwt is always rejected when
+                // used with a response_type containing id_token or token (see ValidateResponseModeParameter).
+                if (context.Options.EnableDegradedMode && IsUnencryptedQueryJwtCombinationCandidate(context.Request))
+                {
+                    context.Logger.LogInformation(6244, SR.GetResourceString(SR.ID6244), context.Request.ResponseType, context.Request.ResponseMode);
+
+                    context.Reject(
+                        error: Errors.InvalidRequest,
+                        description: SR.FormatID2033(Parameters.ResponseType, Parameters.ResponseMode),
+                        uri: SR.FormatID8000(SR.ID2033));
+
+                    return ValueTask.CompletedTask;
+                }
+
                 return ValueTask.CompletedTask;
 
                 static bool ValidatePushedResponseMode(OpenIddictRequest request, OpenIddictServerOptions options)
@@ -3111,6 +3188,11 @@ public static partial class OpenIddictServerHandlers
                     // when using the implicit/hybrid and code flows if no explicit value was set.
                     // To ensure requests are rejected if the default response mode was manually disabled,
                     // the fragment and query response modes are checked first using the appropriate extensions.
+
+                    if (request.IsJwtResponseMode())
+                    {
+                        return ValidateJwtResponseMode(request, options);
+                    }
 
                     if (request.IsFragmentResponseMode())
                     {

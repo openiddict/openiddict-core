@@ -22,9 +22,24 @@ public sealed class OpenIddictConfiguration
     public Uri? AuthorizationEndpoint { get; set; }
 
     /// <summary>
+    /// Gets the algorithms supported by the server to encrypt JWT authorization responses (JARM).
+    /// </summary>
+    public HashSet<string> AuthorizationEncryptionAlgValuesSupported { get; } = new(StringComparer.Ordinal);
+
+    /// <summary>
+    /// Gets the content encryption algorithms supported by the server to encrypt JWT authorization responses (JARM).
+    /// </summary>
+    public HashSet<string> AuthorizationEncryptionEncValuesSupported { get; } = new(StringComparer.Ordinal);
+
+    /// <summary>
     /// Gets or sets a boolean indicating whether the "iss" parameter is returned in authorization responses.
     /// </summary>
     public bool? AuthorizationResponseIssParameterSupported { get; set; }
+
+    /// <summary>
+    /// Gets the algorithms supported by the server to sign JWT authorization responses (JARM).
+    /// </summary>
+    public HashSet<string> AuthorizationSigningAlgValuesSupported { get; } = new(StringComparer.Ordinal);
 
     /// <summary>
     /// Gets or sets the URI of the backchannel authentication endpoint.

@@ -564,6 +564,33 @@ public static partial class OpenIddictServerHandlers
                 context.ResponseModes.UnionWith(context.Options.ResponseModes.Where(
                     static mode => mode is not ResponseModes.Query));
 
+                // If JWT Secured Authorization Response Modes are enabled, return the JWT variants
+                // of the enabled base response modes and the generic "jwt" response mode.
+                //
+                // See https://openid.net/specs/oauth-v2-jarm.html#section-3 for more information.
+                if (context.Options.EnableJwtSecuredAuthorizationResponses)
+                {
+                    var modes = context.ResponseModes.ToList();
+
+                    foreach (var (mode, variant) in ((string, string)[])
+                    [
+                        (ResponseModes.Query,    ResponseModes.QueryJwt),
+                        (ResponseModes.Fragment, ResponseModes.FragmentJwt),
+                        (ResponseModes.FormPost, ResponseModes.FormPostJwt)
+                    ])
+                    {
+                        if (modes.Contains(mode))
+                        {
+                            context.ResponseModes.Add(variant);
+                        }
+                    }
+
+                    if (context.ResponseModes.Count != modes.Count)
+                    {
+                        context.ResponseModes.Add(ResponseModes.Jwt);
+                    }
+                }
+
                 return ValueTask.CompletedTask;
             }
         }
@@ -926,6 +953,24 @@ public static partial class OpenIddictServerHandlers
                     {
                         context.Metadata[Metadata.IntrospectionEncryptionAlgValuesSupported] = new JsonArray(SecurityAlgorithms.RsaOAEP);
                         context.Metadata[Metadata.IntrospectionEncryptionEncValuesSupported] = new JsonArray(
+                            SecurityAlgorithms.Aes128CbcHmacSha256, SecurityAlgorithms.Aes256CbcHmacSha512);
+                    }
+                }
+
+                // If JWT Secured Authorization Response Modes were enabled, return the signing algorithms (that are
+                // the same as the ones used for identity tokens) and, unless the degraded mode was enabled, the
+                // encryption algorithms that can be used by client applications that opted in for encrypted responses.
+                //
+                // See https://openid.net/specs/oauth-v2-jarm.html#section-3 for more information.
+                if (context.Options.EnableJwtSecuredAuthorizationResponses && context.AuthorizationEndpoint is not null)
+                {
+                    context.Metadata[Metadata.AuthorizationSigningAlgValuesSupported] = new JsonArray(
+                        [.. context.IdTokenSigningAlgorithms.Select(static algorithm => (JsonNode) algorithm)]);
+
+                    if (!context.Options.EnableDegradedMode)
+                    {
+                        context.Metadata[Metadata.AuthorizationEncryptionAlgValuesSupported] = new JsonArray(SecurityAlgorithms.RsaOAEP);
+                        context.Metadata[Metadata.AuthorizationEncryptionEncValuesSupported] = new JsonArray(
                             SecurityAlgorithms.Aes128CbcHmacSha256, SecurityAlgorithms.Aes256CbcHmacSha512);
                     }
                 }

@@ -147,7 +147,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
                     ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0114));
 
                 if (string.IsNullOrEmpty(context.RedirectUri) ||
-                   !string.Equals(context.ResponseMode, ResponseModes.FormPost, StringComparison.Ordinal))
+                   context.ResponseMode is not (ResponseModes.FormPost or ResponseModes.FormPostJwt))
                 {
                     return;
                 }
@@ -230,7 +230,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
                     ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0114));
 
                 if (string.IsNullOrEmpty(context.RedirectUri) ||
-                   !string.Equals(context.ResponseMode, ResponseModes.Query, StringComparison.Ordinal))
+                   context.ResponseMode is not (ResponseModes.Query or ResponseModes.QueryJwt))
                 {
                     return ValueTask.CompletedTask;
                 }
@@ -284,7 +284,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
                     ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0114));
 
                 if (string.IsNullOrEmpty(context.RedirectUri) ||
-                   !string.Equals(context.ResponseMode, ResponseModes.Fragment, StringComparison.Ordinal))
+                   context.ResponseMode is not (ResponseModes.Fragment or ResponseModes.FragmentJwt))
                 {
                     return ValueTask.CompletedTask;
                 }

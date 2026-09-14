@@ -462,6 +462,23 @@ public static class OpenIddictExtensions
     }
 
     /// <summary>
+    /// Determines whether the "response_mode" parameter corresponds to one of the JWT Secured Authorization
+    /// Response Modes ("jwt", "query.jwt", "fragment.jwt" or "form_post.jwt").
+    /// See https://openid.net/specs/oauth-v2-jarm.html#section-2.3 for more information.
+    /// </summary>
+    /// <param name="request">The <see cref="OpenIddictRequest"/> instance.</param>
+    /// <returns>
+    /// <see langword="true"/> if the request specified a JWT response mode, <see langword="false"/> otherwise.
+    /// </returns>
+    public static bool IsJwtResponseMode(this OpenIddictRequest request)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+
+        return request.ResponseMode is ResponseModes.Jwt or ResponseModes.QueryJwt or
+                                       ResponseModes.FragmentJwt or ResponseModes.FormPostJwt;
+    }
+
+    /// <summary>
     /// Determines whether the "grant_type" parameter corresponds to the authorization code grant.
     /// See http://tools.ietf.org/html/rfc6749#section-4.1.3 for more information.
     /// </summary>

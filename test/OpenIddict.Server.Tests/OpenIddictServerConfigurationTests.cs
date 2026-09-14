@@ -390,6 +390,39 @@ public class OpenIddictServerConfigurationTests
         Assert.Contains(SR.GetResourceString(SR.ID0609), result.Failures!, StringComparer.Ordinal);
     }
 
+    [Theory]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    public void Validate_ReturnsAnErrorWhenJwtSecuredAuthorizationResponsesAreRequiredWithoutSupport(bool enabled, bool expected)
+    {
+        // Arrange
+        var configuration = new OpenIddictServerConfiguration(new ServiceCollection().BuildServiceProvider());
+        var options = CreateBaseOptions();
+        options.EnableJwtSecuredAuthorizationResponses = enabled;
+        options.RequireJwtSecuredAuthorizationResponses = true;
+
+        // Act
+        var result = configuration.Validate(name: null, options);
+
+        // Assert
+        Assert.Equal(expected, result.Failures?.Contains(SR.GetResourceString(SR.ID0640), StringComparer.Ordinal) ?? false);
+    }
+
+    [Fact]
+    public void Validate_ReturnsAnErrorWhenAuthorizationResponseLifetimeIsNotPositive()
+    {
+        // Arrange
+        var configuration = new OpenIddictServerConfiguration(new ServiceCollection().BuildServiceProvider());
+        var options = CreateBaseOptions();
+        options.AuthorizationResponseLifetime = TimeSpan.Zero;
+
+        // Act
+        var result = configuration.Validate(name: null, options);
+
+        // Assert
+        Assert.Contains(SR.GetResourceString(SR.ID0641), result.Failures!, StringComparer.Ordinal);
+    }
+
     [Fact]
     public void Validate_ReturnsAnErrorWhenSignedRequestObjectsAreRequiredWithoutRequestObjectSupport()
     {

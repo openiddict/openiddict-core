@@ -1640,6 +1640,11 @@ public static partial class OpenIddictServerHandlers
                     // attach encryption credentials resolved from the JSON Web Key Set of the client application).
                     TokenTypeIdentifiers.Private.IntrospectionResponse => null,
 
+                    // Note: JWT authorization responses (JARM) are never encrypted using the server keys, as they
+                    // are meant to be read by the client application (AttachAuthorizationResponseSecurityCredentials
+                    // can attach encryption credentials resolved from the JSON Web Key Set of the client application).
+                    TokenTypeIdentifiers.Private.AuthorizationResponse => null,
+
                     _ => credentials.EncryptionCredentials[0]
                 };
 
@@ -1647,7 +1652,8 @@ public static partial class OpenIddictServerHandlers
                 {
                     // Note: unlike other tokens, identity tokens can only be signed using an asymmetric key
                     // as they are meant to be validated by clients using the public keys exposed by the server.
-                    TokenTypeIdentifiers.IdentityToken or TokenTypeIdentifiers.Private.IntrospectionResponse
+                    TokenTypeIdentifiers.IdentityToken or TokenTypeIdentifiers.Private.IntrospectionResponse or
+                    TokenTypeIdentifiers.Private.AuthorizationResponse
                         => credentials.SigningCredentials.First(static credentials => credentials.Key is AsymmetricSecurityKey),
 
                     _ => credentials.SigningCredentials[0]
@@ -1846,7 +1852,8 @@ public static partial class OpenIddictServerHandlers
                     Claims.Private.Issuer       or Claims.Private.TokenType => false,
 
                     Claims.Private.Audience when context.TokenType is TokenTypeIdentifiers.AccessToken or
-                        TokenTypeIdentifiers.IdentityToken or TokenTypeIdentifiers.Private.IntrospectionResponse => false,
+                        TokenTypeIdentifiers.IdentityToken or TokenTypeIdentifiers.Private.IntrospectionResponse or
+                        TokenTypeIdentifiers.Private.AuthorizationResponse => false,
 
                     Claims.Private.Scope when context.TokenType is TokenTypeIdentifiers.AccessToken => false,
 
@@ -1890,7 +1897,8 @@ public static partial class OpenIddictServerHandlers
                 // For access tokens, identity tokens and introspection responses, set the
                 // public audience claims using the private audience claims from the security principal.
                 if (context.TokenType is TokenTypeIdentifiers.AccessToken or TokenTypeIdentifiers.IdentityToken or
-                                         TokenTypeIdentifiers.Private.IntrospectionResponse)
+                                         TokenTypeIdentifiers.Private.IntrospectionResponse or
+                                         TokenTypeIdentifiers.Private.AuthorizationResponse)
                 {
                     var audiences = context.Principal.GetAudiences();
                     if (audiences.Any())
@@ -1969,6 +1977,9 @@ public static partial class OpenIddictServerHandlers
                     TokenTypeIdentifiers.Private.AuthenticationRequestId => JsonWebTokenTypes.Private.AuthenticationRequestId,
                     TokenTypeIdentifiers.IdentityToken             => JsonWebTokenTypes.GenericJsonWebToken,
                     TokenTypeIdentifiers.Private.IntrospectionResponse => JsonWebTokenTypes.IntrospectionResponse,
+
+                    // Note: the JARM specification doesn't define a specific "typ" value for JWT authorization responses.
+                    TokenTypeIdentifiers.Private.AuthorizationResponse => JsonWebTokenTypes.GenericJsonWebToken,
                     TokenTypeIdentifiers.RefreshToken              => JsonWebTokenTypes.Private.RefreshToken,
                     TokenTypeIdentifiers.Private.RequestToken      => JsonWebTokenTypes.Private.RequestToken,
                     TokenTypeIdentifiers.Private.UserCode          => JsonWebTokenTypes.Private.UserCode,

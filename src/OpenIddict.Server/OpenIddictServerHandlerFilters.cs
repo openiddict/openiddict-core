@@ -908,6 +908,20 @@ public static class OpenIddictServerHandlerFilters
     }
 
     /// <summary>
+    /// Represents a filter that excludes the associated handlers if JWT Secured Authorization Response Modes (JARM) were not enabled.
+    /// </summary>
+    public sealed class RequireJwtSecuredAuthorizationResponsesEnabled : IOpenIddictServerHandlerFilter<BaseContext>
+    {
+        /// <inheritdoc/>
+        public ValueTask<bool> IsActiveAsync(BaseContext context)
+        {
+            ArgumentNullException.ThrowIfNull(context);
+
+            return new(context.Options.EnableJwtSecuredAuthorizationResponses);
+        }
+    }
+
+    /// <summary>
     /// Represents a filter that excludes the associated handlers if token storage was not enabled.
     /// </summary>
     public sealed class RequireTokenStorageEnabled : IOpenIddictServerHandlerFilter<BaseContext>

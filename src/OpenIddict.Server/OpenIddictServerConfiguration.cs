@@ -411,6 +411,17 @@ public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenId
             builder.AddError(SR.GetResourceString(SR.ID0524));
         }
 
+        // Ensure the JWT Secured Authorization Response Modes (JARM) configuration is consistent.
+        if (options.RequireJwtSecuredAuthorizationResponses && !options.EnableJwtSecuredAuthorizationResponses)
+        {
+            builder.AddError(SR.GetResourceString(SR.ID0640));
+        }
+
+        if (options.AuthorizationResponseLifetime <= TimeSpan.Zero)
+        {
+            builder.AddError(SR.GetResourceString(SR.ID0641));
+        }
+
         // Ensure the DPoP configuration is consistent.
         if (options.RequireDPoP && !options.EnableDPoPSupport)
         {

@@ -386,8 +386,11 @@ public static class OpenIddictConstants
     public static class Metadata
     {
         public const string AcrValuesSupported = "acr_values_supported";
+        public const string AuthorizationEncryptionAlgValuesSupported = "authorization_encryption_alg_values_supported";
+        public const string AuthorizationEncryptionEncValuesSupported = "authorization_encryption_enc_values_supported";
         public const string AuthorizationEndpoint = "authorization_endpoint";
         public const string AuthorizationResponseIssParameterSupported = "authorization_response_iss_parameter_supported";
+        public const string AuthorizationSigningAlgValuesSupported = "authorization_signing_alg_values_supported";
         public const string BackchannelAuthenticationEndpoint = "backchannel_authentication_endpoint";
         public const string BackchannelLogoutSessionSupported = "backchannel_logout_session_supported";
         public const string BackchannelLogoutSupported = "backchannel_logout_supported";
@@ -522,6 +525,7 @@ public static class OpenIddictConstants
         public const string RequestedTokenType = "requested_token_type";
         public const string RequestUri = "request_uri";
         public const string Resource = "resource";
+        public const string Response = "response";
         public const string ResponseMode = "response_mode";
         public const string ResponseType = "response_type";
         public const string Scope = "scope";
@@ -641,6 +645,7 @@ public static class OpenIddictConstants
         public static class Features
         {
             public const string DPoP = "ft:dpop";
+            public const string JwtSecuredAuthorizationResponses = "ft:jarm";
             public const string ProofKeyForCodeExchange = "ft:pkce";
             public const string PushedAuthorizationRequests = "ft:par";
             public const string SignedRequestObjects = "ft:jar";
@@ -655,8 +660,12 @@ public static class OpenIddictConstants
     public static class ResponseModes
     {
         public const string FormPost = "form_post";
+        public const string FormPostJwt = "form_post.jwt";
         public const string Fragment = "fragment";
+        public const string FragmentJwt = "fragment.jwt";
+        public const string Jwt = "jwt";
         public const string Query = "query";
+        public const string QueryJwt = "query.jwt";
     }
 
     public static class ResponseTypes
@@ -709,11 +718,19 @@ public static class OpenIddictConstants
     {
         public static class Prefixes
         {
+            public const string AuthorizationResponse = "auth_rsp:";
             public const string BackchannelAuthentication = "bca:";
             public const string IntrospectionResponse = "intr_rsp:";
             public const string Logout = "lgt:";
             public const string Registration = "reg:";
             public const string TokenLifetime = "tkn_lft:";
+        }
+
+        public static class AuthorizationResponse
+        {
+            public const string EncryptionAlgorithm = "auth_rsp:enc_alg";
+            public const string EncryptionMethod = "auth_rsp:enc_enc";
+            public const string SigningAlgorithm = "auth_rsp:sign_alg";
         }
 
         public static class BackchannelAuthentication
@@ -818,6 +835,7 @@ public static class OpenIddictConstants
         {
             public const string AuthenticationRequestId = "urn:openiddict:params:oauth:token-type:auth_req_id";
             public const string AuthorizationCode = "urn:openiddict:params:oauth:token-type:authorization_code";
+            public const string AuthorizationResponse = "urn:openiddict:params:oauth:token-type:authorization_response";
             public const string ClientAssertion = "urn:openiddict:params:oauth:token-type:client_assertion";
             public const string DeviceCode = "urn:openiddict:params:oauth:token-type:device_code";
             public const string DPoPProof = "urn:openiddict:params:oauth:token-type:dpop_proof";

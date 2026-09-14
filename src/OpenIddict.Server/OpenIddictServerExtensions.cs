@@ -63,6 +63,7 @@ public static class OpenIddictServerExtensions
         builder.Services.TryAddSingleton<RequireDPoPSupportEnabled>();
         builder.Services.TryAddSingleton<RequireJsonWebTokenIntrospectionResponseRequested>();
         builder.Services.TryAddSingleton<RequireJsonWebTokenIntrospectionResponsesEnabled>();
+        builder.Services.TryAddSingleton<RequireJwtSecuredAuthorizationResponsesEnabled>();
         builder.Services.TryAddSingleton<RequireDeviceCodeGenerated>();
         builder.Services.TryAddSingleton<RequireDeviceCodeValidated>();
         builder.Services.TryAddSingleton<RequireEndpointPermissionsEnabled>();

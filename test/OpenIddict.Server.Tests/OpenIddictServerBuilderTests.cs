@@ -1875,6 +1875,66 @@ public class OpenIddictServerBuilderTests
     }
 
     [Fact]
+    public void EnableJwtSecuredAuthorizationResponses_JarmIsEnabled()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act
+        builder.EnableJwtSecuredAuthorizationResponses();
+
+        var options = GetOptions(services);
+
+        // Assert
+        Assert.True(options.EnableJwtSecuredAuthorizationResponses);
+        Assert.False(options.RequireJwtSecuredAuthorizationResponses);
+    }
+
+    [Fact]
+    public void RequireJwtSecuredAuthorizationResponses_JarmIsEnforced()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act
+        builder.RequireJwtSecuredAuthorizationResponses();
+
+        var options = GetOptions(services);
+
+        // Assert
+        Assert.True(options.RequireJwtSecuredAuthorizationResponses);
+    }
+
+    [Fact]
+    public void SetAuthorizationResponseLifetime_ThrowsAnExceptionForNonPositiveLifetime()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act and assert
+        Assert.Throws<ArgumentOutOfRangeException>(() => builder.SetAuthorizationResponseLifetime(TimeSpan.Zero));
+    }
+
+    [Fact]
+    public void SetAuthorizationResponseLifetime_LifetimeIsReplaced()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act
+        builder.SetAuthorizationResponseLifetime(TimeSpan.FromSeconds(42));
+
+        var options = GetOptions(services);
+
+        // Assert
+        Assert.Equal(TimeSpan.FromSeconds(42), options.AuthorizationResponseLifetime);
+    }
+
+    [Fact]
     public void RequireSignedRequestObjects_SignedRequestObjectsAreEnforced()
     {
         // Arrange
