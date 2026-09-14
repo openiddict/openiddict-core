@@ -53,9 +53,93 @@ public sealed class OpenIddictValidationServerIntegrationConfiguration : IConfig
         // Import the encryption keys from the server configuration.
         options.EncryptionCredentials.AddRange(settings.EncryptionCredentials);
 
+        // When issuer resolution is enabled, the issuer is resolved per request using the same logic as the server
+        // and tokens are validated against the resolved issuer and its credentials. Requests for which no issuer
+        // can be resolved are rejected, as the issuer can't be safely inferred from the request host in this case.
+        if (settings.EnableIssuerResolution)
+        {
+            options.Handlers.Add(OpenIddictValidationHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
+                .UseInlineHandler(static async context =>
+                {
+                    var server = context.Transaction.ServiceProvider
+                        .GetRequiredService<IOptionsMonitor<OpenIddictServerOptions>>().CurrentValue;
+
+                    var issuer = context is { BaseUri.IsAbsoluteUri: true, RequestUri.IsAbsoluteUri: true } ?
+                        await OpenIddictServerIssuerResolution.ResolveIssuerAsync(new()
+                        {
+                            BaseUri = context.BaseUri,
+                            CancellationToken = context.CancellationToken,
+                            Options = server,
+                            Properties = context.Transaction.Properties,
+                            RequestUri = context.RequestUri,
+                            ServiceProvider = context.Transaction.ServiceProvider
+                        }) : null;
+
+                    if (issuer is null)
+                    {
+                        context.BaseUri = null;
+
+                        context.Reject(
+                            error: Errors.InvalidToken,
+                            description: SR.GetResourceString(SR.ID2465),
+                            uri: SR.FormatID8000(SR.ID2465));
+
+                        return;
+                    }
+
+                    context.BaseUri = issuer;
+                })
+                .SetOrder(OpenIddictValidationHandlers.EvaluateValidatedTokens.Descriptor.Order - 25_000)
+                .SetType(OpenIddictValidationHandlerType.BuiltIn)
+                .Build());
+
+            options.Handlers.Add(OpenIddictValidationHandlerDescriptor.CreateBuilder<ValidateTokenContext>()
+                .UseInlineHandler(static async context =>
+                {
+                    var server = context.Transaction.ServiceProvider
+                        .GetRequiredService<IOptionsMonitor<OpenIddictServerOptions>>().CurrentValue;
+
+                    if (context.BaseUri is not { IsAbsoluteUri: true } issuer)
+                    {
+                        return;
+                    }
+
+                    // Note: only the credentials of the resolved issuer are used to unprotect tokens.
+                    var credentials = await OpenIddictServerKeyRing.ResolveCredentialsAsync(
+                        context.Transaction.ServiceProvider, server, issuer, context.CancellationToken);
+
+                    var parameters = context.TokenValidationParameters;
+                    parameters.IssuerSigningKeys = [.. from signing in credentials.SigningCredentials select signing.Key];
+                    parameters.TokenDecryptionKeys = [.. from encryption in credentials.EncryptionCredentials select encryption.Key];
+                })
+                .SetOrder(OpenIddictValidationHandlers.Protection.ResolveTokenValidationParameters.Descriptor.Order + 500)
+                .SetType(OpenIddictValidationHandlerType.BuiltIn)
+                .Build());
+
+            options.Handlers.Add(OpenIddictValidationHandlerDescriptor.CreateBuilder<ValidateTokenContext>()
+                .UseInlineHandler(static context =>
+                {
+                    // Note: JSON Web Tokens are already validated by IdentityModel but tokens
+                    // using a different format (e.g Data Protection tokens) are not.
+                    if (context.Principal is not null && (context.BaseUri is not { IsAbsoluteUri: true } issuer ||
+                        !OpenIddictServerIssuerResolution.IsIssuedBy(context.Principal, issuer)))
+                    {
+                        context.Reject(
+                            error: Errors.InvalidToken,
+                            description: SR.GetResourceString(SR.ID2464),
+                            uri: SR.FormatID8000(SR.ID2464));
+                    }
+
+                    return ValueTask.CompletedTask;
+                })
+                .SetOrder(OpenIddictValidationHandlers.Protection.ValidatePrincipal.Descriptor.Order + 500)
+                .SetType(OpenIddictValidationHandlerType.BuiltIn)
+                .Build());
+        }
+
         // When automatic key management is enabled, the keys change over time and are
         // resolved from the server key ring every time a token is validated.
-        if (settings.EnableAutomaticKeyManagement)
+        else if (settings.EnableAutomaticKeyManagement)
         {
             options.Handlers.Add(OpenIddictValidationHandlerDescriptor.CreateBuilder<ValidateTokenContext>()
                 .UseInlineHandler(static async context =>

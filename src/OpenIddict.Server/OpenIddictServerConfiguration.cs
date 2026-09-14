@@ -437,6 +437,38 @@ public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenId
             }
         }
 
+        // Ensure the issuer resolution configuration is consistent: a static issuer can't be used, endpoint URIs
+        // must be relative to the issuer of each request and features requiring a static issuer can't be enabled.
+        if (options.EnableIssuerResolution)
+        {
+            if (options.Issuer is not null)
+            {
+                builder.AddError(SR.GetResourceString(SR.ID0923));
+            }
+
+            if (options.Issuers.Exists(static issuer => issuer is null || !OpenIddictServerIssuerResolution.IsValidIssuer(issuer)))
+            {
+                builder.AddError(SR.GetResourceString(SR.ID0924));
+            }
+
+            if (options.GrantTypes.Contains(GrantTypes.Ciba) ||
+                options.MtlsDeviceAuthorizationEndpointAliasUri is not null ||
+                options.MtlsIntrospectionEndpointAliasUri       is not null ||
+                options.MtlsPushedAuthorizationEndpointAliasUri is not null ||
+                options.MtlsRevocationEndpointAliasUri          is not null ||
+                options.MtlsTokenEndpointAliasUri               is not null ||
+                options.MtlsUserInfoEndpointAliasUri            is not null)
+            {
+                builder.AddError(SR.GetResourceString(SR.ID0927));
+            }
+
+            if (uris.Exists(static uri => (uri.IsAbsoluteUri && !OpenIddictHelpers.IsImplicitFileUri(uri)) ||
+                                         uri.OriginalString is { Length: > 0 } value && value[0] is '/'))
+            {
+                builder.AddError(SR.GetResourceString(SR.ID0928));
+            }
+        }
+
         // Ensure the DPoP configuration is consistent.
         if (options.RequireDPoP && !options.EnableDPoPSupport)
         {

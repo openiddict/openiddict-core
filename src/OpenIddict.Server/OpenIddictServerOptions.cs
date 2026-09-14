@@ -23,6 +23,25 @@ public sealed class OpenIddictServerOptions
     public Uri? Issuer { get; set; }
 
     /// <summary>
+    /// Gets or sets a boolean indicating whether the issuer is resolved per request, which allows a single server
+    /// instance to serve multiple issuers (e.g one per tenant, identified by the host or by a path segment).
+    /// When enabled, the issuer is resolved using the registered <see cref="IOpenIddictServerIssuerResolver"/>
+    /// or, if no custom resolver was registered, using the issuers listed in <see cref="Issuers"/>.
+    /// </summary>
+    /// <remarks>
+    /// Note: when issuer resolution is enabled, <see cref="Issuer"/> must not be set and endpoint
+    /// URIs must be relative, as they are resolved relatively to the issuer of each request.
+    /// </remarks>
+    public bool EnableIssuerResolution { get; set; }
+
+    /// <summary>
+    /// Gets the issuers served by this instance when issuer resolution is enabled and no custom
+    /// <see cref="IOpenIddictServerIssuerResolver"/> was registered. The most specific issuer
+    /// whose URI is a base of the request URI is selected for each request.
+    /// </summary>
+    public List<Uri> Issuers { get; } = [];
+
+    /// <summary>
     /// Gets the list of encryption credentials used by the OpenIddict server services.
     /// Multiple credentials can be added to support key rollover, but if X.509 keys
     /// are used, at least one of them must have a valid creation/expiration date.

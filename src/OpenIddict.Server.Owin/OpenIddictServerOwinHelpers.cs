@@ -44,6 +44,19 @@ public static class OpenIddictServerOwinHelpers
     }
 
     /// <summary>
+    /// Retrieves the <see cref="IOwinRequest"/> instance stored in the <see cref="OpenIddictServerIssuerResolutionContext"/> properties.
+    /// </summary>
+    /// <param name="context">The issuer resolution context.</param>
+    /// <returns>The <see cref="IOwinRequest"/> instance or <see langword="null"/> if it couldn't be found.</returns>
+    public static IOwinRequest? GetOwinRequest(this OpenIddictServerIssuerResolutionContext context)
+    {
+        ArgumentNullException.ThrowIfNull(context);
+
+        return context.Properties.TryGetValue(typeof(IOwinRequest).FullName!, out object? property)
+            && property is IOwinRequest request ? request : null;
+    }
+
+    /// <summary>
     /// Retrieves the <see cref="OpenIddictServerEndpointType"/> instance stored in <see cref="BaseContext"/>.
     /// </summary>
     /// <param name="context">The context instance.</param>

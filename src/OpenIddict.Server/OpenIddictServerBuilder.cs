@@ -2564,6 +2564,99 @@ public sealed class OpenIddictServerBuilder
     }
 
     /// <summary>
+    /// Enables per-request issuer resolution, which allows a single server instance to serve multiple issuers.
+    /// The issuers are resolved using the registered <see cref="IOpenIddictServerIssuerResolver"/> or,
+    /// if no custom resolver was registered, using the issuers registered via <see cref="AddIssuers(Uri[])"/>.
+    /// </summary>
+    /// <remarks>
+    /// Note: when issuer resolution is enabled, <see cref="SetIssuer(Uri)"/> must not be used and endpoint URIs
+    /// must be relative (e.g "connect/token"), as they are resolved relatively to the issuer of each request.
+    /// </remarks>
+    /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
+    public OpenIddictServerBuilder EnableIssuerResolution()
+        => Configure(options => options.EnableIssuerResolution = true);
+
+    /// <summary>
+    /// Adds issuers served by this instance and enables per-request issuer resolution. For each request, the most
+    /// specific issuer whose URI is a base of the request URI is selected (e.g "https://contoso.com/tenant1/"
+    /// for "https://contoso.com/tenant1/connect/token" or "https://tenant2.contoso.com/" for host-based tenants).
+    /// </summary>
+    /// <param name="uris">The issuer URIs.</param>
+    /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
+    public OpenIddictServerBuilder AddIssuers(params Uri[] uris)
+    {
+        ArgumentNullException.ThrowIfNull(uris);
+
+        if (Array.Exists(uris, static uri => uri is null || !OpenIddictServerIssuerResolution.IsValidIssuer(uri)))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0924), nameof(uris));
+        }
+
+        return Configure(options =>
+        {
+            options.EnableIssuerResolution = true;
+            options.Issuers.AddRange(uris);
+        });
+    }
+
+    /// <summary>
+    /// Adds issuers served by this instance and enables per-request issuer resolution. For each request, the most
+    /// specific issuer whose URI is a base of the request URI is selected (e.g "https://contoso.com/tenant1/"
+    /// for "https://contoso.com/tenant1/connect/token" or "https://tenant2.contoso.com/" for host-based tenants).
+    /// </summary>
+    /// <param name="uris">The issuer URIs.</param>
+    /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
+    public OpenIddictServerBuilder AddIssuers(
+        [StringSyntax(StringSyntaxAttribute.Uri, UriKind.Absolute)] params string[] uris)
+    {
+        ArgumentNullException.ThrowIfNull(uris);
+
+        var values = new Uri[uris.Length];
+
+        for (var index = 0; index < uris.Length; index++)
+        {
+            if (!Uri.TryCreate(uris[index], UriKind.Absolute, out Uri? value))
+            {
+                throw new ArgumentException(SR.GetResourceString(SR.ID0924), nameof(uris));
+            }
+
+            values[index] = value;
+        }
+
+        return AddIssuers(values);
+    }
+
+    /// <summary>
+    /// Registers a custom issuer resolver and enables per-request issuer resolution.
+    /// </summary>
+    /// <typeparam name="TResolver">The type of the resolver, registered as a singleton.</typeparam>
+    /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
+    public OpenIddictServerBuilder SetIssuerResolver<
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TResolver>()
+        where TResolver : class, IOpenIddictServerIssuerResolver
+    {
+        Services.Replace(ServiceDescriptor.Singleton<IOpenIddictServerIssuerResolver, TResolver>());
+
+        return EnableIssuerResolution();
+    }
+
+    /// <summary>
+    /// Registers a provider returning the signing and encryption credentials specific to each issuer
+    /// when issuer resolution is enabled. Issuers for which the provider returns no credentials
+    /// use the default credentials of the server.
+    /// </summary>
+    /// <typeparam name="TProvider">The type of the provider, registered as a singleton.</typeparam>
+    /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
+    public OpenIddictServerBuilder SetIssuerCredentialsProvider<
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TProvider>()
+        where TProvider : class, IOpenIddictServerIssuerCredentialsProvider
+    {
+        Services.Replace(ServiceDescriptor.Singleton<IOpenIddictServerIssuerCredentialsProvider, TProvider>());
+
+        return this;
+    }
+
+    /// <summary>
     /// Sets the URI listed as the mTLS device authorization
     /// endpoint alias in the server configuration metadata.
     /// </summary>

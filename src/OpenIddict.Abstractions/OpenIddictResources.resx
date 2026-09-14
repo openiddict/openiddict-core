@@ -2200,7 +2200,11 @@ To use request objects by reference with the degraded mode, call 'services.AddOp
     <value>Issuer resolution cannot be used with features that require a static issuer (CIBA or mTLS endpoint aliases).</value>
   </data>
   <data name="ID0928" xml:space="preserve">
-    <value>Endpoint URIs must be relative when issuer resolution is enabled, as they are resolved relatively to the issuer of each request.</value>
+    <value>Endpoint URIs must be relative and must not start with a '/' when issuer resolution is enabled, as they are resolved relatively to the issuer of each request (e.g 'connect/token').</value>
+  </data>
+  <data name="ID0929" xml:space="preserve">
+    <value>No issuer can be resolved because no issuer was registered and no custom issuer resolver was registered.
+To register issuers, call 'services.AddOpenIddict().AddServer().AddIssuers()' or register a custom resolver using 'services.AddOpenIddict().AddServer().SetIssuerResolver()'.</value>
   </data>
   <data name="ID0930" xml:space="preserve">
     <value>The request object couldn't be retrieved because the host '{0}' resolved to a disallowed or unknown address.</value>
@@ -3196,6 +3200,9 @@ To use request objects by reference with the degraded mode, call 'services.AddOp
   </data>
   <data name="ID2464" xml:space="preserve">
     <value>The specified token was not issued by the current issuer.</value>
+  </data>
+  <data name="ID2465" xml:space="preserve">
+    <value>The issuer of the current request couldn't be resolved.</value>
   </data>
   <data name="ID4000" xml:space="preserve">
     <value>The '{0}' parameter shouldn't be null or empty at this point.</value>

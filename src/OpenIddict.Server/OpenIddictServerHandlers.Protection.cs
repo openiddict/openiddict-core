@@ -39,6 +39,7 @@ public static partial class OpenIddictServerHandlers
             MapInternalClaims.Descriptor,
             RestoreTokenEntryProperties.Descriptor,
             ValidatePrincipal.Descriptor,
+            ValidateTokenIssuer.Descriptor,
             ValidateExpirationDate.Descriptor,
             ValidatePresenters.Descriptor,
             ValidateAudiences.Descriptor,
@@ -957,6 +958,57 @@ public static partial class OpenIddictServerHandlers
                 if (context.ValidTokenTypes.Count is > 0 && !context.ValidTokenTypes.Contains(type))
                 {
                     throw new InvalidOperationException(SR.FormatID0005(type, string.Join(", ", context.ValidTokenTypes)));
+                }
+
+                return ValueTask.CompletedTask;
+            }
+        }
+
+        /// <summary>
+        /// Contains the logic responsible for rejecting tokens that were not issued by the issuer resolved
+        /// for the current request when issuer resolution is enabled. While JSON Web Tokens are already
+        /// validated by IdentityModel, this check also applies to tokens using a different format.
+        /// </summary>
+        public sealed class ValidateTokenIssuer : IOpenIddictServerHandler<ValidateTokenContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateTokenContext>()
+                    .UseSingletonHandler<ValidateTokenIssuer>()
+                    .SetOrder(ValidatePrincipal.Descriptor.Order + 500)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(ValidateTokenContext context)
+            {
+                ArgumentNullException.ThrowIfNull(context);
+
+                Debug.Assert(context.Principal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
+
+                // Note: client assertions and request objects are issued by client applications.
+                if (!context.Options.EnableIssuerResolution || (context.ValidTokenTypes.Count is 1 &&
+                   (context.ValidTokenTypes.Contains(TokenTypeIdentifiers.Private.ClientAssertion) ||
+                    context.ValidTokenTypes.Contains(TokenTypeIdentifiers.Private.RequestObject))))
+                {
+                    return ValueTask.CompletedTask;
+                }
+
+                if (context.BaseUri is not { IsAbsoluteUri: true } issuer ||
+                    !OpenIddictServerIssuerResolution.IsIssuedBy(context.Principal, issuer))
+                {
+                    context.Logger.LogInformation(6727, SR.GetResourceString(SR.ID6727),
+                        context.Principal.GetClaim(Claims.Private.Issuer) ?? context.Principal.GetClaim(Claims.Issuer),
+                        context.BaseUri);
+
+                    context.Reject(
+                        error: Errors.InvalidToken,
+                        description: SR.GetResourceString(SR.ID2464),
+                        uri: SR.FormatID8000(SR.ID2464));
+
+                    return ValueTask.CompletedTask;
                 }
 
                 return ValueTask.CompletedTask;

@@ -32,6 +32,19 @@ public static class OpenIddictServerAspNetCoreHelpers
     }
 
     /// <summary>
+    /// Retrieves the <see cref="HttpRequest"/> instance stored in the <see cref="OpenIddictServerIssuerResolutionContext"/> properties.
+    /// </summary>
+    /// <param name="context">The issuer resolution context.</param>
+    /// <returns>The <see cref="HttpRequest"/> instance or <see langword="null"/> if it couldn't be found.</returns>
+    public static HttpRequest? GetHttpRequest(this OpenIddictServerIssuerResolutionContext context)
+    {
+        ArgumentNullException.ThrowIfNull(context);
+
+        return context.Properties.TryGetValue(typeof(HttpRequest).FullName!, out object? property)
+            && property is HttpRequest request ? request : null;
+    }
+
+    /// <summary>
     /// Retrieves the <see cref="OpenIddictServerEndpointType"/> instance stored in <see cref="BaseContext"/>.
     /// </summary>
     /// <param name="context">The context instance.</param>

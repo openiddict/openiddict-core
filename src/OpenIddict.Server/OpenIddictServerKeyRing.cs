@@ -59,15 +59,41 @@ public sealed class OpenIddictServerKeyRing
             return transaction.Credentials;
         }
 
-        if (!transaction.Options.EnableAutomaticKeyManagement)
+        // Note: when issuer resolution is enabled, the base URI of the transaction is the resolved issuer.
+        return transaction.Credentials = await ResolveCredentialsAsync(transaction.ServiceProvider, transaction.Options,
+            transaction.Options.EnableIssuerResolution ? transaction.BaseUri : null, transaction.CancellationToken);
+    }
+
+    /// <summary>
+    /// Resolves the credentials that must be used for the specified issuer.
+    /// </summary>
+    /// <param name="provider">The service provider.</param>
+    /// <param name="options">The server options.</param>
+    /// <param name="issuer">
+    /// The issuer resolved for the current request when issuer resolution is enabled, <see langword="null"/> otherwise.
+    /// </param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns>The credentials.</returns>
+    public static async ValueTask<OpenIddictServerCredentials> ResolveCredentialsAsync(IServiceProvider provider,
+        OpenIddictServerOptions options, Uri? issuer, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(provider);
+        ArgumentNullException.ThrowIfNull(options);
+
+        // If issuer-specific credentials are available, use them instead of the default credentials.
+        if (issuer is { IsAbsoluteUri: true } &&
+            provider.GetService<IOpenIddictServerIssuerCredentialsProvider>() is IOpenIddictServerIssuerCredentialsProvider source &&
+            await source.GetCredentialsAsync(issuer, provider, cancellationToken) is OpenIddictServerCredentials credentials)
         {
-            return transaction.Credentials = new(transaction.Options.SigningCredentials, transaction.Options.EncryptionCredentials);
+            return credentials;
         }
 
-        var ring = transaction.ServiceProvider.GetRequiredService<OpenIddictServerKeyRing>();
+        if (!options.EnableAutomaticKeyManagement)
+        {
+            return new(options.SigningCredentials, options.EncryptionCredentials);
+        }
 
-        return transaction.Credentials = await ring.GetCredentialsAsync(
-            transaction.ServiceProvider, transaction.CancellationToken);
+        return await provider.GetRequiredService<OpenIddictServerKeyRing>().GetCredentialsAsync(provider, cancellationToken);
     }
 
     /// <summary>

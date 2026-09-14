@@ -35,6 +35,7 @@ public static partial class OpenIddictServerHandlers
         /*
          * Top-level request processing:
          */
+        ResolveIssuer.Descriptor,
         InferEndpointType.Descriptor,
 
         /*
@@ -147,6 +148,61 @@ public static partial class OpenIddictServerHandlers
         .. Session.DefaultHandlers,
         .. UserInfo.DefaultHandlers
     ];
+
+    /// <summary>
+    /// Contains the logic responsible for resolving the issuer of the current request when issuer resolution
+    /// is enabled and using it as the base URI of the request, so that endpoint URIs, discovery metadata and
+    /// tokens are specific to the resolved issuer. Requests for which no issuer can be resolved are not handled.
+    /// </summary>
+    public sealed class ResolveIssuer : IOpenIddictServerHandler<ProcessRequestContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+            = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessRequestContext>()
+                .UseSingletonHandler<ResolveIssuer>()
+                .SetOrder(int.MinValue + 75_000)
+                .SetType(OpenIddictServerHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public async ValueTask HandleAsync(ProcessRequestContext context)
+        {
+            ArgumentNullException.ThrowIfNull(context);
+
+            if (!context.Options.EnableIssuerResolution ||
+                context is not { BaseUri.IsAbsoluteUri: true, RequestUri.IsAbsoluteUri: true })
+            {
+                return;
+            }
+
+            var issuer = await OpenIddictServerIssuerResolution.ResolveIssuerAsync(new()
+            {
+                BaseUri = context.BaseUri,
+                CancellationToken = context.CancellationToken,
+                Options = context.Options,
+                Properties = context.Transaction.Properties,
+                RequestUri = context.RequestUri,
+                ServiceProvider = context.ServiceProvider
+            });
+
+            if (issuer is null)
+            {
+                context.Logger.LogDebug(6726, SR.GetResourceString(SR.ID6726), context.RequestUri);
+
+                // Note: the base URI is removed to ensure no endpoint is matched and no token can be
+                // issued or validated using an issuer inferred from the (untrusted) request host.
+                context.BaseUri = null;
+
+                return;
+            }
+
+            context.Logger.LogDebug(6725, SR.GetResourceString(SR.ID6725), issuer, context.RequestUri);
+
+            context.BaseUri = issuer;
+        }
+    }
 
     /// <summary>
     /// Contains the logic responsible for inferring the endpoint type from the request URI.
