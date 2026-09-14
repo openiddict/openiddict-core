@@ -13,6 +13,7 @@
 | Parameter | Templates | Default |
 |---|---|---|
 | `--OpenIddictVersion` | all | `8.0.0-preview.5` (pack fails if it differs from `eng/Versions.props`) |
+| `--admin-ui` | `openiddict-server-identity` | `false` (maps `OpenIddict.Server.AspNetCore.AdminUI` under `/admin`, policy `admin`) |
 | `--Authority`, `--ClientId` | `openiddict-bff` | `https://localhost:44310/`, `bff` |
 
 ## Usage

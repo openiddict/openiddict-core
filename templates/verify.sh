@@ -29,7 +29,7 @@ check() { # name expected actual
 }
 
 echo "== pack"
-for p in OpenIddict.Abstractions OpenIddict.Core OpenIddict.Server OpenIddict.Server.AspNetCore \
+for p in OpenIddict.Abstractions OpenIddict.Core OpenIddict.Server OpenIddict.Server.AspNetCore OpenIddict.Server.AspNetCore.AdminUI \
          OpenIddict.EntityFrameworkCore.Models OpenIddict.EntityFrameworkCore OpenIddict.Client \
          OpenIddict.Client.AspNetCore OpenIddict.Client.SystemNetHttp OpenIddict.Client.AspNetCore.Bff; do
   "$DN" pack "$REPO/src/$p/$p.csproj" -o "$WORK/feed" > "$WORK/out/pack-$p.log" 2>&1 || { echo "  FAIL pack $p (see $WORK/out/pack-$p.log)"; exit 1; }
@@ -59,6 +59,10 @@ for t in Server.Identity:openiddict-server-identity:IdentityServer Server.Empty:
   "$DN" new "$name" -n "$project" --OpenIddictVersion "$VERSION" > /dev/null || { echo "  FAIL new $name"; exit 1; }
   if "$DN" build "$project/$project.csproj" > "$WORK/out/build-$project.log" 2>&1; then echo "  PASS build $name"; else echo "  FAIL build $name (see $WORK/out/build-$project.log)"; exit 1; fi
 done
+
+rm -rf IdentityAdminServer
+"$DN" new openiddict-server-identity -n IdentityAdminServer --OpenIddictVersion "$VERSION" --admin-ui > /dev/null || { echo "  FAIL new openiddict-server-identity --admin-ui"; exit 1; }
+if "$DN" build IdentityAdminServer/IdentityAdminServer.csproj > "$WORK/out/build-IdentityAdminServer.log" 2>&1; then echo "  PASS build openiddict-server-identity --admin-ui"; else echo "  FAIL build openiddict-server-identity --admin-ui (see $WORK/out/build-IdentityAdminServer.log)"; exit 1; fi
 
 start() { # project port
   rm -f "$1"/*.sqlite3*
@@ -104,6 +108,11 @@ check authorization-code yes "$([ -n "$CODE" ] && echo yes || echo no)"
 ACCESS=$(redeem "$B")
 check userinfo '"alice@example.com"' "$(curl -sk -H "Authorization: Bearer $ACCESS" "$B/connect/userinfo" | json email)"
 stop 5198
+
+echo "== smoke openiddict-server-identity --admin-ui"
+start IdentityAdminServer 5195
+check admin-ui-requires-authentication 302 "$(status "https://127.0.0.1:5195/admin/applications")"
+stop 5195
 
 echo "== smoke openiddict-server-empty"
 start EmptyServer 5197
