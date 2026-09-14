@@ -74,6 +74,91 @@ public class OpenIddictClientHandlersJarmTests
         Assert.Equal(SR.FormatID0647(ResponseModes.QueryJwt), exception.Message);
     }
 
+    [Fact]
+    public async Task AttachJwtResponseMode_ThrowsAnExceptionForResponseModeWithoutJwtVariant()
+    {
+        // Arrange
+        using var provider = CreateProvider(required: true);
+        var context = new ProcessChallengeContext(CreateTransaction(provider)) { ResponseMode = "web_message" };
+
+        // Act and assert
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            await new AttachJwtResponseMode().HandleAsync(context));
+
+        Assert.Equal(SR.FormatID0648("web_message"), exception.Message);
+    }
+
+    [Theory]
+    [InlineData(ResponseModes.Query, ResponseTypes.Code, ResponseModes.Jwt)]
+    [InlineData(ResponseModes.Fragment, ResponseTypes.Code + " " + ResponseTypes.IdToken, ResponseModes.Jwt)]
+    [InlineData(ResponseModes.Query, ResponseTypes.Code + " " + ResponseTypes.IdToken, null)]
+    [InlineData(ResponseModes.Fragment, ResponseTypes.Code, null)]
+    [InlineData(ResponseModes.FormPost, ResponseTypes.Code, null)]
+    public async Task AttachJwtResponseMode_GenericJwtResponseModeIsUsedWhenVariantIsNotListed(string mode, string type, string? expected)
+    {
+        // Arrange
+        using var provider = CreateProvider(required: true);
+        var transaction = CreateTransaction(provider);
+        transaction.Configuration.ResponseModesSupported.Add(ResponseModes.Jwt);
+
+        var context = new ProcessChallengeContext(transaction) { ResponseMode = mode, ResponseType = type };
+
+        // Act and assert
+        if (expected is null)
+        {
+            await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+                await new AttachJwtResponseMode().HandleAsync(context));
+        }
+
+        else
+        {
+            await new AttachJwtResponseMode().HandleAsync(context);
+            Assert.Equal(expected, context.ResponseMode);
+        }
+    }
+
+    [Theory]
+    [InlineData(true, new string[0], new string[0])]
+    [InlineData(true, new[] { ResponseModes.Query, ResponseModes.FormPost }, new[] { ResponseModes.FormPost, ResponseModes.Query })]
+    [InlineData(true, new[] { ResponseModes.QueryJwt }, new[] { ResponseModes.Query })]
+    [InlineData(true, new[] { ResponseModes.Query, ResponseModes.FormPostJwt }, new[] { ResponseModes.FormPost })]
+    [InlineData(true, new[] { ResponseModes.Jwt }, new[] { ResponseModes.Fragment, ResponseModes.Query })]
+    [InlineData(true, new[] { ResponseModes.FragmentJwt, ResponseModes.FormPostJwt }, new[] { ResponseModes.FormPost, ResponseModes.Fragment })]
+    [InlineData(false, new[] { ResponseModes.QueryJwt }, new[] { ResponseModes.QueryJwt })]
+    public void GetNegotiableServerResponseModes_ReturnsExpectedModes(bool required, string[] listed, string[] expected)
+    {
+        // Arrange
+        using var provider = CreateProvider(required);
+        var transaction = CreateTransaction(provider);
+        transaction.Configuration.ResponseModesSupported.UnionWith(listed);
+
+        var context = new ProcessChallengeContext(transaction);
+
+        // Act
+        var modes = AttachJwtResponseMode.GetNegotiableServerResponseModes(context);
+
+        // Assert
+        Assert.Equal(expected, modes.OrderBy(static mode => mode, StringComparer.Ordinal).ToArray());
+    }
+
+    [Fact]
+    public async Task AttachResponseMode_BaseResponseModeIsNegotiatedWhenServerOnlyListsJwtResponseModes()
+    {
+        // Arrange
+        using var provider = CreateProvider(required: true);
+        var transaction = CreateTransaction(provider);
+        transaction.Configuration.ResponseModesSupported.UnionWith([ResponseModes.Jwt, ResponseModes.QueryJwt]);
+
+        var context = new ProcessChallengeContext(transaction) { ResponseType = ResponseTypes.Code };
+
+        // Act
+        await new AttachResponseMode().HandleAsync(context);
+        await new AttachJwtResponseMode().HandleAsync(context);
+
+        // Assert
+        Assert.Equal(ResponseModes.QueryJwt, context.ResponseMode);
+    }
+
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
@@ -181,6 +266,46 @@ public class OpenIddictClientHandlersJarmTests
         if (rejected)
         {
             Assert.Equal(SR.GetResourceString(SR.ID2325), context.ErrorDescription);
+        }
+    }
+
+    [Fact]
+    public async Task ValidateAuthorizationResponseToken_Rs256IsRequiredWhenNoAlgorithmIsRegisteredOrAdvertised()
+    {
+        // Arrange
+        using var provider = CreateProvider(required: true);
+        var context = CreateAuthenticationContext(provider, CreateToken(
+            signing: new SigningCredentials(ServerSigningKey, SecurityAlgorithms.RsaSsaPssSha256)));
+
+        // Act
+        await CreateHandler(provider).HandleAsync(context);
+
+        // Assert
+        Assert.True(context.IsRejected);
+        Assert.Equal(SR.GetResourceString(SR.ID2325), context.ErrorDescription);
+    }
+
+    [Theory]
+    [InlineData(false, false, false)]
+    [InlineData(false, true, true)]
+    [InlineData(true, true, false)]
+    [InlineData(true, false, false)]
+    public async Task ValidateAuthorizationResponseToken_EncryptionIsValidatedWhenRequired(bool encrypted, bool required, bool rejected)
+    {
+        // Arrange
+        using var provider = CreateProvider(required: true);
+        var context = CreateAuthenticationContext(provider, CreateToken(encryption: encrypted ? GetEncryptionCredentials(provider) : null));
+        context.Registration.RequireEncryptedAuthorizationResponses = required;
+
+        // Act
+        await CreateHandler(provider).HandleAsync(context);
+
+        // Assert
+        Assert.Equal(rejected, context.IsRejected);
+
+        if (rejected)
+        {
+            Assert.Equal(SR.GetResourceString(SR.ID2326), context.ErrorDescription);
         }
     }
 

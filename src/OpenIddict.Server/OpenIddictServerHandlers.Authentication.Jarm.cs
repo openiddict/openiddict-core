@@ -80,9 +80,11 @@ public static partial class OpenIddictServerHandlers
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ApplyAuthorizationResponseContext>()
                     .AddFilter<RequireJwtSecuredAuthorizationResponsesEnabled>()
                     .UseSingletonHandler<GenerateAuthorizationResponseToken>()
-                    // Note: this handler is deliberately executed after the custom handlers using the default order
-                    // so that the parameters they add to the response are also included in the generated token.
-                    .SetOrder(50_000)
+                    // Note: this handler is deliberately executed as late as possible (just before the host handlers
+                    // responsible for applying the response, whose order starts at 250_000) so that the parameters added
+                    // by custom handlers are also included in the generated token. Parameters added by handlers whose
+                    // order is 249_000 or higher are not protected by the JWT and are ignored by conforming clients.
+                    .SetOrder(249_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
@@ -239,10 +241,10 @@ public static partial class OpenIddictServerHandlers
                     // Note: the algorithms advertised in the discovery document are JWA short names, so the
                     // algorithm attached to the signing credentials (that can be expressed using the XML-DSig
                     // form, e.g "http://www.w3.org/2001/04/xmldsig-more#rsa-sha256") is normalized first.
-                    context.SigningCredentials = credentials.SigningCredentials.FirstOrDefault(credentials =>
+                    context.SigningCredentials = NormalizeSigningCredentials(credentials.SigningCredentials.FirstOrDefault(credentials =>
                         credentials.Key is AsymmetricSecurityKey &&
                         string.Equals(GetJwaSigningAlgorithm(credentials.Algorithm), algorithm, StringComparison.Ordinal))
-                        ?? throw new InvalidOperationException(SR.FormatID0644(algorithm, Settings.AuthorizationResponse.SigningAlgorithm));
+                        ?? throw new InvalidOperationException(SR.FormatID0644(algorithm, Settings.AuthorizationResponse.SigningAlgorithm)));
                 }
 
                 // Note: JWT authorization responses are only encrypted if the client application explicitly opted in
@@ -344,6 +346,25 @@ public static partial class OpenIddictServerHandlers
 
             _ => algorithm
         };
+
+        /// <summary>
+        /// Returns signing credentials whose algorithm is expressed using its JWA short name (RFC 7518, section 3.1),
+        /// so that the "alg" header of the generated JWT is a registered value (RFC 7515, section 4.1.1).
+        /// The specified credentials are returned as-is if they already use a JWA algorithm name.
+        /// </summary>
+        internal static SigningCredentials NormalizeSigningCredentials(SigningCredentials credentials)
+        {
+            var algorithm = GetJwaSigningAlgorithm(credentials.Algorithm);
+            if (string.Equals(algorithm, credentials.Algorithm, StringComparison.Ordinal))
+            {
+                return credentials;
+            }
+
+            return new SigningCredentials(credentials.Key, algorithm)
+            {
+                CryptoProviderFactory = credentials.CryptoProviderFactory
+            };
+        }
 
         /// <summary>
         /// Determines whether the JWT response mode specified in the request is enabled.

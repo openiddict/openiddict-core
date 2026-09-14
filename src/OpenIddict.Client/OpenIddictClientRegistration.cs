@@ -184,9 +184,25 @@ public sealed class OpenIddictClientRegistration
     /// responses (JARM), which corresponds to the "authorization_signed_response_alg" client metadata
     /// registered for this client. If no value is explicitly set, the JWT authorization responses signed
     /// using any of the algorithms advertised by the server via "authorization_signing_alg_values_supported"
-    /// are accepted (or any asymmetric algorithm, if the server doesn't advertise the supported algorithms).
+    /// are accepted or, if the server doesn't advertise the supported algorithms, only RS256 (the default
+    /// value defined by the JARM specification) is accepted.
     /// </summary>
+    /// <remarks>
+    /// Note: accepting all the advertised algorithms when no value is set is a deliberate relaxation of the JARM
+    /// specification (that defines RS256 as the default value), as clients that don't use dynamic client
+    /// registration have no way to tell the server which algorithm they expect.
+    /// </remarks>
     public string? AuthorizationResponseSigningAlgorithm { get; set; }
+
+    /// <summary>
+    /// Gets or sets a boolean indicating whether JWT authorization responses (JARM) must be encrypted, which
+    /// corresponds to the "authorization_encrypted_response_alg" client metadata being registered for this client.
+    /// When enabled, JWT authorization responses that are only signed are rejected to prevent downgrade attacks.
+    /// </summary>
+    /// <remarks>
+    /// Note: encrypted responses are decrypted using the encryption credentials registered in the client options.
+    /// </remarks>
+    public bool RequireEncryptedAuthorizationResponses { get; set; }
 
     /// <summary>
     /// Gets the client authentication methods allowed by the client instance.

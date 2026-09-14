@@ -701,7 +701,9 @@ public static partial class OpenIddictClientAspNetCoreHandlers
                     _ => context.Options.ResponseModes.Intersect(context.Registration.ResponseModes, StringComparer.Ordinal).ToList()
                 },
 
-                SupportedServerResponseModes: context.Configuration.ResponseModesSupported) switch
+                // Note: when JWT Secured Authorization Response Modes are required, the base response modes are
+                // negotiated based on the JWT variants supported by the server (see AttachJwtResponseMode).
+                SupportedServerResponseModes: OpenIddictClientHandlers.AttachJwtResponseMode.GetNegotiableServerResponseModes(context)) switch
             {
                 // If both the client and the server support response_mode=form_post, use it if the response
                 // types contain a value that prevents response_mode=query from being used (token/id_token).

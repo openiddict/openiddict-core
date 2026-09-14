@@ -71,6 +71,30 @@ public abstract partial class OpenIddictServerIntegrationTests
     }
 
     [Fact]
+    public async Task HandleConfigurationRequest_PlainResponseModesAreNotReturnedWhenJwtResponseModesAreRequired()
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.EnableDegradedMode();
+            options.EnableJwtSecuredAuthorizationResponses();
+            options.RequireJwtSecuredAuthorizationResponses();
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.GetAsync("/.well-known/openid-configuration");
+
+        // Assert
+        var modes = (ImmutableArray<string?>?) response[Metadata.ResponseModesSupported];
+        Assert.NotNull(modes);
+        Assert.Equal(
+            new[] { ResponseModes.FormPostJwt, ResponseModes.FragmentJwt, ResponseModes.Jwt, ResponseModes.QueryJwt },
+            modes.Value.Select(static mode => mode!).OrderBy(static mode => mode, StringComparer.Ordinal).ToArray());
+    }
+
+    [Fact]
     public async Task HandleConfigurationRequest_JwtResponseModesAreNotReturnedWhenDisabled()
     {
         // Arrange
@@ -454,6 +478,41 @@ public abstract partial class OpenIddictServerIntegrationTests
             .EnumerateArray().Select(static element => element.GetString()!).ToArray());
     }
 
+    [Theory]
+    [InlineData(10_000)]
+    [InlineData(200_000)]
+    [InlineData(248_000)]
+    public async Task ApplyAuthorizationResponse_TokenContainsParametersAddedByLateCustomHandlers(int order)
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options =>
+        {
+            ConfigureJwtResponseServer(options);
+
+            options.AddEventHandler<ApplyAuthorizationResponseContext>(builder =>
+            {
+                builder.UseInlineHandler(context =>
+                {
+                    context.Response["custom_parameter"] = "custom_value";
+
+                    return ValueTask.CompletedTask;
+                });
+
+                builder.SetOrder(order);
+            });
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/connect/authorize", CreateJwtResponseRequest());
+
+        // Assert
+        Assert.Null(response["custom_parameter"]);
+        var token = await ValidateAuthorizationResponseTokenAsync(client, (string?) response[Parameters.Response]);
+        Assert.Equal("custom_value", token.GetPayloadValue<string>("custom_parameter"));
+    }
+
     [Fact]
     public async Task ApplyAuthorizationResponse_NonJwtResponseModesAreNotAffected()
     {
@@ -820,6 +879,34 @@ public abstract partial class OpenIddictServerIntegrationTests
         var value = (string?) response[Parameters.Response];
         Assert.False(string.IsNullOrEmpty(value));
         Assert.Equal("rsa", new JsonWebToken(value).Kid);
+        Assert.Equal(SecurityAlgorithms.RsaSha256, new JsonWebToken(value).Alg);
+    }
+
+    [Fact]
+    public async Task ApplyAuthorizationResponse_XmlDSigCredentialsAreNormalizedByDefault()
+    {
+        // Arrange
+        using var algorithm = RSA.Create(keySizeInBits: 2048);
+
+        await using var server = await CreateServerAsync(options =>
+        {
+            ConfigureJwtResponseServer(options);
+
+            options.Configure(options => options.SigningCredentials.Clear());
+            options.AddSigningCredentials(new SigningCredentials(
+                new RsaSecurityKey(algorithm) { KeyId = "rsa" }, SecurityAlgorithms.RsaSha256Signature));
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/connect/authorize", CreateJwtResponseRequest());
+
+        // Assert
+        var value = (string?) response[Parameters.Response];
+        Assert.False(string.IsNullOrEmpty(value));
+        Assert.Equal("rsa", new JsonWebToken(value).Kid);
+        Assert.Equal(SecurityAlgorithms.RsaSha256, new JsonWebToken(value).Alg);
     }
 
     [Fact]

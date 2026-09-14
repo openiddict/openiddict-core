@@ -52,20 +52,85 @@ public static partial class OpenIddictClientHandlers
                 ResponseModes.Jwt or ResponseModes.QueryJwt or
                 ResponseModes.FragmentJwt or ResponseModes.FormPostJwt => context.ResponseMode,
 
-                _ => throw new InvalidOperationException(SR.FormatID0647(context.ResponseMode))
+                _ => throw new InvalidOperationException(SR.FormatID0648(context.ResponseMode))
             };
 
             // If the server explicitly lists the supported response modes, ensure the JWT variant is supported.
-            if (context.Configuration.ResponseModesSupported.Count is > 0 &&
-               !context.Configuration.ResponseModesSupported.Contains(mode))
+            var server = context.Configuration.ResponseModesSupported;
+            if (server.Count is > 0 && !server.Contains(mode))
             {
-                throw new InvalidOperationException(SR.FormatID0647(mode));
+                // If the specific variant is not listed but the generic "jwt" response mode is, use it when it
+                // resolves to the same variant on the server side ("query.jwt" if the response type doesn't
+                // contain id_token or token, "fragment.jwt" otherwise).
+                //
+                // See https://openid.net/specs/oauth-v2-jarm.html#section-2.3.4 for more information.
+                if (server.Contains(ResponseModes.Jwt) && string.Equals(mode, ResolveJwtResponseMode(context.ResponseType), StringComparison.Ordinal))
+                {
+                    mode = ResponseModes.Jwt;
+                }
+
+                else
+                {
+                    throw new InvalidOperationException(SR.FormatID0647(mode));
+                }
             }
 
             context.ResponseMode = mode;
 
             return ValueTask.CompletedTask;
         }
+
+        /// <summary>
+        /// Resolves the response modes supported by the authorization server that can be negotiated by the
+        /// handlers responsible for selecting the base response mode ("query", "fragment" or "form_post").
+        /// When the client registration requires JWT Secured Authorization Response Modes (JARM) and the server
+        /// explicitly lists the response modes it supports, a base response mode is only considered supported
+        /// if its JWT variant is listed (or if "jwt" is listed and resolves to that variant, which is true for
+        /// "query" and "fragment"). Otherwise, the response modes listed by the server are returned as-is.
+        /// </summary>
+        /// <param name="context">The context associated with the event to process.</param>
+        /// <returns>The response modes that can be negotiated.</returns>
+        public static ICollection<string> GetNegotiableServerResponseModes(ProcessChallengeContext context)
+        {
+            ArgumentNullException.ThrowIfNull(context);
+
+            var server = context.Configuration.ResponseModesSupported;
+            if (context.Registration is not { RequireJwtSecuredAuthorizationResponses: true } || server.Count is 0)
+            {
+                return server;
+            }
+
+            var modes = new HashSet<string>(StringComparer.Ordinal);
+
+            if (server.Contains(ResponseModes.QueryJwt) || server.Contains(ResponseModes.Jwt))
+            {
+                modes.Add(ResponseModes.Query);
+            }
+
+            if (server.Contains(ResponseModes.FragmentJwt) || server.Contains(ResponseModes.Jwt))
+            {
+                modes.Add(ResponseModes.Fragment);
+            }
+
+            if (server.Contains(ResponseModes.FormPostJwt))
+            {
+                modes.Add(ResponseModes.FormPost);
+            }
+
+            // Note: if the server doesn't list any JWT response mode, the listed response modes are returned as-is
+            // so that the base response mode can be negotiated and a descriptive exception thrown by this handler.
+            if (modes.Count is 0)
+            {
+                return server;
+            }
+
+            return modes;
+        }
+
+        private static string ResolveJwtResponseMode(string? type)
+            => type?.Split(Separators.Space) is IList<string> types &&
+               (types.Contains(ResponseTypes.IdToken) || types.Contains(ResponseTypes.Token))
+                ? ResponseModes.FragmentJwt : ResponseModes.QueryJwt;
     }
 
     /// <summary>
@@ -218,6 +283,15 @@ public static partial class OpenIddictClientHandlers
                 return;
             }
 
+            // If the client registration requires encrypted responses, reject JWTs that were only signed.
+            //
+            // See https://openid.net/specs/oauth-v2-jarm.html#section-2.2 for more information.
+            if (token.InnerToken is null && context.Registration.RequireEncryptedAuthorizationResponses)
+            {
+                Reject(SR.GetResourceString(SR.ID2326), SR.ID2326);
+                return;
+            }
+
             if (token.InnerToken is not null)
             {
                 token = token.InnerToken;
@@ -225,13 +299,15 @@ public static partial class OpenIddictClientHandlers
 
             // Ensure the JWT was signed using the algorithm registered for the client (the equivalent of the
             // "authorization_signed_response_alg" client metadata) or, if no algorithm was explicitly set,
-            // using one of the algorithms advertised by the server in "authorization_signing_alg_values_supported".
+            // using one of the algorithms advertised by the server in "authorization_signing_alg_values_supported"
+            // (or RS256, the default value defined by JARM, if the server doesn't advertise any algorithm).
             //
-            // See https://openid.net/specs/oauth-v2-jarm.html#section-2.4 for more information.
+            // See https://openid.net/specs/oauth-v2-jarm.html#section-2.4 and #section-3 for more information.
             if (!string.IsNullOrEmpty(context.Registration.AuthorizationResponseSigningAlgorithm)
                 ? !string.Equals(token.Alg, context.Registration.AuthorizationResponseSigningAlgorithm, StringComparison.Ordinal)
-                : context.Configuration.AuthorizationSigningAlgValuesSupported.Count is > 0 &&
-                 !context.Configuration.AuthorizationSigningAlgValuesSupported.Contains(token.Alg))
+                : context.Configuration.AuthorizationSigningAlgValuesSupported.Count is > 0
+                    ? !context.Configuration.AuthorizationSigningAlgValuesSupported.Contains(token.Alg)
+                    : !string.Equals(token.Alg, SecurityAlgorithms.RsaSha256, StringComparison.Ordinal))
             {
                 Reject(SR.GetResourceString(SR.ID2325), SR.ID2325);
                 return;

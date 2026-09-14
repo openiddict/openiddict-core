@@ -5911,7 +5911,9 @@ public static partial class OpenIddictClientHandlers
                     _ => context.Options.ResponseModes.Intersect(context.Registration.ResponseModes, StringComparer.Ordinal).ToList()
                 },
 
-                SupportedServerResponseModes: context.Configuration.ResponseModesSupported) switch
+                // Note: when JWT Secured Authorization Response Modes are required, the base response modes are
+                // negotiated based on the JWT variants supported by the server (see AttachJwtResponseMode).
+                SupportedServerResponseModes: OpenIddictClientHandlers.AttachJwtResponseMode.GetNegotiableServerResponseModes(context)) switch
             {
                 // If the list of response modes supported by the client is empty, abort the challenge operation.
                 ({ Count: 0 }, { Count: _ }) => throw new InvalidOperationException(SR.GetResourceString(SR.ID0362)),

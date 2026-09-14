@@ -1661,11 +1661,15 @@ public static partial class OpenIddictServerHandlers
                     // overridden per client by AttachAuthorizationResponseSecurityCredentials.
                     //
                     // See https://openid.net/specs/oauth-v2-jarm.html#section-3 for more information.
+                    //
+                    // Note: the "alg" header MUST be a JWA registered value (RFC 7515, section 4.1.1), so credentials
+                    // using the XML-DSig form of an algorithm are normalized to use the corresponding JWA short name.
                     TokenTypeIdentifiers.Private.AuthorizationResponse
-                        => credentials.SigningCredentials.FirstOrDefault(static credentials =>
-                            credentials.Key is AsymmetricSecurityKey &&
-                            Authentication.GetJwaSigningAlgorithm(credentials.Algorithm) is SecurityAlgorithms.RsaSha256) ??
-                           credentials.SigningCredentials.First(static credentials => credentials.Key is AsymmetricSecurityKey),
+                        => Authentication.NormalizeSigningCredentials(
+                            credentials.SigningCredentials.FirstOrDefault(static credentials =>
+                                credentials.Key is AsymmetricSecurityKey &&
+                                Authentication.GetJwaSigningAlgorithm(credentials.Algorithm) is SecurityAlgorithms.RsaSha256) ??
+                            credentials.SigningCredentials.First(static credentials => credentials.Key is AsymmetricSecurityKey)),
 
                     _ => credentials.SigningCredentials[0]
                 };

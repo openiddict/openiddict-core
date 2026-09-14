@@ -2046,6 +2046,10 @@ JWT authorization responses can only be encrypted using 'RSA-OAEP' with 'A128CBC
     <value>The '{0}' JWT Secured Authorization Response Mode required by the client registration is not supported by the authorization server.
 Ensure the server configuration lists this response mode in 'response_modes_supported' or set 'OpenIddictClientRegistration.RequireJwtSecuredAuthorizationResponses' to false.</value>
   </data>
+  <data name="ID0648" xml:space="preserve">
+    <value>The '{0}' response mode negotiated for the authorization request has no JWT Secured Authorization Response Mode variant.
+When 'OpenIddictClientRegistration.RequireJwtSecuredAuthorizationResponses' is set to true, only the 'query', 'fragment' and 'form_post' response modes (or their JWT variants) can be used.</value>
+  </data>
   <data name="ID0532" xml:space="preserve">
     <value>The backchannel authentication request was not correctly extracted.
 To extract backchannel authentication requests, create a class implementing 'IOpenIddictServerHandler&lt;ExtractBackchannelAuthenticationRequestContext&gt;' and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.</value>
@@ -3140,6 +3144,9 @@ Error URI: {2}</value>
   </data>
   <data name="ID2325" xml:space="preserve">
     <value>The JWT authorization response was signed using an algorithm that is not allowed.</value>
+  </data>
+  <data name="ID2326" xml:space="preserve">
+    <value>The JWT authorization response was not encrypted, which is required by the client registration.</value>
   </data>
   <data name="ID4000" xml:space="preserve">
     <value>The '{0}' parameter shouldn't be null or empty at this point.</value>

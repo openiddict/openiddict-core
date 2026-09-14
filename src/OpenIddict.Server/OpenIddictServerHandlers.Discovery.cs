@@ -589,6 +589,15 @@ public static partial class OpenIddictServerHandlers
                     {
                         context.ResponseModes.Add(ResponseModes.Jwt);
                     }
+
+                    // If JWT Secured Authorization Response Modes are required, requests using the plain response modes
+                    // are always rejected: in this case, these modes are not returned as they are not supported by the
+                    // server (see RFC 8414, section 2 for the definition of the "response_modes_supported" metadata).
+                    if (context.Options.RequireJwtSecuredAuthorizationResponses)
+                    {
+                        context.ResponseModes.RemoveWhere(static mode => mode is not (ResponseModes.Jwt or
+                            ResponseModes.QueryJwt or ResponseModes.FragmentJwt or ResponseModes.FormPostJwt));
+                    }
                 }
 
                 return ValueTask.CompletedTask;

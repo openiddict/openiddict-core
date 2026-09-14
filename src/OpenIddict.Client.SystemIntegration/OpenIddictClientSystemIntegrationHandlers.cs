@@ -1476,7 +1476,9 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                     _ => context.Options.ResponseModes.Intersect(context.Registration.ResponseModes, StringComparer.Ordinal).ToList()
                 },
 
-                SupportedServerResponseModes: context.Configuration.ResponseModesSupported) switch
+                // Note: when JWT Secured Authorization Response Modes are required, the base response modes are
+                // negotiated based on the JWT variants supported by the server (see AttachJwtResponseMode).
+                SupportedServerResponseModes: OpenIddictClientHandlers.AttachJwtResponseMode.GetNegotiableServerResponseModes(context)) switch
             {
                 // When using the web authentication broker on Windows, if both the client and
                 // the server support response_mode=fragment, use it if the response types contain
