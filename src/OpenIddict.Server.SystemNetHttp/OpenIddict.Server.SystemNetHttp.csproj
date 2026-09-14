@@ -5,8 +5,8 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <Description>System.Net.Http integration package for the OpenIddict server services (used to send back-channel logout requests).</Description>
-    <PackageTags>$(PackageTags);http;httpclient;server</PackageTags>
+    <Description>System.Net.Http integration package for the OpenIddict server services (used to send back-channel logout requests and CIBA ping/push notifications).</Description>
+    <PackageTags>$(PackageTags);http;httpclient;server;ciba</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
@@ -14,6 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- Note: only IHttpClientFactory is used (retries are handled by the OpenIddict server service), so Polly is not referenced. -->
     <PackageReference Include="Microsoft.Extensions.Http" />
   </ItemGroup>
 

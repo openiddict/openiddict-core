@@ -1,7 +1,10 @@
+using System.Collections.Immutable;
 using System.Security.Claims;
+using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.JsonWebTokens;
+using Microsoft.IdentityModel.Tokens;
 using Moq;
 using Xunit;
 using static OpenIddict.Abstractions.OpenIddictExceptions;
@@ -156,12 +159,164 @@ public class OpenIddictServerServiceTests
         manager.Verify(manager => manager.TryRejectAsync(token, It.IsAny<CancellationToken>()), Times.Once());
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task ApproveOrRejectBackchannelAuthenticationRequestAsync_SendsPingNotification(bool approve)
+    {
+        // Arrange
+        var token = new object();
+        var notifications = new List<SendBackchannelNotificationContext>();
+
+        var (provider, manager) = await CreateProviderAsync(token, Statuses.Inactive, BackchannelTokenDeliveryModes.Ping, notifications);
+        var service = provider.GetRequiredService<OpenIddictServerService>();
+
+        manager.Setup(manager => manager.TryRejectAsync(token, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+
+        // Act
+        var result = approve
+            ? await service.ApproveBackchannelAuthenticationRequestAsync(Identifier)
+            : await service.RejectBackchannelAuthenticationRequestAsync(Identifier);
+
+        // Assert
+        Assert.True(result);
+
+        var notification = Assert.Single(notifications);
+        Assert.Equal("Fabrikam", notification.ClientId);
+        Assert.Equal(new Uri("https://fabrikam.com/ciba/notify"), notification.ClientNotificationEndpoint);
+        Assert.Equal("8C3C7A6D-notification-token", notification.ClientNotificationToken);
+        Assert.Equal(BackchannelTokenDeliveryModes.Ping, notification.TokenDeliveryMode);
+        Assert.Equal("F6B3B1E4-auth-req-id", notification.Notification.AuthReqId);
+        Assert.Single(notification.Notification.GetParameters());
+    }
+
+    [Fact]
+    public async Task RejectBackchannelAuthenticationRequestAsync_SendsPushErrorNotification()
+    {
+        // Arrange
+        var token = new object();
+        var notifications = new List<SendBackchannelNotificationContext>();
+
+        var (provider, manager) = await CreateProviderAsync(token, Statuses.Inactive, BackchannelTokenDeliveryModes.Push, notifications);
+        var service = provider.GetRequiredService<OpenIddictServerService>();
+
+        manager.Setup(manager => manager.TryRejectAsync(token, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+
+        // Act
+        Assert.True(await service.RejectBackchannelAuthenticationRequestAsync(Identifier));
+
+        // Assert
+        var notification = Assert.Single(notifications);
+        Assert.Equal(BackchannelTokenDeliveryModes.Push, notification.TokenDeliveryMode);
+        Assert.Equal("F6B3B1E4-auth-req-id", notification.Notification.AuthReqId);
+        Assert.Equal(Errors.AccessDenied, notification.Notification.Error);
+        Assert.Null(notification.Notification.AccessToken);
+    }
+
+    [Fact]
+    public async Task ApproveBackchannelAuthenticationRequestAsync_SendsPushNotificationWithTokens()
+    {
+        // Arrange
+        var token = new object();
+        var notifications = new List<SendBackchannelNotificationContext>();
+
+        var (provider, manager) = await CreateProviderAsync(token, Statuses.Inactive, BackchannelTokenDeliveryModes.Push, notifications);
+        var service = provider.GetRequiredService<OpenIddictServerService>();
+
+        manager.Setup(manager => manager.CreateAsync(It.IsAny<OpenIddictTokenDescriptor>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new object());
+
+        manager.Setup(manager => manager.GetIdAsync(It.Is<object>(value => value != token), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Guid.NewGuid().ToString());
+
+        manager.Setup(manager => manager.TryRedeemAsync(token, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+
+        // Act
+        Assert.True(await service.ApproveBackchannelAuthenticationRequestAsync(Identifier));
+
+        // Assert
+        var notification = Assert.Single(notifications);
+        Assert.Equal(BackchannelTokenDeliveryModes.Push, notification.TokenDeliveryMode);
+        Assert.Null(notification.Notification.Error);
+        Assert.Equal("F6B3B1E4-auth-req-id", notification.Notification.AuthReqId);
+        Assert.NotNull(notification.Notification.AccessToken);
+        Assert.Equal(TokenTypes.Bearer, notification.Notification.TokenType);
+        Assert.NotNull(notification.Notification.IdToken);
+
+        // The identity token MUST contain the authentication request identifier and the at_hash claim.
+        var identity = new JsonWebToken(notification.Notification.IdToken);
+        Assert.Equal("F6B3B1E4-auth-req-id", identity.GetPayloadValue<string>(Claims.AuthReqId));
+        Assert.False(string.IsNullOrEmpty(identity.GetPayloadValue<string>(Claims.AccessTokenHash)));
+        Assert.Equal("Bob", identity.Subject);
+
+        // The authentication request identifier MUST be marked as redeemed.
+        manager.Verify(manager => manager.TryRedeemAsync(token, It.IsAny<CancellationToken>()), Times.Once());
+    }
+
+    [Fact]
+    public async Task ApproveBackchannelAuthenticationRequestAsync_RetriesFailedNotifications()
+    {
+        // Arrange
+        var token = new object();
+        var notifications = new List<SendBackchannelNotificationContext>();
+
+        var (provider, _) = await CreateProviderAsync(token, Statuses.Inactive, BackchannelTokenDeliveryModes.Ping, notifications,
+            configuration: options => options.SetBackchannelNotificationRetryPolicy(2, TimeSpan.Zero),
+            succeed: false);
+
+        var service = provider.GetRequiredService<OpenIddictServerService>();
+
+        // Act
+        Assert.True(await service.ApproveBackchannelAuthenticationRequestAsync(Identifier));
+
+        // Assert
+        Assert.Equal([1, 2, 3], notifications.Select(notification => notification.Attempt));
+    }
+
+    [Fact]
+    public async Task ApproveBackchannelAuthenticationRequestAsync_ThrowsAnExceptionWhenNoTransportIsRegistered()
+    {
+        // Arrange
+        var token = new object();
+        var (provider, _) = await CreateProviderAsync(token, Statuses.Inactive, BackchannelTokenDeliveryModes.Ping, notifications: null);
+        var service = provider.GetRequiredService<OpenIddictServerService>();
+
+        // Act and assert
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+            async () => await service.ApproveBackchannelAuthenticationRequestAsync(Identifier));
+
+        Assert.Equal(SR.GetResourceString(SR.ID0603), exception.Message);
+    }
+
     private static async Task<(ServiceProvider Provider, Mock<IOpenIddictTokenManager> Manager)> CreateProviderAsync(object token, string status)
+        => await CreateProviderAsync(token, status, mode: null, notifications: null);
+
+    private static async Task<(ServiceProvider Provider, Mock<IOpenIddictTokenManager> Manager)> CreateProviderAsync(
+        object token, string status, string? mode, List<SendBackchannelNotificationContext>? notifications,
+        Action<OpenIddictServerBuilder>? configuration = null, bool succeed = true)
     {
         var manager = new Mock<IOpenIddictTokenManager>();
 
         var services = new ServiceCollection();
         services.AddSingleton(manager.Object);
+
+        var application = new object();
+        var applications = new Mock<IOpenIddictApplicationManager>();
+
+        applications.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(application);
+
+        applications.Setup(manager => manager.GetSettingsAsync(application, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(ImmutableDictionary.CreateRange(StringComparer.Ordinal, new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                [Settings.BackchannelAuthentication.ClientNotificationEndpoint] = "https://fabrikam.com/ciba/notify",
+                [Settings.BackchannelAuthentication.TokenDeliveryMode] = mode ?? BackchannelTokenDeliveryModes.Poll
+            }));
+
+        services.AddSingleton(applications.Object);
 
         services.AddOpenIddict()
             .AddServer(options =>
@@ -169,12 +324,36 @@ public class OpenIddictServerServiceTests
                 options.SetTokenEndpointUris("connect/token")
                        .SetBackchannelAuthenticationEndpointUris("connect/ciba")
                        .AllowClientInitiatedBackchannelAuthenticationFlow()
+                       .AllowBackchannelPingTokenDeliveryMode()
+                       .AllowBackchannelPushTokenDeliveryMode()
                        .SetIssuer(new Uri("https://www.contoso.com/", UriKind.Absolute));
 
                 options.AddEphemeralEncryptionKey()
                        .AddEphemeralSigningKey();
 
                 options.DisableAuthorizationStorage();
+
+                if (notifications is not null)
+                {
+                    options.AddEventHandler<SendBackchannelNotificationContext>(builder => builder.UseInlineHandler(context =>
+                    {
+                        notifications.Add(context);
+
+                        if (succeed)
+                        {
+                            context.HandleRequest();
+                        }
+
+                        else
+                        {
+                            context.Reject(Errors.ServerError, "The endpoint is unavailable.");
+                        }
+
+                        return ValueTask.CompletedTask;
+                    }));
+                }
+
+                configuration?.Invoke(options);
             });
 
         var provider = services.BuildServiceProvider();
@@ -231,6 +410,30 @@ public class OpenIddictServerServiceTests
 
         manager.Setup(manager => manager.GetPayloadAsync(token, It.IsAny<CancellationToken>()))
             .ReturnsAsync(context.Token);
+
+        var properties = ImmutableDictionary.CreateBuilder<string, JsonElement>(StringComparer.Ordinal);
+
+        if (mode is BackchannelTokenDeliveryModes.Ping or BackchannelTokenDeliveryModes.Push)
+        {
+            // Note: the notification details are stored as an encrypted token only readable by the server.
+            var payload = options.JsonWebTokenHandler.CreateToken(new SecurityTokenDescriptor
+            {
+                Claims = new Dictionary<string, object>(StringComparer.Ordinal)
+                {
+                    [Claims.AuthReqId] = "F6B3B1E4-auth-req-id",
+                    [Claims.Private.ClientNotificationToken] = "8C3C7A6D-notification-token",
+                    [Claims.Private.TokenDeliveryMode] = mode
+                },
+                EncryptingCredentials = options.EncryptionCredentials[0],
+                SigningCredentials = options.SigningCredentials[0],
+                TokenType = JsonWebTokenTypes.Private.BackchannelNotification
+            });
+
+            properties.Add(Properties.BackchannelNotification, JsonSerializer.SerializeToElement(payload));
+        }
+
+        manager.Setup(manager => manager.GetPropertiesAsync(token, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(properties.ToImmutable());
 
         return (provider, manager);
 

@@ -6,7 +6,9 @@
 
 using System.Collections.Immutable;
 using System.Diagnostics;
+using System.Globalization;
 using System.Security.Claims;
+using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -42,11 +44,19 @@ public static partial class OpenIddictServerHandlers
             ValidateEndpointPermissions.Descriptor,
             ValidateGrantTypePermissions.Descriptor,
             ValidateScopePermissions.Descriptor,
+            ValidateSignedRequestRequirement.Descriptor,
+            ValidateTokenDeliveryMode.Descriptor,
+            ValidateUserCodeParameter.Descriptor,
 
             /*
              * Backchannel authentication request handling:
              */
-            AttachPrincipal.Descriptor
+            AttachPrincipal.Descriptor,
+
+            /*
+             * Backchannel authentication sign-in processing:
+             */
+            AttachBackchannelNotificationProperties.Descriptor
         ];
 
         /// <summary>
@@ -310,10 +320,17 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible for rejecting backchannel authentication requests that specify the unsupported request parameter.
+        /// Contains the logic responsible for rejecting backchannel authentication requests that specify the request
+        /// parameter when signed authentication requests are not enabled and for validating signed authentication
+        /// requests and replacing the request parameters by the parameters contained in the signed request.
         /// </summary>
         public sealed class ValidateRequestParameter : IOpenIddictServerHandler<ValidateBackchannelAuthenticationRequestContext>
         {
+            private readonly IOpenIddictServerDispatcher _dispatcher;
+
+            public ValidateRequestParameter(IOpenIddictServerDispatcher dispatcher)
+                => _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
+
             /// <summary>
             /// Gets the default descriptor definition assigned to this handler.
             /// </summary>
@@ -325,22 +342,116 @@ public static partial class OpenIddictServerHandlers
                     .Build();
 
             /// <inheritdoc/>
-            public ValueTask HandleAsync(ValidateBackchannelAuthenticationRequestContext context)
+            public async ValueTask HandleAsync(ValidateBackchannelAuthenticationRequestContext context)
             {
                 ArgumentNullException.ThrowIfNull(context);
 
-                // Note: signed authentication requests are not supported yet.
-                if (!string.IsNullOrEmpty(context.Request.Request))
+                if (string.IsNullOrEmpty(context.Request.Request))
+                {
+                    return;
+                }
+
+                if (!context.Options.EnableSignedBackchannelAuthenticationRequests)
                 {
                     context.Reject(
                         error: Errors.RequestNotSupported,
                         description: SR.FormatID2028(Parameters.Request),
                         uri: SR.FormatID8000(SR.ID2028));
 
-                    return ValueTask.CompletedTask;
+                    return;
                 }
 
-                return ValueTask.CompletedTask;
+                // The client identifier is required to resolve the keys used to validate the signed request.
+                if (string.IsNullOrEmpty(context.Request.ClientId))
+                {
+                    context.Reject(
+                        error: Errors.InvalidClient,
+                        description: SR.FormatID2029(Parameters.ClientId),
+                        uri: SR.FormatID8000(SR.ID2029));
+
+                    return;
+                }
+
+                // When a signed authentication request is used, the authentication request parameters MUST NOT be present
+                // outside of the JWT (only the client authentication parameters are allowed as regular parameters).
+                //
+                // See https://openid.net/specs/openid-client-initiated-backchannel-authentication-core-1_0.html#rfc.section.7.1.1.
+                foreach (var parameter in context.Request.GetParameters())
+                {
+                    if (parameter.Key is not (Parameters.Request or Parameters.ClientId or Parameters.ClientSecret or
+                                              Parameters.ClientAssertion or Parameters.ClientAssertionType))
+                    {
+                        context.Logger.LogInformation(6400, SR.GetResourceString(SR.ID6400), parameter.Key);
+
+                        context.Reject(
+                            error: Errors.InvalidRequest,
+                            description: SR.FormatID2300(parameter.Key),
+                            uri: SR.FormatID8000(SR.ID2300));
+
+                        return;
+                    }
+                }
+
+                var (principal, request, algorithm) = await Authentication.ValidateRequestObjectAsync(
+                    context, _dispatcher, context.Request);
+                if (principal is null || request is null)
+                {
+                    // Note: signed backchannel authentication request validation errors are returned
+                    // using the generic invalid_request error, as invalid_request_object is not defined
+                    // by the CIBA specification for the backchannel authentication endpoint.
+                    if (context.IsRejected && context.Error is Errors.InvalidRequestObject)
+                    {
+                        context.Reject(
+                            error: Errors.InvalidRequest,
+                            description: context.ErrorDescription,
+                            uri: context.ErrorUri);
+                    }
+
+                    return;
+                }
+
+                // Signed authentication requests MUST contain the "exp", "iat", "nbf" and "jti" claims.
+                //
+                // See https://openid.net/specs/openid-client-initiated-backchannel-authentication-core-1_0.html#rfc.section.7.1.1.
+                foreach (var name in (string[]) [Claims.ExpiresAt, Claims.IssuedAt, Claims.NotBefore, Claims.JwtId])
+                {
+                    if (!principal.HasClaim(name) && !HasRegisteredClaim(principal, name))
+                    {
+                        context.Reject(
+                            error: Errors.InvalidRequest,
+                            description: SR.FormatID2212(name),
+                            uri: SR.FormatID8000(SR.ID2212));
+
+                        return;
+                    }
+                }
+
+                // Reject signed requests that are not valid yet.
+                if (principal.GetClaim(Claims.NotBefore) is string value &&
+                    long.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out long nbf) &&
+                    DateTimeOffset.FromUnixTimeSeconds(nbf) > context.Options.TimeProvider.GetUtcNow() +
+                        context.Options.TokenValidationParameters.ClockSkew)
+                {
+                    context.Reject(
+                        error: Errors.InvalidRequest,
+                        description: SR.FormatID2212(Claims.NotBefore),
+                        uri: SR.FormatID8000(SR.ID2212));
+
+                    return;
+                }
+
+                context.Request = request;
+                context.RequestObjectPrincipal = principal;
+                context.RequestObjectSigningAlgorithm = algorithm;
+
+                static bool HasRegisteredClaim(ClaimsPrincipal principal, string name) => name switch
+                {
+                    // Note: the "exp", "iat" and "jti" claims are mapped to internal claims when validating tokens.
+                    Claims.ExpiresAt => principal.GetExpirationDate() is not null,
+                    Claims.IssuedAt  => principal.GetCreationDate() is not null,
+                    Claims.JwtId     => !string.IsNullOrEmpty(principal.GetTokenId()),
+                    _                => false
+                };
             }
         }
 
@@ -822,6 +933,286 @@ public static partial class OpenIddictServerHandlers
                         return;
                     }
                 }
+            }
+        }
+
+        /// <summary>
+        /// Contains the logic responsible for rejecting unsigned backchannel authentication requests sent by client
+        /// applications registered with a backchannel authentication request signing algorithm.
+        /// Note: this handler is not used when the degraded mode is enabled.
+        /// </summary>
+        public sealed class ValidateSignedRequestRequirement : IOpenIddictServerHandler<ValidateBackchannelAuthenticationRequestContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateBackchannelAuthenticationRequestContext>()
+                    .AddFilter<RequireClientIdParameter>()
+                    .AddFilter<RequireDegradedModeDisabled>()
+                    .UseSingletonHandler<ValidateSignedRequestRequirement>()
+                    .SetOrder(ValidateScopePermissions.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public async ValueTask HandleAsync(ValidateBackchannelAuthenticationRequestContext context)
+            {
+                ArgumentNullException.ThrowIfNull(context);
+
+                Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
+
+                var manager = context.ServiceProvider.GetService<IOpenIddictApplicationManager>()
+                    ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
+
+                var application = await manager.FindByClientIdAsync(context.ClientId, context.CancellationToken)
+                    ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
+
+                var settings = await manager.GetSettingsAsync(application, context.CancellationToken);
+                if (!settings.TryGetValue(Settings.BackchannelAuthentication.RequestSigningAlgorithm, out string? algorithm) ||
+                    string.IsNullOrEmpty(algorithm))
+                {
+                    return;
+                }
+
+                // If the client application registered a backchannel_authentication_request_signing_alg value,
+                // unsigned requests or requests signed using a different algorithm MUST be rejected.
+                //
+                // See https://openid.net/specs/openid-client-initiated-backchannel-authentication-core-1_0.html#rfc.section.4.
+                if (context.RequestObjectPrincipal is null ||
+                    !string.Equals(context.RequestObjectSigningAlgorithm, algorithm, StringComparison.Ordinal))
+                {
+                    context.Logger.LogInformation(6401, SR.GetResourceString(SR.ID6401), context.ClientId);
+
+                    context.Reject(
+                        error: Errors.InvalidRequest,
+                        description: SR.GetResourceString(SR.ID2301),
+                        uri: SR.FormatID8000(SR.ID2301));
+
+                    return;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Contains the logic responsible for resolving the token delivery mode registered for the client
+        /// application and rejecting requests that don't satisfy the requirements of that delivery mode.
+        /// Note: this handler is not used when the degraded mode is enabled.
+        /// </summary>
+        public sealed class ValidateTokenDeliveryMode : IOpenIddictServerHandler<ValidateBackchannelAuthenticationRequestContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateBackchannelAuthenticationRequestContext>()
+                    .AddFilter<RequireClientIdParameter>()
+                    .AddFilter<RequireDegradedModeDisabled>()
+                    .UseSingletonHandler<ValidateTokenDeliveryMode>()
+                    .SetOrder(ValidateSignedRequestRequirement.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public async ValueTask HandleAsync(ValidateBackchannelAuthenticationRequestContext context)
+            {
+                ArgumentNullException.ThrowIfNull(context);
+
+                Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
+
+                var manager = context.ServiceProvider.GetService<IOpenIddictApplicationManager>()
+                    ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
+
+                var application = await manager.FindByClientIdAsync(context.ClientId, context.CancellationToken)
+                    ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
+
+                var settings = await manager.GetSettingsAsync(application, context.CancellationToken);
+
+                // Note: client applications that don't have a registered token delivery mode are treated as poll clients.
+                var mode = settings.TryGetValue(Settings.BackchannelAuthentication.TokenDeliveryMode, out string? value) &&
+                    !string.IsNullOrEmpty(value) ? value : BackchannelTokenDeliveryModes.Poll;
+
+                if (!context.Options.BackchannelTokenDeliveryModes.Contains(mode))
+                {
+                    context.Logger.LogInformation(6402, SR.GetResourceString(SR.ID6402), context.ClientId, mode);
+
+                    context.Reject(
+                        error: Errors.UnauthorizedClient,
+                        description: SR.FormatID2302(mode),
+                        uri: SR.FormatID8000(SR.ID2302));
+
+                    return;
+                }
+
+                if (mode is BackchannelTokenDeliveryModes.Ping or BackchannelTokenDeliveryModes.Push)
+                {
+                    // Clients using the ping or push modes MUST register a client notification endpoint, that
+                    // must use TLS as it receives bearer notification tokens (and tokens, for the push mode).
+                    //
+                    // See https://openid.net/specs/openid-client-initiated-backchannel-authentication-core-1_0.html#rfc.section.4.
+                    if (!settings.TryGetValue(Settings.BackchannelAuthentication.ClientNotificationEndpoint, out string? endpoint) ||
+                        !Uri.TryCreate(endpoint, UriKind.Absolute, out Uri? uri) ||
+                        !string.Equals(uri.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase) ||
+                        !string.IsNullOrEmpty(uri.Fragment))
+                    {
+                        context.Logger.LogWarning(6403, SR.GetResourceString(SR.ID6403), context.ClientId);
+
+                        context.Reject(
+                            error: Errors.UnauthorizedClient,
+                            description: SR.GetResourceString(SR.ID2303),
+                            uri: SR.FormatID8000(SR.ID2303));
+
+                        return;
+                    }
+
+                    // The client_notification_token parameter is REQUIRED for clients using the ping or push modes
+                    // and MUST NOT exceed 1024 characters. For more information, see
+                    // https://openid.net/specs/openid-client-initiated-backchannel-authentication-core-1_0.html#rfc.section.7.1.
+                    if (string.IsNullOrEmpty(context.Request.ClientNotificationToken))
+                    {
+                        context.Reject(
+                            error: Errors.InvalidRequest,
+                            description: SR.FormatID2029(Parameters.ClientNotificationToken),
+                            uri: SR.FormatID8000(SR.ID2029));
+
+                        return;
+                    }
+
+                    if (context.Request.ClientNotificationToken.Length > 1024)
+                    {
+                        context.Reject(
+                            error: Errors.InvalidRequest,
+                            description: SR.FormatID2052(Parameters.ClientNotificationToken),
+                            uri: SR.FormatID8000(SR.ID2052));
+
+                        return;
+                    }
+                }
+
+                context.TokenDeliveryMode = mode;
+            }
+        }
+
+        /// <summary>
+        /// Contains the logic responsible for rejecting backchannel authentication requests that don't specify
+        /// a user code when the client application is registered as supporting the "user_code" parameter.
+        /// Note: this handler is not used when the degraded mode is enabled.
+        /// </summary>
+        public sealed class ValidateUserCodeParameter : IOpenIddictServerHandler<ValidateBackchannelAuthenticationRequestContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateBackchannelAuthenticationRequestContext>()
+                    .AddFilter<RequireClientIdParameter>()
+                    .AddFilter<RequireDegradedModeDisabled>()
+                    .UseSingletonHandler<ValidateUserCodeParameter>()
+                    .SetOrder(ValidateTokenDeliveryMode.Descriptor.Order + 1_000)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public async ValueTask HandleAsync(ValidateBackchannelAuthenticationRequestContext context)
+            {
+                ArgumentNullException.ThrowIfNull(context);
+
+                Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
+
+                // Note: the user code itself can only be validated by the application (e.g using a custom
+                // event handler or the pass-through mode), that is expected to return invalid_user_code errors.
+                if (!context.Options.EnableBackchannelUserCodeParameter || !string.IsNullOrEmpty(context.Request.UserCode))
+                {
+                    return;
+                }
+
+                var manager = context.ServiceProvider.GetService<IOpenIddictApplicationManager>()
+                    ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
+
+                var application = await manager.FindByClientIdAsync(context.ClientId, context.CancellationToken)
+                    ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0032));
+
+                // If both the server and the client support the user_code parameter, a user code MUST be sent.
+                //
+                // See https://openid.net/specs/openid-client-initiated-backchannel-authentication-core-1_0.html#rfc.section.13.
+                var settings = await manager.GetSettingsAsync(application, context.CancellationToken);
+                if (settings.TryGetValue(Settings.BackchannelAuthentication.UserCodeParameter, out string? value) &&
+                    bool.TryParse(value, out bool supported) && supported)
+                {
+                    context.Reject(
+                        error: Errors.MissingUserCode,
+                        description: SR.FormatID2029(Parameters.UserCode),
+                        uri: SR.FormatID8000(SR.ID2029));
+
+                    return;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Contains the logic responsible for storing the information needed to send ping or push notifications
+        /// (i.e the authentication request identifier and the client notification token) in the token entry
+        /// of the authentication request identifier, as an encrypted token only readable by the server.
+        /// Note: this handler is not used when the degraded mode is enabled or when token storage is disabled.
+        /// </summary>
+        public sealed class AttachBackchannelNotificationProperties : IOpenIddictServerHandler<ProcessSignInContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
+                    .AddFilter<RequireBackchannelAuthenticationRequest>()
+                    .AddFilter<RequireDegradedModeDisabled>()
+                    .AddFilter<RequireTokenStorageEnabled>()
+                    .AddFilter<RequireAuthenticationRequestIdGenerated>()
+                    .UseSingletonHandler<AttachBackchannelNotificationProperties>()
+                    .SetOrder(GenerateAuthenticationRequestId.Descriptor.Order + 250)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public async ValueTask HandleAsync(ProcessSignInContext context)
+            {
+                ArgumentNullException.ThrowIfNull(context);
+
+                var notification = context.Transaction.GetProperty<ValidateBackchannelAuthenticationRequestContext>(
+                    typeof(ValidateBackchannelAuthenticationRequestContext).FullName!);
+
+                if (notification?.TokenDeliveryMode is not (BackchannelTokenDeliveryModes.Ping or BackchannelTokenDeliveryModes.Push) ||
+                    string.IsNullOrEmpty(context.Request.ClientNotificationToken))
+                {
+                    return;
+                }
+
+                // Note: the raw authentication request identifier is not stored in the database (only a hash is),
+                // but it must be sent to the client notification endpoint once the request is completed. To support
+                // that, the identifier and the client notification token are stored as an encrypted token.
+                if (string.IsNullOrEmpty(context.AuthenticationRequestId) ||
+                    context.AuthenticationRequestIdPrincipal?.GetTokenId() is not { Length: > 0 } identifier)
+                {
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0602));
+                }
+
+                var manager = context.ServiceProvider.GetService<IOpenIddictTokenManager>()
+                    ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
+
+                var token = await manager.FindByIdAsync(identifier, context.CancellationToken)
+                    ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0602));
+
+                var payload = await OpenIddictServerService.CreateBackchannelNotificationPayloadAsync(context.Transaction,
+                    context.AuthenticationRequestId, context.Request.ClientNotificationToken, notification.TokenDeliveryMode,
+                    context.AuthenticationRequestIdPrincipal.GetExpirationDate());
+
+                var descriptor = new OpenIddictTokenDescriptor();
+                await manager.PopulateAsync(descriptor, token, context.CancellationToken);
+
+                descriptor.Properties[Properties.BackchannelNotification] = JsonSerializer.SerializeToElement(
+                    payload, OpenIddictSerializer.Default.String);
+
+                await manager.UpdateAsync(token, descriptor, context.CancellationToken);
+
+                context.Logger.LogDebug(6404, SR.GetResourceString(SR.ID6404), identifier, notification.TokenDeliveryMode);
             }
         }
 

@@ -8,7 +8,11 @@ using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Globalization;
 using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Text.Encodings.Web;
+using System.Text.Json;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace OpenIddict.Server.SystemNetHttp;
 
@@ -20,7 +24,8 @@ public static class OpenIddictServerSystemNetHttpHandlers
 {
     public static ImmutableArray<OpenIddictServerHandlerDescriptor> DefaultHandlers { get; } =
     [
-        SendHttpBackchannelLogoutRequest.Descriptor
+        SendHttpBackchannelLogoutRequest.Descriptor,
+        SendHttpBackchannelNotification.Descriptor
     ];
 
     /// <summary>
@@ -82,6 +87,115 @@ public static class OpenIddictServerSystemNetHttpHandlers
             }
 
             context.IsSent = true;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for sending ping and push notifications
+    /// to HTTP client notification endpoints using System.Net.Http.
+    /// </summary>
+    /// <remarks>
+    /// See https://openid.net/specs/openid-client-initiated-backchannel-authentication-core-1_0.html#rfc.section.10.2
+    /// and https://openid.net/specs/openid-client-initiated-backchannel-authentication-core-1_0.html#rfc.section.10.3.
+    /// </remarks>
+    public sealed class SendHttpBackchannelNotification : IOpenIddictServerHandler<SendBackchannelNotificationContext>
+    {
+        private readonly IHttpClientFactory _factory;
+        private readonly IOptionsMonitor<OpenIddictServerSystemNetHttpOptions> _options;
+
+        public SendHttpBackchannelNotification(
+            IHttpClientFactory factory, IOptionsMonitor<OpenIddictServerSystemNetHttpOptions> options)
+        {
+            _factory = factory ?? throw new ArgumentNullException(nameof(factory));
+            _options = options ?? throw new ArgumentNullException(nameof(options));
+        }
+
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+            = OpenIddictServerHandlerDescriptor.CreateBuilder<SendBackchannelNotificationContext>()
+                .UseSingletonHandler<SendHttpBackchannelNotification>()
+                .SetOrder(int.MaxValue - 100_000)
+                .SetType(OpenIddictServerHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public async ValueTask HandleAsync(SendBackchannelNotificationContext context)
+        {
+            ArgumentNullException.ThrowIfNull(context);
+
+            // Only handle notifications sent to HTTP(S) endpoints (other transports may be registered by the application).
+            if (!string.Equals(context.ClientNotificationEndpoint.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase) &&
+                !string.Equals(context.ClientNotificationEndpoint.Scheme, Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
+
+            var client = _factory.CreateClient(OpenIddictServerSystemNetHttpConfiguration.HttpClientName)
+                ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0604));
+
+            using var stream = new MemoryStream();
+            using (var writer = new Utf8JsonWriter(stream, new JsonWriterOptions
+            {
+                Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+            }))
+            {
+                context.Notification.WriteTo(writer);
+            }
+
+            // The notification is sent as a JSON POST request authenticated using the client notification
+            // token as a bearer token. For more information, see
+            // https://openid.net/specs/openid-client-initiated-backchannel-authentication-core-1_0.html#rfc.section.10.2.
+            using var request = new HttpRequestMessage(HttpMethod.Post, context.ClientNotificationEndpoint)
+            {
+                Content = new ByteArrayContent(stream.ToArray())
+            };
+
+            request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json") { CharSet = "utf-8" };
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", context.ClientNotificationToken);
+
+            if (_options.CurrentValue.ProductInformation is ProductInfoHeaderValue information)
+            {
+                request.Headers.UserAgent.Add(information);
+            }
+
+            context.Logger.LogDebug(6411, SR.GetResourceString(SR.ID6411), context.ClientNotificationEndpoint, context.TokenDeliveryMode);
+
+            try
+            {
+                using var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, context.CancellationToken);
+
+                // Note: the client notification endpoint SHOULD return a 204 status code but 200 is also accepted.
+                // Redirections (that are never followed) and error status codes are treated as delivery failures.
+                if (!response.IsSuccessStatusCode)
+                {
+                    context.Logger.LogInformation(6412, SR.GetResourceString(SR.ID6412),
+                        context.ClientNotificationEndpoint, (int) response.StatusCode);
+
+                    context.Reject(
+                        error: Errors.ServerError,
+                        description: SR.FormatID2307((int) response.StatusCode),
+                        uri: SR.FormatID8000(SR.ID2307));
+
+                    return;
+                }
+            }
+
+            catch (Exception exception) when (exception is HttpRequestException ||
+                (exception is OperationCanceledException && !context.CancellationToken.IsCancellationRequested))
+            {
+                context.Logger.LogInformation(6413, exception, SR.GetResourceString(SR.ID6413), context.ClientNotificationEndpoint);
+
+                context.Reject(
+                    error: Errors.ServerError,
+                    description: SR.GetResourceString(SR.ID2308),
+                    uri: SR.FormatID8000(SR.ID2308));
+
+                return;
+            }
+
+            context.HandleRequest();
         }
     }
 }

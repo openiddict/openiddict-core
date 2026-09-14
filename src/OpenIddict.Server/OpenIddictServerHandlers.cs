@@ -5553,6 +5553,24 @@ public static partial class OpenIddictServerHandlers
                 context.IdentityTokenPrincipal.SetClaim(Claims.CodeHash, Base64Url.EncodeToString(digest.AsSpan(0, digest.Length / 2)));
             }
 
+            // When the tokens are delivered to the client notification endpoint using the CIBA push mode, the identity
+            // token MUST contain the hash of the refresh token (if one is returned) and the authentication request identifier.
+            //
+            // See https://openid.net/specs/openid-client-initiated-backchannel-authentication-core-1_0.html#rfc.section.10.3.1.
+            if (context.EndpointType is OpenIddictServerEndpointType.Token && context.Request.IsCibaGrantType() &&
+                context.Transaction.Properties.ContainsKey(OpenIddictServerService.BackchannelPushDeliveryProperty))
+            {
+                if (!string.IsNullOrEmpty(context.RefreshToken))
+                {
+                    var digest = ComputeTokenHash(credentials, context.RefreshToken);
+
+                    // Note: only the left-most half of the hash is used, as for the at_hash claim.
+                    context.IdentityTokenPrincipal.SetClaim(Claims.RefreshTokenHash, Base64Url.EncodeToString(digest.AsSpan(0, digest.Length / 2)));
+                }
+
+                context.IdentityTokenPrincipal.SetClaim(Claims.AuthReqId, context.Request.AuthReqId);
+            }
+
             static byte[] ComputeTokenHash(SigningCredentials credentials, string token) => credentials switch
             {
                 // Note: ASCII is deliberately used here, as it's the encoding required by the specification.

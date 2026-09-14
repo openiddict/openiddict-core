@@ -277,6 +277,45 @@ public sealed class OpenIddictServerOptions
     public TimeSpan? PollingInterval { get; set; } = TimeSpan.FromSeconds(5);
 
     /// <summary>
+    /// Gets the Client-Initiated Backchannel Authentication token delivery modes enabled for this server.
+    /// By default, only the "poll" mode is enabled. The "ping" and "push" modes require registering
+    /// a notification transport (e.g using the OpenIddict.Server.SystemNetHttp integration package).
+    /// </summary>
+    /// <remarks>
+    /// See https://openid.net/specs/openid-client-initiated-backchannel-authentication-core-1_0.html#rfc.section.5.
+    /// </remarks>
+    public HashSet<string> BackchannelTokenDeliveryModes { get; } = new(StringComparer.Ordinal)
+    {
+        OpenIddictConstants.BackchannelTokenDeliveryModes.Poll
+    };
+
+    /// <summary>
+    /// Gets or sets a boolean indicating whether signed authentication requests (sent using the "request"
+    /// parameter, as defined by the CIBA specification) are accepted by the backchannel authentication endpoint.
+    /// </summary>
+    public bool EnableSignedBackchannelAuthenticationRequests { get; set; }
+
+    /// <summary>
+    /// Gets or sets a boolean indicating whether the "user_code" parameter is supported
+    /// by the backchannel authentication endpoint. When enabled, client applications registered
+    /// with the <see cref="OpenIddictConstants.Settings.BackchannelAuthentication.UserCodeParameter"/>
+    /// setting must send a user code, whose value must be validated by the application.
+    /// </summary>
+    public bool EnableBackchannelUserCodeParameter { get; set; }
+
+    /// <summary>
+    /// Gets or sets the maximum number of times a failed ping or push notification is retried.
+    /// The default value is 2.
+    /// </summary>
+    public int BackchannelNotificationRetryCount { get; set; } = 2;
+
+    /// <summary>
+    /// Gets or sets the delay applied between two ping or push notification attempts.
+    /// The default value is 1 second.
+    /// </summary>
+    public TimeSpan BackchannelNotificationRetryDelay { get; set; } = TimeSpan.FromSeconds(1);
+
+    /// <summary>
     /// Gets or sets the period of time device codes remain valid after being issued. The default value is 10 minutes.
     /// The client application is expected to start a whole new authentication flow after the device code has expired.
     /// While not recommended, this property can be set to <see langword="null"/> to issue device codes that never expire.

@@ -1977,6 +1977,23 @@ To register them, use 'services.AddOpenIddict().AddServer().UseSaml().UseOwin()'
   <data name="ID0579" xml:space="preserve">
     <value>The authentication type used by the OpenIddict SAML identity provider OWIN integration must be set. To set it, use 'services.AddOpenIddict().AddServer().UseSaml().UseOwin().SetAuthenticationType()'.</value>
   </data>
+  <data name="ID0600" xml:space="preserve">
+    <value>The backchannel token delivery modes must include 'poll' and can only contain the standard 'poll', 'ping' and 'push' values.</value>
+  </data>
+  <data name="ID0601" xml:space="preserve">
+    <value>The ping and push token delivery modes, signed backchannel authentication requests and the backchannel user_code parameter can only be enabled when the Client-Initiated Backchannel Authentication flow is enabled.
+To enable it, use 'services.AddOpenIddict().AddServer().AllowClientInitiatedBackchannelAuthenticationFlow()'.</value>
+  </data>
+  <data name="ID0602" xml:space="preserve">
+    <value>The backchannel notification details cannot be attached as the token entry of the authentication request identifier cannot be resolved.</value>
+  </data>
+  <data name="ID0603" xml:space="preserve">
+    <value>No handler was registered to send ping or push notifications to the client notification endpoint.
+To send notifications using System.Net.Http, reference the 'OpenIddict.Server.SystemNetHttp' package and use 'services.AddOpenIddict().AddServer().UseSystemNetHttp()'.</value>
+  </data>
+  <data name="ID0604" xml:space="preserve">
+    <value>The HTTP client used to send backchannel notifications cannot be resolved.</value>
+  </data>
   <data name="ID0532" xml:space="preserve">
     <value>The backchannel authentication request was not correctly extracted.
 To extract backchannel authentication requests, create a class implementing 'IOpenIddictServerHandler&lt;ExtractBackchannelAuthenticationRequestContext&gt;' and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.</value>
@@ -2897,6 +2914,33 @@ Error URI: {2}</value>
   </data>
   <data name="ID2266" xml:space="preserve">
     <value>The mandatory 'SAMLRequest' parameter is missing.</value>
+  </data>
+  <data name="ID2300" xml:space="preserve">
+    <value>The '{0}' parameter must be sent as part of the signed authentication request.</value>
+  </data>
+  <data name="ID2301" xml:space="preserve">
+    <value>The client application must send signed authentication requests using the registered signing algorithm.</value>
+  </data>
+  <data name="ID2302" xml:space="preserve">
+    <value>The '{0}' token delivery mode registered for the client application is not supported.</value>
+  </data>
+  <data name="ID2303" xml:space="preserve">
+    <value>The client application doesn't have a valid client notification endpoint registered.</value>
+  </data>
+  <data name="ID2304" xml:space="preserve">
+    <value>The client application is registered with the push token delivery mode and is not allowed to redeem authentication request identifiers at the token endpoint.</value>
+  </data>
+  <data name="ID2305" xml:space="preserve">
+    <value>The end user denied the authentication request.</value>
+  </data>
+  <data name="ID2306" xml:space="preserve">
+    <value>The tokens associated with the authentication request could not be issued.</value>
+  </data>
+  <data name="ID2307" xml:space="preserve">
+    <value>The client notification endpoint returned an unexpected '{0}' status code.</value>
+  </data>
+  <data name="ID2308" xml:space="preserve">
+    <value>The client notification endpoint could not be reached.</value>
   </data>
   <data name="ID2360" xml:space="preserve">
     <value>The '{0}' setting must be an absolute HTTP or HTTPS URI that doesn't contain a fragment.</value>
@@ -3959,6 +4003,48 @@ This may indicate that the hashed entry is corrupted or malformed.</value>
   </data>
   <data name="ID6326" xml:space="preserve">
     <value>A SAML error response ({Status}) was returned to the service provider '{ServiceProvider}': {Description}</value>
+  </data>
+  <data name="ID6400" xml:space="preserve">
+    <value>The backchannel authentication request was rejected because the '{Parameter}' parameter was sent outside the signed authentication request.</value>
+  </data>
+  <data name="ID6401" xml:space="preserve">
+    <value>The backchannel authentication request was rejected because the client application '{ClientId}' must send signed authentication requests using the registered signing algorithm.</value>
+  </data>
+  <data name="ID6402" xml:space="preserve">
+    <value>The backchannel authentication request was rejected because the token delivery mode registered for the client application '{ClientId}' ('{Mode}') is not enabled.</value>
+  </data>
+  <data name="ID6403" xml:space="preserve">
+    <value>No valid client notification endpoint is registered for the client application '{ClientId}'.</value>
+  </data>
+  <data name="ID6404" xml:space="preserve">
+    <value>The backchannel notification details were attached to the authentication request identifier '{Identifier}' ({Mode} mode).</value>
+  </data>
+  <data name="ID6405" xml:space="preserve">
+    <value>The token request was rejected because the client application '{ClientId}' is registered with the push token delivery mode.</value>
+  </data>
+  <data name="ID6406" xml:space="preserve">
+    <value>The backchannel notification details attached to the authentication request could not be read.</value>
+  </data>
+  <data name="ID6407" xml:space="preserve">
+    <value>The {Mode} notification was delivered to the client application '{ClientId}' ({Endpoint}) after {Attempt} attempt(s).</value>
+  </data>
+  <data name="ID6408" xml:space="preserve">
+    <value>The {Mode} notification could not be delivered to the client application '{ClientId}' ({Endpoint}) after {Attempt} attempt(s): {Error} ({Description}).</value>
+  </data>
+  <data name="ID6409" xml:space="preserve">
+    <value>The {Mode} notification sent to the client application '{ClientId}' ({Endpoint}) failed (attempt {Attempt}) and will be retried: {Error} ({Description}).</value>
+  </data>
+  <data name="ID6410" xml:space="preserve">
+    <value>The tokens of the authentication request '{Identifier}' could not be generated for push delivery: {Error} ({Description}).</value>
+  </data>
+  <data name="ID6411" xml:space="preserve">
+    <value>Sending the backchannel notification to {Endpoint} ({Mode} mode).</value>
+  </data>
+  <data name="ID6412" xml:space="preserve">
+    <value>The client notification endpoint {Endpoint} returned a {StatusCode} status code.</value>
+  </data>
+  <data name="ID6413" xml:space="preserve">
+    <value>The client notification endpoint {Endpoint} could not be reached.</value>
   </data>
   <data name="ID6520" xml:space="preserve">
     <value>A concurrency exception occurred while trying to extend the session '{Identifier}'.</value>

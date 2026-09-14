@@ -7,9 +7,12 @@
 using System.Collections.Immutable;
 using System.Runtime.CompilerServices;
 using System.Security.Claims;
+using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.JsonWebTokens;
+using Microsoft.IdentityModel.Tokens;
 using static OpenIddict.Abstractions.OpenIddictExceptions;
 
 namespace OpenIddict.Server;
@@ -20,6 +23,12 @@ namespace OpenIddict.Server;
 /// </summary>
 public class OpenIddictServerService
 {
+    /// <summary>
+    /// Gets the name of the transaction property indicating that tokens are generated to be
+    /// delivered to the client notification endpoint using the CIBA push token delivery mode.
+    /// </summary>
+    internal const string BackchannelPushDeliveryProperty = ".backchannel_push_delivery";
+
     private readonly IServiceProvider _provider;
 
     /// <summary>
@@ -171,6 +180,8 @@ public class OpenIddictServerService
             throw new InvalidOperationException(SR.FormatID0535(context.Error, context.ErrorDescription));
         }
 
+        var notification = await ResolveBackchannelNotificationAsync(transaction, manager, token);
+
         var descriptor = new OpenIddictTokenDescriptor();
         await manager.PopulateAsync(descriptor, token, cancellationToken);
 
@@ -187,6 +198,11 @@ public class OpenIddictServerService
         catch (ConcurrencyException)
         {
             return false;
+        }
+
+        if (notification is not null)
+        {
+            await SendBackchannelNotificationAsync(options, request, notification, result, cancellationToken);
         }
 
         return true;
@@ -209,12 +225,274 @@ public class OpenIddictServerService
             ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
 
         var token = await manager.FindByIdAsync(identifier, cancellationToken);
-        if (token is null || await GetPendingRequestAsync(options, manager, token, cancellationToken) is null)
+        if (token is null || await GetPendingRequestAsync(options, manager, token, cancellationToken) is not { } request)
         {
             return false;
         }
 
-        return await manager.TryRejectAsync(token, cancellationToken);
+        var notification = await ResolveBackchannelNotificationAsync(new OpenIddictServerTransaction
+        {
+            CancellationToken = cancellationToken,
+            Options = options,
+            ServiceProvider = _provider
+        }, manager, token);
+
+        if (!await manager.TryRejectAsync(token, cancellationToken))
+        {
+            return false;
+        }
+
+        if (notification is not null)
+        {
+            await SendBackchannelNotificationAsync(options, request, notification, principal: null, cancellationToken);
+        }
+
+        return true;
+    }
+
+    /// <summary>
+    /// Creates the encrypted token containing the information needed to send a ping or push notification.
+    /// </summary>
+    internal static async ValueTask<string> CreateBackchannelNotificationPayloadAsync(OpenIddictServerTransaction transaction,
+        string identifier, string token, string mode, DateTimeOffset? expiration)
+    {
+        var credentials = await OpenIddictServerKeyRing.ResolveCredentialsAsync(transaction);
+        var now = transaction.Options.TimeProvider.GetUtcNow();
+
+        return transaction.Options.JsonWebTokenHandler.CreateToken(new SecurityTokenDescriptor
+        {
+            Claims = new Dictionary<string, object>(StringComparer.Ordinal)
+            {
+                [Claims.AuthReqId] = identifier,
+                [Claims.Private.ClientNotificationToken] = token,
+                [Claims.Private.TokenDeliveryMode] = mode
+            },
+            EncryptingCredentials = credentials.EncryptionCredentials[0],
+            Expires = expiration is DateTimeOffset date && date > now ? date.UtcDateTime : null,
+            IssuedAt = now.UtcDateTime,
+            NotBefore = now.UtcDateTime,
+            SigningCredentials = credentials.SigningCredentials[0],
+            TokenType = JsonWebTokenTypes.Private.BackchannelNotification
+        });
+    }
+
+    private static async ValueTask<OpenIddictServerBackchannelNotification?> ResolveBackchannelNotificationAsync(
+        OpenIddictServerTransaction transaction, IOpenIddictTokenManager manager, object token)
+    {
+        var properties = await manager.GetPropertiesAsync(token, transaction.CancellationToken);
+        if (!properties.TryGetValue(Properties.BackchannelNotification, out JsonElement element) ||
+            element.ValueKind is not JsonValueKind.String || element.GetString() is not { Length: > 0 } payload)
+        {
+            return null;
+        }
+
+        var credentials = await OpenIddictServerKeyRing.ResolveCredentialsAsync(transaction);
+
+        var parameters = transaction.Options.TokenValidationParameters.Clone();
+        parameters.IssuerSigningKeys = from signing in credentials.SigningCredentials select signing.Key;
+        parameters.TokenDecryptionKeys = from encryption in credentials.EncryptionCredentials select encryption.Key;
+        parameters.ValidateAudience = false;
+        parameters.ValidateIssuer = false;
+        parameters.ValidateLifetime = false;
+        parameters.ValidTypes = [JsonWebTokenTypes.Private.BackchannelNotification];
+
+        var result = await transaction.Options.JsonWebTokenHandler.ValidateTokenAsync(payload, parameters);
+        if (!result.IsValid)
+        {
+            transaction.ServiceProvider.GetRequiredService<ILogger<OpenIddictServerDispatcher>>()
+                .LogWarning(6406, result.Exception, SR.GetResourceString(SR.ID6406));
+
+            return null;
+        }
+
+        var identity = result.ClaimsIdentity;
+        if (identity.FindFirst(Claims.AuthReqId)?.Value is not { Length: > 0 } identifier ||
+            identity.FindFirst(Claims.Private.ClientNotificationToken)?.Value is not { Length: > 0 } value ||
+            identity.FindFirst(Claims.Private.TokenDeliveryMode)?.Value is not { } mode ||
+            mode is not (BackchannelTokenDeliveryModes.Ping or BackchannelTokenDeliveryModes.Push))
+        {
+            return null;
+        }
+
+        return new(identifier, value, mode);
+    }
+
+    private async ValueTask SendBackchannelNotificationAsync(OpenIddictServerOptions options,
+        OpenIddictServerBackchannelAuthenticationRequest request, OpenIddictServerBackchannelNotification notification,
+        ClaimsPrincipal? principal, CancellationToken cancellationToken)
+    {
+        var logger = _provider.GetRequiredService<ILogger<OpenIddictServerDispatcher>>();
+
+        if (string.IsNullOrEmpty(request.ClientId))
+        {
+            return;
+        }
+
+        var manager = _provider.GetService<IOpenIddictApplicationManager>()
+            ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
+
+        // Note: the client notification endpoint is resolved when the notification is sent so that
+        // an updated endpoint is used if the client registration was changed in the meantime.
+        var application = await manager.FindByClientIdAsync(request.ClientId, cancellationToken);
+        if (application is null)
+        {
+            logger.LogWarning(6403, SR.GetResourceString(SR.ID6403), request.ClientId);
+
+            return;
+        }
+
+        var settings = await manager.GetSettingsAsync(application, cancellationToken);
+        if (!settings.TryGetValue(Settings.BackchannelAuthentication.ClientNotificationEndpoint, out string? value) ||
+            !Uri.TryCreate(value, UriKind.Absolute, out Uri? endpoint) ||
+            !string.Equals(endpoint.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase))
+        {
+            logger.LogWarning(6403, SR.GetResourceString(SR.ID6403), request.ClientId);
+
+            return;
+        }
+
+        var payload = notification.TokenDeliveryMode switch
+        {
+            // In ping mode, only the authentication request identifier is sent, whether the request was approved or not.
+            //
+            // See https://openid.net/specs/openid-client-initiated-backchannel-authentication-core-1_0.html#rfc.section.10.2.
+            BackchannelTokenDeliveryModes.Ping => new OpenIddictResponse
+            {
+                AuthReqId = notification.AuthenticationRequestId
+            },
+
+            // In push mode, the tokens are sent when the request was approved and an error payload is sent otherwise.
+            //
+            // See https://openid.net/specs/openid-client-initiated-backchannel-authentication-core-1_0.html#rfc.section.10.3
+            // and https://openid.net/specs/openid-client-initiated-backchannel-authentication-core-1_0.html#rfc.section.12.
+            BackchannelTokenDeliveryModes.Push when principal is not null
+                => await GenerateBackchannelPushPayloadAsync(options, request, notification, principal, cancellationToken),
+
+            _ => new OpenIddictResponse
+            {
+                AuthReqId = notification.AuthenticationRequestId,
+                Error = Errors.AccessDenied,
+                ErrorDescription = SR.GetResourceString(SR.ID2305)
+            }
+        };
+
+        var dispatcher = _provider.GetRequiredService<IOpenIddictServerDispatcher>();
+
+        for (var attempt = 1; ; attempt++)
+        {
+            var context = new OpenIddictServerEvents.SendBackchannelNotificationContext(new OpenIddictServerTransaction
+            {
+                CancellationToken = cancellationToken,
+                Options = options,
+                ServiceProvider = _provider
+            })
+            {
+                Attempt = attempt,
+                ClientId = request.ClientId,
+                ClientNotificationEndpoint = endpoint,
+                ClientNotificationToken = notification.ClientNotificationToken,
+                Notification = payload,
+                TokenDeliveryMode = notification.TokenDeliveryMode
+            };
+
+            await dispatcher.DispatchAsync(context);
+
+            if (context.IsRequestHandled)
+            {
+                logger.LogInformation(6407, SR.GetResourceString(SR.ID6407),
+                    notification.TokenDeliveryMode, request.ClientId, endpoint, attempt);
+
+                return;
+            }
+
+            // If no handler processed the notification, this indicates that no transport was registered.
+            if (!context.IsRejected)
+            {
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0603));
+            }
+
+            if (attempt > options.BackchannelNotificationRetryCount)
+            {
+                logger.LogError(6408, SR.GetResourceString(SR.ID6408), notification.TokenDeliveryMode,
+                    request.ClientId, endpoint, attempt, context.Error, context.ErrorDescription);
+
+                return;
+            }
+
+            logger.LogWarning(6409, SR.GetResourceString(SR.ID6409), notification.TokenDeliveryMode,
+                request.ClientId, endpoint, attempt, context.Error, context.ErrorDescription);
+
+            if (options.BackchannelNotificationRetryDelay > TimeSpan.Zero)
+            {
+#if NET
+                await Task.Delay(options.BackchannelNotificationRetryDelay, options.TimeProvider, cancellationToken);
+#else
+                await Task.Delay(options.BackchannelNotificationRetryDelay, cancellationToken);
+#endif
+            }
+        }
+    }
+
+    private async ValueTask<OpenIddictResponse> GenerateBackchannelPushPayloadAsync(OpenIddictServerOptions options,
+        OpenIddictServerBackchannelAuthenticationRequest request, OpenIddictServerBackchannelNotification notification,
+        ClaimsPrincipal principal, CancellationToken cancellationToken)
+    {
+        // Note: the tokens are generated using the sign-in pipeline of the token endpoint, as if the client
+        // application had sent a grant_type=urn:openid:params:grant-type:ciba token request, which ensures
+        // the same tokens are returned whatever the token delivery mode is and the token entry is redeemed.
+        var transaction = new OpenIddictServerTransaction
+        {
+            CancellationToken = cancellationToken,
+            EndpointType = OpenIddictServerEndpointType.Token,
+            Options = options,
+            Request = new OpenIddictRequest
+            {
+                AuthReqId = notification.AuthenticationRequestId,
+                ClientId = request.ClientId,
+                GrantType = GrantTypes.Ciba
+            },
+            Response = new OpenIddictResponse(),
+            ServiceProvider = _provider
+        };
+
+        transaction.Properties[BackchannelPushDeliveryProperty] = true;
+        transaction.SetProperty(typeof(OpenIddictServerEvents.ProcessAuthenticationContext).FullName!,
+            new OpenIddictServerEvents.ProcessAuthenticationContext(transaction)
+            {
+                AuthenticationRequestIdPrincipal = principal
+            });
+
+        var context = new OpenIddictServerEvents.ProcessSignInContext(transaction)
+        {
+            Principal = principal.Clone(static _ => true),
+            Response = transaction.Response
+        };
+
+        await _provider.GetRequiredService<IOpenIddictServerDispatcher>().DispatchAsync(context);
+
+        if (context.IsRejected)
+        {
+            _provider.GetRequiredService<ILogger<OpenIddictServerDispatcher>>().LogError(6410,
+                SR.GetResourceString(SR.ID6410), request.Identifier, context.Error, context.ErrorDescription);
+
+            return new OpenIddictResponse
+            {
+                AuthReqId = notification.AuthenticationRequestId,
+                Error = Errors.TransactionFailed,
+                ErrorDescription = SR.GetResourceString(SR.ID2306)
+            };
+        }
+
+        var response = new OpenIddictResponse();
+
+        foreach (var parameter in context.Response.GetParameters())
+        {
+            response.SetParameter(parameter.Key, parameter.Value);
+        }
+
+        response.AuthReqId = notification.AuthenticationRequestId;
+
+        return response;
     }
 
     /// <summary>
@@ -444,3 +722,9 @@ public sealed class OpenIddictServerSessionTerminationResult
     /// </summary>
     public ImmutableArray<Uri> FrontchannelLogoutUris { get; init; } = [];
 }
+
+/// <summary>
+/// Represents the information needed to send a ping or push notification to a client application.
+/// </summary>
+internal sealed record class OpenIddictServerBackchannelNotification(
+    string AuthenticationRequestId, string ClientNotificationToken, string TokenDeliveryMode);

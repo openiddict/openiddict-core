@@ -2284,6 +2284,66 @@ public sealed class OpenIddictServerBuilder
         => Configure(options => options.PollingInterval = interval);
 
     /// <summary>
+    /// Enables the "ping" Client-Initiated Backchannel Authentication token delivery mode, which allows client
+    /// applications registered with this mode to be notified when the authentication request is completed.
+    /// </summary>
+    /// <remarks>
+    /// Note: a notification transport (e.g the OpenIddict.Server.SystemNetHttp integration) must be registered.
+    /// </remarks>
+    /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
+    public OpenIddictServerBuilder AllowBackchannelPingTokenDeliveryMode()
+        => Configure(options => options.BackchannelTokenDeliveryModes.Add(BackchannelTokenDeliveryModes.Ping));
+
+    /// <summary>
+    /// Enables the "push" Client-Initiated Backchannel Authentication token delivery mode, which allows client
+    /// applications registered with this mode to receive the tokens once the authentication request is approved.
+    /// </summary>
+    /// <remarks>
+    /// Note: a notification transport (e.g the OpenIddict.Server.SystemNetHttp integration) must be registered.
+    /// </remarks>
+    /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
+    public OpenIddictServerBuilder AllowBackchannelPushTokenDeliveryMode()
+        => Configure(options => options.BackchannelTokenDeliveryModes.Add(BackchannelTokenDeliveryModes.Push));
+
+    /// <summary>
+    /// Enables signed backchannel authentication requests support, which allows client applications to send
+    /// their backchannel authentication requests as signed JSON Web Tokens using the "request" parameter.
+    /// Signed authentication requests must be signed using a key present in the client JSON Web Key Set.
+    /// </summary>
+    /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
+    public OpenIddictServerBuilder EnableSignedBackchannelAuthenticationRequestSupport()
+        => Configure(options => options.EnableSignedBackchannelAuthenticationRequests = true);
+
+    /// <summary>
+    /// Enables support for the "user_code" parameter in backchannel authentication requests.
+    /// </summary>
+    /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
+    public OpenIddictServerBuilder EnableBackchannelUserCodeParameterSupport()
+        => Configure(options => options.EnableBackchannelUserCodeParameter = true);
+
+    /// <summary>
+    /// Sets the retry policy applied when sending ping or push notifications to client applications.
+    /// </summary>
+    /// <param name="count">The maximum number of retries (0 to disable retries).</param>
+    /// <param name="delay">The delay applied between two attempts.</param>
+    /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
+    public OpenIddictServerBuilder SetBackchannelNotificationRetryPolicy(int count, TimeSpan delay)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(count);
+
+        if (delay < TimeSpan.Zero)
+        {
+            throw new ArgumentOutOfRangeException(nameof(delay));
+        }
+
+        return Configure(options =>
+        {
+            options.BackchannelNotificationRetryCount = count;
+            options.BackchannelNotificationRetryDelay = delay;
+        });
+    }
+
+    /// <summary>
     /// Sets the identity token lifetime, after which client
     /// applications should refuse processing identity tokens.
     /// While discouraged, <see langword="null"/> can be specified to issue tokens that never expire.

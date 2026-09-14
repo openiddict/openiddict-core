@@ -340,6 +340,25 @@ public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenId
             }
         }
 
+        // Ensure only the standard CIBA token delivery modes are used and that the poll mode is always enabled.
+        //
+        // See https://openid.net/specs/openid-client-initiated-backchannel-authentication-core-1_0.html#rfc.section.5.
+        if (!options.BackchannelTokenDeliveryModes.Contains(BackchannelTokenDeliveryModes.Poll) ||
+             options.BackchannelTokenDeliveryModes.Any(static mode => mode is not (BackchannelTokenDeliveryModes.Ping or
+                                                                                   BackchannelTokenDeliveryModes.Poll or
+                                                                                   BackchannelTokenDeliveryModes.Push)))
+        {
+            builder.AddError(SR.GetResourceString(SR.ID0600));
+        }
+
+        // Ensure the ping/push token delivery modes, signed requests and user codes are only enabled with the CIBA grant.
+        if (!options.GrantTypes.Contains(GrantTypes.Ciba) && (options.BackchannelTokenDeliveryModes.Count is > 1 ||
+                                                               options.EnableSignedBackchannelAuthenticationRequests ||
+                                                               options.EnableBackchannelUserCodeParameter))
+        {
+            builder.AddError(SR.GetResourceString(SR.ID0601));
+        }
+
         // Ensure the grant types/response types configuration is consistent.
         foreach (var type in options.ResponseTypes)
         {

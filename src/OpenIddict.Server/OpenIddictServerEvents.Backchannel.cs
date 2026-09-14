@@ -62,6 +62,22 @@ public static partial class OpenIddictServerEvents
         /// from the identity token hint, if applicable.
         /// </summary>
         public ClaimsPrincipal? IdentityTokenHintPrincipal { get; set; }
+
+        /// <summary>
+        /// Gets or sets the security principal extracted from the signed
+        /// authentication request (i.e the "request" parameter), if applicable.
+        /// </summary>
+        public ClaimsPrincipal? RequestObjectPrincipal { get; set; }
+
+        /// <summary>
+        /// Gets or sets the JWS algorithm used to sign the authentication request, if applicable.
+        /// </summary>
+        public string? RequestObjectSigningAlgorithm { get; set; }
+
+        /// <summary>
+        /// Gets or sets the token delivery mode (poll, ping or push) registered for the client application.
+        /// </summary>
+        public string? TokenDeliveryMode { get; set; }
     }
 
     /// <summary>
@@ -155,5 +171,56 @@ public static partial class OpenIddictServerEvents
         /// this property returns <see langword="null"/>.
         /// </summary>
         public string? Error => Response.Error;
+    }
+
+    /// <summary>
+    /// Represents an event called when a ping or push notification must be sent to the client notification
+    /// endpoint of a client application after a backchannel authentication request was completed. Handlers
+    /// (e.g the OpenIddict.Server.SystemNetHttp integration) are expected to send the notification and call
+    /// <see cref="BaseRequestContext.HandleRequest()"/> once delivered, or to reject the context if delivery failed.
+    /// </summary>
+    /// <remarks>
+    /// See https://openid.net/specs/openid-client-initiated-backchannel-authentication-core-1_0.html#rfc.section.10.2
+    /// and https://openid.net/specs/openid-client-initiated-backchannel-authentication-core-1_0.html#rfc.section.10.3.
+    /// </remarks>
+    public sealed class SendBackchannelNotificationContext : BaseValidatingContext
+    {
+        /// <summary>
+        /// Creates a new instance of the <see cref="SendBackchannelNotificationContext"/> class.
+        /// </summary>
+        public SendBackchannelNotificationContext(OpenIddictServerTransaction transaction)
+            : base(transaction)
+        {
+        }
+
+        /// <summary>
+        /// Gets or sets the identifier of the client application to which the notification is sent.
+        /// </summary>
+        public required string ClientId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the client notification endpoint URI.
+        /// </summary>
+        public required Uri ClientNotificationEndpoint { get; set; }
+
+        /// <summary>
+        /// Gets or sets the bearer client notification token sent in the Authorization header.
+        /// </summary>
+        public required string ClientNotificationToken { get; set; }
+
+        /// <summary>
+        /// Gets or sets the token delivery mode (ping or push).
+        /// </summary>
+        public required string TokenDeliveryMode { get; set; }
+
+        /// <summary>
+        /// Gets or sets the notification payload, serialized as a JSON object.
+        /// </summary>
+        public required OpenIddictResponse Notification { get; set; }
+
+        /// <summary>
+        /// Gets or sets the attempt number (starting at 1).
+        /// </summary>
+        public int Attempt { get; set; } = 1;
     }
 }

@@ -32,6 +32,11 @@ public sealed class OpenIddictConfiguration
     public Uri? BackchannelAuthenticationEndpoint { get; set; }
 
     /// <summary>
+    /// Gets the signing algorithms supported by the backchannel authentication endpoint for signed authentication requests.
+    /// </summary>
+    public HashSet<string> BackchannelAuthenticationRequestSigningAlgValuesSupported { get; } = new(StringComparer.Ordinal);
+
+    /// <summary>
     /// Gets the backchannel token delivery modes supported by the server.
     /// </summary>
     public HashSet<string> BackchannelTokenDeliveryModesSupported { get; } = new(StringComparer.Ordinal);

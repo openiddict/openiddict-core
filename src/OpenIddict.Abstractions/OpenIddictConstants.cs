@@ -73,6 +73,7 @@ public static class OpenIddictConstants
         public const string AuthorizationServer = "as";
         public const string AuthorizedActor = "may_act";
         public const string AuthorizedParty = "azp";
+        public const string AuthReqId = "urn:openid:params:jwt:claim:auth_req_id";
         public const string Birthdate = "birthdate";
         public const string ClientId = "client_id";
         public const string CodeHash = "c_hash";
@@ -107,6 +108,7 @@ public static class OpenIddictConstants
         public const string PostalCode = "postal_code";
         public const string PreferredUsername = "preferred_username";
         public const string Profile = "profile";
+        public const string RefreshTokenHash = "urn:openid:params:jwt:claim:rt_hash";
         public const string Region = "region";
         public const string RequestForgeryProtection = "rfp";
         public const string Role = "role";
@@ -137,6 +139,7 @@ public static class OpenIddictConstants
             public const string AuthorizationId = "oi_au_id";
             public const string BindingMessage = "oi_bdg_msg";
             public const string ClaimDestinationsMap = "oi_cl_dstn";
+            public const string ClientNotificationToken = "oi_cnt_tkn";
             public const string CodeChallenge = "oi_cd_chlg";
             public const string CodeChallengeMethod = "oi_cd_chlg_meth";
             public const string CodeVerifier = "oi_cd_vrf";
@@ -156,6 +159,7 @@ public static class OpenIddictConstants
             public const string PostLogoutRedirectUri = "oi_pstlgt_reduri";
             public const string ProviderName = "oi_prvd_name";
             public const string Presenter = "oi_prst";
+            public const string TokenDeliveryMode = "oi_dlv_mode";
             public const string RedirectUri = "oi_reduri";
             public const string RefreshTokenLifetime = "oi_reft_lft";
             public const string RegistrationId = "oi_reg_id";
@@ -326,6 +330,7 @@ public static class OpenIddictConstants
         public const string ServerError = "server_error";
         public const string SlowDown = "slow_down";
         public const string TemporarilyUnavailable = "temporarily_unavailable";
+        public const string TransactionFailed = "transaction_failed";
         public const string UnapprovedSoftwareStatement = "unapproved_software_statement";
         public const string UnauthorizedClient = "unauthorized_client";
         public const string UnknownUserId = "unknown_user_id";
@@ -367,6 +372,7 @@ public static class OpenIddictConstants
         public static class Private
         {
             public const string AuthenticationRequestId = "oi_arid+jwt";
+            public const string BackchannelNotification = "oi_bcntf+jwt";
             public const string AuthorizationCode = "oi_auc+jwt";
             public const string DeviceCode = "oi_dvc+jwt";
             public const string DPoPNonce = "oi_dpop_nce+jwt";
@@ -606,6 +612,7 @@ public static class OpenIddictConstants
     {
         public const string ClientMetadata = ".client_metadata";
         public const string Destinations = ".destinations";
+        public const string BackchannelNotification = ".backchannel_notification";
         public const string LastPollingDate = ".last_polling_date";
         public const string LoginId = ".login_id";
         public const string SessionId = ".session_id";
@@ -702,10 +709,19 @@ public static class OpenIddictConstants
     {
         public static class Prefixes
         {
+            public const string BackchannelAuthentication = "bca:";
             public const string IntrospectionResponse = "intr_rsp:";
             public const string Logout = "lgt:";
             public const string Registration = "reg:";
             public const string TokenLifetime = "tkn_lft:";
+        }
+
+        public static class BackchannelAuthentication
+        {
+            public const string ClientNotificationEndpoint = "bca:ntf_ept";
+            public const string RequestSigningAlgorithm = "bca:req_sig_alg";
+            public const string TokenDeliveryMode = "bca:dlv_mode";
+            public const string UserCodeParameter = "bca:usr_code";
         }
 
         public static class Logout

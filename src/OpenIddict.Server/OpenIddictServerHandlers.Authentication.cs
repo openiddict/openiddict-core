@@ -653,7 +653,7 @@ public static partial class OpenIddictServerHandlers
                     return;
                 }
 
-                var (principal, request) = await ValidateRequestObjectAsync(context, _dispatcher, context.Request);
+                var (principal, request, _) = await ValidateRequestObjectAsync(context, _dispatcher, context.Request);
                 if (principal is null || request is null)
                 {
                     return;
@@ -2835,7 +2835,7 @@ public static partial class OpenIddictServerHandlers
                     return;
                 }
 
-                var (principal, request) = await ValidateRequestObjectAsync(context, _dispatcher, context.Request);
+                var (principal, request, _) = await ValidateRequestObjectAsync(context, _dispatcher, context.Request);
                 if (principal is null || request is null)
                 {
                     return;
@@ -4300,7 +4300,7 @@ public static partial class OpenIddictServerHandlers
         /// the principal extracted from the request object and the request parameters it contains.
         /// If the request object is invalid, the context is automatically rejected.
         /// </summary>
-        private static async ValueTask<(ClaimsPrincipal? Principal, OpenIddictRequest? Request)> ValidateRequestObjectAsync(
+        internal static async ValueTask<(ClaimsPrincipal? Principal, OpenIddictRequest? Request, string? Algorithm)> ValidateRequestObjectAsync(
             BaseValidatingContext context, IOpenIddictServerDispatcher dispatcher, OpenIddictRequest request)
         {
             Debug.Assert(!string.IsNullOrEmpty(request.Request), SR.FormatID4000(Parameters.Request));
@@ -4449,7 +4449,7 @@ public static partial class OpenIddictServerHandlers
                 }
             }
 
-            return (notification.Principal, new OpenIddictRequest(parameters));
+            return (notification.Principal, new OpenIddictRequest(parameters), (token.InnerToken ?? token).Alg);
         }
     }
 }

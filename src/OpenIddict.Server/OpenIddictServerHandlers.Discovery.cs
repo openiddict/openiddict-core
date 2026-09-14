@@ -241,7 +241,8 @@ public static partial class OpenIddictServerHandlers
                     [Metadata.RegistrationEndpoint] = notification.RegistrationEndpoint?.AbsoluteUri,
                     [Metadata.BackchannelAuthenticationEndpoint] = notification.BackchannelAuthenticationEndpoint?.AbsoluteUri,
                     [Metadata.BackchannelTokenDeliveryModesSupported] = notification.BackchannelTokenDeliveryModes.ToImmutableArray<string?>(),
-                    [Metadata.BackchannelUserCodeParameterSupported] = notification.BackchannelAuthenticationEndpoint is not null ? false : null,
+                    [Metadata.BackchannelUserCodeParameterSupported] = notification.BackchannelAuthenticationEndpoint is not null
+                        ? notification.Options.EnableBackchannelUserCodeParameter : null,
                     [Metadata.MtlsEndpointAliases] = CreateMtlsEndpointAliases(notification),
                     [Metadata.JwksUri] = notification.JsonWebKeySetEndpoint?.AbsoluteUri,
                     [Metadata.GrantTypesSupported] = notification.GrantTypes.ToImmutableArray<string?>(),
@@ -414,10 +415,10 @@ public static partial class OpenIddictServerHandlers
                 context.BackchannelAuthenticationEndpoint ??= OpenIddictHelpers.CreateAbsoluteUri(
                     context.BaseUri, context.Options.BackchannelAuthenticationEndpointUris.FirstOrDefault());
 
-                // Note: OpenIddict only supports the poll delivery mode.
+                // Note: the poll delivery mode is always enabled. The ping and push modes are opt-in.
                 if (context.BackchannelAuthenticationEndpoint is not null)
                 {
-                    context.BackchannelTokenDeliveryModes.Add(BackchannelTokenDeliveryModes.Poll);
+                    context.BackchannelTokenDeliveryModes.UnionWith(context.Options.BackchannelTokenDeliveryModes);
                 }
 
                 context.DeviceAuthorizationEndpoint ??= OpenIddictHelpers.CreateAbsoluteUri(
@@ -892,6 +893,26 @@ public static partial class OpenIddictServerHandlers
                     ]);
 
                     context.Metadata[Metadata.RequireSignedRequestObject] = context.Options.RequireSignedRequestObjects;
+                }
+
+                // If signed backchannel authentication requests are supported, return the asymmetric signing algorithms
+                // allowed for these requests. For more information, see
+                // https://openid.net/specs/openid-client-initiated-backchannel-authentication-core-1_0.html#rfc.section.4.
+                if (context.Options.EnableSignedBackchannelAuthenticationRequests &&
+                    context.Options.BackchannelAuthenticationEndpointUris.Count is > 0)
+                {
+                    context.Metadata[Metadata.BackchannelAuthenticationRequestSigningAlgValuesSupported] = new JsonArray(
+                    [
+                        SecurityAlgorithms.EcdsaSha256,
+                        SecurityAlgorithms.EcdsaSha384,
+                        SecurityAlgorithms.EcdsaSha512,
+                        SecurityAlgorithms.RsaSha256,
+                        SecurityAlgorithms.RsaSha384,
+                        SecurityAlgorithms.RsaSha512,
+                        SecurityAlgorithms.RsaSsaPssSha256,
+                        SecurityAlgorithms.RsaSsaPssSha384,
+                        SecurityAlgorithms.RsaSsaPssSha512
+                    ]);
                 }
 
                 // If DPoP support was enabled, return the signing algorithms allowed for DPoP proofs.

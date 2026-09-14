@@ -12,7 +12,7 @@ namespace OpenIddict.Server.SystemNetHttp;
 public static class OpenIddictServerSystemNetHttpConstants
 {
     /// <summary>
-    /// Gets the name of the <see cref="System.Net.Http.HttpClient"/> used to send back-channel logout requests.
+    /// Gets the name of the <see cref="System.Net.Http.HttpClient"/> used to send back-channel logout requests and CIBA notifications.
     /// It can be configured using <c>services.AddHttpClient(OpenIddictServerSystemNetHttpConstants.HttpClientName)</c>.
     /// </summary>
     public const string HttpClientName = "OpenIddict.Server.SystemNetHttp";

@@ -4,8 +4,9 @@
  * the license and the contributors participating to this project.
  */
 
-using System.Net.Http;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Http;
+using Microsoft.Extensions.Options;
 using OpenIddict.Server;
 using OpenIddict.Server.SystemNetHttp;
 
@@ -18,7 +19,8 @@ public static class OpenIddictServerSystemNetHttpExtensions
 {
     /// <summary>
     /// Registers the OpenIddict server/System.Net.Http integration services in the DI container,
-    /// used to send the back-channel logout requests (OpenID Connect Back-Channel Logout 1.0).
+    /// used to send back-channel logout requests (OpenID Connect Back-Channel Logout 1.0)
+    /// and CIBA ping and push notifications to the client notification endpoints.
     /// </summary>
     /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
     /// <remarks>This extension can be safely called multiple times.</remarks>
@@ -27,25 +29,18 @@ public static class OpenIddictServerSystemNetHttpExtensions
     {
         ArgumentNullException.ThrowIfNull(builder);
 
-        // Note: redirections are not followed, as back-channel logout requests are expected to be
-        // directly processed by the back-channel logout URI registered by the client application.
-        builder.Services.AddHttpClient(OpenIddictServerSystemNetHttpConstants.HttpClientName)
-            .ConfigurePrimaryHttpMessageHandler(static () => new HttpClientHandler { AllowAutoRedirect = false });
+        builder.Services.AddHttpClient();
 
         // Register the built-in server event handlers used by the OpenIddict System.Net.Http components.
         // Note: the order used here is not important, as the actual order is set in the options.
         builder.Services.TryAdd(OpenIddictServerSystemNetHttpHandlers.DefaultHandlers.Select(descriptor => descriptor.ServiceDescriptor));
 
-        builder.Configure(options =>
-        {
-            foreach (var descriptor in OpenIddictServerSystemNetHttpHandlers.DefaultHandlers)
-            {
-                if (!options.Handlers.Contains(descriptor))
-                {
-                    options.Handlers.Add(descriptor);
-                }
-            }
-        });
+        // Note: TryAddEnumerable() is used here to ensure the initializers are registered only once.
+        builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<
+            IConfigureOptions<HttpClientFactoryOptions>, OpenIddictServerSystemNetHttpConfiguration>());
+
+        builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<
+            IConfigureOptions<OpenIddictServerOptions>, OpenIddictServerSystemNetHttpConfiguration>());
 
         return new OpenIddictServerSystemNetHttpBuilder(builder.Services);
     }
