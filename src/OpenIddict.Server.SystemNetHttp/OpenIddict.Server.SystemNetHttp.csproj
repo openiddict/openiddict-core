@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <Description>System.Net.Http integration package for the OpenIddict server services (used to send back-channel logout requests and CIBA ping/push notifications).</Description>
+    <Description>System.Net.Http integration package for the OpenIddict server services (used to send back-channel logout requests and CIBA ping/push notifications and to retrieve request objects passed by reference).</Description>
     <PackageTags>$(PackageTags);http;httpclient;server;ciba</PackageTags>
   </PropertyGroup>
 

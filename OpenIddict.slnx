@@ -117,6 +117,7 @@
     <Project Path="test/OpenIddict.Server.Saml.AspNetCore.Tests/OpenIddict.Server.Saml.AspNetCore.Tests.csproj" />
     <Project Path="test/OpenIddict.Server.Saml.Owin.Tests/OpenIddict.Server.Saml.Owin.Tests.csproj" />
     <Project Path="test/OpenIddict.Server.Saml.Tests/OpenIddict.Server.Saml.Tests.csproj" />
+    <Project Path="test/OpenIddict.Server.SystemNetHttp.Tests/OpenIddict.Server.SystemNetHttp.Tests.csproj" />
     <Project Path="test/OpenIddict.Server.Tests/OpenIddict.Server.Tests.csproj" />
     <Project Path="test/OpenIddict.Validation.AspNetCore.IntegrationTests/OpenIddict.Validation.AspNetCore.IntegrationTests.csproj" />
     <Project Path="test/OpenIddict.Validation.AspNetCore.Tests/OpenIddict.Validation.AspNetCore.Tests.csproj" Id="3afbc55d-c26a-4972-b2dd-a62d938b92ac" />

@@ -2171,7 +2171,41 @@ Error URI: {2}</value>
   </data>
   <data name="ID0814" xml:space="preserve">
     <value>The scopes allowed for dynamically registered clients cannot include initial access token scopes.</value>
-  </data>  <data name="ID2000" xml:space="preserve">
+  </data>
+  <data name="ID0920" xml:space="preserve">
+    <value>Request object reference support cannot be enabled when request object support is not enabled.
+To enable request object support, call 'services.AddOpenIddict().AddServer().EnableRequestObjectSupport()'.</value>
+  </data>
+  <data name="ID0921" xml:space="preserve">
+    <value>No request object fetcher was registered.
+To retrieve request objects by reference, reference the 'OpenIddict.Server.SystemNetHttp' package and call 'services.AddOpenIddict().AddServer().UseSystemNetHttp()' or register a custom 'IOpenIddictServerRequestObjectFetcher' implementation.</value>
+  </data>
+  <data name="ID0922" xml:space="preserve">
+    <value>The request_uri registration requirement cannot be enforced when the degraded mode is enabled.
+To use request objects by reference with the degraded mode, call 'services.AddOpenIddict().AddServer().DisableRequestUriRegistrationRequirement()' and validate the request URIs using a custom event handler.</value>
+  </data>
+  <data name="ID0923" xml:space="preserve">
+    <value>An explicit issuer cannot be set when issuer resolution is enabled.</value>
+  </data>
+  <data name="ID0924" xml:space="preserve">
+    <value>The issuers used by the issuer resolution feature must be absolute URIs that don't contain a query string or a fragment.</value>
+  </data>
+  <data name="ID0925" xml:space="preserve">
+    <value>The issuer resolved for the current request must be an absolute URI that doesn't contain a query string or a fragment.</value>
+  </data>
+  <data name="ID0926" xml:space="preserve">
+    <value>The request object retrieval timeout and maximum response size must be positive values and the maximum cache lifetime cannot be negative.</value>
+  </data>
+  <data name="ID0927" xml:space="preserve">
+    <value>Issuer resolution cannot be used with features that require a static issuer (CIBA or mTLS endpoint aliases).</value>
+  </data>
+  <data name="ID0928" xml:space="preserve">
+    <value>Endpoint URIs must be relative when issuer resolution is enabled, as they are resolved relatively to the issuer of each request.</value>
+  </data>
+  <data name="ID0930" xml:space="preserve">
+    <value>The request object couldn't be retrieved because the host '{0}' resolved to a disallowed or unknown address.</value>
+  </data>
+  <data name="ID2000" xml:space="preserve">
     <value>The security token is missing.</value>
   </data>
   <data name="ID2001" xml:space="preserve">
@@ -3147,6 +3181,21 @@ Error URI: {2}</value>
   </data>
   <data name="ID2326" xml:space="preserve">
     <value>The JWT authorization response was not encrypted, which is required by the client registration.</value>
+  </data>
+  <data name="ID2460" xml:space="preserve">
+    <value>The '{0}' parameter must be an absolute HTTPS URI that doesn't exceed 512 characters.</value>
+  </data>
+  <data name="ID2461" xml:space="preserve">
+    <value>The specified '{0}' parameter is not registered for this client application.</value>
+  </data>
+  <data name="ID2462" xml:space="preserve">
+    <value>The request object referenced by the '{0}' parameter could not be retrieved.</value>
+  </data>
+  <data name="ID2463" xml:space="preserve">
+    <value>The request object referenced by the '{0}' parameter doesn't match the hash contained in the URI fragment.</value>
+  </data>
+  <data name="ID2464" xml:space="preserve">
+    <value>The specified token was not issued by the current issuer.</value>
   </data>
   <data name="ID4000" xml:space="preserve">
     <value>The '{0}' parameter shouldn't be null or empty at this point.</value>
@@ -4305,6 +4354,51 @@ This may indicate that the hashed entry is corrupted or malformed.</value>
   </data>
   <data name="ID6445" xml:space="preserve">
     <value>The JWT authorization response was rejected: {Error} ({Description}).</value>
+  </data>
+  <data name="ID6720" xml:space="preserve">
+    <value>The authorization request was rejected because the request_uri parameter was not a valid HTTPS URI: {RequestUri}.</value>
+  </data>
+  <data name="ID6721" xml:space="preserve">
+    <value>The authorization request was rejected because the request_uri '{RequestUri}' was not registered for the client application '{ClientId}'.</value>
+  </data>
+  <data name="ID6722" xml:space="preserve">
+    <value>An error occurred while retrieving the request object referenced by '{RequestUri}'.</value>
+  </data>
+  <data name="ID6723" xml:space="preserve">
+    <value>The authorization request was rejected because the request object referenced by '{RequestUri}' couldn't be retrieved.</value>
+  </data>
+  <data name="ID6724" xml:space="preserve">
+    <value>The authorization request was rejected because the request object referenced by '{RequestUri}' didn't match the hash contained in the URI fragment.</value>
+  </data>
+  <data name="ID6725" xml:space="preserve">
+    <value>The issuer '{Issuer}' was resolved for the request '{RequestUri}'.</value>
+  </data>
+  <data name="ID6726" xml:space="preserve">
+    <value>No issuer could be resolved for the request '{RequestUri}': the request will not be handled by OpenIddict.</value>
+  </data>
+  <data name="ID6727" xml:space="preserve">
+    <value>The token was rejected because it was issued by '{Issuer}' and not by the current issuer '{CurrentIssuer}'.</value>
+  </data>
+  <data name="ID6728" xml:space="preserve">
+    <value>The request object host '{Host}' was rejected because it resolved to the disallowed address {Address}.</value>
+  </data>
+  <data name="ID6729" xml:space="preserve">
+    <value>The request object couldn't be retrieved from '{RequestUri}': the server returned the status code {StatusCode}.</value>
+  </data>
+  <data name="ID6730" xml:space="preserve">
+    <value>The request object retrieved from '{RequestUri}' was rejected because its content type '{ContentType}' is not valid.</value>
+  </data>
+  <data name="ID6731" xml:space="preserve">
+    <value>The request object retrieved from '{RequestUri}' was rejected because it exceeds the maximum allowed size.</value>
+  </data>
+  <data name="ID6732" xml:space="preserve">
+    <value>The request object couldn't be retrieved from '{RequestUri}' before the configured timeout expired.</value>
+  </data>
+  <data name="ID6733" xml:space="preserve">
+    <value>An error occurred while retrieving the request object from '{RequestUri}'.</value>
+  </data>
+  <data name="ID6734" xml:space="preserve">
+    <value>The request object retrieved from '{RequestUri}' was rejected because it is not a valid UTF-8 string.</value>
   </data>
   <data name="ID8000" xml:space="preserve">
     <value>https://documentation.openiddict.com/errors/{0}</value>

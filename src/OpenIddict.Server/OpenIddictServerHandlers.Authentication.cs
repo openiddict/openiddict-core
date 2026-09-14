@@ -7,7 +7,10 @@
 using System.Buffers.Text;
 using System.Collections.Immutable;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.Extensions.DependencyInjection;
@@ -39,6 +42,8 @@ public static partial class OpenIddictServerHandlers
             ValidateRequestParameter.Descriptor,
             ValidateRequestUriParameter.Descriptor,
             ValidateClientIdParameter.Descriptor,
+            ValidateRequestUriRegistration.Descriptor,
+            ResolveRequestObjectReference.Descriptor,
             ValidateRequestObject.Descriptor,
             ValidateAuthentication.Descriptor,
             RestorePushedAuthorizationRequestParameters.Descriptor,
@@ -558,16 +563,34 @@ public static partial class OpenIddictServerHandlers
                 // token generated during a pushed authorization response or via the automatic request
                 // caching feature when explicitly enabled in the options. Since OpenIddict uses a specific
                 // URN prefix for request tokens it generates, all the other values are automatically rejected.
+                //
+                // When request objects by reference are explicitly enabled, external request URIs are also
+                // accepted but MUST be absolute HTTPS URIs (RFC 9101, section 5.2 and section 10.4.1).
                 if (!context.Request.RequestUri.StartsWith(RequestUris.Prefixes.Generic, StringComparison.Ordinal))
                 {
-                    context.Logger.LogInformation(6032, SR.GetResourceString(SR.ID6032), Parameters.RequestUri);
+                    if (!context.Options.EnableRequestObjectReferenceSupport)
+                    {
+                        context.Logger.LogInformation(6032, SR.GetResourceString(SR.ID6032), Parameters.RequestUri);
 
-                    context.Reject(
-                        error: Errors.RequestUriNotSupported,
-                        description: SR.FormatID2028(Parameters.RequestUri),
-                        uri: SR.FormatID8000(SR.ID2028));
+                        context.Reject(
+                            error: Errors.RequestUriNotSupported,
+                            description: SR.FormatID2028(Parameters.RequestUri),
+                            uri: SR.FormatID8000(SR.ID2028));
 
-                    return ValueTask.CompletedTask;
+                        return ValueTask.CompletedTask;
+                    }
+
+                    if (!IsValidExternalRequestUri(context.Request.RequestUri))
+                    {
+                        context.Logger.LogInformation(6720, SR.GetResourceString(SR.ID6720), context.Request.RequestUri);
+
+                        context.Reject(
+                            error: Errors.InvalidRequestUri,
+                            description: SR.FormatID2460(Parameters.RequestUri),
+                            uri: SR.FormatID8000(SR.ID2460));
+
+                        return ValueTask.CompletedTask;
+                    }
                 }
 
                 // Both the OpenID Connect core and OAuth 2.0 JWT-Secured Authorization Request specifications
@@ -623,6 +646,155 @@ public static partial class OpenIddictServerHandlers
                 }
 
                 return ValueTask.CompletedTask;
+            }
+        }
+
+        /// <summary>
+        /// Contains the logic responsible for rejecting authorization requests that specify an external
+        /// request_uri that was not pre-registered by the client application, when registration is required.
+        /// Note: this handler is not used when the degraded mode is enabled.
+        /// </summary>
+        public sealed class ValidateRequestUriRegistration : IOpenIddictServerHandler<ValidateAuthorizationRequestContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateAuthorizationRequestContext>()
+                    .AddFilter<RequireDegradedModeDisabled>()
+                    .UseSingletonHandler<ValidateRequestUriRegistration>()
+                    .SetOrder(ValidateClientIdParameter.Descriptor.Order + 100)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public async ValueTask HandleAsync(ValidateAuthorizationRequestContext context)
+            {
+                ArgumentNullException.ThrowIfNull(context);
+
+                if (!context.Options.EnableRequestObjectReferenceSupport || !context.Options.RequireRequestUriRegistration ||
+                    !IsExternalRequestUri(context.Request.RequestUri, out Uri? uri))
+                {
+                    return;
+                }
+
+                Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
+
+                var manager = context.ServiceProvider.GetService<IOpenIddictApplicationManager>()
+                    ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
+
+                // Note: the client application is validated later in the pipeline. At this stage,
+                // unknown client applications are rejected using the same error as unregistered URIs.
+                var application = await manager.FindByClientIdAsync(context.ClientId, context.CancellationToken);
+                if (application is null || !IsRegisteredRequestUri(uri,
+                    (await manager.GetSettingsAsync(application, context.CancellationToken))
+                        .TryGetValue(Settings.RequestObject.RequestUris, out string? setting) ? setting : null))
+                {
+                    context.Logger.LogInformation(6721, SR.GetResourceString(SR.ID6721), uri, context.ClientId);
+
+                    context.Reject(
+                        error: Errors.InvalidRequestUri,
+                        description: SR.FormatID2461(Parameters.RequestUri),
+                        uri: SR.FormatID8000(SR.ID2461));
+
+                    return;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Contains the logic responsible for retrieving the request object referenced by an external request_uri
+        /// and attaching it to the authorization request so that it can be validated like a request object passed
+        /// by value (RFC 9101, section 5.2 and OpenID Connect Core, section 6.2).
+        /// </summary>
+        public sealed class ResolveRequestObjectReference : IOpenIddictServerHandler<ValidateAuthorizationRequestContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateAuthorizationRequestContext>()
+                    .UseSingletonHandler<ResolveRequestObjectReference>()
+                    .SetOrder(ValidateClientIdParameter.Descriptor.Order + 250)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public async ValueTask HandleAsync(ValidateAuthorizationRequestContext context)
+            {
+                ArgumentNullException.ThrowIfNull(context);
+
+                if (!context.Options.EnableRequestObjectReferenceSupport ||
+                    !IsExternalRequestUri(context.Request.RequestUri, out Uri? uri))
+                {
+                    return;
+                }
+
+                var fetcher = context.ServiceProvider.GetService<IOpenIddictServerRequestObjectFetcher>()
+                    ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0921));
+
+                string? content;
+
+                try
+                {
+                    content = await fetcher.FetchAsync(uri, context.CancellationToken);
+                }
+
+                catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception) &&
+                    exception is not OperationCanceledException)
+                {
+                    context.Logger.LogWarning(6722, exception, SR.GetResourceString(SR.ID6722), uri);
+
+                    content = null;
+                }
+
+                content = content?.Trim();
+
+                if (string.IsNullOrEmpty(content))
+                {
+                    context.Logger.LogInformation(6723, SR.GetResourceString(SR.ID6723), uri);
+
+                    context.Reject(
+                        error: Errors.InvalidRequestUri,
+                        description: SR.FormatID2462(Parameters.RequestUri),
+                        uri: SR.FormatID8000(SR.ID2462));
+
+                    return;
+                }
+
+                // If the contents of the referenced resource can change, OpenID Connect Core (section 6.2)
+                // recommends including the base64url-encoded SHA-256 hash of the resource as the URI fragment.
+                // When the fragment has the shape of such a hash, ensure it matches the retrieved request object.
+                if (uri.Fragment is { Length: 44 } fragment && TryDecodeHash(fragment[1..]) is byte[] hash &&
+                    !hash.AsSpan().SequenceEqual(SHA256.HashData(Encoding.UTF8.GetBytes(content))))
+                {
+                    context.Logger.LogInformation(6724, SR.GetResourceString(SR.ID6724), uri);
+
+                    context.Reject(
+                        error: Errors.InvalidRequestUri,
+                        description: SR.FormatID2463(Parameters.RequestUri),
+                        uri: SR.FormatID8000(SR.ID2463));
+
+                    return;
+                }
+
+                // Attach the request object as if it had been sent by value: the request_uri is removed
+                // so that it is not mistaken for a request token generated by OpenIddict later in the pipeline.
+                context.Request.Request = content;
+                context.Request.RequestUri = null;
+
+                static byte[]? TryDecodeHash(string value)
+                {
+                    try
+                    {
+                        return Base64Url.DecodeFromChars(value) is { Length: 32 } bytes ? bytes : null;
+                    }
+
+                    catch (FormatException)
+                    {
+                        return null;
+                    }
+                }
             }
         }
 
@@ -4532,6 +4704,71 @@ public static partial class OpenIddictServerHandlers
             }
 
             return (notification.Principal, new OpenIddictRequest(parameters), (token.InnerToken ?? token).Alg);
+        }
+
+        /// <summary>
+        /// Determines whether the specified request_uri is a valid external request URI: an absolute HTTPS URI
+        /// without user information that doesn't exceed 512 characters (RFC 9101, section 5.2).
+        /// </summary>
+        private static bool IsValidExternalRequestUri(string value)
+            => value.Length is <= 512 &&
+               Uri.TryCreate(value, UriKind.Absolute, out Uri? uri) &&
+               string.Equals(uri.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase) &&
+               string.IsNullOrEmpty(uri.UserInfo) && !OpenIddictHelpers.IsImplicitFileUri(uri);
+
+        /// <summary>
+        /// Determines whether the specified request_uri represents an external (i.e not generated by OpenIddict) request URI.
+        /// </summary>
+        private static bool IsExternalRequestUri(string? value, [NotNullWhen(true)] out Uri? uri)
+        {
+            if (string.IsNullOrEmpty(value) || value.StartsWith(RequestUris.Prefixes.Generic, StringComparison.Ordinal) ||
+                !IsValidExternalRequestUri(value) || !Uri.TryCreate(value, UriKind.Absolute, out uri))
+            {
+                uri = null;
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Determines whether the specified request URI matches one of the space-separated request URIs
+        /// registered by the client. Registered values are matched exactly or used as prefixes, in which
+        /// case the origin must be identical and the match must end at a path or query boundary.
+        /// Fragments are ignored, as they only convey the hash of the referenced request object.
+        /// </summary>
+        internal static bool IsRegisteredRequestUri(Uri uri, string? registrations)
+        {
+            if (string.IsNullOrEmpty(registrations))
+            {
+                return false;
+            }
+
+            var candidate = uri.GetLeftPart(UriPartial.Query);
+
+            foreach (var registration in registrations.Split(Separators.Space, StringSplitOptions.RemoveEmptyEntries))
+            {
+                if (!Uri.TryCreate(registration, UriKind.Absolute, out Uri? value) ||
+                    !string.Equals(value.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase) ||
+                    !string.Equals(value.Host, uri.Host, StringComparison.OrdinalIgnoreCase) || value.Port != uri.Port)
+                {
+                    continue;
+                }
+
+                var prefix = value.GetLeftPart(UriPartial.Query);
+                if (string.Equals(candidate, prefix, StringComparison.Ordinal))
+                {
+                    return true;
+                }
+
+                if (candidate.Length > prefix.Length && candidate.StartsWith(prefix, StringComparison.Ordinal) &&
+                    (prefix[^1] is '/' || candidate[prefix.Length] is '/' or '?'))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 }

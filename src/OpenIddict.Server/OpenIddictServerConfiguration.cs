@@ -422,6 +422,21 @@ public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenId
             builder.AddError(SR.GetResourceString(SR.ID0641));
         }
 
+        // Ensure request objects by reference are only enabled with request object support and that
+        // the request_uri registration requirement is not silently ignored in degraded mode.
+        if (options.EnableRequestObjectReferenceSupport)
+        {
+            if (!options.EnableRequestObjectSupport)
+            {
+                builder.AddError(SR.GetResourceString(SR.ID0920));
+            }
+
+            if (options.EnableDegradedMode && options.RequireRequestUriRegistration)
+            {
+                builder.AddError(SR.GetResourceString(SR.ID0922));
+            }
+        }
+
         // Ensure the DPoP configuration is consistent.
         if (options.RequireDPoP && !options.EnableDPoPSupport)
         {

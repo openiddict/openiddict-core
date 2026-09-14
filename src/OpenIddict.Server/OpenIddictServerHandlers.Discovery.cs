@@ -907,7 +907,15 @@ public static partial class OpenIddictServerHandlers
                 // Note: these optional features are not yet supported by OpenIddict,
                 // so "false" is returned to encourage clients not to use them.
                 context.Metadata[Metadata.ClaimsParameterSupported] = false;
-                context.Metadata[Metadata.RequestUriParameterSupported] = false;
+
+                // Note: "request_uri_parameter_supported" only advertises external request URIs (OpenID Connect
+                // Discovery, section 3): request URIs returned by the pushed authorization endpoint are always accepted.
+                context.Metadata[Metadata.RequestUriParameterSupported] = context.Options.EnableRequestObjectReferenceSupport;
+
+                if (context.Options.EnableRequestObjectReferenceSupport)
+                {
+                    context.Metadata[Metadata.RequireRequestUriRegistration] = context.Options.RequireRequestUriRegistration;
+                }
 
                 context.Metadata[Metadata.RequestParameterSupported] = context.Options.EnableRequestObjectSupport;
 

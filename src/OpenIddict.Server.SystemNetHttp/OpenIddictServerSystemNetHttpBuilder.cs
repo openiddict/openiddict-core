@@ -6,6 +6,7 @@
 
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Reflection;
@@ -143,6 +144,79 @@ public sealed class OpenIddictServerSystemNetHttpBuilder
         return SetProductInformation(new ProductInfoHeaderValue(
             productName: assembly.GetName().Name!,
             productVersion: assembly.GetName().Version!.ToString()));
+    }
+
+    /// <summary>
+    /// Adds a media type accepted for request objects passed by reference (e.g "application/jwt").
+    /// </summary>
+    /// <param name="type">The media type.</param>
+    /// <returns>The <see cref="OpenIddictServerSystemNetHttpBuilder"/> instance.</returns>
+    public OpenIddictServerSystemNetHttpBuilder AddRequestObjectContentType(string type)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(type);
+
+        return Configure(options => options.RequestObjectContentTypes.Add(type));
+    }
+
+    /// <summary>
+    /// Sets the delegate used to determine whether request objects can be retrieved from a remote address.
+    /// </summary>
+    /// <remarks>
+    /// Caution: allowing non-public addresses exposes internal services to server-side request forgery attacks.
+    /// </remarks>
+    /// <param name="filter">The filter, returning <see langword="true"/> for allowed addresses.</param>
+    /// <returns>The <see cref="OpenIddictServerSystemNetHttpBuilder"/> instance.</returns>
+    public OpenIddictServerSystemNetHttpBuilder SetRemoteAddressFilter(Func<IPAddress, bool> filter)
+    {
+        ArgumentNullException.ThrowIfNull(filter);
+
+        return Configure(options => options.RemoteAddressFilter = filter);
+    }
+
+    /// <summary>
+    /// Sets the maximum amount of time allowed to retrieve a request object.
+    /// </summary>
+    /// <param name="timeout">The timeout.</param>
+    /// <returns>The <see cref="OpenIddictServerSystemNetHttpBuilder"/> instance.</returns>
+    public OpenIddictServerSystemNetHttpBuilder SetRequestObjectTimeout(TimeSpan timeout)
+    {
+        if (timeout <= TimeSpan.Zero)
+        {
+            throw new ArgumentOutOfRangeException(nameof(timeout), SR.GetResourceString(SR.ID0926));
+        }
+
+        return Configure(options => options.RequestObjectTimeout = timeout);
+    }
+
+    /// <summary>
+    /// Sets the maximum size, in bytes, of a request object passed by reference.
+    /// </summary>
+    /// <param name="size">The maximum size.</param>
+    /// <returns>The <see cref="OpenIddictServerSystemNetHttpBuilder"/> instance.</returns>
+    public OpenIddictServerSystemNetHttpBuilder SetMaximumRequestObjectSize(int size)
+    {
+        if (size <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(size), SR.GetResourceString(SR.ID0926));
+        }
+
+        return Configure(options => options.MaximumRequestObjectSize = size);
+    }
+
+    /// <summary>
+    /// Sets the maximum duration during which retrieved request objects are cached.
+    /// <see cref="TimeSpan.Zero"/> disables caching.
+    /// </summary>
+    /// <param name="lifetime">The maximum cache lifetime.</param>
+    /// <returns>The <see cref="OpenIddictServerSystemNetHttpBuilder"/> instance.</returns>
+    public OpenIddictServerSystemNetHttpBuilder SetMaximumRequestObjectCacheLifetime(TimeSpan lifetime)
+    {
+        if (lifetime < TimeSpan.Zero)
+        {
+            throw new ArgumentOutOfRangeException(nameof(lifetime), SR.GetResourceString(SR.ID0926));
+        }
+
+        return Configure(options => options.MaximumRequestObjectCacheLifetime = lifetime);
     }
 
     /// <inheritdoc/>

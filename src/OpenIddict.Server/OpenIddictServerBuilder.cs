@@ -1880,6 +1880,28 @@ public sealed class OpenIddictServerBuilder
         => Configure(options => options.EnableRequestObjectSupport = true);
 
     /// <summary>
+    /// Enables support for request objects passed by reference using an external HTTPS "request_uri"
+    /// parameter (RFC 9101, section 5.2). By default, the request URIs must be pre-registered by the client
+    /// applications using the <see cref="Settings.RequestObject.RequestUris"/> application setting.
+    /// </summary>
+    /// <remarks>
+    /// Note: request object support must be enabled using <see cref="EnableRequestObjectSupport"/> and
+    /// a <see cref="IOpenIddictServerRequestObjectFetcher"/> must be registered (e.g using the
+    /// OpenIddict.Server.SystemNetHttp integration package).
+    /// </remarks>
+    /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
+    public OpenIddictServerBuilder EnableRequestObjectReferenceSupport()
+        => Configure(options => options.EnableRequestObjectReferenceSupport = true);
+
+    /// <summary>
+    /// Disables the requirement forcing client applications to pre-register the external
+    /// "request_uri" values they use. Disabling this requirement is not recommended.
+    /// </summary>
+    /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
+    public OpenIddictServerBuilder DisableRequestUriRegistrationRequirement()
+        => Configure(options => options.RequireRequestUriRegistration = false);
+
+    /// <summary>
     /// Enables OAuth 2.0 Demonstrating Proof of Possession (DPoP, RFC 9449) support, which allows client applications
     /// to send DPoP proofs to the token, pushed authorization and userinfo endpoints. When a valid proof is received
     /// by the token endpoint, access tokens (and refresh tokens issued to public clients) are bound to the proof key.

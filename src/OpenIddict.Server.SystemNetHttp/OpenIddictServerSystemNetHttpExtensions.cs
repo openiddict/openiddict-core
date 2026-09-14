@@ -20,7 +20,8 @@ public static class OpenIddictServerSystemNetHttpExtensions
     /// <summary>
     /// Registers the OpenIddict server/System.Net.Http integration services in the DI container,
     /// used to send back-channel logout requests (OpenID Connect Back-Channel Logout 1.0)
-    /// and CIBA ping and push notifications to the client notification endpoints.
+    /// CIBA ping and push notifications to the client notification endpoints and to retrieve
+    /// request objects passed by reference (RFC 9101, section 5.2).
     /// </summary>
     /// <param name="builder">The services builder used by OpenIddict to register new services.</param>
     /// <remarks>This extension can be safely called multiple times.</remarks>
@@ -41,6 +42,10 @@ public static class OpenIddictServerSystemNetHttpExtensions
 
         builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<
             IConfigureOptions<OpenIddictServerOptions>, OpenIddictServerSystemNetHttpConfiguration>());
+
+        builder.Services.TryAddSingleton<OpenIddictServerSystemNetHttpRequestObjectFetcher>();
+        builder.Services.TryAddSingleton<IOpenIddictServerRequestObjectFetcher>(static provider =>
+            provider.GetRequiredService<OpenIddictServerSystemNetHttpRequestObjectFetcher>());
 
         return new OpenIddictServerSystemNetHttpBuilder(builder.Services);
     }

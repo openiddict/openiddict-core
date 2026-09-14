@@ -724,6 +724,7 @@ public static class OpenIddictConstants
             public const string IntrospectionResponse = "intr_rsp:";
             public const string Logout = "lgt:";
             public const string Registration = "reg:";
+            public const string RequestObject = "req_obj:";
             public const string TokenLifetime = "tkn_lft:";
         }
 
@@ -753,6 +754,14 @@ public static class OpenIddictConstants
         public static class Registration
         {
             public const string IdentityTokenSigningAlgorithm = "reg:idt_sign_alg";
+        }
+
+        public static class RequestObject
+        {
+            /// <summary>
+            /// Space-separated list of the absolute HTTPS request_uri values (or prefixes) pre-registered by the client.
+            /// </summary>
+            public const string RequestUris = "req_obj:req_uris";
         }
 
         public static class IntrospectionResponse
