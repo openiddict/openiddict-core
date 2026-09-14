@@ -1082,6 +1082,12 @@ public static partial class OpenIddictClientEvents
         public string? LogoutToken { get; set; }
 
         /// <summary>
+        /// Gets or sets the maximum age applied to the logout token, if applicable. When set, this value
+        /// overrides <see cref="OpenIddictClientOptions.LogoutTokenMaximumAge"/> for the current demand.
+        /// </summary>
+        public TimeSpan? LogoutTokenMaximumAge { get; set; }
+
+        /// <summary>
         /// Gets or sets the principal extracted from the logout token, if applicable.
         /// </summary>
         public ClaimsPrincipal? LogoutTokenPrincipal { get; set; }

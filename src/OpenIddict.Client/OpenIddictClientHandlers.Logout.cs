@@ -1223,7 +1223,7 @@ public static partial class OpenIddictClientHandlers
                 Debug.Assert(context.LogoutTokenPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
 
                 var now = context.Options.TimeProvider.GetUtcNow();
-                var age = context.Options.LogoutTokenMaximumAge;
+                var age = context.LogoutTokenMaximumAge ?? context.Options.LogoutTokenMaximumAge;
                 var skew = context.Registration.TokenValidationParameters.ClockSkew;
 
                 if (!TryGetDate(context.LogoutTokenPrincipal, Claims.IssuedAt, out var issuedAt) ||
@@ -1298,8 +1298,9 @@ public static partial class OpenIddictClientHandlers
                 // skew and at least for the maximum age configured in the options.
                 var now = context.Options.TimeProvider.GetUtcNow();
                 var skew = context.Registration.TokenValidationParameters.ClockSkew;
-                var expiration = now + context.Options.LogoutTokenMaximumAge;
-                var limit = (expiresAt ?? issuedAt.Value + context.Options.LogoutTokenMaximumAge) + skew;
+                var age = context.LogoutTokenMaximumAge ?? context.Options.LogoutTokenMaximumAge;
+                var expiration = now + age;
+                var limit = (expiresAt ?? issuedAt.Value + age) + skew;
                 if (limit > expiration)
                 {
                     expiration = limit;

@@ -58,6 +58,7 @@ public partial class OpenIddictClientService
         var context = new ProcessAuthenticationContext(transaction)
         {
             LogoutToken = request.LogoutToken,
+            LogoutTokenMaximumAge = request.MaximumAge,
             Request = new()
         };
 

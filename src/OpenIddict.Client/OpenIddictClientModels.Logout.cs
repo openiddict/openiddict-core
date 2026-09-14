@@ -29,6 +29,12 @@ public static partial class OpenIddictClientModels
         public required string LogoutToken { get; init; }
 
         /// <summary>
+        /// Gets or sets the maximum age of logout tokens that don't include an "exp" claim, if applicable.
+        /// If no value is specified, <see cref="OpenIddictClientOptions.LogoutTokenMaximumAge"/> is used.
+        /// </summary>
+        public TimeSpan? MaximumAge { get; init; }
+
+        /// <summary>
         /// Gets or sets the application-specific properties that will be added to the context.
         /// </summary>
         public Dictionary<string, string?>? Properties { get; init; }
