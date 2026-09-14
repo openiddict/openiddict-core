@@ -10,6 +10,14 @@
         <a class="oi-button" href="@(Url + "/" + Paths.New)">New application</a>
     </form>
 
+    @if (SearchLimit is int limit)
+    {
+        <p class="oi-muted" role="note">
+            The search only inspected the first @limit.ToString(CultureInfo.InvariantCulture) applications: refine the search term
+            (for example, use the exact client identifier) if the expected application isn't listed.
+        </p>
+    }
+
     @if (Items.Count is 0)
     {
         <p class="oi-muted">No application was found.</p>
@@ -56,6 +64,9 @@
 
     /// <summary>Gets or sets the search term, if any.</summary>
     [Parameter] public string? Search { get; set; }
+
+    /// <summary>Gets or sets the maximum number of applications inspected by the search, if the search was truncated.</summary>
+    [Parameter] public int? SearchLimit { get; set; }
 
     /// <summary>Gets or sets the current page number.</summary>
     [Parameter] public int PageNumber { get; set; } = 1;

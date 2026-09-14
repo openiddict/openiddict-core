@@ -170,7 +170,7 @@ public partial class OpenIddictServerAspNetCoreAdminUITests
         var (fabrikam, contoso) = (new object(), new object());
 
         var manager = new Mock<IOpenIddictApplicationManager>();
-        manager.Setup(mock => mock.ListAsync(null, null, It.IsAny<CancellationToken>()))
+        manager.Setup(mock => mock.ListAsync(1_001, 0, It.IsAny<CancellationToken>()))
             .Returns(EnumerateAsync(fabrikam, contoso));
         manager.Setup(mock => mock.GetClientIdAsync(fabrikam, It.IsAny<CancellationToken>())).ReturnsAsync("fabrikam");
         manager.Setup(mock => mock.GetClientIdAsync(contoso, It.IsAny<CancellationToken>())).ReturnsAsync("contoso");
@@ -913,6 +913,297 @@ public partial class OpenIddictServerAspNetCoreAdminUITests
         // Assert
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         manager.Verify(mock => mock.DeleteAsync(It.IsAny<object>(), It.IsAny<CancellationToken>()), Times.Never());
+    }
+
+    [Fact]
+    public async Task AdminUI_TreatsIdentifiersRejectedByTheStoreAsUnknownEntities()
+    {
+        // Arrange
+        var applications = new Mock<IOpenIddictApplicationManager>();
+        applications.Setup(mock => mock.FindByIdAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .Returns(() => ValueTask.FromException<object?>(new FormatException("The identifier is not a valid GUID.")));
+
+        var authorizations = new Mock<IOpenIddictAuthorizationManager>();
+        authorizations.Setup(mock => mock.FindByIdAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .Returns(() => ValueTask.FromException<object?>(new FormatException("The identifier is not a valid integer.")));
+
+        var tokens = new Mock<IOpenIddictTokenManager>();
+
+        using var host = await CreateHostAsync(services => services
+            .AddSingleton(applications.Object)
+            .AddSingleton(authorizations.Object)
+            .AddSingleton(tokens.Object));
+        using var client = CreateClient(host, role: "admin");
+
+        // Act
+        var application = await client.GetAsync("/openiddict/admin/applications/fabrikam");
+        var authorization = await client.GetAsync("/openiddict/admin/authorizations/fabrikam");
+        var authorizationList = await client.GetAsync("/openiddict/admin/authorizations?client=fabrikam");
+        var tokenList = await client.GetAsync("/openiddict/admin/tokens?client=fabrikam");
+
+        // Assert
+        Assert.Equal(HttpStatusCode.NotFound, application.StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, authorization.StatusCode);
+        Assert.Equal(HttpStatusCode.OK, authorizationList.StatusCode);
+        Assert.Contains("No authorization was found.", await authorizationList.Content.ReadAsStringAsync(), StringComparison.Ordinal);
+        Assert.Equal(HttpStatusCode.OK, tokenList.StatusCode);
+        Assert.Contains("No token was found.", await tokenList.Content.ReadAsStringAsync(), StringComparison.Ordinal);
+        tokens.Verify(mock => mock.FindAsync(It.IsAny<(string?, string?, string?, string?)>(), It.IsAny<CancellationToken>()), Times.Never());
+    }
+
+    [Fact]
+    public async Task ListApplications_LimitsTheNumberOfApplicationsInspectedBySearches()
+    {
+        // Arrange
+        var entries = Enumerable.Range(0, 1_001).Select(static _ => new object()).ToArray();
+        var match = new object();
+
+        var manager = new Mock<IOpenIddictApplicationManager>();
+        manager.Setup(mock => mock.ListAsync(1_001, 0, It.IsAny<CancellationToken>())).Returns(() => EnumerateAsync(entries));
+        manager.Setup(mock => mock.GetClientIdAsync(It.IsAny<object>(), It.IsAny<CancellationToken>())).ReturnsAsync("contoso");
+        manager.Setup(mock => mock.GetIdAsync(It.IsAny<object>(), It.IsAny<CancellationToken>())).ReturnsAsync("1");
+        manager.Setup(mock => mock.GetIdAsync(match, It.IsAny<CancellationToken>())).ReturnsAsync("42");
+        manager.Setup(mock => mock.FindByClientIdAsync("fabrikam", It.IsAny<CancellationToken>())).ReturnsAsync(match);
+        manager.Setup(mock => mock.PopulateAsync(It.IsAny<OpenIddictApplicationDescriptor>(), match, It.IsAny<CancellationToken>()))
+            .Callback((OpenIddictApplicationDescriptor descriptor, object _, CancellationToken _) => descriptor.ClientId = "fabrikam")
+            .Returns(ValueTask.CompletedTask);
+
+        using var host = await CreateHostAsync(services => services.AddSingleton(manager.Object));
+        using var client = CreateClient(host, role: "admin");
+
+        // Act
+        var html = await client.GetStringAsync("/openiddict/admin/applications?search=fabrikam");
+
+        // Assert
+        Assert.Contains("The search only inspected the first 1000 applications", html, StringComparison.Ordinal);
+        Assert.Contains("href=\"/openiddict/admin/applications/42\">fabrikam</a>", html, StringComparison.Ordinal);
+        manager.Verify(mock => mock.ListAsync(null, It.IsAny<int?>(), It.IsAny<CancellationToken>()), Times.Never());
+        manager.Verify(mock => mock.GetClientIdAsync(It.IsAny<object>(), It.IsAny<CancellationToken>()), Times.Exactly(1_000));
+    }
+
+    [Fact]
+    public async Task ChangeApplicationSecret_GeneratesAndDisplaysANewSecretOnce()
+    {
+        // Arrange
+        var application = new object();
+        OpenIddictApplicationDescriptor? updated = null;
+
+        var manager = new Mock<IOpenIddictApplicationManager>();
+        manager.Setup(mock => mock.FindByIdAsync("1", It.IsAny<CancellationToken>())).ReturnsAsync(application);
+        manager.Setup(mock => mock.GetIdAsync(application, It.IsAny<CancellationToken>())).ReturnsAsync("1");
+        manager.Setup(mock => mock.PopulateAsync(It.IsAny<OpenIddictApplicationDescriptor>(), application, It.IsAny<CancellationToken>()))
+            .Callback((OpenIddictApplicationDescriptor descriptor, object _, CancellationToken _) =>
+            {
+                descriptor.ClientId = "fabrikam";
+                descriptor.ClientSecret = "hashed-secret";
+            })
+            .Returns(ValueTask.CompletedTask);
+        manager.Setup(mock => mock.UpdateAsync(application, It.IsAny<OpenIddictApplicationDescriptor>(), It.IsAny<CancellationToken>()))
+            .Callback((object _, OpenIddictApplicationDescriptor descriptor, CancellationToken _) => updated = new()
+            {
+                ClientId = descriptor.ClientId,
+                ClientSecret = descriptor.ClientSecret
+            })
+            .Returns(ValueTask.CompletedTask);
+
+        using var host = await CreateHostAsync(services => services.AddSingleton(manager.Object));
+        using var client = CreateClient(host, role: "admin");
+
+        var antiforgery = await GetAntiforgeryAsync(client, "/openiddict/admin/applications/1");
+
+        // Act
+        var response = await PostAsync(client, antiforgery, "/openiddict/admin/applications/1/secret", [new("mode", "generate")]);
+        var html = await response.Content.ReadAsStringAsync();
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.NotNull(updated?.ClientSecret);
+        Assert.False(string.Equals("hashed-secret", updated.ClientSecret, StringComparison.Ordinal));
+        Assert.True(updated.ClientSecret.Length >= 43);
+        Assert.Contains($"<code id=\"new-client-secret\">{updated.ClientSecret}</code>", html, StringComparison.Ordinal);
+        Assert.DoesNotContain("hashed-secret", html, StringComparison.Ordinal);
+        Assert.Null(response.Headers.Location);
+    }
+
+    [Fact]
+    public async Task UpdateApplication_ReplacesOrRemovesTheJsonWebKeySet()
+    {
+        // Arrange
+        var application = new object();
+        List<JsonWebKeySet?> sets = [];
+
+        var manager = new Mock<IOpenIddictApplicationManager>();
+        manager.Setup(mock => mock.FindByIdAsync("1", It.IsAny<CancellationToken>())).ReturnsAsync(application);
+        manager.Setup(mock => mock.GetIdAsync(application, It.IsAny<CancellationToken>())).ReturnsAsync("1");
+        manager.Setup(mock => mock.PopulateAsync(It.IsAny<OpenIddictApplicationDescriptor>(), application, It.IsAny<CancellationToken>()))
+            .Callback((OpenIddictApplicationDescriptor descriptor, object _, CancellationToken _) =>
+            {
+                descriptor.ClientId = "fabrikam";
+                descriptor.JsonWebKeySet = JsonWebKeySet.Create("""{ "keys": [ { "kty": "RSA", "kid": "old-key", "n": "bW9kdWx1cw", "e": "AQAB" } ] }""");
+            })
+            .Returns(ValueTask.CompletedTask);
+        manager.Setup(mock => mock.UpdateAsync(application, It.IsAny<OpenIddictApplicationDescriptor>(), It.IsAny<CancellationToken>()))
+            .Callback((object _, OpenIddictApplicationDescriptor descriptor, CancellationToken _) => sets.Add(descriptor.JsonWebKeySet))
+            .Returns(ValueTask.CompletedTask);
+
+        using var host = await CreateHostAsync(services => services.AddSingleton(manager.Object));
+        using var client = CreateClient(host, role: "admin");
+
+        var antiforgery = await GetAntiforgeryAsync(client, "/openiddict/admin/applications/1");
+
+        // Act
+        var replace = await PostAsync(client, antiforgery, "/openiddict/admin/applications/1",
+        [
+            new("client_id", "fabrikam"),
+            new("json_web_key_set", """{ "keys": [ { "kty": "RSA", "kid": "new-key", "n": "bW9kdWx1cw", "e": "AQAB" } ] }""")
+        ]);
+        var remove = await PostAsync(client, antiforgery, "/openiddict/admin/applications/1",
+        [
+            new("client_id", "fabrikam"),
+            new("remove_json_web_key_set", "true")
+        ]);
+        var conflict = await PostAsync(client, antiforgery, "/openiddict/admin/applications/1",
+        [
+            new("client_id", "fabrikam"),
+            new("json_web_key_set", """{ "keys": [ { "kty": "RSA", "kid": "new-key", "n": "bW9kdWx1cw", "e": "AQAB" } ] }"""),
+            new("remove_json_web_key_set", "true")
+        ]);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.Redirect, replace.StatusCode);
+        Assert.Equal(HttpStatusCode.Redirect, remove.StatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, conflict.StatusCode);
+        Assert.Contains(HtmlEncoder.Default.Encode(SR.FormatID2343("json_web_key_set", "remove_json_web_key_set")),
+            await conflict.Content.ReadAsStringAsync(), StringComparison.Ordinal);
+
+        Assert.Equal(2, sets.Count);
+        Assert.Equal("new-key", Assert.Single(sets[0]!.Keys).Kid);
+        Assert.Null(sets[1]);
+    }
+
+    [Fact]
+    public async Task RevokeKey_InvalidatesTheKeyRing()
+    {
+        // Arrange
+        var key = new object();
+
+        var manager = new Mock<IOpenIddictKeyManager>();
+        manager.Setup(mock => mock.ListAsync(It.IsAny<int?>(), It.IsAny<int?>(), It.IsAny<CancellationToken>())).Returns(() => EnumerateAsync(key));
+        manager.Setup(mock => mock.FindByIdAsync("key-1", It.IsAny<CancellationToken>())).ReturnsAsync(key);
+        manager.Setup(mock => mock.GetIdAsync(key, It.IsAny<CancellationToken>())).ReturnsAsync("key-1");
+        manager.Setup(mock => mock.TryRevokeAsync(key, It.IsAny<CancellationToken>())).ReturnsAsync(true);
+
+        var ring = new OpenIddictServerKeyRing(
+            Microsoft.Extensions.Logging.Abstractions.NullLogger<OpenIddictServerKeyRing>.Instance,
+            Mock.Of<IOptionsMonitor<OpenIddictServerOptions>>());
+
+        // Note: the cached snapshot is private: a placeholder instance is attached to the key ring
+        // to be able to determine whether the key ring was invalidated by the revocation.
+        var field = typeof(OpenIddictServerKeyRing).GetField("_snapshot",
+            System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!;
+        field.SetValue(ring, System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(field.FieldType));
+
+        using var host = await CreateHostAsync(services => services
+            .AddSingleton(manager.Object)
+            .AddSingleton(ring));
+        using var client = CreateClient(host, role: "admin");
+
+        var antiforgery = await GetAntiforgeryAsync(client, "/openiddict/admin/keys");
+
+        // Act
+        Assert.NotNull(field.GetValue(ring));
+        var response = await PostAsync(client, antiforgery, "/openiddict/admin/keys/key-1/revoke", []);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+        Assert.Null(field.GetValue(ring));
+    }
+
+    [Fact]
+    public async Task ShowAuthorization_IndicatesWhenMoreTokensAreAttached()
+    {
+        // Arrange
+        var authorization = new object();
+
+        var applications = new Mock<IOpenIddictApplicationManager>();
+
+        var manager = new Mock<IOpenIddictAuthorizationManager>();
+        manager.Setup(mock => mock.FindByIdAsync("authz-1", It.IsAny<CancellationToken>())).ReturnsAsync(authorization);
+        manager.Setup(mock => mock.GetIdAsync(authorization, It.IsAny<CancellationToken>())).ReturnsAsync("authz-1");
+        manager.Setup(mock => mock.PopulateAsync(It.IsAny<OpenIddictAuthorizationDescriptor>(), authorization, It.IsAny<CancellationToken>()))
+            .Callback((OpenIddictAuthorizationDescriptor descriptor, object _, CancellationToken _) => descriptor.Subject = "alice")
+            .Returns(ValueTask.CompletedTask);
+
+        var tokens = new Mock<IOpenIddictTokenManager>();
+        tokens.Setup(mock => mock.FindByAuthorizationIdAsync("authz-1", It.IsAny<CancellationToken>()))
+            .Returns(() => EnumerateAsync(new object(), new object(), new object()));
+        tokens.Setup(mock => mock.GetIdAsync(It.IsAny<object>(), It.IsAny<CancellationToken>())).ReturnsAsync("token");
+
+        using var host = await CreateHostAsync(services => services
+            .AddSingleton(applications.Object)
+            .AddSingleton(manager.Object)
+            .AddSingleton(tokens.Object), configuration: options => options.PageSize = 2);
+        using var client = CreateClient(host, role: "admin");
+
+        // Act
+        var html = await client.GetStringAsync("/openiddict/admin/authorizations/authz-1");
+
+        // Assert
+        Assert.Contains("only the first 2 tokens are displayed", html, StringComparison.Ordinal);
+        Assert.Contains("href=\"/openiddict/admin/tokens?subject=alice\"", html, StringComparison.Ordinal);
+        Assert.Equal(2, Regex.Matches(html, "<code>token</code>", RegexOptions.None, TimeSpan.FromSeconds(1)).Count);
+    }
+
+    [Fact]
+    public async Task MapOpenIddictAdminUI_DetectsConflictingEndpoints()
+    {
+        // Arrange
+        var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
+        builder.Services.AddOpenIddictAdminUI();
+
+        await using var app = builder.Build();
+        app.MapOpenIddictAdminApi(Policy);
+        app.MapOpenIddictAdminUI(Policy);
+
+        // Act and assert
+        var exception = Assert.Throws<InvalidOperationException>(
+            () => ((IEndpointRouteBuilder) app).DataSources.SelectMany(static source => source.Endpoints).ToList());
+        Assert.StartsWith("The OpenIddict admin UI endpoint 'GET /openiddict/admin/applications' conflicts with the existing endpoint",
+            exception.Message, StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task MapOpenIddictAdminUI_AllowsDistinctPrefixes(bool before)
+    {
+        // Arrange
+        var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
+        builder.Services.AddOpenIddictAdminUI();
+
+        await using var app = builder.Build();
+
+        if (before)
+        {
+            app.MapOpenIddictAdminUI(Policy, "/admin");
+            app.MapOpenIddictAdminUI(Policy, "/other");
+            app.MapOpenIddictAdminApi(Policy);
+            app.MapGet("/admin/applications/{id:int}", () => "constrained");
+        }
+
+        else
+        {
+            app.MapOpenIddictAdminApi(Policy);
+            app.MapOpenIddictAdminUI(Policy, "/admin");
+        }
+
+        // Act
+        var endpoints = ((IEndpointRouteBuilder) app).DataSources.SelectMany(static source => source.Endpoints).ToList();
+
+        // Assert
+        Assert.Contains(endpoints, static endpoint => endpoint is RouteEndpoint { RoutePattern.RawText: "/admin/applications" });
     }
 
     [Fact]

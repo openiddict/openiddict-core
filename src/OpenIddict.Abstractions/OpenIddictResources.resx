@@ -1944,6 +1944,10 @@ To register them, call 'services.AddOpenIddictAdminUI()' from 'ConfigureServices
   <data name="ID0683" xml:space="preserve">
     <value>The OpenIddict admin UI stylesheet cannot be found in the assembly resources.</value>
   </data>
+  <data name="ID0684" xml:space="preserve">
+    <value>The OpenIddict admin UI endpoint '{0} {1}' conflicts with the existing endpoint '{2}'.
+Map the admin UI (or the conflicting endpoints, such as the admin API) using a different route prefix.</value>
+  </data>
   <data name="ID0565" xml:space="preserve">
     <value>The SAML identity provider entity identifier must be set. To set it, use 'services.AddOpenIddict().AddServer().UseSaml().SetEntityId()' or 'SetIssuer()'.</value>
   </data>

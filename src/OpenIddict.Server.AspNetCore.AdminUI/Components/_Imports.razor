@@ -6,3 +6,7 @@
 @using OpenIddict.Server.AspNetCore.AdminUI
 @using OpenIddict.Server.AspNetCore.AdminUI.Components
 @using static OpenIddict.Server.AspNetCore.AdminUI.OpenIddictServerAspNetCoreAdminUIConstants
+@* Note: the components are only rendered by the admin UI endpoints and rely on invariants enforced by these
+   endpoints (e.g the client secrets and token payloads are removed from the descriptors before rendering).
+   They are public because Razor components can't be internal, but aren't part of the supported API surface. *@
+@attribute [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]

@@ -33,6 +33,8 @@ internal sealed class OpenIddictServerAspNetCoreAdminUIEndpoints
     private const string ContentSecurityPolicy =
         "default-src 'none'; style-src 'self'; img-src 'self' data:; form-action 'self'; frame-ancestors 'none'; base-uri 'none'";
 
+    private const int MaximumSearchScannedApplications = 1_000;
+
     private const string StylesheetResourceName = "OpenIddict.Server.AspNetCore.AdminUI.openiddict-admin.css";
 
     private readonly string _prefix;
@@ -68,19 +70,28 @@ internal sealed class OpenIddictServerAspNetCoreAdminUIEndpoints
 
         List<(string Id, OpenIddictApplicationDescriptor Descriptor)> items = [];
         var next = false;
+        var truncated = false;
 
         // Note: the application stores don't support searching by client identifier or display name
         // using the untyped managers: when a search term is specified, the entries are filtered in memory.
+        // To bound the work done per request, at most MaximumSearchScannedApplications entries are inspected.
         var applications = search is null ?
             manager.ListAsync(size + 1, offset, context.RequestAborted) :
-            manager.ListAsync(count: null, offset: null, context.RequestAborted);
+            manager.ListAsync(MaximumSearchScannedApplications + 1, offset: 0, context.RequestAborted);
 
         var skipped = 0;
+        var scanned = 0;
 
         await foreach (var application in applications.WithCancellation(context.RequestAborted))
         {
             if (search is not null)
             {
+                if (++scanned > MaximumSearchScannedApplications)
+                {
+                    truncated = true;
+                    break;
+                }
+
                 if (!Matches(await manager.GetClientIdAsync(application, context.RequestAborted), search) &&
                     !Matches(await manager.GetDisplayNameAsync(application, context.RequestAborted), search) &&
                     !Matches(await manager.GetIdAsync(application, context.RequestAborted), search))
@@ -106,12 +117,26 @@ internal sealed class OpenIddictServerAspNetCoreAdminUIEndpoints
             items.Add((identifier ?? string.Empty, descriptor));
         }
 
+        // If the search was truncated, ensure an application whose client identifier exactly
+        // matches the search term is always displayed on the first page, even if it wasn't scanned.
+        if (truncated && page is 1 && await manager.FindByClientIdAsync(search!, context.RequestAborted) is object match)
+        {
+            var (identifier, descriptor) = await Operations.DescribeApplicationAsync(manager, match, context.RequestAborted);
+            descriptor.ClientSecret = null;
+
+            if (!items.Exists(item => string.Equals(item.Id, identifier, StringComparison.Ordinal)))
+            {
+                items.Insert(0, (identifier ?? string.Empty, descriptor));
+            }
+        }
+
         return Page<ApplicationListPage>(context, new()
         {
             [nameof(ApplicationListPage.Items)] = items,
             [nameof(ApplicationListPage.Search)] = search,
             [nameof(ApplicationListPage.PageNumber)] = page,
             [nameof(ApplicationListPage.HasNextPage)] = next,
+            [nameof(ApplicationListPage.SearchLimit)] = truncated ? MaximumSearchScannedApplications : null,
             [nameof(ApplicationListPage.Notice)] = GetQuery(context, QueryStringParameters.Notice)
         });
 
@@ -196,7 +221,7 @@ internal sealed class OpenIddictServerAspNetCoreAdminUIEndpoints
     {
         var manager = GetManager<IOpenIddictApplicationManager>(context);
 
-        if (await manager.FindByIdAsync(GetIdentifier(context), context.RequestAborted) is not object application)
+        if (await FindByIdAsync(manager.FindByIdAsync, GetIdentifier(context), context.RequestAborted) is not object application)
         {
             return NotFound(context);
         }
@@ -214,7 +239,7 @@ internal sealed class OpenIddictServerAspNetCoreAdminUIEndpoints
         var manager = GetManager<IOpenIddictApplicationManager>(context);
         var form = await ReadFormAsync(context);
 
-        if (await manager.FindByIdAsync(GetIdentifier(context), context.RequestAborted) is not object application)
+        if (await FindByIdAsync(manager.FindByIdAsync, GetIdentifier(context), context.RequestAborted) is not object application)
         {
             return NotFound(context);
         }
@@ -258,7 +283,7 @@ internal sealed class OpenIddictServerAspNetCoreAdminUIEndpoints
         var manager = GetManager<IOpenIddictApplicationManager>(context);
         var form = await ReadFormAsync(context);
 
-        if (await manager.FindByIdAsync(GetIdentifier(context), context.RequestAborted) is not object application)
+        if (await FindByIdAsync(manager.FindByIdAsync, GetIdentifier(context), context.RequestAborted) is not object application)
         {
             return NotFound(context);
         }
@@ -326,7 +351,7 @@ internal sealed class OpenIddictServerAspNetCoreAdminUIEndpoints
         var manager = GetManager<IOpenIddictApplicationManager>(context);
         await ReadFormAsync(context);
 
-        if (await manager.FindByIdAsync(GetIdentifier(context), context.RequestAborted) is not object application)
+        if (await FindByIdAsync(manager.FindByIdAsync, GetIdentifier(context), context.RequestAborted) is not object application)
         {
             return NotFound(context);
         }
@@ -418,7 +443,7 @@ internal sealed class OpenIddictServerAspNetCoreAdminUIEndpoints
     {
         var manager = GetManager<IOpenIddictScopeManager>(context);
 
-        if (await manager.FindByIdAsync(GetIdentifier(context), context.RequestAborted) is not object scope)
+        if (await FindByIdAsync(manager.FindByIdAsync, GetIdentifier(context), context.RequestAborted) is not object scope)
         {
             return NotFound(context);
         }
@@ -434,7 +459,7 @@ internal sealed class OpenIddictServerAspNetCoreAdminUIEndpoints
         var manager = GetManager<IOpenIddictScopeManager>(context);
         var form = await ReadFormAsync(context);
 
-        if (await manager.FindByIdAsync(GetIdentifier(context), context.RequestAborted) is not object scope)
+        if (await FindByIdAsync(manager.FindByIdAsync, GetIdentifier(context), context.RequestAborted) is not object scope)
         {
             return NotFound(context);
         }
@@ -472,7 +497,7 @@ internal sealed class OpenIddictServerAspNetCoreAdminUIEndpoints
         var manager = GetManager<IOpenIddictScopeManager>(context);
         await ReadFormAsync(context);
 
-        if (await manager.FindByIdAsync(GetIdentifier(context), context.RequestAborted) is not object scope)
+        if (await FindByIdAsync(manager.FindByIdAsync, GetIdentifier(context), context.RequestAborted) is not object scope)
         {
             return NotFound(context);
         }
@@ -544,7 +569,7 @@ internal sealed class OpenIddictServerAspNetCoreAdminUIEndpoints
     {
         var manager = GetManager<IOpenIddictAuthorizationManager>(context);
 
-        if (await manager.FindByIdAsync(GetIdentifier(context), context.RequestAborted) is not object authorization)
+        if (await FindByIdAsync(manager.FindByIdAsync, GetIdentifier(context), context.RequestAborted) is not object authorization)
         {
             return NotFound(context);
         }
@@ -558,7 +583,7 @@ internal sealed class OpenIddictServerAspNetCoreAdminUIEndpoints
         var manager = GetManager<IOpenIddictAuthorizationManager>(context);
         await ReadFormAsync(context);
 
-        if (await manager.FindByIdAsync(GetIdentifier(context), context.RequestAborted) is not object authorization)
+        if (await FindByIdAsync(manager.FindByIdAsync, GetIdentifier(context), context.RequestAborted) is not object authorization)
         {
             return NotFound(context);
         }
@@ -626,7 +651,7 @@ internal sealed class OpenIddictServerAspNetCoreAdminUIEndpoints
     {
         var manager = GetManager<IOpenIddictTokenManager>(context);
 
-        if (await manager.FindByIdAsync(GetIdentifier(context), context.RequestAborted) is not object token)
+        if (await FindByIdAsync(manager.FindByIdAsync, GetIdentifier(context), context.RequestAborted) is not object token)
         {
             return NotFound(context);
         }
@@ -640,7 +665,7 @@ internal sealed class OpenIddictServerAspNetCoreAdminUIEndpoints
         var manager = GetManager<IOpenIddictTokenManager>(context);
         await ReadFormAsync(context);
 
-        if (await manager.FindByIdAsync(GetIdentifier(context), context.RequestAborted) is not object token)
+        if (await FindByIdAsync(manager.FindByIdAsync, GetIdentifier(context), context.RequestAborted) is not object token)
         {
             return NotFound(context);
         }
@@ -670,7 +695,7 @@ internal sealed class OpenIddictServerAspNetCoreAdminUIEndpoints
         var manager = GetManager<IOpenIddictKeyManager>(context);
         await ReadFormAsync(context);
 
-        if (await manager.FindByIdAsync(GetIdentifier(context), context.RequestAborted) is not object key)
+        if (await FindByIdAsync(manager.FindByIdAsync, GetIdentifier(context), context.RequestAborted) is not object key)
         {
             return NotFound(context);
         }
@@ -819,13 +844,17 @@ internal sealed class OpenIddictServerAspNetCoreAdminUIEndpoints
         var (identifier, descriptor) = await Operations.DescribeAuthorizationAsync(manager, authorization, context.RequestAborted);
 
         List<(string Id, OpenIddictTokenDescriptor Descriptor)> tokens = [];
+        var more = false;
 
+        // Note: at most one page of tokens is displayed. If more tokens are attached to the
+        // authorization, the page indicates it and links to the filtered token list.
         if (!string.IsNullOrEmpty(identifier) && context.RequestServices.GetService<IOpenIddictTokenManager>() is { } manager2)
         {
             await foreach (var token in manager2.FindByAuthorizationIdAsync(identifier, context.RequestAborted))
             {
                 if (tokens.Count == size)
                 {
+                    more = true;
                     break;
                 }
 
@@ -838,6 +867,7 @@ internal sealed class OpenIddictServerAspNetCoreAdminUIEndpoints
             [nameof(AuthorizationDetailsPage.Id)] = identifier ?? string.Empty,
             [nameof(AuthorizationDetailsPage.Descriptor)] = descriptor,
             [nameof(AuthorizationDetailsPage.Tokens)] = tokens,
+            [nameof(AuthorizationDetailsPage.HasMoreTokens)] = more,
             [nameof(AuthorizationDetailsPage.ClientIds)] = await ResolveClientIdsAsync(applications,
                 [descriptor.ApplicationId, .. tokens.Select(static token => token.Descriptor.ApplicationId)], context.RequestAborted),
             [nameof(AuthorizationDetailsPage.Errors)] = errors,
@@ -907,6 +937,29 @@ internal sealed class OpenIddictServerAspNetCoreAdminUIEndpoints
         return (identifier ?? string.Empty, descriptor);
     }
 
+    private static async ValueTask<object?> FindByIdAsync(Func<string, CancellationToken, ValueTask<object?>> finder,
+        string identifier, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrEmpty(identifier))
+        {
+            return null;
+        }
+
+        try
+        {
+            return await finder(identifier, cancellationToken);
+        }
+
+        // Note: the identifiers are user-provided values (route segments or filters) that stores using non-string keys
+        // (e.g Entity Framework Core with Guid or integer keys, MongoDB ObjectId) can't always convert: in this case,
+        // the conversion error is treated as a missing entity instead of failing the whole request.
+        catch (Exception exception) when (exception is FormatException or OverflowException ||
+            (exception is ArgumentException && exception is not ArgumentNullException))
+        {
+            return null;
+        }
+    }
+
     private static async ValueTask<(bool Found, string? Identifier)> ResolveApplicationIdAsync(
         IOpenIddictApplicationManager manager, string? client, CancellationToken cancellationToken)
     {
@@ -917,7 +970,7 @@ internal sealed class OpenIddictServerAspNetCoreAdminUIEndpoints
 
         // Note: the client filter can be either a client identifier or an application identifier.
         var application = await manager.FindByClientIdAsync(client, cancellationToken) ??
-                          await manager.FindByIdAsync(client, cancellationToken);
+                          await FindByIdAsync(manager.FindByIdAsync, client, cancellationToken);
         if (application is null)
         {
             return (false, null);

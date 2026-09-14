@@ -30,6 +30,8 @@ public static class OpenIddictServerAspNetCoreAdminUIEndpointRouteBuilderExtensi
     ///   <item><description>
     ///     The admin UI and the admin API (<c>MapOpenIddictAdminApi()</c>) use the same default prefix and
     ///     the same relative paths: when both are mapped, a different prefix must be used for one of them.
+    ///     Endpoints mapped on the same route builder that would make the admin UI routes ambiguous are
+    ///     detected when the endpoints are built and cause an <see cref="InvalidOperationException"/>.
     ///   </description></item>
     /// </list>
     /// </remarks>
@@ -54,35 +56,46 @@ public static class OpenIddictServerAspNetCoreAdminUIEndpointRouteBuilderExtensi
         var group = endpoints.MapGroup(prefix);
         group.RequireAuthorization(policy);
 
-        group.MapGet(string.Empty, handlers.Home);
-        group.MapGet(Paths.Stylesheet, OpenIddictServerAspNetCoreAdminUIEndpoints.StylesheetAsync);
+        // Note: MapGroup() adds a single data source to the parent route builder, that is
+        // excluded from the conflict detection as it contains the admin UI endpoints.
+        var detector = new OpenIddictServerAspNetCoreAdminUIConflictDetector(endpoints, endpoints.DataSources.Last(), prefix);
+        ((IEndpointConventionBuilder) group).Finally(_ => detector.EnsureNoConflict());
 
-        group.MapGet(Paths.Applications, handlers.ListApplicationsAsync);
-        group.MapGet(Paths.Applications + "/" + Paths.New, handlers.NewApplicationAsync);
-        group.MapPost(Paths.Applications + "/" + Paths.New, handlers.CreateApplicationAsync);
-        group.MapGet(Paths.Applications + "/{id}", handlers.EditApplicationAsync);
-        group.MapPost(Paths.Applications + "/{id}", handlers.UpdateApplicationAsync);
-        group.MapPost(Paths.Applications + "/{id}/" + Paths.Secret, handlers.ChangeApplicationSecretAsync);
-        group.MapPost(Paths.Applications + "/{id}/" + Paths.Delete, handlers.DeleteApplicationAsync);
+        Map(HttpMethods.Get, string.Empty, handlers.Home);
+        Map(HttpMethods.Get, Paths.Stylesheet, OpenIddictServerAspNetCoreAdminUIEndpoints.StylesheetAsync);
 
-        group.MapGet(Paths.Scopes, handlers.ListScopesAsync);
-        group.MapGet(Paths.Scopes + "/" + Paths.New, handlers.NewScopeAsync);
-        group.MapPost(Paths.Scopes + "/" + Paths.New, handlers.CreateScopeAsync);
-        group.MapGet(Paths.Scopes + "/{id}", handlers.EditScopeAsync);
-        group.MapPost(Paths.Scopes + "/{id}", handlers.UpdateScopeAsync);
-        group.MapPost(Paths.Scopes + "/{id}/" + Paths.Delete, handlers.DeleteScopeAsync);
+        Map(HttpMethods.Get, Paths.Applications, handlers.ListApplicationsAsync);
+        Map(HttpMethods.Get, Paths.Applications + "/" + Paths.New, handlers.NewApplicationAsync);
+        Map(HttpMethods.Post, Paths.Applications + "/" + Paths.New, handlers.CreateApplicationAsync);
+        Map(HttpMethods.Get, Paths.Applications + "/{id}", handlers.EditApplicationAsync);
+        Map(HttpMethods.Post, Paths.Applications + "/{id}", handlers.UpdateApplicationAsync);
+        Map(HttpMethods.Post, Paths.Applications + "/{id}/" + Paths.Secret, handlers.ChangeApplicationSecretAsync);
+        Map(HttpMethods.Post, Paths.Applications + "/{id}/" + Paths.Delete, handlers.DeleteApplicationAsync);
 
-        group.MapGet(Paths.Authorizations, handlers.ListAuthorizationsAsync);
-        group.MapGet(Paths.Authorizations + "/{id}", handlers.ShowAuthorizationAsync);
-        group.MapPost(Paths.Authorizations + "/{id}/" + Paths.Revoke, handlers.RevokeAuthorizationAsync);
+        Map(HttpMethods.Get, Paths.Scopes, handlers.ListScopesAsync);
+        Map(HttpMethods.Get, Paths.Scopes + "/" + Paths.New, handlers.NewScopeAsync);
+        Map(HttpMethods.Post, Paths.Scopes + "/" + Paths.New, handlers.CreateScopeAsync);
+        Map(HttpMethods.Get, Paths.Scopes + "/{id}", handlers.EditScopeAsync);
+        Map(HttpMethods.Post, Paths.Scopes + "/{id}", handlers.UpdateScopeAsync);
+        Map(HttpMethods.Post, Paths.Scopes + "/{id}/" + Paths.Delete, handlers.DeleteScopeAsync);
 
-        group.MapGet(Paths.Tokens, handlers.ListTokensAsync);
-        group.MapGet(Paths.Tokens + "/{id}", handlers.ShowTokenAsync);
-        group.MapPost(Paths.Tokens + "/{id}/" + Paths.Revoke, handlers.RevokeTokenAsync);
+        Map(HttpMethods.Get, Paths.Authorizations, handlers.ListAuthorizationsAsync);
+        Map(HttpMethods.Get, Paths.Authorizations + "/{id}", handlers.ShowAuthorizationAsync);
+        Map(HttpMethods.Post, Paths.Authorizations + "/{id}/" + Paths.Revoke, handlers.RevokeAuthorizationAsync);
 
-        group.MapGet(Paths.Keys, handlers.ListKeysAsync);
-        group.MapPost(Paths.Keys + "/{id}/" + Paths.Revoke, handlers.RevokeKeyAsync);
+        Map(HttpMethods.Get, Paths.Tokens, handlers.ListTokensAsync);
+        Map(HttpMethods.Get, Paths.Tokens + "/{id}", handlers.ShowTokenAsync);
+        Map(HttpMethods.Post, Paths.Tokens + "/{id}/" + Paths.Revoke, handlers.RevokeTokenAsync);
+
+        Map(HttpMethods.Get, Paths.Keys, handlers.ListKeysAsync);
+        Map(HttpMethods.Post, Paths.Keys + "/{id}/" + Paths.Revoke, handlers.RevokeKeyAsync);
 
         return group;
+
+        void Map(string method, string path, RequestDelegate handler)
+        {
+            group.MapMethods(path, [method], handler);
+            detector.Add(method, path);
+        }
     }
 }
