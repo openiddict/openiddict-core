@@ -458,6 +458,78 @@ internal static class OpenIddictServerAspNetCoreAdminApiEndpoints
         context.Response.StatusCode = StatusCodes.Status204NoContent;
     });
 
+    public static Task ListSessionsAsync(HttpContext context) => ExecuteAsync(context, static async context =>
+    {
+        var manager = GetManager<IOpenIddictSessionManager>(context);
+        var (count, offset) = GetPagination(context);
+        var (subject, application, status, _) = GetFilters(context);
+        var login = (string?) context.Request.Query[QueryStringParameters.LoginId] is { Length: > 0 } value ? value : null;
+
+        var sessions = subject is null && application is null && status is null && login is null ?
+            manager.ListAsync(count, offset, context.RequestAborted) :
+            PaginateAsync(manager.FindAsync((subject, login, application, null, status), context.RequestAborted),
+                count, offset, context.RequestAborted);
+
+        List<(string? Identifier, OpenIddictSessionDescriptor Descriptor)> entries = [];
+
+        await foreach (var session in sessions.WithCancellation(context.RequestAborted))
+        {
+            entries.Add(await DescribeSessionAsync(manager, session, context.RequestAborted));
+        }
+
+        await WriteAsync(context, StatusCodes.Status200OK, writer =>
+        {
+            writer.WriteStartArray();
+
+            foreach (var (identifier, descriptor) in entries)
+            {
+                WriteSession(writer, identifier, descriptor);
+            }
+
+            writer.WriteEndArray();
+        });
+    });
+
+    public static Task GetSessionAsync(HttpContext context) => ExecuteAsync(context, static async context =>
+    {
+        var manager = GetManager<IOpenIddictSessionManager>(context);
+
+        if (await manager.FindByIdAsync(GetIdentifier(context), context.RequestAborted) is not object session)
+        {
+            context.Response.StatusCode = StatusCodes.Status404NotFound;
+            return;
+        }
+
+        var (identifier, descriptor) = await DescribeSessionAsync(manager, session, context.RequestAborted);
+        await WriteAsync(context, StatusCodes.Status200OK, writer => WriteSession(writer, identifier, descriptor));
+    });
+
+    public static Task TerminateSessionAsync(HttpContext context) => ExecuteAsync(context, static async context =>
+    {
+        (await ReadBodyAsync(context)).Dispose();
+
+        var service = context.RequestServices.GetService<OpenIddictServerService>() ??
+            throw new InvalidOperationException(SR.GetResourceString(SR.ID0564));
+
+        // Note: terminating a session revokes it (alongside the valid sessions sharing its login identifier and
+        // their tokens) and sends back-channel logout requests to the client applications, if enabled.
+        if (await service.TerminateSessionAsync(GetIdentifier(context), context.RequestAborted) is not { } result)
+        {
+            context.Response.StatusCode = StatusCodes.Status404NotFound;
+            return;
+        }
+
+        await WriteAsync(context, StatusCodes.Status200OK, writer =>
+        {
+            writer.WriteStartObject();
+            WriteStrings(writer, Fields.SessionIds, result.SessionIds);
+            WriteStrings(writer, Fields.NotifiedClients, result.NotifiedParticipants.Select(static participant => participant.ClientId));
+            WriteStrings(writer, Fields.FailedClients, result.FailedParticipants.Select(static participant => participant.ClientId));
+            WriteStrings(writer, Fields.FrontchannelLogoutUris, result.FrontchannelLogoutUris.Select(static uri => uri.AbsoluteUri));
+            writer.WriteEndObject();
+        });
+    });
+
     private static async Task ExecuteAsync(HttpContext context, Func<HttpContext, Task> handler)
     {
         context.Response.Headers.CacheControl = "no-store";
@@ -808,6 +880,31 @@ internal static class OpenIddictServerAspNetCoreAdminApiEndpoints
         writer.WriteString(Fields.Status, descriptor.Status);
         writer.WriteString(Fields.Subject, descriptor.Subject);
         writer.WriteString(Fields.Type, descriptor.Type);
+        WriteProperties(writer, descriptor.Properties);
+        writer.WriteEndObject();
+    }
+
+    private static async ValueTask<(string?, OpenIddictSessionDescriptor)> DescribeSessionAsync(
+        IOpenIddictSessionManager manager, object session, CancellationToken cancellationToken)
+    {
+        var descriptor = new OpenIddictSessionDescriptor();
+        await manager.PopulateAsync(descriptor, session, cancellationToken);
+
+        return (await manager.GetIdAsync(session, cancellationToken), descriptor);
+    }
+
+    private static void WriteSession(Utf8JsonWriter writer, string? identifier, OpenIddictSessionDescriptor descriptor)
+    {
+        writer.WriteStartObject();
+        writer.WriteString(Fields.Id, identifier);
+        writer.WriteString(Fields.ApplicationId, descriptor.ApplicationId);
+        writer.WriteString(Fields.AuthorizationId, descriptor.AuthorizationId);
+        WriteDate(writer, Fields.CreationDate, descriptor.CreationDate);
+        WriteDate(writer, Fields.ExpirationDate, descriptor.ExpirationDate);
+        WriteDate(writer, Fields.LastActivityDate, descriptor.LastActivityDate);
+        writer.WriteString(Fields.LoginId, descriptor.LoginId);
+        writer.WriteString(Fields.Status, descriptor.Status);
+        writer.WriteString(Fields.Subject, descriptor.Subject);
         WriteProperties(writer, descriptor.Properties);
         writer.WriteEndObject();
     }

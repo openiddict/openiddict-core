@@ -1985,6 +1985,27 @@ To extract backchannel authentication requests, create a class implementing 'IOp
     <value>The backchannel authentication response was not correctly applied.
 To apply backchannel authentication responses, create a class implementing 'IOpenIddictServerHandler&lt;ApplyBackchannelAuthenticationResponseContext&gt;' and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.</value>
   </data>
+  <data name="ID0720" xml:space="preserve">
+    <value>No asymmetric signing key was registered to sign logout tokens. Register an asymmetric signing credential (e.g using 'services.AddOpenIddict().AddServer().AddSigningCertificate()').</value>
+  </data>
+  <data name="ID0721" xml:space="preserve">
+    <value>Back-channel logout, front-channel logout, session revocation on sign-out and session expiration cannot be used when the degraded mode is enabled.</value>
+  </data>
+  <data name="ID0722" xml:space="preserve">
+    <value>The check session iframe endpoint cannot be enabled when session management is disabled. To enable it, call 'services.AddOpenIddict().AddServer().EnableSessionManagement()'.</value>
+  </data>
+  <data name="ID0723" xml:space="preserve">
+    <value>Session management requires the check session iframe endpoint to be enabled. To enable it, call 'services.AddOpenIddict().AddServer().SetCheckSessionIframeEndpointUris()'.</value>
+  </data>
+  <data name="ID0724" xml:space="preserve">
+    <value>The back-channel logout timeout, the logout token lifetime, the session idle timeout and the session lifetime must be positive values.</value>
+  </data>
+  <data name="ID0725" xml:space="preserve">
+    <value>The browser state cookie name cannot be null or empty.</value>
+  </data>
+  <data name="ID0726" xml:space="preserve">
+    <value>The issuer must be explicitly set to terminate sessions outside of an HTTP request. To set it, call 'services.AddOpenIddict().AddServer().SetIssuer()'.</value>
+  </data>
   <data name="ID2000" xml:space="preserve">
     <value>The security token is missing.</value>
   </data>
@@ -2784,6 +2805,15 @@ To apply backchannel authentication responses, create a class implementing 'IOpe
   </data>
   <data name="ID2266" xml:space="preserve">
     <value>The mandatory 'SAMLRequest' parameter is missing.</value>
+  </data>
+  <data name="ID2360" xml:space="preserve">
+    <value>The '{0}' setting must be an absolute HTTP or HTTPS URI that doesn't contain a fragment.</value>
+  </data>
+  <data name="ID2361" xml:space="preserve">
+    <value>The '{0}' setting must be either 'true' or 'false'.</value>
+  </data>
+  <data name="ID2362" xml:space="preserve">
+    <value>The session '{0}' cannot be found.</value>
   </data>
   <data name="ID4000" xml:space="preserve">
     <value>The '{0}' parameter shouldn't be null or empty at this point.</value>
@@ -3750,6 +3780,36 @@ This may indicate that the hashed entry is corrupted or malformed.</value>
   </data>
   <data name="ID6524" xml:space="preserve">
     <value>An exception occurred while trying to revoke the session '{Identifier}'.</value>
+  </data>
+  <data name="ID6525" xml:space="preserve">
+    <value>No session could be resolved from the sign-out demand: the session termination was skipped.</value>
+  </data>
+  <data name="ID6526" xml:space="preserve">
+    <value>The session '{Identifier}' could not be found.</value>
+  </data>
+  <data name="ID6527" xml:space="preserve">
+    <value>The back-channel logout request sent to '{Uri}' for the client application '{ClientId}' was rejected: {Error} ({Description}).</value>
+  </data>
+  <data name="ID6528" xml:space="preserve">
+    <value>The back-channel logout request was successfully sent to '{Uri}' for the client application '{ClientId}'.</value>
+  </data>
+  <data name="ID6529" xml:space="preserve">
+    <value>The back-channel logout request to '{Uri}' was not sent by any transport. Make sure a transport like the OpenIddict.Server.SystemNetHttp integration is registered.</value>
+  </data>
+  <data name="ID6530" xml:space="preserve">
+    <value>An exception occurred while sending the back-channel logout request to '{Uri}' for the client application '{ClientId}'.</value>
+  </data>
+  <data name="ID6531" xml:space="preserve">
+    <value>The logout token of the client application '{ClientId}' could not be generated: {Error} ({Description}).</value>
+  </data>
+  <data name="ID6532" xml:space="preserve">
+    <value>The session attached to the sign-out demand could not be terminated: {Error} ({Description}).</value>
+  </data>
+  <data name="ID6533" xml:space="preserve">
+    <value>The logout URI '{Uri}' registered for the client application '{ClientId}' is invalid and was ignored.</value>
+  </data>
+  <data name="ID6534" xml:space="preserve">
+    <value>The back-channel logout request sent to '{Uri}' returned an unsuccessful status code: {StatusCode}.</value>
   </data>
   <data name="ID8000" xml:space="preserve">
     <value>https://documentation.openiddict.com/errors/{0}</value>

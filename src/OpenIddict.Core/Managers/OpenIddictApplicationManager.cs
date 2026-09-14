@@ -1350,6 +1350,29 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
                     }
                 }
             }
+
+            // When logout URIs are specified (OpenID Connect Back-Channel Logout 1.0 section 2.2 and Front-Channel
+            // Logout 1.0 section 2), ensure they are absolute HTTP/HTTPS URIs that don't contain a fragment.
+            var settings = await Store.GetSettingsAsync(application, cancellationToken) ?? ImmutableDictionary<string, string>.Empty;
+
+            foreach (var name in (string[]) [Settings.Logout.BackchannelLogoutUri, Settings.Logout.FrontchannelLogoutUri])
+            {
+                if (settings.TryGetValue(name, out string? uri) && (
+                    !Uri.TryCreate(uri, UriKind.Absolute, out Uri? value) ||
+                    value.Scheme is not ("http" or "https") ||
+                    !string.IsNullOrEmpty(value.Fragment)))
+                {
+                    yield return new ValidationResult(SR.FormatID2360(name));
+                }
+            }
+
+            foreach (var name in (string[]) [Settings.Logout.BackchannelLogoutSessionRequired, Settings.Logout.FrontchannelLogoutSessionRequired])
+            {
+                if (settings.TryGetValue(name, out string? flag) && !bool.TryParse(flag, out _))
+                {
+                    yield return new ValidationResult(SR.FormatID2361(name));
+                }
+            }
         }
     }
 

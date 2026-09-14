@@ -119,7 +119,7 @@ public class OpenIddictServerServiceTests
         var service = provider.GetRequiredService<OpenIddictServerService>();
 
         manager.Setup(manager => manager.UpdateAsync(token, It.IsAny<OpenIddictTokenDescriptor>(), It.IsAny<CancellationToken>()))
-            .Returns(ValueTask.FromException(new ConcurrencyException("concurrency")));
+            .Returns(new ValueTask(Task.FromException(new ConcurrencyException("concurrency"))));
 
         // Act and assert
         Assert.False(await service.ApproveBackchannelAuthenticationRequestAsync(Identifier));

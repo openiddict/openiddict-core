@@ -1587,7 +1587,8 @@ public static partial class OpenIddictServerHandlers
                     ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
 
                 var session = await manager.FindByIdAsync(context.SessionId, context.CancellationToken);
-                if (session is null || !await manager.HasStatusAsync(session, Statuses.Valid, context.CancellationToken))
+                if (session is null || !await manager.HasStatusAsync(session, Statuses.Valid, context.CancellationToken) ||
+                    await manager.HasExpiredAsync(session, context.CancellationToken))
                 {
                     context.Logger.LogInformation(6297, SR.GetResourceString(SR.ID6297), context.SessionId);
 

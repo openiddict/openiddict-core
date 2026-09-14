@@ -321,9 +321,12 @@ public static class OpenIddictConstants
         public const string AuthorizationEndpoint = "authorization_endpoint";
         public const string AuthorizationResponseIssParameterSupported = "authorization_response_iss_parameter_supported";
         public const string BackchannelAuthenticationEndpoint = "backchannel_authentication_endpoint";
+        public const string BackchannelLogoutSessionSupported = "backchannel_logout_session_supported";
+        public const string BackchannelLogoutSupported = "backchannel_logout_supported";
         public const string BackchannelAuthenticationRequestSigningAlgValuesSupported = "backchannel_authentication_request_signing_alg_values_supported";
         public const string BackchannelTokenDeliveryModesSupported = "backchannel_token_delivery_modes_supported";
         public const string BackchannelUserCodeParameterSupported = "backchannel_user_code_parameter_supported";
+        public const string CheckSessionIframe = "check_session_iframe";
         public const string ClaimsLocalesSupported = "claims_locales_supported";
         public const string ClaimsParameterSupported = "claims_parameter_supported";
         public const string ClaimsSupported = "claims_supported";
@@ -334,6 +337,8 @@ public static class OpenIddictConstants
         public const string DisplayValuesSupported = "display_values_supported";
         public const string DPoPSigningAlgValuesSupported = "dpop_signing_alg_values_supported";
         public const string EndSessionEndpoint = "end_session_endpoint";
+        public const string FrontchannelLogoutSessionSupported = "frontchannel_logout_session_supported";
+        public const string FrontchannelLogoutSupported = "frontchannel_logout_supported";
         public const string GrantTypesSupported = "grant_types_supported";
         public const string IdTokenEncryptionAlgValuesSupported = "id_token_encryption_alg_values_supported";
         public const string IdTokenEncryptionEncValuesSupported = "id_token_encryption_enc_values_supported";
@@ -451,6 +456,8 @@ public static class OpenIddictConstants
         public const string ResponseMode = "response_mode";
         public const string ResponseType = "response_type";
         public const string Scope = "scope";
+        public const string SessionState = "session_state";
+        public const string Sid = "sid";
         public const string State = "state";
         public const string SubjectToken = "subject_token";
         public const string SubjectTokenType = "subject_token_type";
@@ -535,6 +542,7 @@ public static class OpenIddictConstants
     {
         public const string Destinations = ".destinations";
         public const string LastPollingDate = ".last_polling_date";
+        public const string SessionId = ".session_id";
     }
 
     public static class RequestTokenTypes
@@ -619,12 +627,26 @@ public static class OpenIddictConstants
         public static readonly char[] Space = [' '];
     }
 
+    public static class SecurityEventTypes
+    {
+        public const string BackchannelLogout = "http://schemas.openid.net/event/backchannel-logout";
+    }
+
     public static class Settings
     {
         public static class Prefixes
         {
             public const string IntrospectionResponse = "intr_rsp:";
+            public const string Logout = "lgt:";
             public const string TokenLifetime = "tkn_lft:";
+        }
+
+        public static class Logout
+        {
+            public const string BackchannelLogoutSessionRequired = "lgt:bcl_sid_req";
+            public const string BackchannelLogoutUri = "lgt:bcl_uri";
+            public const string FrontchannelLogoutSessionRequired = "lgt:fcl_sid_req";
+            public const string FrontchannelLogoutUri = "lgt:fcl_uri";
         }
 
         public static class IntrospectionResponse
@@ -712,6 +734,7 @@ public static class OpenIddictConstants
             public const string DeviceCode = "urn:openiddict:params:oauth:token-type:device_code";
             public const string DPoPProof = "urn:openiddict:params:oauth:token-type:dpop_proof";
             public const string IntrospectionResponse = "urn:openiddict:params:oauth:token-type:introspection_response";
+            public const string LogoutToken = "urn:openiddict:params:oauth:token-type:logout_token";
             public const string RequestObject = "urn:openiddict:params:oauth:token-type:request_object";
             public const string RequestToken = "urn:openiddict:params:oauth:token-type:request_token";
             public const string StateToken = "urn:openiddict:params:oauth:token-type:state_token";

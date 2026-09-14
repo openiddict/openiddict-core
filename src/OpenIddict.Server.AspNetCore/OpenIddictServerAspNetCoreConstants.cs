@@ -26,6 +26,8 @@ public static class OpenIddictServerAspNetCoreConstants
             public const string Keys = "keys";
             public const string Revoke = "revoke";
             public const string Scopes = "scopes";
+            public const string Sessions = "sessions";
+            public const string Terminate = "terminate";
             public const string Tokens = "tokens";
         }
 
@@ -50,6 +52,12 @@ public static class OpenIddictServerAspNetCoreConstants
             public const string Id = "id";
             public const string JsonWebKeySet = "json_web_key_set";
             public const string KeyId = "key_id";
+            public const string FailedClients = "failed_clients";
+            public const string FrontchannelLogoutUris = "frontchannel_logout_uris";
+            public const string LastActivityDate = "last_activity_date";
+            public const string LoginId = "login_id";
+            public const string NotifiedClients = "notified_clients";
+            public const string SessionIds = "session_ids";
             public const string Name = "name";
             public const string Permissions = "permissions";
             public const string PostLogoutRedirectUris = "post_logout_redirect_uris";
@@ -72,6 +80,7 @@ public static class OpenIddictServerAspNetCoreConstants
         {
             public const string ApplicationId = "application_id";
             public const string Count = "count";
+            public const string LoginId = "login_id";
             public const string Offset = "offset";
             public const string Status = "status";
             public const string Subject = "subject";

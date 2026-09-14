@@ -623,6 +623,84 @@ public sealed class OpenIddictServerOptions
     public bool EnableJsonWebTokenIntrospectionResponses { get; set; }
 
     /// <summary>
+    /// Gets the absolute and relative URIs associated to the check session iframe endpoint
+    /// defined by OpenID Connect Session Management 1.0. Only used when
+    /// <see cref="EnableSessionManagement"/> is set to <see langword="true"/>.
+    /// </summary>
+    public List<Uri> CheckSessionIframeEndpointUris { get; } = [];
+
+    /// <summary>
+    /// Gets or sets a boolean indicating whether OpenID Connect Back-Channel Logout 1.0 is enabled.
+    /// When enabled, a logout token is sent to the back-channel logout URI of each client application
+    /// that participated in a session terminated by the end session endpoint or by <see cref="OpenIddictServerService"/>.
+    /// </summary>
+    /// <remarks>
+    /// Note: a transport must be registered (e.g using <c>UseSystemNetHttp()</c> from the
+    /// OpenIddict.Server.SystemNetHttp package) to send the back-channel logout requests.
+    /// </remarks>
+    public bool EnableBackchannelLogout { get; set; }
+
+    /// <summary>
+    /// Gets or sets a boolean indicating whether OpenID Connect Front-Channel Logout 1.0 is enabled.
+    /// When enabled, the front-channel logout URIs of the client applications that participated
+    /// in a session terminated by the end session endpoint are rendered as iframes by the host.
+    /// </summary>
+    public bool EnableFrontchannelLogout { get; set; }
+
+    /// <summary>
+    /// Gets or sets a boolean indicating whether OpenID Connect Session Management 1.0 is enabled
+    /// (check session iframe endpoint and "session_state" authorization response parameter).
+    /// </summary>
+    public bool EnableSessionManagement { get; set; }
+
+    /// <summary>
+    /// Gets or sets a boolean indicating whether the session attached to a sign-out
+    /// demand processed by the end session endpoint (and all the sessions sharing the same
+    /// login identifier) should be revoked, alongside the tokens attached to these sessions.
+    /// </summary>
+    public bool EnableSessionRevocationOnSignOut { get; set; }
+
+    /// <summary>
+    /// Gets or sets a boolean indicating whether the standard "sid" claim should be added to access tokens
+    /// when a session is attached to the sign-in demand (identity tokens always include it).
+    /// </summary>
+    public bool IncludeSessionIdInAccessTokens { get; set; }
+
+    /// <summary>
+    /// Gets or sets a boolean indicating whether the authorization attached to a
+    /// terminated session should also be revoked when the session is terminated.
+    /// </summary>
+    public bool RevokeAuthorizationsOnSessionTermination { get; set; }
+
+    /// <summary>
+    /// Gets or sets the maximum amount of time allowed to send a back-channel logout request (by default, 5 seconds).
+    /// </summary>
+    public TimeSpan BackchannelLogoutTimeout { get; set; } = TimeSpan.FromSeconds(5);
+
+    /// <summary>
+    /// Gets or sets the lifetime of the logout tokens sent to the back-channel logout URIs (by default, 2 minutes).
+    /// </summary>
+    public TimeSpan LogoutTokenLifetime { get; set; } = TimeSpan.FromMinutes(2);
+
+    /// <summary>
+    /// Gets or sets the name of the cookie storing the OP browser state used by
+    /// OpenID Connect Session Management 1.0 (by default, "openiddict.browser_state").
+    /// </summary>
+    public string BrowserStateCookieName { get; set; } = "openiddict.browser_state";
+
+    /// <summary>
+    /// Gets or sets the idle timeout applied to sessions: when set, the expiration date of the session
+    /// attached to a sign-in demand is extended to the current date plus this value (sliding expiration).
+    /// </summary>
+    public TimeSpan? SessionIdleTimeout { get; set; }
+
+    /// <summary>
+    /// Gets or sets the absolute lifetime of sessions, computed from their creation date: when set,
+    /// the expiration date of the session attached to a sign-in demand never exceeds this limit.
+    /// </summary>
+    public TimeSpan? SessionLifetime { get; set; }
+
+    /// <summary>
     /// Gets or sets a boolean indicating whether all token requests must include a valid DPoP proof.
     /// </summary>
     /// <remarks>

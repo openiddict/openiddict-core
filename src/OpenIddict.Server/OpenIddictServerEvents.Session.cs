@@ -202,5 +202,11 @@ public static partial class OpenIddictServerEvents
         /// an untrusted URI, which would result in an "open redirection" vulnerability.
         /// </summary>
         public string? PostLogoutRedirectUri { get; set; }
+
+        /// <summary>
+        /// Gets the front-channel logout URIs that must be loaded by the user agent (typically, as iframes)
+        /// before being redirected, as defined by OpenID Connect Front-Channel Logout 1.0.
+        /// </summary>
+        public List<Uri> FrontchannelLogoutUris { get; } = [];
     }
 }

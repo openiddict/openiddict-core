@@ -30,6 +30,7 @@ To use these features on ASP.NET Core or OWIN/Katana/ASP.NET 4.x, reference the 
     <ProjectReference Include="..\OpenIddict.Client.WebIntegration\OpenIddict.Client.WebIntegration.csproj" />
     <ProjectReference Include="..\OpenIddict.Core\OpenIddict.Core.csproj" />
     <ProjectReference Include="..\OpenIddict.Server\OpenIddict.Server.csproj" />
+    <ProjectReference Include="..\OpenIddict.Server.SystemNetHttp\OpenIddict.Server.SystemNetHttp.csproj" />
     <ProjectReference Include="..\OpenIddict.Validation\OpenIddict.Validation.csproj" />
     <ProjectReference Include="..\OpenIddict.Validation.ServerIntegration\OpenIddict.Validation.ServerIntegration.csproj" />
     <ProjectReference Include="..\OpenIddict.Validation.SystemNetHttp\OpenIddict.Validation.SystemNetHttp.csproj" />

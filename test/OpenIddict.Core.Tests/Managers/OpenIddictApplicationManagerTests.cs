@@ -5,6 +5,7 @@
  */
 
 using System.Buffers.Binary;
+using System.Collections.Immutable;
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.Security.Cryptography;
@@ -1866,6 +1867,48 @@ public class OpenIddictApplicationManagerTests
 
         // Assert
         Assert.Contains(results, result => string.Equals(result.ErrorMessage, SR.GetResourceString(SR.ID2112), StringComparison.Ordinal));
+    }
+
+    [Theory]
+    [InlineData(Settings.Logout.BackchannelLogoutUri, "/relative")]
+    [InlineData(Settings.Logout.BackchannelLogoutUri, "ftp://fabrikam.com/logout")]
+    [InlineData(Settings.Logout.FrontchannelLogoutUri, "https://fabrikam.com/logout#fragment")]
+    public async Task ValidateAsync_ReturnsErrorWhenLogoutUriIsInvalid(string name, string uri)
+    {
+        // Arrange
+        var application = new CustomApplication();
+        var cache = Mock.Of<IOpenIddictApplicationCache<CustomApplication>>();
+        var logger = Mock.Of<ILogger<OpenIddictApplicationManager<CustomApplication>>>();
+        var options = Mock.Of<IOptionsMonitor<OpenIddictCoreOptions>>(
+            mock => mock.CurrentValue == new OpenIddictCoreOptions());
+        var store = new Mock<IOpenIddictApplicationStore<CustomApplication>>();
+
+        store.Setup(store => store.GetClientIdAsync(application, It.IsAny<CancellationToken>()))
+             .ReturnsAsync("client-id");
+
+        store.Setup(store => store.GetClientTypeAsync(application, It.IsAny<CancellationToken>()))
+             .ReturnsAsync(ClientTypes.Public);
+
+        store.Setup(store => store.GetPostLogoutRedirectUrisAsync(application, It.IsAny<CancellationToken>()))
+             .ReturnsAsync([]);
+
+        store.Setup(store => store.GetRedirectUrisAsync(application, It.IsAny<CancellationToken>()))
+             .ReturnsAsync([]);
+
+        store.Setup(store => store.GetSettingsAsync(application, It.IsAny<CancellationToken>()))
+             .ReturnsAsync(ImmutableDictionary.CreateRange(StringComparer.Ordinal, [
+                 KeyValuePair.Create(name, uri),
+                 KeyValuePair.Create(Settings.Logout.BackchannelLogoutSessionRequired, "yes")]));
+
+        var manager = new OpenIddictApplicationManager<CustomApplication>(cache, logger, options, store.Object);
+
+        // Act
+        var results = await manager.ValidateAsync(application).ToListAsync();
+
+        // Assert
+        Assert.Contains(results, result => string.Equals(result.ErrorMessage, SR.FormatID2360(name), StringComparison.Ordinal));
+        Assert.Contains(results, result => string.Equals(result.ErrorMessage,
+            SR.FormatID2361(Settings.Logout.BackchannelLogoutSessionRequired), StringComparison.Ordinal));
     }
 
     [Fact]

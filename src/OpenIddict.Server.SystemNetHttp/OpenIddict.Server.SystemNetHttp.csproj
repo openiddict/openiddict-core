@@ -1,18 +1,20 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>$(NetFrameworkTargetFrameworks);$(NetCoreTargetFrameworks)</TargetFrameworks>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <Description>System.Net.Http integration package for the OpenIddict server services (used to send back-channel logout requests).</Description>
+    <PackageTags>$(PackageTags);http;httpclient;server</PackageTags>
+  </PropertyGroup>
+
   <ItemGroup>
-    <ProjectReference Include="..\..\src\OpenIddict.Server\OpenIddict.Server.csproj" />
-    <ProjectReference Include="..\..\src\OpenIddict.Server.SystemNetHttp\OpenIddict.Server.SystemNetHttp.csproj" />
+    <ProjectReference Include="..\OpenIddict.Server\OpenIddict.Server.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
-    <PackageReference Include="Moq" />
-    <PackageReference Include="Xunit.SkippableFact" />
+    <PackageReference Include="Microsoft.Extensions.Http.Polly" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFrameworkIdentifier)' == '.NETFramework' ">
@@ -20,13 +22,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Certificate.pfx" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Using Include="OpenIddict.Abstractions" />
     <Using Include="OpenIddict.Abstractions.OpenIddictConstants" Static="true" />
     <Using Include="OpenIddict.Abstractions.OpenIddictResources" Alias="SR" />
+    <Using Include="OpenIddict.Server.OpenIddictServerEvents" Static="true" />
   </ItemGroup>
 
 </Project>

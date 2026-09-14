@@ -55,6 +55,7 @@ public static partial class OpenIddictServerOwinHandlers
         .. Discovery.DefaultHandlers,
         .. Exchange.DefaultHandlers,
         .. Introspection.DefaultHandlers,
+        .. Logout.DefaultHandlers,
         .. Revocation.DefaultHandlers,
         .. Session.DefaultHandlers,
         .. UserInfo.DefaultHandlers

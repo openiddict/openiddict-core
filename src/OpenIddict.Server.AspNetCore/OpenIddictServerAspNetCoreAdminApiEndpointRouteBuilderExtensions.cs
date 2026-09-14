@@ -73,6 +73,11 @@ public static class OpenIddictServerAspNetCoreAdminApiEndpointRouteBuilderExtens
         keys.MapGet("{id}", OpenIddictServerAspNetCoreAdminApiEndpoints.GetKeyAsync);
         keys.MapPost("{id}/" + Paths.Revoke, OpenIddictServerAspNetCoreAdminApiEndpoints.RevokeKeyAsync);
 
+        var sessions = group.MapGroup(Paths.Sessions);
+        sessions.MapGet(string.Empty, OpenIddictServerAspNetCoreAdminApiEndpoints.ListSessionsAsync);
+        sessions.MapGet("{id}", OpenIddictServerAspNetCoreAdminApiEndpoints.GetSessionAsync);
+        sessions.MapPost("{id}/" + Paths.Terminate, OpenIddictServerAspNetCoreAdminApiEndpoints.TerminateSessionAsync);
+
         return group;
     }
 }

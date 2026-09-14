@@ -651,6 +651,100 @@ public class OpenIddictServerAspNetCoreAdminApiTests
         manager.Verify(mock => mock.TryRevokeAsync(key, It.IsAny<CancellationToken>()), Times.Once());
     }
 
+    [Fact]
+    public async Task ListSessions_FiltersSessionsBySubjectAndLoginIdentifier()
+    {
+        // Arrange
+        var session = new object();
+
+        var manager = new Mock<IOpenIddictSessionManager>();
+        manager.Setup(mock => mock.FindAsync(It.Is<(string?, string?, string?, string?, string?)>(query => query.Item1 == "Bob" && query.Item2 == "login"), It.IsAny<CancellationToken>()))
+            .Returns(EnumerateAsync(session));
+        manager.Setup(mock => mock.GetIdAsync(session, It.IsAny<CancellationToken>()))
+            .ReturnsAsync("s1");
+        manager.Setup(mock => mock.PopulateAsync(It.IsAny<OpenIddictSessionDescriptor>(), session, It.IsAny<CancellationToken>()))
+            .Callback((OpenIddictSessionDescriptor descriptor, object _, CancellationToken _) =>
+            {
+                descriptor.ApplicationId = "a1";
+                descriptor.ExpirationDate = new DateTimeOffset(2030, 1, 1, 0, 0, 0, TimeSpan.Zero);
+                descriptor.LoginId = "login";
+                descriptor.Principal = new ClaimsPrincipal(new ClaimsIdentity([new Claim("secret", "value")]));
+                descriptor.Status = Statuses.Valid;
+                descriptor.Subject = "Bob";
+            })
+            .Returns(ValueTask.CompletedTask);
+
+        using var host = await CreateHostAsync(services => services.AddSingleton(manager.Object));
+        using var client = CreateClient(host, role: "admin");
+
+        // Act
+        var response = await client.GetAsync("/openiddict/admin/sessions?subject=Bob&login_id=login");
+        var content = await response.Content.ReadAsStringAsync();
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        using var document = JsonDocument.Parse(content);
+        var item = Assert.Single(document.RootElement.EnumerateArray());
+
+        Assert.Equal("s1", item.GetProperty("id").GetString());
+        Assert.Equal("a1", item.GetProperty("application_id").GetString());
+        Assert.Equal("login", item.GetProperty("login_id").GetString());
+        Assert.Equal("Bob", item.GetProperty("subject").GetString());
+        Assert.Equal(Statuses.Valid, item.GetProperty("status").GetString());
+        Assert.NotEqual(JsonValueKind.Null, item.GetProperty("expiration_date").ValueKind);
+        Assert.DoesNotContain("secret", content, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task GetSession_ReturnsNotFoundForUnknownSession()
+    {
+        // Arrange
+        var manager = new Mock<IOpenIddictSessionManager>();
+
+        using var host = await CreateHostAsync(services => services.AddSingleton(manager.Object));
+        using var client = CreateClient(host, role: "admin");
+
+        // Act
+        var response = await client.GetAsync("/openiddict/admin/sessions/unknown");
+
+        // Assert
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task TerminateSession_TerminatesTheSession()
+    {
+        // Arrange
+        var service = new Mock<OpenIddictServerService>(Mock.Of<IServiceProvider>());
+        service.Setup(mock => mock.TerminateSessionAsync("s1", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new OpenIddictServerSessionTerminationResult
+            {
+                SessionIds = ["s1", "s2"],
+                NotifiedParticipants =
+                [
+                    new OpenIddictServerLogoutParticipant { ApplicationId = "a1", ClientId = "Fabrikam", SessionId = "s1" }
+                ]
+            });
+
+        using var host = await CreateHostAsync(services => services.AddSingleton(service.Object));
+        using var client = CreateClient(host, role: "admin");
+
+        // Act
+        var response = await client.PostAsync("/openiddict/admin/sessions/s1/terminate", JsonContent(string.Empty));
+        var unknown = await client.PostAsync("/openiddict/admin/sessions/unknown/terminate", JsonContent(string.Empty));
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, unknown.StatusCode);
+
+        using var document = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        Assert.Equal("s1 s2", string.Join(' ', document.RootElement.GetProperty("session_ids").EnumerateArray().Select(static value => value.GetString())));
+        Assert.Equal("Fabrikam", Assert.Single(document.RootElement.GetProperty("notified_clients").EnumerateArray()).GetString());
+
+        service.Verify(mock => mock.TerminateSessionAsync("s1", It.IsAny<CancellationToken>()), Times.Once());
+    }
+
     private static StringContent JsonContent(string payload)
         => new(payload, Encoding.UTF8, "application/json");
 

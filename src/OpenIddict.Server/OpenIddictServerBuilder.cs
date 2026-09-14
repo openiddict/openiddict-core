@@ -1857,6 +1857,155 @@ public sealed class OpenIddictServerBuilder
         => Configure(options => options.EnableJsonWebTokenIntrospectionResponses = true);
 
     /// <summary>
+    /// Sets the relative or absolute URIs associated to the check session iframe endpoint
+    /// (OpenID Connect Session Management 1.0). Session management must be enabled
+    /// using <see cref="EnableSessionManagement"/>.
+    /// Note: only the first URI will be returned as part of the discovery document.
+    /// </summary>
+    /// <param name="uris">The URIs associated to the endpoint.</param>
+    /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
+    public OpenIddictServerBuilder SetCheckSessionIframeEndpointUris(
+        [StringSyntax(StringSyntaxAttribute.Uri)] params string[] uris)
+    {
+        ArgumentNullException.ThrowIfNull(uris);
+
+        return SetCheckSessionIframeEndpointUris([.. uris.Select(uri => new Uri(uri, UriKind.RelativeOrAbsolute))]);
+    }
+
+    /// <summary>
+    /// Sets the relative or absolute URIs associated to the check session iframe endpoint
+    /// (OpenID Connect Session Management 1.0). Session management must be enabled
+    /// using <see cref="EnableSessionManagement"/>.
+    /// Note: only the first URI will be returned as part of the discovery document.
+    /// </summary>
+    /// <param name="uris">The URIs associated to the endpoint.</param>
+    /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
+    public OpenIddictServerBuilder SetCheckSessionIframeEndpointUris(params Uri[] uris)
+    {
+        ArgumentNullException.ThrowIfNull(uris);
+
+        if (Array.Exists(uris, OpenIddictHelpers.IsImplicitFileUri))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0072), nameof(uris));
+        }
+
+        if (Array.Exists(uris, static uri => uri.OriginalString.StartsWith("~", StringComparison.OrdinalIgnoreCase)))
+        {
+            throw new ArgumentException(SR.FormatID0081("~"), nameof(uris));
+        }
+
+        return Configure(options =>
+        {
+            options.CheckSessionIframeEndpointUris.Clear();
+            options.CheckSessionIframeEndpointUris.AddRange(uris);
+        });
+    }
+
+    /// <summary>
+    /// Enables OpenID Connect Back-Channel Logout 1.0: when a session is terminated (by the end session endpoint
+    /// or using <see cref="OpenIddictServerService"/>), a logout token is sent to the back-channel logout URI
+    /// (<see cref="Settings.Logout.BackchannelLogoutUri"/>) of each client application that participated in the session.
+    /// </summary>
+    /// <remarks>
+    /// Note: a transport must be registered (e.g using <c>UseSystemNetHttp()</c> from the OpenIddict.Server.SystemNetHttp package).
+    /// </remarks>
+    /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
+    public OpenIddictServerBuilder EnableBackchannelLogout()
+        => Configure(options => options.EnableBackchannelLogout = true);
+
+    /// <summary>
+    /// Enables OpenID Connect Front-Channel Logout 1.0: when a session is terminated by the end session endpoint,
+    /// the front-channel logout URIs (<see cref="Settings.Logout.FrontchannelLogoutUri"/>) of the client
+    /// applications that participated in the session are rendered as iframes by the ASP.NET Core/OWIN hosts.
+    /// </summary>
+    /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
+    public OpenIddictServerBuilder EnableFrontchannelLogout()
+        => Configure(options => options.EnableFrontchannelLogout = true);
+
+    /// <summary>
+    /// Enables OpenID Connect Session Management 1.0: a check session iframe endpoint is exposed
+    /// (see <see cref="SetCheckSessionIframeEndpointUris(Uri[])"/>) and a "session_state" parameter
+    /// is returned in successful authorization responses.
+    /// </summary>
+    /// <remarks>
+    /// Note: modern browsers typically block the third-party cookies this specification relies on.
+    /// Back-channel logout should be preferred when possible.
+    /// </remarks>
+    /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
+    public OpenIddictServerBuilder EnableSessionManagement()
+        => Configure(options => options.EnableSessionManagement = true);
+
+    /// <summary>
+    /// Configures OpenIddict to revoke the session attached to a sign-out demand processed by
+    /// the end session endpoint (resolved from the <see cref="Properties.SessionId"/> property
+    /// or from the identity token hint), all the sessions sharing its login identifier and their tokens.
+    /// </summary>
+    /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
+    public OpenIddictServerBuilder EnableSessionRevocationOnSignOut()
+        => Configure(options => options.EnableSessionRevocationOnSignOut = true);
+
+    /// <summary>
+    /// Configures OpenIddict to add the standard "sid" claim to access tokens when a session
+    /// is attached to the sign-in demand (identity tokens always include it).
+    /// </summary>
+    /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
+    public OpenIddictServerBuilder IncludeSessionIdInAccessTokens()
+        => Configure(options => options.IncludeSessionIdInAccessTokens = true);
+
+    /// <summary>
+    /// Configures OpenIddict to also revoke the authorization attached to a session when the session is terminated.
+    /// </summary>
+    /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
+    public OpenIddictServerBuilder RevokeAuthorizationsOnSessionTermination()
+        => Configure(options => options.RevokeAuthorizationsOnSessionTermination = true);
+
+    /// <summary>
+    /// Sets the maximum amount of time allowed to send a back-channel logout request.
+    /// </summary>
+    /// <param name="timeout">The timeout.</param>
+    /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
+    public OpenIddictServerBuilder SetBackchannelLogoutTimeout(TimeSpan timeout)
+        => Configure(options => options.BackchannelLogoutTimeout = timeout);
+
+    /// <summary>
+    /// Sets the lifetime of the logout tokens sent to the back-channel logout URIs.
+    /// </summary>
+    /// <param name="lifetime">The lifetime.</param>
+    /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
+    public OpenIddictServerBuilder SetLogoutTokenLifetime(TimeSpan lifetime)
+        => Configure(options => options.LogoutTokenLifetime = lifetime);
+
+    /// <summary>
+    /// Sets the name of the cookie storing the OP browser state used by OpenID Connect Session Management 1.0.
+    /// </summary>
+    /// <param name="name">The cookie name.</param>
+    /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
+    public OpenIddictServerBuilder SetBrowserStateCookieName(string name)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(name);
+
+        return Configure(options => options.BrowserStateCookieName = name);
+    }
+
+    /// <summary>
+    /// Sets the idle timeout of sessions: the expiration date of the session attached to a sign-in demand
+    /// is extended to the current date plus the specified value. <see langword="null"/> disables sliding expiration.
+    /// </summary>
+    /// <param name="timeout">The idle timeout.</param>
+    /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
+    public OpenIddictServerBuilder SetSessionIdleTimeout(TimeSpan? timeout)
+        => Configure(options => options.SessionIdleTimeout = timeout);
+
+    /// <summary>
+    /// Sets the absolute lifetime of sessions, computed from their creation date.
+    /// <see langword="null"/> removes the absolute limit.
+    /// </summary>
+    /// <param name="lifetime">The session lifetime.</param>
+    /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
+    public OpenIddictServerBuilder SetSessionLifetime(TimeSpan? lifetime)
+        => Configure(options => options.SessionLifetime = lifetime);
+
+    /// <summary>
     /// Configures OpenIddict to require a valid DPoP proof for all token requests.
     /// </summary>
     /// <remarks>

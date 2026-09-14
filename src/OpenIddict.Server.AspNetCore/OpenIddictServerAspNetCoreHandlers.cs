@@ -57,6 +57,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
         .. Discovery.DefaultHandlers,
         .. Exchange.DefaultHandlers,
         .. Introspection.DefaultHandlers,
+        .. Logout.DefaultHandlers,
         .. Revocation.DefaultHandlers,
         .. Session.DefaultHandlers,
         .. UserInfo.DefaultHandlers

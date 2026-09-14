@@ -233,6 +233,7 @@ public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenId
             .Concat(options.TokenEndpointUris.Distinct())
             .Concat(options.UserInfoEndpointUris.Distinct())
             .Concat(options.EndUserVerificationEndpointUris.Distinct())
+            .Concat(options.CheckSessionIframeEndpointUris.Distinct())
             .ToList();
 
         // Ensure endpoint URIs are unique across endpoints.
@@ -355,6 +356,35 @@ public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenId
         if (options.DPoPProofLifetime <= TimeSpan.Zero || options.DPoPNonceLifetime <= TimeSpan.Zero)
         {
             builder.AddError(SR.GetResourceString(SR.ID0547));
+        }
+
+        // Ensure the sessions/logout configuration is consistent.
+        if (options.EnableDegradedMode && (options.EnableBackchannelLogout || options.EnableFrontchannelLogout ||
+                                           options.EnableSessionRevocationOnSignOut ||
+                                           options.SessionIdleTimeout is not null || options.SessionLifetime is not null))
+        {
+            builder.AddError(SR.GetResourceString(SR.ID0721));
+        }
+
+        if (options.CheckSessionIframeEndpointUris.Count is not 0 && !options.EnableSessionManagement)
+        {
+            builder.AddError(SR.GetResourceString(SR.ID0722));
+        }
+
+        if (options.EnableSessionManagement && options.CheckSessionIframeEndpointUris.Count is 0)
+        {
+            builder.AddError(SR.GetResourceString(SR.ID0723));
+        }
+
+        if (options.BackchannelLogoutTimeout <= TimeSpan.Zero || options.LogoutTokenLifetime <= TimeSpan.Zero ||
+            options.SessionIdleTimeout <= TimeSpan.Zero || options.SessionLifetime <= TimeSpan.Zero)
+        {
+            builder.AddError(SR.GetResourceString(SR.ID0724));
+        }
+
+        if (string.IsNullOrEmpty(options.BrowserStateCookieName))
+        {
+            builder.AddError(SR.GetResourceString(SR.ID0725));
         }
 
         // Ensure the client authentication methods/client assertion types configuration is consistent.

@@ -74,5 +74,10 @@ public enum OpenIddictServerEndpointType
     /// <summary>
     /// Backchannel authentication endpoint.
     /// </summary>
-    BackchannelAuthentication = 12
+    BackchannelAuthentication = 12,
+
+    /// <summary>
+    /// Check session iframe endpoint (OpenID Connect Session Management 1.0).
+    /// </summary>
+    CheckSessionIframe = 14
 }

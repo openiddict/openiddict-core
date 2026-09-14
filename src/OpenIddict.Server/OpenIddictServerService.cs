@@ -217,6 +217,97 @@ public class OpenIddictServerService
         return await manager.TryRejectAsync(token, cancellationToken);
     }
 
+    /// <summary>
+    /// Terminates the specified server-side session: the session and all the valid sessions sharing its login identifier
+    /// are revoked alongside their tokens (and their authorizations when <see cref="OpenIddictServerOptions.RevokeAuthorizationsOnSessionTermination"/>
+    /// is enabled) and back-channel logout requests are sent when <see cref="OpenIddictServerOptions.EnableBackchannelLogout"/> is enabled.
+    /// </summary>
+    /// <param name="identifier">The identifier of the session entry.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns>The termination result or <see langword="null"/> if the session couldn't be found.</returns>
+    public virtual async ValueTask<OpenIddictServerSessionTerminationResult?> TerminateSessionAsync(
+        string identifier, CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(identifier);
+
+        var options = _provider.GetRequiredService<IOptionsMonitor<OpenIddictServerOptions>>().CurrentValue;
+
+        return await ProcessSessionTerminationAsync(options, identifier, context =>
+        {
+            context.RevokeSessions = true;
+            context.RevokeAuthorizations = options.RevokeAuthorizationsOnSessionTermination;
+            context.SendBackchannelLogoutRequests = options.EnableBackchannelLogout;
+            context.ResolveFrontchannelLogoutUris = options.EnableFrontchannelLogout;
+        }, cancellationToken);
+    }
+
+    /// <summary>
+    /// Resolves the front-channel logout URIs (including the "iss" and "sid" parameters) of the client applications
+    /// that participated in the specified session, without terminating it. This method is typically used by hosts
+    /// rendering their own logout page before signing out, as defined by OpenID Connect Front-Channel Logout 1.0.
+    /// </summary>
+    /// <param name="identifier">The identifier of the session entry.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns>The front-channel logout URIs.</returns>
+    public virtual async ValueTask<ImmutableArray<Uri>> GetFrontchannelLogoutUrisAsync(
+        string identifier, CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(identifier);
+
+        var options = _provider.GetRequiredService<IOptionsMonitor<OpenIddictServerOptions>>().CurrentValue;
+
+        var result = await ProcessSessionTerminationAsync(options, identifier,
+            static context => context.ResolveFrontchannelLogoutUris = true, cancellationToken);
+
+        return result?.FrontchannelLogoutUris ?? [];
+    }
+
+    private async ValueTask<OpenIddictServerSessionTerminationResult?> ProcessSessionTerminationAsync(
+        OpenIddictServerOptions options, string identifier,
+        Action<OpenIddictServerEvents.ProcessSessionTerminationContext> configuration, CancellationToken cancellationToken)
+    {
+        if (options.EnableDegradedMode)
+        {
+            throw new InvalidOperationException(SR.GetResourceString(SR.ID0721));
+        }
+
+        if (options.Issuer is null)
+        {
+            throw new InvalidOperationException(SR.GetResourceString(SR.ID0726));
+        }
+
+        var transaction = new OpenIddictServerTransaction
+        {
+            CancellationToken = cancellationToken,
+            Options = options,
+            ServiceProvider = _provider
+        };
+
+        var context = new OpenIddictServerEvents.ProcessSessionTerminationContext(transaction)
+        {
+            SessionId = identifier
+        };
+
+        configuration(context);
+
+        await _provider.GetRequiredService<IOpenIddictServerDispatcher>().DispatchAsync(context);
+
+        if (context.IsRejected)
+        {
+            return null;
+        }
+
+        return new OpenIddictServerSessionTerminationResult
+        {
+            FailedParticipants = [.. context.FailedParticipants],
+            FrontchannelLogoutUris = [.. context.FrontchannelLogoutUris],
+            NotifiedParticipants = [.. context.NotifiedParticipants],
+            Participants = [.. context.Participants],
+            SessionIds = [.. await Task.WhenAll(context.Sessions.Select(async session =>
+                (await _provider.GetRequiredService<IOpenIddictSessionManager>().GetIdAsync(session, cancellationToken))!))]
+        };
+    }
+
     private static async ValueTask<OpenIddictServerBackchannelAuthenticationRequest?> GetPendingRequestAsync(
         OpenIddictServerOptions options, IOpenIddictTokenManager manager, object token, CancellationToken cancellationToken)
     {
@@ -326,4 +417,35 @@ public sealed class OpenIddictServerBackchannelAuthenticationRequest
     /// Gets the subject of the end user.
     /// </summary>
     public string? Subject { get; init; }
+}
+
+/// <summary>
+/// Represents the result of a session termination.
+/// </summary>
+public sealed class OpenIddictServerSessionTerminationResult
+{
+    /// <summary>
+    /// Gets the identifiers of the terminated sessions.
+    /// </summary>
+    public ImmutableArray<string> SessionIds { get; init; } = [];
+
+    /// <summary>
+    /// Gets the client applications that participated in the terminated sessions.
+    /// </summary>
+    public ImmutableArray<OpenIddictServerLogoutParticipant> Participants { get; init; } = [];
+
+    /// <summary>
+    /// Gets the participants that were successfully notified using back-channel logout.
+    /// </summary>
+    public ImmutableArray<OpenIddictServerLogoutParticipant> NotifiedParticipants { get; init; } = [];
+
+    /// <summary>
+    /// Gets the participants whose back-channel logout notification failed.
+    /// </summary>
+    public ImmutableArray<OpenIddictServerLogoutParticipant> FailedParticipants { get; init; } = [];
+
+    /// <summary>
+    /// Gets the front-channel logout URIs of the participants, if front-channel logout is enabled.
+    /// </summary>
+    public ImmutableArray<Uri> FrontchannelLogoutUris { get; init; } = [];
 }

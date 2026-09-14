@@ -62,6 +62,12 @@ public sealed class OpenIddictServerTransaction
     public bool IsJsonWebTokenIntrospectionResponseRequested { get; set; }
 
     /// <summary>
+    /// Gets or sets the OP browser state attached by the host, used to compute the
+    /// "session_state" parameter defined by OpenID Connect Session Management 1.0.
+    /// </summary>
+    public string? BrowserState { get; set; }
+
+    /// <summary>
     /// Gets or sets the HTTP method of the current transaction, if available.
     /// </summary>
     public string? RequestMethod { get; set; }

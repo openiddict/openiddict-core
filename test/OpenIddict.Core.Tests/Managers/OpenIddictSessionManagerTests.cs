@@ -902,7 +902,7 @@ public class OpenIddictSessionManagerTests
         var store = CreateValidStore(session);
 
         store.Setup(store => store.UpdateAsync(session, It.IsAny<CancellationToken>()))
-             .Returns(ValueTask.FromException(new OpenIddictExceptions.ConcurrencyException("concurrency")));
+             .Returns(new ValueTask(Task.FromException(new OpenIddictExceptions.ConcurrencyException("concurrency"))));
 
         var manager = CreateManager(store.Object);
 
