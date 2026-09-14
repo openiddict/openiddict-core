@@ -22,6 +22,12 @@
       "defaultValue": "8.0.0-preview.5",
       "replaces": "OPENIDDICT_VERSION"
     },
+    "AdminUI": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "false",
+      "description": "Adds the OpenIddict admin UI (OpenIddict.Server.AspNetCore.AdminUI) under /admin, restricted to the admin policy."
+    },
     "HttpsPort": {
       "type": "generated",
       "generator": "port",

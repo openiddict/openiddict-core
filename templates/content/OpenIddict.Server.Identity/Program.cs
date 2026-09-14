@@ -67,6 +67,11 @@ builder.Services.AddOpenIddict()
 builder.Services.AddAuthorizationBuilder()
     .AddPolicy(Policies.Admin, policy => policy.RequireRole(builder.Configuration["OpenIddict:AdminRole"] ?? "admin"));
 
+#if (AdminUI)
+// Register the services used by the OpenIddict admin UI (Razor components and antiforgery).
+builder.Services.AddOpenIddictAdminUI();
+
+#endif
 // Create the database and register the client applications declared in the configuration.
 builder.Services.AddHostedService<Worker>();
 
@@ -98,5 +103,11 @@ if (app.Configuration.GetValue<bool>("OpenIddict:EnableAdminApi"))
 {
     app.MapOpenIddictAdminApi(Policies.Admin);
 }
+#if (AdminUI)
+
+// Expose the OpenIddict admin UI to the users satisfying the admin policy.
+// Note: a different prefix is used as the admin API uses the same relative paths.
+app.MapOpenIddictAdminUI(Policies.Admin, "/admin");
+#endif
 
 app.Run();
