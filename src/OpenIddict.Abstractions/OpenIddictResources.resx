@@ -2333,6 +2333,90 @@ To register a distributed cache, use 'services.AddDistributedMemoryCache()' or a
   <data name="ID0990" xml:space="preserve">
     <value>No asymmetric signing credentials using one of the introspection response signing algorithms allowed in the server options were registered.</value>
   </data>
+  <data name="ID0880" xml:space="preserve">
+    <value>The SAML service provider entity identifier must be set. To set it, use 'services.AddOpenIddict().AddClient().UseSaml().SetEntityId()'.</value>
+  </data>
+  <data name="ID0881" xml:space="preserve">
+    <value>The SAML service provider signing certificates must be X.509 certificates with an RSA private key and at least one certificate must be registered to sign authentication requests. To register a certificate, use 'services.AddOpenIddict().AddClient().UseSaml().AddSigningCertificate()'.</value>
+  </data>
+  <data name="ID0882" xml:space="preserve">
+    <value>The SAML service provider encryption certificates must be X.509 certificates with an RSA private key.</value>
+  </data>
+  <data name="ID0883" xml:space="preserve">
+    <value>The SAML service provider clock skew, lifetimes, refresh interval and size limits must be positive values.</value>
+  </data>
+  <data name="ID0884" xml:space="preserve">
+    <value>The '{0}' signature algorithm or the '{1}' digest algorithm is not supported. Supported algorithms are RSA-SHA256, RSA-SHA384 and RSA-SHA512 with SHA-256, SHA-384 and SHA-512.</value>
+  </data>
+  <data name="ID0885" xml:space="preserve">
+    <value>A SAML registration must specify an identity provider entity identifier or a metadata address.</value>
+  </data>
+  <data name="ID0886" xml:space="preserve">
+    <value>The SAML registration '{0}' must specify a metadata address or both a single sign-on service URL and at least one identity provider signing certificate.</value>
+  </data>
+  <data name="ID0887" xml:space="preserve">
+    <value>The single sign-on service URL of the SAML registration '{0}' must be an absolute HTTP or HTTPS URL without fragment.</value>
+  </data>
+  <data name="ID0888" xml:space="preserve">
+    <value>The metadata address of the SAML registration '{0}' must be an absolute HTTPS or file URI.</value>
+  </data>
+  <data name="ID0889" xml:space="preserve">
+    <value>The authentication request binding of the SAML registration '{0}' must be HTTP-Redirect or HTTP-POST.</value>
+  </data>
+  <data name="ID0890" xml:space="preserve">
+    <value>The identity provider signing certificates of the SAML registration '{0}' must be X.509 certificates with an RSA key.</value>
+  </data>
+  <data name="ID0891" xml:space="preserve">
+    <value>Multiple SAML registrations share the same identifier '{0}'.</value>
+  </data>
+  <data name="ID0892" xml:space="preserve">
+    <value>The SAML registration '{0}' allows unsolicited responses and must explicitly specify the identity provider entity identifier.</value>
+  </data>
+  <data name="ID0893" xml:space="preserve">
+    <value>No SAML registration was found for the specified identifier.</value>
+  </data>
+  <data name="ID0894" xml:space="preserve">
+    <value>No SAML registration was found for the specified provider name.</value>
+  </data>
+  <data name="ID0895" xml:space="preserve">
+    <value>Multiple SAML registrations share the same provider name.</value>
+  </data>
+  <data name="ID0896" xml:space="preserve">
+    <value>The identifier of the SAML registration returned by the registration provider doesn't match the requested identifier.</value>
+  </data>
+  <data name="ID0897" xml:space="preserve">
+    <value>A dynamic SAML registration cannot use the identifier of a static registration.</value>
+  </data>
+  <data name="ID0898" xml:space="preserve">
+    <value>The SAML metadata of the registration '{0}' couldn't be retrieved or is invalid: {1}</value>
+  </data>
+  <data name="ID0899" xml:space="preserve">
+    <value>The identity provider configuration of the SAML registration '{0}' doesn't contain a single sign-on service URL supporting the '{1}' binding.</value>
+  </data>
+  <data name="ID0900" xml:space="preserve">
+    <value>The OpenIddict SAML service provider services cannot be resolved from the dependency injection container. To register them, use 'services.AddOpenIddict().AddClient().UseSaml()' and the host integration ('UseAspNetCore()' or 'UseOwin()').</value>
+  </data>
+  <data name="ID0901" xml:space="preserve">
+    <value>No SAML registration could be selected: attach a registration identifier or a provider name to the authentication properties when zero or multiple registrations are available.</value>
+  </data>
+  <data name="ID0902" xml:space="preserve">
+    <value>The sign-in authentication type used by the OpenIddict SAML service provider OWIN integration must be set. To set it, use 'services.AddOpenIddict().AddClient().UseSaml().UseOwin().SetSignInAuthenticationType()'.</value>
+  </data>
+  <data name="ID0903" xml:space="preserve">
+    <value>The metadata document exceeds the maximum allowed size.</value>
+  </data>
+  <data name="ID0904" xml:space="preserve">
+    <value>The metadata document is not a valid SAML metadata document (EntityDescriptor with an IDPSSODescriptor), is expired, doesn't match the configured entity identifier or has an invalid signature.</value>
+  </data>
+  <data name="ID0905" xml:space="preserve">
+    <value>The registration identifier or provider name cannot be attached to the authentication properties when using a forwarded authentication scheme or type.</value>
+  </data>
+  <data name="ID0906" xml:space="preserve">
+    <value>The paths of the SAML assertion consumer service and metadata endpoints must be set, start with a slash and be different.</value>
+  </data>
+  <data name="ID0907" xml:space="preserve">
+    <value>The metadata document cannot be retrieved: the address must use the HTTPS or file scheme and the server must return a successful response.</value>
+  </data>
   <data name="ID2000" xml:space="preserve">
     <value>The security token is missing.</value>
   </data>
@@ -3372,6 +3456,66 @@ To register a distributed cache, use 'services.AddDistributedMemoryCache()' or a
   </data>
   <data name="ID2426" xml:space="preserve">
     <value>The SAML artifact was not issued to the service provider that sent the artifact resolution request.</value>
+  </data>
+  <data name="ID2440" xml:space="preserve">
+    <value>The mandatory 'SAMLResponse' parameter is missing or was specified multiple times.</value>
+  </data>
+  <data name="ID2441" xml:space="preserve">
+    <value>The SAML response is malformed or exceeds the maximum allowed size.</value>
+  </data>
+  <data name="ID2442" xml:space="preserve">
+    <value>The SAML response contains a document type definition, which is not allowed.</value>
+  </data>
+  <data name="ID2443" xml:space="preserve">
+    <value>The SAML response is not a valid SAML 2.0 response.</value>
+  </data>
+  <data name="ID2444" xml:space="preserve">
+    <value>The issuer of the SAML response or assertion doesn't correspond to the identity provider.</value>
+  </data>
+  <data name="ID2445" xml:space="preserve">
+    <value>The SAML signature is invalid or uses an unsupported algorithm.</value>
+  </data>
+  <data name="ID2446" xml:space="preserve">
+    <value>The destination of the SAML response doesn't match the assertion consumer service URL.</value>
+  </data>
+  <data name="ID2447" xml:space="preserve">
+    <value>The SAML response doesn't correspond to a pending authentication request of this user agent (missing or expired request state or InResponseTo mismatch).</value>
+  </data>
+  <data name="ID2448" xml:space="preserve">
+    <value>Unsolicited SAML responses are not allowed for this identity provider.</value>
+  </data>
+  <data name="ID2449" xml:space="preserve">
+    <value>The identity provider returned an error status ({0}): {1}</value>
+  </data>
+  <data name="ID2450" xml:space="preserve">
+    <value>The SAML response must contain exactly one assertion.</value>
+  </data>
+  <data name="ID2451" xml:space="preserve">
+    <value>The SAML assertion or identifier couldn't be decrypted.</value>
+  </data>
+  <data name="ID2452" xml:space="preserve">
+    <value>The SAML assertion or the response containing it must be signed by the identity provider.</value>
+  </data>
+  <data name="ID2453" xml:space="preserve">
+    <value>The SAML assertion subject or its bearer subject confirmation is invalid (NameID, recipient, validity period or InResponseTo).</value>
+  </data>
+  <data name="ID2454" xml:space="preserve">
+    <value>The SAML assertion conditions are not satisfied (audience, validity period or unsupported condition).</value>
+  </data>
+  <data name="ID2455" xml:space="preserve">
+    <value>The SAML assertion doesn't contain a valid authentication statement or the session has expired.</value>
+  </data>
+  <data name="ID2456" xml:space="preserve">
+    <value>The SAML assertion was already used.</value>
+  </data>
+  <data name="ID2457" xml:space="preserve">
+    <value>The SAML assertion must be encrypted.</value>
+  </data>
+  <data name="ID2458" xml:space="preserve">
+    <value>HTTPS is required to use the SAML service provider endpoints.</value>
+  </data>
+  <data name="ID2459" xml:space="preserve">
+    <value>The user was not authenticated again by the identity provider, although forced authentication was requested.</value>
   </data>
   <data name="ID4000" xml:space="preserve">
     <value>The '{0}' parameter shouldn't be null or empty at this point.</value>
@@ -4599,6 +4743,21 @@ This may indicate that the hashed entry is corrupted or malformed.</value>
   </data>
   <data name="ID6644" xml:space="preserve">
     <value>A SAML response containing a signed and encrypted assertion was returned to the service provider '{ServiceProvider}'.</value>
+  </data>
+  <data name="ID6680" xml:space="preserve">
+    <value>The SAML response was rejected: {Reason}</value>
+  </data>
+  <data name="ID6681" xml:space="preserve">
+    <value>The SAML response issued by '{IdentityProvider}' was successfully validated for the registration '{Registration}'.</value>
+  </data>
+  <data name="ID6682" xml:space="preserve">
+    <value>The SAML authentication request '{RequestId}' was created for '{IdentityProvider}' using the {Binding} binding.</value>
+  </data>
+  <data name="ID6683" xml:space="preserve">
+    <value>The identity provider returned an error status ({Status}, {SecondLevelStatus}): {Message}</value>
+  </data>
+  <data name="ID6684" xml:space="preserve">
+    <value>The SAML metadata of the registration '{Registration}' couldn't be retrieved or is invalid.</value>
   </data>
   <data name="ID8000" xml:space="preserve">
     <value>https://documentation.openiddict.com/errors/{0}</value>
