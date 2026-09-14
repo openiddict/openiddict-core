@@ -205,6 +205,12 @@ public sealed class OpenIddictClientRegistration
     public bool RequireEncryptedAuthorizationResponses { get; set; }
 
     /// <summary>
+    /// Gets the signing algorithms accepted for JSON Web Token introspection responses (RFC 9701).
+    /// If no value is explicitly set, all the algorithms supported by IdentityModel are accepted.
+    /// </summary>
+    public HashSet<string> IntrospectionResponseSigningAlgorithms { get; } = new(StringComparer.Ordinal);
+
+    /// <summary>
     /// Gets the client authentication methods allowed by the client instance.
     /// If no value is explicitly set, all the methods enabled in the client options can be used.
     /// </summary>

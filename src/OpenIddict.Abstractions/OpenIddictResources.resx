@@ -2249,6 +2249,12 @@ To enable them, use 'services.AddOpenIddict().AddServer().EnableFapi2MessageSign
   <data name="ID0971" xml:space="preserve">
     <value>The introspection response signing algorithms configured in the options cannot be null or empty strings.</value>
   </data>
+  <data name="ID0972" xml:space="preserve">
+    <value>An error occurred while generating a new client assertion.
+  Error: {0}
+  Error description: {1}
+  Error URI: {2}</value>
+  </data>
   <data name="ID2000" xml:space="preserve">
     <value>The security token is missing.</value>
   </data>

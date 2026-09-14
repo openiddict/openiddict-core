@@ -147,6 +147,27 @@ public class OpenIddictClientHandlersIntrospectionResponseTests
         Assert.Equal(SR.GetResourceString(SR.ID2236), context.ErrorDescription);
     }
 
+    [Theory]
+    [InlineData(SecurityAlgorithms.RsaSha256, true)]
+    [InlineData(SecurityAlgorithms.RsaSsaPssSha256, false)]
+    public async Task ValidateIntrospectionResponseToken_TokenSignedUsingDisallowedAlgorithmIsRejected(string algorithm, bool rejected)
+    {
+        // Arrange
+        using var provider = CreateProvider(required: true, algorithms: [SecurityAlgorithms.RsaSsaPssSha256]);
+        var context = CreateContext(provider, CreateToken(signing: new SigningCredentials(ServerSigningKey, algorithm)));
+
+        // Act
+        await CreateHandler(provider).HandleAsync(context);
+
+        // Assert
+        Assert.Equal(rejected, context.IsRejected);
+
+        if (rejected)
+        {
+            Assert.Equal(SR.GetResourceString(SR.ID2236), context.ErrorDescription);
+        }
+    }
+
     [Fact]
     public async Task ValidateIntrospectionResponseToken_JsonResponseIsRejectedWhenTokenIsRequired()
     {
@@ -308,7 +329,7 @@ public class OpenIddictClientHandlersIntrospectionResponseTests
         };
     }
 
-    private static ServiceProvider CreateProvider(bool required)
+    private static ServiceProvider CreateProvider(bool required, string[]? algorithms = null)
     {
         var services = new ServiceCollection();
 
@@ -322,7 +343,7 @@ public class OpenIddictClientHandlersIntrospectionResponseTests
 
                 options.UseSystemNetHttp();
 
-                options.AddRegistration(new OpenIddictClientRegistration
+                var registration = new OpenIddictClientRegistration
                 {
                     ClientId = "Fabrikam",
                     ClientSecret = "7Fjfp0ZBr1KtDRbnfVdmIw",
@@ -333,7 +354,14 @@ public class OpenIddictClientHandlersIntrospectionResponseTests
                     Issuer = new Uri(Issuer, UriKind.Absolute),
                     RegistrationId = "Contoso",
                     RequireJsonWebTokenIntrospectionResponses = required
-                });
+                };
+
+                if (algorithms is not null)
+                {
+                    registration.IntrospectionResponseSigningAlgorithms.UnionWith(algorithms);
+                }
+
+                options.AddRegistration(registration);
             });
 
         return services.BuildServiceProvider();

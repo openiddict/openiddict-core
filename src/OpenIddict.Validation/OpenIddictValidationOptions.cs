@@ -104,6 +104,12 @@ public sealed class OpenIddictValidationOptions
     public bool RequireJsonWebTokenIntrospectionResponses { get; set; }
 
     /// <summary>
+    /// Gets the signing algorithms accepted for JSON Web Token introspection responses (RFC 9701).
+    /// If no value is explicitly set, all the algorithms supported by IdentityModel are accepted.
+    /// </summary>
+    public HashSet<string> IntrospectionResponseSigningAlgorithms { get; } = new(StringComparer.Ordinal);
+
+    /// <summary>
     /// Gets or sets a boolean indicating whether a database call is made
     /// to validate the authorization entry associated with the received tokens.
     /// Note: enabling this option may have an impact on performance and

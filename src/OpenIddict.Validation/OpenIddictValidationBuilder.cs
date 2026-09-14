@@ -746,6 +746,27 @@ public sealed class OpenIddictValidationBuilder
     public OpenIddictValidationBuilder RequireJsonWebTokenIntrospectionResponses()
         => Configure(options => options.RequireJsonWebTokenIntrospectionResponses = true);
 
+    /// <summary>
+    /// Restricts the signing algorithms accepted for JSON Web Token introspection responses (RFC 9701).
+    /// </summary>
+    /// <param name="algorithms">The accepted signing algorithms (e.g "PS256" or "ES256").</param>
+    /// <returns>The <see cref="OpenIddictValidationBuilder"/> instance.</returns>
+    public OpenIddictValidationBuilder SetIntrospectionResponseSigningAlgorithms(params string[] algorithms)
+    {
+        ArgumentNullException.ThrowIfNull(algorithms);
+
+        if (Array.Exists(algorithms, string.IsNullOrEmpty))
+        {
+            throw new ArgumentException(SR.FormatID0457(nameof(algorithms)), nameof(algorithms));
+        }
+
+        return Configure(options =>
+        {
+            options.IntrospectionResponseSigningAlgorithms.Clear();
+            options.IntrospectionResponseSigningAlgorithms.UnionWith(algorithms);
+        });
+    }
+
     /// <inheritdoc/>
     [EditorBrowsable(EditorBrowsableState.Never)]
     public override bool Equals([NotNullWhen(true)] object? obj) => base.Equals(obj);

@@ -2771,11 +2771,16 @@ public partial class OpenIddictClientService
     /// <param name="certificate">The client certificate, if applicable.</param>
     /// <param name="credentials">The DPoP signing credentials, if applicable.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <param name="clientAssertionPrincipal">
+    /// The principal used to generate the client assertion attached to the request, if applicable.
+    /// When specified, a new client assertion is generated if the request must be sent again.
+    /// </param>
     /// <returns>The token response.</returns>
     internal async ValueTask<OpenIddictResponse> SendPushedAuthorizationRequestAsync(
         OpenIddictClientRegistration registration, OpenIddictConfiguration configuration,
         OpenIddictRequest request, Uri uri, string? method,
-        X509Certificate2? certificate, SigningCredentials? credentials, CancellationToken cancellationToken = default)
+        X509Certificate2? certificate, SigningCredentials? credentials, CancellationToken cancellationToken = default,
+        ClaimsPrincipal? clientAssertionPrincipal = null)
     {
         ArgumentNullException.ThrowIfNull(registration);
         ArgumentNullException.ThrowIfNull(configuration);
@@ -2811,6 +2816,12 @@ public partial class OpenIddictClientService
                 Options = options.CurrentValue,
                 ServiceProvider = scope.ServiceProvider
             };
+
+            if (attempt is > 0)
+            {
+                await RefreshClientAssertionAsync(transaction, dispatcher, registration,
+                    configuration, clientAssertionPrincipal, request);
+            }
 
             request = await PreparePushedAuthorizationRequestAsync();
             request = await ApplyPushedAuthorizationRequestAsync();
@@ -3083,11 +3094,16 @@ public partial class OpenIddictClientService
     /// <param name="certificate">The client certificate, if applicable.</param>
     /// <param name="credentials">The DPoP signing credentials, if applicable.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <param name="clientAssertionPrincipal">
+    /// The principal used to generate the client assertion attached to the request, if applicable.
+    /// When specified, a new client assertion is generated if the request must be sent again.
+    /// </param>
     /// <returns>The token response.</returns>
     internal async ValueTask<OpenIddictResponse> SendTokenRequestAsync(
         OpenIddictClientRegistration registration, OpenIddictConfiguration configuration,
         OpenIddictRequest request, Uri uri, string? method,
-        X509Certificate2? certificate, SigningCredentials? credentials, CancellationToken cancellationToken = default)
+        X509Certificate2? certificate, SigningCredentials? credentials, CancellationToken cancellationToken = default,
+        ClaimsPrincipal? clientAssertionPrincipal = null)
     {
         ArgumentNullException.ThrowIfNull(registration);
         ArgumentNullException.ThrowIfNull(configuration);
@@ -3123,6 +3139,12 @@ public partial class OpenIddictClientService
                 Options = options.CurrentValue,
                 ServiceProvider = scope.ServiceProvider
             };
+
+            if (attempt is > 0)
+            {
+                await RefreshClientAssertionAsync(transaction, dispatcher, registration,
+                    configuration, clientAssertionPrincipal, request);
+            }
 
             request = await PrepareTokenRequestAsync();
             request = await ApplyTokenRequestAsync();
@@ -3458,6 +3480,64 @@ public partial class OpenIddictClientService
 
                 return (context.Response, (context.Principal, context.UserInfoToken));
             }
+        }
+    }
+
+    /// <summary>
+    /// Replaces the client assertion attached to a request that must be sent again by a new client assertion.
+    /// </summary>
+    /// <remarks>
+    /// Note: client assertions are single-use tokens (the authorization server is expected to reject assertions
+    /// whose "jti" was already seen), so the assertion sent with the first attempt cannot be reused when the
+    /// request is sent again (e.g after receiving a "use_dpop_nonce" error). To preserve the claims added
+    /// by custom handlers, the original principal is cloned and only the identifier and dates are updated.
+    /// See https://datatracker.ietf.org/doc/html/rfc7523#section-3 (item 7) and
+    /// https://datatracker.ietf.org/doc/html/rfc9449#section-8 for more information.
+    /// </remarks>
+    private static async ValueTask RefreshClientAssertionAsync(
+        OpenIddictClientTransaction transaction, IOpenIddictClientDispatcher dispatcher,
+        OpenIddictClientRegistration registration, OpenIddictConfiguration configuration,
+        ClaimsPrincipal? principal, OpenIddictRequest request)
+    {
+        if (principal is null || string.IsNullOrEmpty(request.ClientAssertion))
+        {
+            return;
+        }
+
+        principal = principal.Clone(static claim => true);
+
+        var now = transaction.Options.TimeProvider.GetUtcNow();
+        var lifetime = principal.GetExpirationDate() - principal.GetCreationDate();
+
+        principal.SetCreationDate(now)
+                 .SetExpirationDate(lifetime is TimeSpan value ? now + value : null)
+                 .SetClaim(Claims.JwtId, Guid.NewGuid().ToString());
+
+        transaction.Registration = registration;
+        transaction.Configuration = configuration;
+
+        var context = new GenerateTokenContext(transaction)
+        {
+            CreateTokenEntry = false,
+            IsReferenceToken = false,
+            PersistTokenPayload = false,
+            Principal = principal,
+            TokenFormat = TokenFormats.Private.JsonWebToken,
+            TokenType = TokenTypeIdentifiers.Private.ClientAssertion
+        };
+
+        await dispatcher.DispatchAsync(context);
+
+        if (context.IsRejected)
+        {
+            throw new ProtocolException(
+                SR.FormatID0972(context.Error, context.ErrorDescription, context.ErrorUri),
+                context.Error, context.ErrorDescription, context.ErrorUri);
+        }
+
+        if (!string.IsNullOrEmpty(context.Token))
+        {
+            request.ClientAssertion = context.Token;
         }
     }
 

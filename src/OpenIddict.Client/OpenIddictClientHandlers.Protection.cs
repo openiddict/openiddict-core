@@ -197,6 +197,12 @@ public static partial class OpenIddictClientHandlers
                         ];
 
                         parameters.TokenDecryptionKeys = context.Options.TokenValidationParameters.TokenDecryptionKeys;
+
+                        // If the signing algorithms were restricted, reject introspection responses using other algorithms.
+                        if (context.Registration.IntrospectionResponseSigningAlgorithms.Count is > 0)
+                        {
+                            parameters.ValidAlgorithms = [.. context.Registration.IntrospectionResponseSigningAlgorithms];
+                        }
                     }
 
                     // Logout tokens are RECOMMENDED to be explicitly typed using "logout+jwt" but tokens sent by

@@ -142,6 +142,13 @@ public static partial class OpenIddictValidationHandlers
                     })
                 };
 
+                // If the introspection response signing algorithms were restricted, reject responses using other algorithms.
+                if (context.Options.IntrospectionResponseSigningAlgorithms.Count is > 0 && context.ValidTokenTypes.Count is 1 &&
+                    context.ValidTokenTypes.Contains(TokenTypeIdentifiers.Private.IntrospectionResponse))
+                {
+                    parameters.ValidAlgorithms = [.. context.Options.IntrospectionResponseSigningAlgorithms];
+                }
+
                 context.SecurityTokenHandler = context.Options.JsonWebTokenHandler;
                 context.TokenValidationParameters = parameters;
 

@@ -3098,7 +3098,8 @@ public static partial class OpenIddictClientHandlers
                     context.TokenEndpointTokenBindingMethod is TokenBindingMethods.Private.DPoP
                         ? context.Registration.DPoPSigningCredentials
                         : null,
-                    context.CancellationToken);
+                    context.CancellationToken,
+                    context.IncludeClientAssertion ? context.ClientAssertionPrincipal : null);
             }
 
             catch (ProtocolException exception)
@@ -8136,7 +8137,8 @@ public static partial class OpenIddictClientHandlers
                    !IsTlsClientCertificateTokenBindingEnabled(context.Options, context.Registration)
                         ? context.Registration.DPoPSigningCredentials
                         : null,
-                    context.CancellationToken);
+                    context.CancellationToken,
+                    context.IncludeClientAssertion ? context.ClientAssertionPrincipal : null);
             }
 
             catch (ProtocolException exception)

@@ -212,6 +212,156 @@ public class OpenIddictClientHandlersDPoPTests
         Assert.Equal(new List<string?> { null, "server_nonce" }, nonces);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task SendTokenRequestAsync_NewClientAssertionIsGeneratedWhenRequestIsSentAgainWithServerNonce(bool pushed)
+    {
+        // Arrange
+        var assertions = new List<string?>();
+        var attempts = 0;
+
+        using var provider = CreateProvider(enabled: true, options =>
+        {
+            options.AddEventHandler<PrepareTokenRequestContext>(builder => builder.UseInlineHandler(context =>
+            {
+                assertions.Add(context.Request.ClientAssertion);
+                context.HandleRequest();
+
+                return ValueTask.CompletedTask;
+            }));
+
+            options.AddEventHandler<PreparePushedAuthorizationRequestContext>(builder => builder.UseInlineHandler(context =>
+            {
+                assertions.Add(context.Request.ClientAssertion);
+                context.HandleRequest();
+
+                return ValueTask.CompletedTask;
+            }));
+
+            options.AddEventHandler<ExtractTokenResponseContext>(builder => builder.UseInlineHandler(context =>
+            {
+                context.DPoPNonce = "server_nonce";
+                context.Response = ++attempts is 1
+                    ? new OpenIddictResponse { Error = Errors.UseDPoPNonce }
+                    : new OpenIddictResponse { AccessToken = "access_token", TokenType = TokenTypes.DPoP };
+                context.HandleRequest();
+
+                return ValueTask.CompletedTask;
+            }));
+
+            options.AddEventHandler<ExtractPushedAuthorizationResponseContext>(builder => builder.UseInlineHandler(context =>
+            {
+                context.DPoPNonce = "server_nonce";
+                context.Response = ++attempts is 1
+                    ? new OpenIddictResponse { Error = Errors.UseDPoPNonce }
+                    : new OpenIddictResponse { RequestUri = "urn:ietf:params:oauth:request_uri:value" };
+                context.HandleRequest();
+
+                return ValueTask.CompletedTask;
+            }));
+
+            options.AddEventHandler<ApplyTokenRequestContext>(builder => builder.UseInlineHandler(context =>
+            {
+                context.HandleRequest();
+                return ValueTask.CompletedTask;
+            }));
+
+            options.AddEventHandler<ApplyPushedAuthorizationRequestContext>(builder => builder.UseInlineHandler(context =>
+            {
+                context.HandleRequest();
+                return ValueTask.CompletedTask;
+            }));
+
+            options.AddEventHandler<HandleTokenResponseContext>(builder => builder.UseInlineHandler(context =>
+            {
+                context.HandleRequest();
+                return ValueTask.CompletedTask;
+            }));
+
+            options.AddEventHandler<HandlePushedAuthorizationResponseContext>(builder => builder.UseInlineHandler(context =>
+            {
+                context.HandleRequest();
+                return ValueTask.CompletedTask;
+            }));
+        });
+
+        var service = provider.GetRequiredService<OpenIddictClientService>();
+        var registration = provider.GetRequiredService<IOptionsMonitor<OpenIddictClientOptions>>().CurrentValue.Registrations[0];
+        registration.SigningCredentials.Add(new SigningCredentials(
+            new ECDsaSecurityKey(ECDsa.Create(ECCurve.NamedCurves.nistP256)) { KeyId = "assertion" }, SecurityAlgorithms.EcdsaSha256));
+
+        var principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+            .SetCreationDate(DateTimeOffset.UtcNow.AddSeconds(-30))
+            .SetExpirationDate(DateTimeOffset.UtcNow.AddMinutes(4))
+            .SetAudiences("https://www.contoso.com/")
+            .SetClaim(Claims.Private.Issuer, "Fabrikam")
+            .SetClaim(Claims.Subject, "Fabrikam")
+            .SetClaim("custom_claim", "value")
+            .SetClaim(Claims.JwtId, "original_identifier");
+
+        var request = new OpenIddictRequest
+        {
+            ClientAssertion = "original_assertion",
+            ClientAssertionType = ClientAssertionTypes.JwtBearer
+        };
+
+        var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictClientOptions>>().CurrentValue;
+        var transaction = new OpenIddictClientTransaction
+        {
+            CancellationToken = CancellationToken.None,
+            Configuration = registration.Configuration!,
+            Options = options,
+            Registration = registration,
+            ServiceProvider = provider
+        };
+
+        // Act
+        if (pushed)
+        {
+            options.Registrations[0].Configuration!.DPoPSigningAlgValuesSupported.Add(SecurityAlgorithms.EcdsaSha256);
+
+            await new SendPushedAuthorizationRequest(service).HandleAsync(new ProcessChallengeContext(transaction)
+            {
+                ClientAssertionPrincipal = principal,
+                IncludeClientAssertion = true,
+                PushedAuthorizationEndpoint = new Uri("https://www.contoso.com/connect/par"),
+                PushedAuthorizationEndpointClientAuthenticationMethod = ClientAuthenticationMethods.PrivateKeyJwt,
+                PushedAuthorizationRequest = request
+            });
+        }
+
+        else
+        {
+            await new SendTokenRequest(service).HandleAsync(new ProcessAuthenticationContext(transaction)
+            {
+                ClientAssertionPrincipal = principal,
+                IncludeClientAssertion = true,
+                TokenEndpoint = new Uri("https://www.contoso.com/connect/token"),
+                TokenEndpointClientAuthenticationMethod = ClientAuthenticationMethods.PrivateKeyJwt,
+                TokenEndpointTokenBindingMethod = TokenBindingMethods.Private.DPoP,
+                TokenRequest = request
+            });
+        }
+
+        // Assert
+        Assert.Equal(2, assertions.Count);
+        Assert.Equal("original_assertion", assertions[0], StringComparer.Ordinal);
+        Assert.NotNull(assertions[1]);
+        Assert.NotEqual("original_assertion", assertions[1], StringComparer.Ordinal);
+
+        var token = new JsonWebToken(assertions[1]);
+        Assert.NotEqual("original_identifier", token.Id, StringComparer.Ordinal);
+        Assert.False(string.IsNullOrEmpty(token.Id));
+        Assert.Equal("value", token.GetPayloadValue<string>("custom_claim"));
+        Assert.Equal("Fabrikam", token.Subject, StringComparer.Ordinal);
+        Assert.InRange((token.ValidTo - token.IssuedAt).TotalSeconds, 268, 272);
+        Assert.True(token.IssuedAt > DateTime.UtcNow.AddSeconds(-10));
+
+        // The original request must not be altered.
+        Assert.Equal("original_assertion", request.ClientAssertion);
+    }
+
     [Fact]
     public async Task AttachDPoPProof_ProofIsAttachedToHttpRequest()
     {
