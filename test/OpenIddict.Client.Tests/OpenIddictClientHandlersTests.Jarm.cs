@@ -152,6 +152,38 @@ public class OpenIddictClientHandlersJarmTests
         Assert.Equal(Issuer, (string?) context.Request[Parameters.Iss]);
     }
 
+    [Theory]
+    [InlineData(SecurityAlgorithms.RsaSha256, null, false)]
+    [InlineData(SecurityAlgorithms.RsaSsaPssSha256, null, true)]
+    [InlineData(null, SecurityAlgorithms.RsaSha256, false)]
+    [InlineData(null, SecurityAlgorithms.EcdsaSha256, true)]
+    [InlineData(SecurityAlgorithms.RsaSha256, SecurityAlgorithms.EcdsaSha256, false)]
+    [InlineData(null, null, false)]
+    public async Task ValidateAuthorizationResponseToken_SigningAlgorithmIsValidated(
+        string? registered, string? advertised, bool rejected)
+    {
+        // Arrange
+        using var provider = CreateProvider(required: true);
+        var context = CreateAuthenticationContext(provider, CreateToken());
+        context.Registration.AuthorizationResponseSigningAlgorithm = registered;
+
+        if (advertised is not null)
+        {
+            context.Configuration.AuthorizationSigningAlgValuesSupported.Add(advertised);
+        }
+
+        // Act
+        await CreateHandler(provider).HandleAsync(context);
+
+        // Assert
+        Assert.Equal(rejected, context.IsRejected);
+
+        if (rejected)
+        {
+            Assert.Equal(SR.GetResourceString(SR.ID2325), context.ErrorDescription);
+        }
+    }
+
     [Fact]
     public async Task ValidateAuthorizationResponseToken_ErrorsAreExtractedFromToken()
     {

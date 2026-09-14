@@ -223,6 +223,20 @@ public static partial class OpenIddictClientHandlers
                 token = token.InnerToken;
             }
 
+            // Ensure the JWT was signed using the algorithm registered for the client (the equivalent of the
+            // "authorization_signed_response_alg" client metadata) or, if no algorithm was explicitly set,
+            // using one of the algorithms advertised by the server in "authorization_signing_alg_values_supported".
+            //
+            // See https://openid.net/specs/oauth-v2-jarm.html#section-2.4 for more information.
+            if (!string.IsNullOrEmpty(context.Registration.AuthorizationResponseSigningAlgorithm)
+                ? !string.Equals(token.Alg, context.Registration.AuthorizationResponseSigningAlgorithm, StringComparison.Ordinal)
+                : context.Configuration.AuthorizationSigningAlgValuesSupported.Count is > 0 &&
+                 !context.Configuration.AuthorizationSigningAlgValuesSupported.Contains(token.Alg))
+            {
+                Reject(SR.GetResourceString(SR.ID2325), SR.ID2325);
+                return;
+            }
+
             // As required by the JARM specification, the "iss" claim MUST match the expected issuer,
             // the "aud" claim MUST contain the client identifier and the "exp" claim MUST be present
             // and the JWT MUST NOT be expired.

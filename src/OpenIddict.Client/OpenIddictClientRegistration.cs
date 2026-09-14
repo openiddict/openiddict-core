@@ -180,6 +180,15 @@ public sealed class OpenIddictClientRegistration
     public bool RequireJwtSecuredAuthorizationResponses { get; set; }
 
     /// <summary>
+    /// Gets or sets the JWS algorithm the authorization server is expected to use to sign JWT authorization
+    /// responses (JARM), which corresponds to the "authorization_signed_response_alg" client metadata
+    /// registered for this client. If no value is explicitly set, the JWT authorization responses signed
+    /// using any of the algorithms advertised by the server via "authorization_signing_alg_values_supported"
+    /// are accepted (or any asymmetric algorithm, if the server doesn't advertise the supported algorithms).
+    /// </summary>
+    public string? AuthorizationResponseSigningAlgorithm { get; set; }
+
+    /// <summary>
     /// Gets the client authentication methods allowed by the client instance.
     /// If no value is explicitly set, all the methods enabled in the client options can be used.
     /// </summary>

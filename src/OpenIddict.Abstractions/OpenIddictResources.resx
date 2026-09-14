@@ -3138,6 +3138,9 @@ Error URI: {2}</value>
   <data name="ID2324" xml:space="preserve">
     <value>The JWT authorization response doesn't contain the mandatory '{0}' claim.</value>
   </data>
+  <data name="ID2325" xml:space="preserve">
+    <value>The JWT authorization response was signed using an algorithm that is not allowed.</value>
+  </data>
   <data name="ID4000" xml:space="preserve">
     <value>The '{0}' parameter shouldn't be null or empty at this point.</value>
   </data>

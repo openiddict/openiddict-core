@@ -6,6 +6,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\OpenIddict.Client.AspNetCore\OpenIddict.Client.AspNetCore.csproj" />
+    <ProjectReference Include="..\..\src\OpenIddict.Server.AspNetCore\OpenIddict.Server.AspNetCore.csproj" />
     <ProjectReference Include="..\OpenIddict.Client.IntegrationTests\OpenIddict.Client.IntegrationTests.csproj" />
   </ItemGroup>
 
