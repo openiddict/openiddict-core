@@ -301,6 +301,54 @@ public class OpenIddictServerConfigurationTests
         Assert.Contains(SR.GetResourceString(SR.ID0529), result.Failures!, StringComparer.Ordinal);
     }
 
+    [Theory]
+    [InlineData(BackchannelTokenDeliveryModes.Ping, null)]
+    [InlineData(BackchannelTokenDeliveryModes.Poll, "custom")]
+    public void Validate_ReturnsAnErrorForInvalidBackchannelTokenDeliveryModes(string mode, string? other)
+    {
+        // Arrange
+        var configuration = new OpenIddictServerConfiguration(new ServiceCollection().BuildServiceProvider());
+        var options = CreateBaseOptions();
+        options.BackchannelTokenDeliveryModes.Clear();
+        options.BackchannelTokenDeliveryModes.Add(mode);
+
+        if (other is not null)
+        {
+            options.BackchannelTokenDeliveryModes.Add(other);
+        }
+
+        // Act
+        var result = configuration.Validate(name: null, options);
+
+        // Assert
+        Assert.Contains(SR.GetResourceString(SR.ID0600), result.Failures!, StringComparer.Ordinal);
+    }
+
+    [Theory]
+    [InlineData(true, false, false)]
+    [InlineData(false, true, false)]
+    [InlineData(false, false, true)]
+    public void Validate_ReturnsAnErrorWhenBackchannelFeaturesAreEnabledWithoutCibaGrant(bool ping, bool signed, bool code)
+    {
+        // Arrange
+        var configuration = new OpenIddictServerConfiguration(new ServiceCollection().BuildServiceProvider());
+        var options = CreateBaseOptions();
+
+        if (ping)
+        {
+            options.BackchannelTokenDeliveryModes.Add(BackchannelTokenDeliveryModes.Ping);
+        }
+
+        options.EnableSignedBackchannelAuthenticationRequests = signed;
+        options.EnableBackchannelUserCodeParameter = code;
+
+        // Act
+        var result = configuration.Validate(name: null, options);
+
+        // Assert
+        Assert.Contains(SR.GetResourceString(SR.ID0601), result.Failures!, StringComparer.Ordinal);
+    }
+
     [Fact]
     public void Validate_ReturnsAnErrorWhenSignedRequestObjectsAreRequiredWithoutRequestObjectSupport()
     {
