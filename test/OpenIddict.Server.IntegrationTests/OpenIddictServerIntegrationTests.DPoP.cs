@@ -818,7 +818,46 @@ public abstract partial class OpenIddictServerIntegrationTests
         Assert.Equal(Errors.InvalidToken, response.Error);
         Assert.Equal(SR.GetResourceString(SR.ID2230), response.ErrorDescription);
         Assert.Equal(SR.FormatID8000(SR.ID2230), response.ErrorUri);
-        Assert.StartsWith(Schemes.Bearer, Assert.Single(client.ResponseHeaders["WWW-Authenticate"]), StringComparison.Ordinal);
+
+        var headers = client.ResponseHeaders["WWW-Authenticate"];
+        Assert.Equal(2, headers.Length);
+        Assert.StartsWith(Schemes.Bearer + " ", headers[0], StringComparison.Ordinal);
+        Assert.Contains("error=\"invalid_token\"", headers[0], StringComparison.Ordinal);
+        Assert.StartsWith(Schemes.DPoP + " algs=\"", headers[1], StringComparison.Ordinal);
+        Assert.DoesNotContain("error=", headers[1], StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task HandleUserInfoRequest_BearerAndDPoPChallengesAreReturnedWhenAccessTokenIsMissing()
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(ConfigureDPoPUserInfoServer);
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/connect/userinfo", new OpenIddictRequest());
+
+        // Assert
+        Assert.Null(response.Error);
+
+        var headers = client.ResponseHeaders["WWW-Authenticate"];
+        Assert.Equal(2, headers.Length);
+        Assert.Equal(Schemes.Bearer, headers[0]);
+        Assert.StartsWith(Schemes.DPoP + " algs=\"", headers[1], StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task HandleUserInfoRequest_OnlyBearerChallengeIsReturnedWhenDPoPIsDisabled()
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options => options.EnableDegradedMode());
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/connect/userinfo", new OpenIddictRequest());
+
+        // Assert
+        Assert.Equal(Schemes.Bearer, Assert.Single(client.ResponseHeaders["WWW-Authenticate"]));
     }
 
     [Fact]

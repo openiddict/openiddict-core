@@ -1224,6 +1224,35 @@ public static partial class OpenIddictServerAspNetCoreHandlers
 
             response.Headers.Append(HeaderNames.WWWAuthenticate, builder.ToString());
 
+            // When DPoP support is enabled, the userinfo endpoint accepts both bearer and DPoP-bound access tokens.
+            // In this case, a "DPoP" challenge listing the supported algorithms is also returned when the "Bearer"
+            // scheme was used or when no access token was sent, so that clients (e.g clients that sent
+            // a DPoP-bound access token using the "Bearer" scheme) can determine that DPoP is supported.
+            //
+            // See https://datatracker.ietf.org/doc/html/rfc9449#section-7.2 for more information.
+            if (context.EndpointType is OpenIddictServerEndpointType.UserInfo &&
+                scheme is Schemes.Bearer && context.Options.EnableDPoPSupport)
+            {
+                var challenge = new StringBuilder(Schemes.DPoP);
+
+                if (parameters.TryGetValue(Parameters.Realm, out string? value))
+                {
+                    challenge.Append(" realm=\"").Append(value.Replace("\"", "\\\"", StringComparison.Ordinal)).Append("\",");
+                }
+
+                if (context.Options.DPoPSigningAlgorithms.Count is > 0)
+                {
+                    challenge.Append(" algs=\"").Append(string.Join(' ', context.Options.DPoPSigningAlgorithms)).Append("\",");
+                }
+
+                if (challenge[^1] == ',')
+                {
+                    challenge.Remove(challenge.Length - 1, 1);
+                }
+
+                response.Headers.Append(HeaderNames.WWWAuthenticate, challenge.ToString());
+            }
+
             return ValueTask.CompletedTask;
         }
     }
