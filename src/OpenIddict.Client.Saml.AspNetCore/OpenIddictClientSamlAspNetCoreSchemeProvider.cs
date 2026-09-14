@@ -48,12 +48,8 @@ public sealed class OpenIddictClientSamlAspNetCoreSchemeProvider : IAuthenticati
 
         if (IsForwardingEnabled())
         {
-            var registrations = new List<OpenIddictClientSamlRegistration>();
-
-            foreach (var provider in _provider.GetServices<IOpenIddictClientSamlRegistrationProvider>())
-            {
-                registrations.AddRange(await provider.ListAsync(CancellationToken.None));
-            }
+            // Note: the lookups are cached by the SAML service (see OpenIddictClientSamlOptions.DynamicRegistrationCacheLifetime).
+            var registrations = await GetService().GetRegistrationsAsync(CancellationToken.None);
 
             foreach (var group in registrations
                 .Where(static registration => !string.IsNullOrEmpty(registration.ProviderName))
@@ -105,23 +101,14 @@ public sealed class OpenIddictClientSamlAspNetCoreSchemeProvider : IAuthenticati
 
         // Resolve the registrations whose provider name matches the requested scheme: if a single
         // registration is found, return a forwarded scheme pointing to the SAML authentication handler.
-        OpenIddictClientSamlRegistration? result = null;
-
-        foreach (var provider in _provider.GetServices<IOpenIddictClientSamlRegistrationProvider>())
-        {
-            foreach (var registration in await provider.FindByProviderNameAsync(name, CancellationToken.None))
-            {
-                if (result is not null && !ReferenceEquals(result, registration))
-                {
-                    return null;
-                }
-
-                result = registration;
-            }
-        }
-
-        return result is not null ? CreateScheme(result) : null;
+        //
+        // Note: the lookups (including negative lookups) are cached by the SAML service.
+        return await GetService().GetRegistrationsByProviderNameAsync(name, CancellationToken.None) is [var registration]
+            ? CreateScheme(registration) : null;
     }
+
+    private OpenIddictClientSamlService GetService()
+        => _provider.GetService<OpenIddictClientSamlService>() ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0900));
 
     private bool IsForwardingEnabled() => _provider.GetService<IOptionsMonitor<OpenIddictClientSamlAspNetCoreOptions>>()?
         .CurrentValue.DisableAutomaticAuthenticationSchemeForwarding is false;

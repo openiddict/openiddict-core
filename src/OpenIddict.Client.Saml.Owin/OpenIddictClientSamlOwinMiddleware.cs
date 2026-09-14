@@ -9,6 +9,7 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using static OpenIddict.Client.Saml.OpenIddictClientSamlConstants;
@@ -24,7 +25,9 @@ namespace OpenIddict.Client.Saml.Owin;
 /// </summary>
 /// <remarks>
 /// Challenges are applied when the rest of the pipeline returns a 401 response whose authentication challenge
-/// contains <see cref="OpenIddictClientSamlOwinOptions.AuthenticationType"/> or the provider name of a registration.
+/// contains <see cref="OpenIddictClientSamlOwinOptions.AuthenticationType"/> or the provider name of a registration
+/// that doesn't correspond to the authentication type of another authentication middleware registered before this
+/// middleware (to ensure such types are always detected, register the SAML middleware after the other authentication middleware).
 /// </remarks>
 [EditorBrowsable(EditorBrowsableState.Advanced)]
 public sealed class OpenIddictClientSamlOwinMiddleware : OwinMiddleware
@@ -60,15 +63,28 @@ public sealed class OpenIddictClientSamlOwinMiddleware : OwinMiddleware
             return;
         }
 
+        // Note: challenges are applied once the rest of the pipeline has completed (as with the OpenIddict client OWIN host,
+        // challenges are not applied from Response.OnSendingHeaders(), where writing the auto-post page or awaiting the
+        // registration and metadata resolution could deadlock). If the response headers were already sent by another
+        // component (e.g a 401 response whose body was already written), the challenge cannot be applied and is ignored.
+        var headers = new HeadersState();
+        context.Response.OnSendingHeaders(static state => ((HeadersState) state).Sent = true, headers);
+
         if (Next is not null)
         {
             await Next.Invoke(context);
         }
 
         if (context.Response.StatusCode is 401 && context.Authentication.AuthenticationResponseChallenge is { } challenge &&
-            await ResolveChallengeAsync(provider, options, challenge.AuthenticationTypes, context.Request.CallCancelled) is var (matched, registration) &&
+            await ResolveChallengeAsync(context, provider, options, challenge.AuthenticationTypes) is var (matched, registration) &&
             matched)
         {
+            if (headers.Sent)
+            {
+                provider.GetService<ILogger<OpenIddictClientSamlOwinMiddleware>>()?.LogWarning(6686, SR.GetResourceString(SR.ID6686));
+                return;
+            }
+
             await ChallengeAsync(context, provider, options, registration, challenge.Properties ?? new AuthenticationProperties());
         }
     }
@@ -165,7 +181,7 @@ public sealed class OpenIddictClientSamlOwinMiddleware : OwinMiddleware
     }
 
     private static async Task<(bool Matched, OpenIddictClientSamlRegistration? Registration)> ResolveChallengeAsync(
-        IServiceProvider provider, OpenIddictClientSamlOwinOptions options, string[]? types, CancellationToken cancellationToken)
+        IOwinContext context, IServiceProvider provider, OpenIddictClientSamlOwinOptions options, string[]? types)
     {
         if (types is null or [])
         {
@@ -186,10 +202,28 @@ public sealed class OpenIddictClientSamlOwinMiddleware : OwinMiddleware
         }
 
         var service = GetService(provider);
+        HashSet<string>? owned = null;
 
         foreach (var type in types)
         {
-            if (!string.IsNullOrEmpty(type) && await service.GetRegistrationsByProviderNameAsync(type, cancellationToken) is [var registration])
+            if (string.IsNullOrEmpty(type))
+            {
+                continue;
+            }
+
+            // Note: authentication types handled by the other authentication middleware active in the pipeline
+            // (e.g cookies) always take precedence over the provider names of the SAML registrations.
+            owned ??= new HashSet<string>(context.Authentication.GetAuthenticationTypes()
+                .Select(static description => description.AuthenticationType)
+                .Where(static type => !string.IsNullOrEmpty(type)), StringComparer.Ordinal);
+
+            if (owned.Contains(type))
+            {
+                continue;
+            }
+
+            // Note: the lookups (including negative lookups) are cached by the SAML service.
+            if (await service.GetRegistrationsByProviderNameAsync(type, context.Request.CallCancelled) is [var registration])
             {
                 return (true, registration);
             }
@@ -340,8 +374,14 @@ public sealed class OpenIddictClientSamlOwinMiddleware : OwinMiddleware
         context.Response.StatusCode = 400;
         context.Response.Headers.Set("Cache-Control", "no-cache, no-store");
         context.Response.ContentType = "text/plain; charset=utf-8";
+        context.Response.Headers.Set("X-Content-Type-Options", "nosniff");
 
         return WriteAsync(context, description);
+    }
+
+    private sealed class HeadersState
+    {
+        public bool Sent { get; set; }
     }
 
     private static Task WriteAsync(IOwinContext context, string content)

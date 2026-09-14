@@ -268,6 +268,55 @@ public class OpenIddictClientSamlAspNetCoreHandlerTests
         Assert.Equal(location, acs.Headers.Location!.OriginalString);
     }
 
+    [Fact]
+    public async Task AssertionConsumerService_ErrorStatus_ReturnsGenericDescription()
+    {
+        // Arrange
+        var registration = CreateRegistration();
+        registration.AllowUnsolicitedResponses = true;
+
+        using var idp = CreateIdentityProvider();
+        using var host = await CreateHostAsync(registration: registration);
+        using var client = CreateClient(host);
+
+        var provider = idp.GetRequiredService<Microsoft.Extensions.Options.IOptionsMonitor<OpenIddictServerSamlOptions>>().CurrentValue.ServiceProviders[0];
+        var response = idp.GetRequiredService<OpenIddictServerSamlService>().CreateResponse(new OpenIddictServerSamlModels.ResponseDescriptor
+        {
+            AssertionConsumerServiceUrl = AssertionConsumerServiceUrl,
+            ServiceProvider = provider,
+            Status = OpenIddictClientSamlConstants.StatusCodes.Responder,
+            StatusMessage = "<script>alert(1)</script>"
+        });
+
+        // Act
+        using var acs = await PostResponseAsync(client, response, relayState: null, cookie: null);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.BadRequest, acs.StatusCode);
+        Assert.Equal(SR.GetResourceString(SR.ID2449), await acs.Content.ReadAsStringAsync());
+        Assert.Equal("nosniff", Assert.Single(acs.Headers.GetValues("X-Content-Type-Options")));
+    }
+
+    [Fact]
+    public async Task SchemeProvider_RegisteredSchemesTakePrecedenceOverProviderNames()
+    {
+        // Arrange
+        var registration = CreateRegistration();
+        registration.ProviderName = CookieAuthenticationDefaults.AuthenticationScheme;
+        registration.RegistrationId = "dynamic";
+
+        using var host = await CreateHostAsync(saml => saml.AddRegistrationProvider(new StaticRegistrationProvider(registration)));
+        var schemes = host.Services.GetRequiredService<IAuthenticationSchemeProvider>();
+
+        // Act
+        var scheme = await schemes.GetSchemeAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+        var all = await schemes.GetAllSchemesAsync();
+
+        // Assert
+        Assert.Equal(typeof(CookieAuthenticationHandler), scheme!.HandlerType);
+        Assert.Single(all, static scheme => string.Equals(scheme.Name, CookieAuthenticationDefaults.AuthenticationScheme, StringComparison.Ordinal));
+    }
+
     private static async Task<(string Response, string RelayState)> IssueResponseAsync(IServiceProvider idp, Uri location)
     {
         var result = await idp.GetRequiredService<OpenIddictServerSamlService>()

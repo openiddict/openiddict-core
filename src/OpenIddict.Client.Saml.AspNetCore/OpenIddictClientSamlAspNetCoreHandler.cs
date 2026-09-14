@@ -274,6 +274,7 @@ public sealed class OpenIddictClientSamlAspNetCoreHandler : AuthenticationHandle
         Response.StatusCode = StatusCodes.Status400BadRequest;
         Response.Headers.CacheControl = "no-cache, no-store";
         Response.ContentType = "text/plain; charset=utf-8";
+        Response.Headers.XContentTypeOptions = "nosniff";
 
         return Response.WriteAsync(description, Encoding.UTF8, Context.RequestAborted);
     }

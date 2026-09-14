@@ -208,6 +208,70 @@ public class OpenIddictClientSamlOwinMiddlewareTests
         Assert.Equal(location, acs.Headers.Location!.OriginalString);
     }
 
+    [Fact]
+    public async Task Challenge_ProviderNameMatchingAnotherMiddlewareType_IsIgnored()
+    {
+        // Arrange
+        var registration = CreateRegistration();
+        registration.ProviderName = CookieType;
+        registration.RegistrationId = "dynamic";
+
+        using var server = CreateServer(saml => saml.AddRegistrationProvider(new StaticRegistrationProvider(registration)));
+        using var client = CreateClient(server);
+
+        // Act
+        using var challenge = await client.GetAsync("/challenge?provider=" + CookieType);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.Unauthorized, challenge.StatusCode);
+        Assert.Null(challenge.Headers.Location);
+    }
+
+    [Fact]
+    public async Task Challenge_IsIgnoredWhenResponseHeadersWereAlreadySent()
+    {
+        // Arrange
+        using var server = CreateServer();
+        using var client = CreateClient(server);
+
+        // Act
+        using var challenge = await client.GetAsync("/challenge-with-body");
+
+        // Assert
+        Assert.Equal(HttpStatusCode.Unauthorized, challenge.StatusCode);
+        Assert.Null(challenge.Headers.Location);
+        Assert.Equal("denied", await challenge.Content.ReadAsStringAsync());
+    }
+
+    [Fact]
+    public async Task AssertionConsumerService_ErrorStatus_ReturnsGenericDescription()
+    {
+        // Arrange
+        var registration = CreateRegistration();
+        registration.AllowUnsolicitedResponses = true;
+
+        using var idp = CreateIdentityProvider();
+        using var server = CreateServer(registration: registration);
+        using var client = CreateClient(server);
+
+        var provider = idp.GetRequiredService<Microsoft.Extensions.Options.IOptionsMonitor<OpenIddictServerSamlOptions>>().CurrentValue.ServiceProviders[0];
+        var response = idp.GetRequiredService<OpenIddictServerSamlService>().CreateResponse(new OpenIddictServerSamlModels.ResponseDescriptor
+        {
+            AssertionConsumerServiceUrl = AssertionConsumerServiceUrl,
+            ServiceProvider = provider,
+            Status = OpenIddictClientSamlConstants.StatusCodes.Responder,
+            StatusMessage = "<script>alert(1)</script>"
+        });
+
+        // Act
+        using var acs = await PostResponseAsync(client, response, relayState: null, cookie: null);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.BadRequest, acs.StatusCode);
+        Assert.Equal(SR.GetResourceString(SR.ID2449), await acs.Content.ReadAsStringAsync());
+        Assert.Equal("nosniff", Assert.Single(acs.Headers.GetValues("X-Content-Type-Options")));
+    }
+
     private static async Task<(string Response, string RelayState)> IssueResponseAsync(IServiceProvider idp, Uri location)
     {
         var result = await idp.GetRequiredService<OpenIddictServerSamlService>()
@@ -310,6 +374,15 @@ public class OpenIddictClientSamlOwinMiddlewareTests
                     context.Response.StatusCode = 401;
                     context.Authentication.Challenge(new AuthenticationProperties { RedirectUri = "/profile" },
                         context.Request.Query.Get("provider") ?? OpenIddictClientSamlOwinDefaults.AuthenticationType);
+                }
+
+                else if (context.Request.Path == new PathString("/challenge-with-body"))
+                {
+                    context.Response.StatusCode = 401;
+                    context.Authentication.Challenge(new AuthenticationProperties { RedirectUri = "/profile" },
+                        OpenIddictClientSamlOwinDefaults.AuthenticationType);
+
+                    await context.Response.WriteAsync("denied");
                 }
 
                 else if (context.Request.Path == new PathString("/profile"))
