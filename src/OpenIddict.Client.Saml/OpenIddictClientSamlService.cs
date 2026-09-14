@@ -80,6 +80,21 @@ public sealed partial class OpenIddictClientSamlService
     }
 
     /// <summary>
+    /// Resolves the registrations associated with the specified provider name.
+    /// </summary>
+    /// <param name="name">The provider name.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns>The registrations.</returns>
+    public ValueTask<ImmutableArray<OpenIddictClientSamlRegistration>> GetRegistrationsByProviderNameAsync(
+        string name, CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(name);
+
+        return ResolveRegistrationsAsync(static (provider, name, cancellationToken) =>
+            provider.FindByProviderNameAsync(name, cancellationToken), name, cancellationToken);
+    }
+
+    /// <summary>
     /// Resolves the registration associated with the specified provider name.
     /// </summary>
     /// <param name="name">The provider name.</param>
