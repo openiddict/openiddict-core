@@ -1,5 +1,8 @@
 using System.Collections.Immutable;
+using System.Net.Http;
 using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -277,18 +280,97 @@ public class OpenIddictServerServiceTests
     }
 
     [Fact]
-    public async Task ApproveBackchannelAuthenticationRequestAsync_ThrowsAnExceptionWhenNoTransportIsRegistered()
+    public async Task ApproveBackchannelAuthenticationRequestAsync_SendsRefreshTokenHashInPushedIdentityToken()
     {
         // Arrange
         var token = new object();
-        var (provider, _) = await CreateProviderAsync(token, Statuses.Inactive, BackchannelTokenDeliveryModes.Ping, notifications: null);
+        var notifications = new List<SendBackchannelNotificationContext>();
+
+        var (provider, manager) = await CreateProviderAsync(token, Statuses.Inactive, BackchannelTokenDeliveryModes.Push, notifications,
+            configuration: options => options.AllowRefreshTokenFlow(), scopes: [Scopes.OpenId, Scopes.OfflineAccess]);
+        var service = provider.GetRequiredService<OpenIddictServerService>();
+
+        manager.Setup(manager => manager.CreateAsync(It.IsAny<OpenIddictTokenDescriptor>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new object());
+
+        manager.Setup(manager => manager.GetIdAsync(It.Is<object>(value => value != token), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Guid.NewGuid().ToString());
+
+        manager.Setup(manager => manager.TryRedeemAsync(token, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+
+        // Act
+        Assert.True(await service.ApproveBackchannelAuthenticationRequestAsync(Identifier));
+
+        // Assert
+        var notification = Assert.Single(notifications);
+        Assert.NotNull(notification.Notification.RefreshToken);
+
+        // When a refresh token is pushed, the identity token MUST contain its hash (left-most half of its SHA-256 digest).
+        var identity = new JsonWebToken(notification.Notification.IdToken);
+        using var algorithm = SHA256.Create();
+        var digest = algorithm.ComputeHash(Encoding.ASCII.GetBytes(notification.Notification.RefreshToken));
+        Assert.Equal(Base64UrlEncoder.Encode(digest.AsSpan(0, digest.Length / 2).ToArray()),
+            identity.GetPayloadValue<string>(Claims.RefreshTokenHash));
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task ApproveOrRejectBackchannelAuthenticationRequestAsync_DoesNotThrowWhenNotificationTransportFails(bool approve)
+    {
+        // Arrange
+        var token = new object();
+
+        var (provider, manager) = await CreateProviderAsync(token, Statuses.Inactive, BackchannelTokenDeliveryModes.Ping, notifications: null,
+            configuration: options => options.AddEventHandler<SendBackchannelNotificationContext>(builder =>
+                builder.UseInlineHandler(context => throw new HttpRequestException("The endpoint is unavailable."))));
+
+        var service = provider.GetRequiredService<OpenIddictServerService>();
+
+        manager.Setup(manager => manager.TryRejectAsync(token, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+
+        // Act
+        var result = approve
+            ? await service.ApproveBackchannelAuthenticationRequestAsync(Identifier)
+            : await service.RejectBackchannelAuthenticationRequestAsync(Identifier);
+
+        // Assert: the status change was persisted, so the operation must be reported as successful.
+        Assert.True(result);
+
+        if (approve)
+        {
+            manager.Verify(manager => manager.UpdateAsync(token, It.IsAny<OpenIddictTokenDescriptor>(), It.IsAny<CancellationToken>()), Times.Once());
+        }
+
+        else
+        {
+            manager.Verify(manager => manager.TryRejectAsync(token, It.IsAny<CancellationToken>()), Times.Once());
+        }
+    }
+
+    [Fact]
+    public async Task ApproveBackchannelAuthenticationRequestAsync_DoesNotThrowWhenCancelledDuringRetryDelay()
+    {
+        // Arrange
+        var token = new object();
+        var notifications = new List<SendBackchannelNotificationContext>();
+        using var source = new CancellationTokenSource();
+
+        var (provider, _) = await CreateProviderAsync(token, Statuses.Inactive, BackchannelTokenDeliveryModes.Ping, notifications,
+            configuration: options => options.SetBackchannelNotificationRetryPolicy(2, TimeSpan.FromMinutes(5))
+                .AddEventHandler<SendBackchannelNotificationContext>(builder => builder.UseInlineHandler(context =>
+                {
+                    source.Cancel();
+                    return ValueTask.CompletedTask;
+                })),
+            succeed: false);
+
         var service = provider.GetRequiredService<OpenIddictServerService>();
 
         // Act and assert
-        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
-            async () => await service.ApproveBackchannelAuthenticationRequestAsync(Identifier));
-
-        Assert.Equal(SR.GetResourceString(SR.ID0603), exception.Message);
+        Assert.True(await service.ApproveBackchannelAuthenticationRequestAsync(Identifier, cancellationToken: source.Token));
     }
 
     private static async Task<(ServiceProvider Provider, Mock<IOpenIddictTokenManager> Manager)> CreateProviderAsync(object token, string status)
@@ -296,7 +378,7 @@ public class OpenIddictServerServiceTests
 
     private static async Task<(ServiceProvider Provider, Mock<IOpenIddictTokenManager> Manager)> CreateProviderAsync(
         object token, string status, string? mode, List<SendBackchannelNotificationContext>? notifications,
-        Action<OpenIddictServerBuilder>? configuration = null, bool succeed = true)
+        Action<OpenIddictServerBuilder>? configuration = null, bool succeed = true, string[]? scopes = null)
     {
         var manager = new Mock<IOpenIddictTokenManager>();
 
@@ -324,14 +406,18 @@ public class OpenIddictServerServiceTests
                 options.SetTokenEndpointUris("connect/token")
                        .SetBackchannelAuthenticationEndpointUris("connect/ciba")
                        .AllowClientInitiatedBackchannelAuthenticationFlow()
-                       .AllowBackchannelPingTokenDeliveryMode()
-                       .AllowBackchannelPushTokenDeliveryMode()
                        .SetIssuer(new Uri("https://www.contoso.com/", UriKind.Absolute));
 
                 options.AddEphemeralEncryptionKey()
                        .AddEphemeralSigningKey();
 
                 options.DisableAuthorizationStorage();
+
+                if (mode is BackchannelTokenDeliveryModes.Ping or BackchannelTokenDeliveryModes.Push)
+                {
+                    options.AllowBackchannelPingTokenDeliveryMode()
+                           .AllowBackchannelPushTokenDeliveryMode();
+                }
 
                 if (notifications is not null)
                 {
@@ -377,7 +463,7 @@ public class OpenIddictServerServiceTests
                 .SetClaim(Claims.Private.BindingMessage, "W4SCT")
                 .SetClaim(Claims.Private.Issuer, "https://www.contoso.com/")
                 .SetPresenters("Fabrikam")
-                .SetScopes(Scopes.OpenId, Scopes.Profile)
+                .SetScopes(scopes ?? [Scopes.OpenId, Scopes.Profile])
                 .SetTokenId(Identifier),
             TokenFormat = TokenFormats.Private.JsonWebToken,
             TokenType = TokenTypeIdentifiers.Private.AuthenticationRequestId

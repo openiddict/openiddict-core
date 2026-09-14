@@ -202,7 +202,7 @@ public class OpenIddictServerService
 
         if (notification is not null)
         {
-            await SendBackchannelNotificationAsync(options, request, notification, result, cancellationToken);
+            await TrySendBackchannelNotificationAsync(options, request, notification, result, cancellationToken);
         }
 
         return true;
@@ -244,7 +244,7 @@ public class OpenIddictServerService
 
         if (notification is not null)
         {
-            await SendBackchannelNotificationAsync(options, request, notification, principal: null, cancellationToken);
+            await TrySendBackchannelNotificationAsync(options, request, notification, principal: null, cancellationToken);
         }
 
         return true;
@@ -315,6 +315,25 @@ public class OpenIddictServerService
         }
 
         return new(identifier, value, mode);
+    }
+
+    private async ValueTask TrySendBackchannelNotificationAsync(OpenIddictServerOptions options,
+        OpenIddictServerBackchannelAuthenticationRequest request, OpenIddictServerBackchannelNotification notification,
+        ClaimsPrincipal? principal, CancellationToken cancellationToken)
+    {
+        // Note: the notification is sent after the status of the authentication request was persisted. To ensure callers
+        // are not told the operation failed when the authentication request was actually approved or rejected, exceptions
+        // thrown while generating or sending the notification (including cancellation) are logged and not rethrown.
+        try
+        {
+            await SendBackchannelNotificationAsync(options, request, notification, principal, cancellationToken);
+        }
+
+        catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
+        {
+            _provider.GetRequiredService<ILogger<OpenIddictServerDispatcher>>().LogError(6417, exception,
+                SR.GetResourceString(SR.ID6417), notification.TokenDeliveryMode, request.Identifier, request.ClientId);
+        }
     }
 
     private async ValueTask SendBackchannelNotificationAsync(OpenIddictServerOptions options,

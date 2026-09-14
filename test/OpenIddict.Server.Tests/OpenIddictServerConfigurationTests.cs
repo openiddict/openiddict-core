@@ -349,6 +349,47 @@ public class OpenIddictServerConfigurationTests
         Assert.Contains(SR.GetResourceString(SR.ID0601), result.Failures!, StringComparer.Ordinal);
     }
 
+    [Theory]
+    [InlineData(BackchannelTokenDeliveryModes.Ping)]
+    [InlineData(BackchannelTokenDeliveryModes.Push)]
+    public void Validate_ReturnsAnErrorWhenNoBackchannelNotificationTransportIsRegistered(string mode)
+    {
+        // Arrange
+        var configuration = new OpenIddictServerConfiguration(new ServiceCollection().BuildServiceProvider());
+        var options = CreateBaseOptions();
+        options.BackchannelTokenDeliveryModes.Add(mode);
+
+        // Act
+        var result = configuration.Validate(name: null, options);
+
+        // Assert
+        Assert.Contains(SR.GetResourceString(SR.ID0603), result.Failures!, StringComparer.Ordinal);
+
+        // Registering a transport handler must remove the error.
+        options.Handlers.Add(OpenIddictServerHandlerDescriptor.CreateBuilder<OpenIddictServerEvents.SendBackchannelNotificationContext>()
+            .UseInlineHandler(context => ValueTask.CompletedTask)
+            .Build());
+
+        result = configuration.Validate(name: null, options);
+        Assert.DoesNotContain(SR.GetResourceString(SR.ID0603), result.Failures ?? [], StringComparer.Ordinal);
+    }
+
+    [Fact]
+    public void Validate_ReturnsAnErrorWhenPushTokenDeliveryModeIsUsedWithRequiredDPoP()
+    {
+        // Arrange
+        var configuration = new OpenIddictServerConfiguration(new ServiceCollection().BuildServiceProvider());
+        var options = CreateBaseOptions();
+        options.BackchannelTokenDeliveryModes.Add(BackchannelTokenDeliveryModes.Push);
+        options.RequireDPoP = true;
+
+        // Act
+        var result = configuration.Validate(name: null, options);
+
+        // Assert
+        Assert.Contains(SR.GetResourceString(SR.ID0609), result.Failures!, StringComparer.Ordinal);
+    }
+
     [Fact]
     public void Validate_ReturnsAnErrorWhenSignedRequestObjectsAreRequiredWithoutRequestObjectSupport()
     {

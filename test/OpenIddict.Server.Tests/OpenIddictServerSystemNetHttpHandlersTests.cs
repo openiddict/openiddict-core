@@ -87,6 +87,41 @@ public class OpenIddictServerSystemNetHttpHandlersTests
         Assert.Equal(SR.GetResourceString(SR.ID2308), context.ErrorDescription);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void HttpClientFactory_PrimaryHandlerDoesNotFollowRedirectsOrUseCookies(bool custom)
+    {
+        // Arrange
+        HttpClientHandler? primary = null;
+
+        var services = new ServiceCollection();
+        services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
+        services.AddSingleton(typeof(ILogger<>), typeof(NullLogger<>));
+
+        if (custom)
+        {
+            // Note: a primary handler explicitly configured to follow redirects and use cookies must be amended.
+            services.AddHttpClient(OpenIddictServerSystemNetHttpConfiguration.HttpClientName)
+                .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler { AllowAutoRedirect = true, UseCookies = true });
+        }
+
+        services.AddOpenIddict()
+            .AddServer(options => options.UseSystemNetHttp()
+                .ConfigureHttpClientHandler(handler => primary = handler));
+
+        using var provider = services.BuildServiceProvider();
+
+        // Act
+        using var client = provider.GetRequiredService<IHttpClientFactory>()
+            .CreateClient(OpenIddictServerSystemNetHttpConfiguration.HttpClientName);
+
+        // Assert
+        Assert.NotNull(primary);
+        Assert.False(primary.AllowAutoRedirect);
+        Assert.False(primary.UseCookies);
+    }
+
     private static (ServiceProvider Provider, SendBackchannelNotificationContext Context) CreateContext(HttpMessageHandler handler)
     {
         var services = new ServiceCollection();

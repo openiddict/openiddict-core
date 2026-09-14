@@ -962,6 +962,13 @@ public static partial class OpenIddictServerHandlers
 
                 Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
 
+                // Note: when signed requests are not enabled, the request parameter is always rejected and
+                // the signing algorithm registered by the client application (if any) is not enforced.
+                if (!context.Options.EnableSignedBackchannelAuthenticationRequests)
+                {
+                    return;
+                }
+
                 var manager = context.ServiceProvider.GetService<IOpenIddictApplicationManager>()
                     ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
 
@@ -1019,6 +1026,16 @@ public static partial class OpenIddictServerHandlers
                 ArgumentNullException.ThrowIfNull(context);
 
                 Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
+
+                // Note: when only the poll mode is enabled, the delivery mode registered by
+                // the client application is not resolved and the poll mode is always used.
+                if (context.Options.BackchannelTokenDeliveryModes.Count is 1 &&
+                    context.Options.BackchannelTokenDeliveryModes.Contains(BackchannelTokenDeliveryModes.Poll))
+                {
+                    context.TokenDeliveryMode = BackchannelTokenDeliveryModes.Poll;
+
+                    return;
+                }
 
                 var manager = context.ServiceProvider.GetService<IOpenIddictApplicationManager>()
                     ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
@@ -1087,6 +1104,27 @@ public static partial class OpenIddictServerHandlers
 
                         return;
                     }
+                }
+
+                // Tokens delivered using the push mode are generated outside the context of a token request and
+                // thus can't be bound to a DPoP proof key or to the TLS client certificate used by the client.
+                // To prevent a silent downgrade to bearer tokens, reject push clients that require DPoP or
+                // that authenticated using a client certificate when certificate-bound tokens are enabled.
+                //
+                // See https://datatracker.ietf.org/doc/html/rfc9449#section-5 and
+                // https://datatracker.ietf.org/doc/html/rfc8705#section-3.
+                if (mode is BackchannelTokenDeliveryModes.Push &&
+                   ((context.Options.UseClientCertificateBoundAccessTokens && context.Transaction.RemoteCertificate is not null) ||
+                    await manager.HasRequirementAsync(application, Requirements.Features.DPoP, context.CancellationToken)))
+                {
+                    context.Logger.LogInformation(6416, SR.GetResourceString(SR.ID6416), context.ClientId);
+
+                    context.Reject(
+                        error: Errors.UnauthorizedClient,
+                        description: SR.GetResourceString(SR.ID2312),
+                        uri: SR.FormatID8000(SR.ID2312));
+
+                    return;
                 }
 
                 context.TokenDeliveryMode = mode;

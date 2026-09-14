@@ -359,6 +359,21 @@ public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenId
             builder.AddError(SR.GetResourceString(SR.ID0601));
         }
 
+        // Ensure a transport was registered to send the notifications used by the ping and push token delivery modes.
+        if (options.BackchannelTokenDeliveryModes.Any(static mode => mode is BackchannelTokenDeliveryModes.Ping or
+                                                                             BackchannelTokenDeliveryModes.Push) &&
+            !options.Handlers.Any(static descriptor => descriptor.ContextType == typeof(OpenIddictServerEvents.SendBackchannelNotificationContext)))
+        {
+            builder.AddError(SR.GetResourceString(SR.ID0603));
+        }
+
+        // Ensure the push token delivery mode is not used when DPoP proofs are required, as pushed tokens are generated
+        // outside the context of a token request and would otherwise be silently downgraded to bearer tokens.
+        if (options.RequireDPoP && options.BackchannelTokenDeliveryModes.Contains(BackchannelTokenDeliveryModes.Push))
+        {
+            builder.AddError(SR.GetResourceString(SR.ID0609));
+        }
+
         // Ensure the grant types/response types configuration is consistent.
         foreach (var type in options.ResponseTypes)
         {

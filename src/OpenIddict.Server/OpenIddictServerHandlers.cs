@@ -52,6 +52,7 @@ public static partial class OpenIddictServerHandlers
         ValidateClientSecret.Descriptor,
         ValidateClientCertificate.Descriptor,
         ValidateDPoPProof.Descriptor,
+        ValidateBackchannelTokenDeliveryMode.Descriptor,
         ValidateRequestToken.Descriptor,
         ValidateRequestTokenType.Descriptor,
         ValidateAccessToken.Descriptor,
@@ -1656,6 +1657,71 @@ public static partial class OpenIddictServerHandlers
             principal.SetClaim(Claims.Private.DPoPJwkThumbprint, thumbprint);
 
             context.Transaction.DPoPProofPrincipal = principal;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for rejecting CIBA token requests sent by client applications
+    /// registered with the push token delivery mode. This handler is invoked after the client
+    /// application was authenticated and before the authentication request identifier is validated.
+    /// Note: this handler is not used when the degraded mode is enabled.
+    /// </summary>
+    public sealed class ValidateBackchannelTokenDeliveryMode : IOpenIddictServerHandler<ProcessAuthenticationContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+            = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
+                .AddFilter<RequireAuthenticationRequestIdValidated>()
+                .AddFilter<RequireClientIdParameter>()
+                .AddFilter<RequireDegradedModeDisabled>()
+                .UseSingletonHandler<ValidateBackchannelTokenDeliveryMode>()
+                .SetOrder(ValidateClientCertificate.Descriptor.Order + 750)
+                .SetType(OpenIddictServerHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public async ValueTask HandleAsync(ProcessAuthenticationContext context)
+        {
+            ArgumentNullException.ThrowIfNull(context);
+
+            // Note: when the push mode is not enabled, all the clients are treated as poll or ping clients.
+            if (context.EndpointType is not OpenIddictServerEndpointType.Token ||
+                !context.Options.BackchannelTokenDeliveryModes.Contains(BackchannelTokenDeliveryModes.Push))
+            {
+                return;
+            }
+
+            Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
+
+            var manager = context.ServiceProvider.GetService<IOpenIddictApplicationManager>()
+                ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
+
+            // Note: unknown clients are rejected by the client authentication handlers.
+            var application = await manager.FindByClientIdAsync(context.ClientId, context.CancellationToken);
+            if (application is null)
+            {
+                return;
+            }
+
+            // Client applications registered with the push mode MUST NOT call the token endpoint with the CIBA grant.
+            // Note: clients registered with the ping mode are allowed to poll the token endpoint.
+            //
+            // See https://openid.net/specs/openid-client-initiated-backchannel-authentication-core-1_0.html#rfc.section.11.
+            var settings = await manager.GetSettingsAsync(application, context.CancellationToken);
+            if (settings.TryGetValue(Settings.BackchannelAuthentication.TokenDeliveryMode, out string? mode) &&
+                string.Equals(mode, BackchannelTokenDeliveryModes.Push, StringComparison.Ordinal))
+            {
+                context.Logger.LogInformation(6405, SR.GetResourceString(SR.ID6405), context.ClientId);
+
+                context.Reject(
+                    error: Errors.UnauthorizedClient,
+                    description: SR.GetResourceString(SR.ID2304),
+                    uri: SR.FormatID8000(SR.ID2304));
+
+                return;
+            }
         }
     }
 
@@ -5984,8 +6050,15 @@ public static partial class OpenIddictServerHandlers
                     _ => 5 * 60 // 5 minutes, in seconds.
                 };
 
-                // If a polling interval was configured, return it to the client application.
-                if (context.Options.PollingInterval is TimeSpan interval)
+                // If a polling interval was configured, return it to the client application, unless the client
+                // application is registered with the push token delivery mode, as the interval parameter is
+                // only returned to clients using the poll or ping modes.
+                //
+                // See https://openid.net/specs/openid-client-initiated-backchannel-authentication-core-1_0.html#rfc.section.7.3.
+                if (context.Options.PollingInterval is TimeSpan interval &&
+                    context.Transaction.GetProperty<ValidateBackchannelAuthenticationRequestContext>(
+                        typeof(ValidateBackchannelAuthenticationRequestContext).FullName!)?.TokenDeliveryMode
+                        is not BackchannelTokenDeliveryModes.Push)
                 {
                     context.Response.Interval = (long) Math.Ceiling(interval.TotalSeconds);
                 }

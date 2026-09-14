@@ -51,7 +51,6 @@ public static partial class OpenIddictServerHandlers
             ValidateScopes.Descriptor,
             ValidateAudiences.Descriptor,
             ValidateResources.Descriptor,
-            ValidateBackchannelTokenDeliveryMode.Descriptor,
             ValidateAuthentication.Descriptor,
             ValidateEndpointPermissions.Descriptor,
             ValidateGrantTypePermissions.Descriptor,
@@ -1176,67 +1175,6 @@ public static partial class OpenIddictServerHandlers
                         error: Errors.InvalidTarget,
                         description: SR.FormatID2190(Parameters.Resource),
                         uri: SR.FormatID8000(SR.ID2190));
-
-                    return;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Contains the logic responsible for rejecting CIBA token requests sent by
-        /// client applications registered with the push token delivery mode.
-        /// Note: this handler is not used when the degraded mode is enabled.
-        /// </summary>
-        public sealed class ValidateBackchannelTokenDeliveryMode : IOpenIddictServerHandler<ValidateTokenRequestContext>
-        {
-            /// <summary>
-            /// Gets the default descriptor definition assigned to this handler.
-            /// </summary>
-            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
-                = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateTokenRequestContext>()
-                    .AddFilter<RequireClientIdParameter>()
-                    .AddFilter<RequireDegradedModeDisabled>()
-                    .UseSingletonHandler<ValidateBackchannelTokenDeliveryMode>()
-                    .SetOrder(ValidateResources.Descriptor.Order + 500)
-                    .SetType(OpenIddictServerHandlerType.BuiltIn)
-                    .Build();
-
-            /// <inheritdoc/>
-            public async ValueTask HandleAsync(ValidateTokenRequestContext context)
-            {
-                ArgumentNullException.ThrowIfNull(context);
-
-                if (!context.Request.IsCibaGrantType())
-                {
-                    return;
-                }
-
-                Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
-
-                var manager = context.ServiceProvider.GetService<IOpenIddictApplicationManager>()
-                    ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
-
-                // Note: unknown clients are rejected later in the pipeline by the client authentication handlers.
-                var application = await manager.FindByClientIdAsync(context.ClientId, context.CancellationToken);
-                if (application is null)
-                {
-                    return;
-                }
-
-                // Client applications registered with the push mode MUST NOT call the token endpoint with the CIBA grant.
-                // Note: clients registered with the ping mode are allowed to poll the token endpoint.
-                //
-                // See https://openid.net/specs/openid-client-initiated-backchannel-authentication-core-1_0.html#rfc.section.11.
-                var settings = await manager.GetSettingsAsync(application, context.CancellationToken);
-                if (settings.TryGetValue(Settings.BackchannelAuthentication.TokenDeliveryMode, out string? mode) &&
-                    string.Equals(mode, BackchannelTokenDeliveryModes.Push, StringComparison.Ordinal))
-                {
-                    context.Logger.LogInformation(6405, SR.GetResourceString(SR.ID6405), context.ClientId);
-
-                    context.Reject(
-                        error: Errors.UnauthorizedClient,
-                        description: SR.GetResourceString(SR.ID2304),
-                        uri: SR.FormatID8000(SR.ID2304));
 
                     return;
                 }

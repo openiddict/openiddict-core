@@ -2006,6 +2006,9 @@ To send notifications using System.Net.Http, reference the 'OpenIddict.Server.Sy
   <data name="ID0608" xml:space="preserve">
     <value>The notification, the expected client notification token and the token delivery mode must be set. Backchannel notifications can only be processed for the 'ping' and 'push' token delivery modes.</value>
   </data>
+  <data name="ID0609" xml:space="preserve">
+    <value>The push token delivery mode cannot be enabled when DPoP proofs are required for all token requests, as pushed tokens are not issued in response to a token request and thus cannot be bound to a DPoP proof key.</value>
+  </data>
   <data name="ID0532" xml:space="preserve">
     <value>The backchannel authentication request was not correctly extracted.
 To extract backchannel authentication requests, create a class implementing 'IOpenIddictServerHandler&lt;ExtractBackchannelAuthenticationRequestContext&gt;' and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.</value>
@@ -2962,6 +2965,9 @@ Error URI: {2}</value>
   </data>
   <data name="ID2311" xml:space="preserve">
     <value>The 'auth_req_id' parameter of the backchannel notification doesn't match the expected authentication request identifier.</value>
+  </data>
+  <data name="ID2312" xml:space="preserve">
+    <value>The push token delivery mode cannot be used by client applications that require sender-constrained tokens.</value>
   </data>
   <data name="ID2360" xml:space="preserve">
     <value>The '{0}' setting must be an absolute HTTP or HTTPS URI that doesn't contain a fragment.</value>
@@ -4072,6 +4078,12 @@ This may indicate that the hashed entry is corrupted or malformed.</value>
   </data>
   <data name="ID6415" xml:space="preserve">
     <value>The backchannel notification was rejected because the client notification token is missing or invalid.</value>
+  </data>
+  <data name="ID6416" xml:space="preserve">
+    <value>The backchannel authentication request was rejected because the push token delivery mode cannot be used by the client application '{ClientId}', that requires sender-constrained tokens.</value>
+  </data>
+  <data name="ID6417" xml:space="preserve">
+    <value>An error occurred while sending the {Mode} notification of the completed backchannel authentication request '{Identifier}' to the client application '{ClientId}'.</value>
   </data>
   <data name="ID6520" xml:space="preserve">
     <value>A concurrency exception occurred while trying to extend the session '{Identifier}'.</value>
