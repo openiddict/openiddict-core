@@ -1652,9 +1652,20 @@ public static partial class OpenIddictServerHandlers
                 {
                     // Note: unlike other tokens, identity tokens can only be signed using an asymmetric key
                     // as they are meant to be validated by clients using the public keys exposed by the server.
-                    TokenTypeIdentifiers.IdentityToken or TokenTypeIdentifiers.Private.IntrospectionResponse or
-                    TokenTypeIdentifiers.Private.AuthorizationResponse
+                    TokenTypeIdentifiers.IdentityToken or TokenTypeIdentifiers.Private.IntrospectionResponse
                         => credentials.SigningCredentials.First(static credentials => credentials.Key is AsymmetricSecurityKey),
+
+                    // Note: JWT authorization responses (JARM) are preferably signed using RS256, that is the default
+                    // algorithm clients expect when no "authorization_signed_response_alg" was registered. If no RS256
+                    // credentials exist, the first asymmetric signing credentials are used. The algorithm can be
+                    // overridden per client by AttachAuthorizationResponseSecurityCredentials.
+                    //
+                    // See https://openid.net/specs/oauth-v2-jarm.html#section-3 for more information.
+                    TokenTypeIdentifiers.Private.AuthorizationResponse
+                        => credentials.SigningCredentials.FirstOrDefault(static credentials =>
+                            credentials.Key is AsymmetricSecurityKey &&
+                            Authentication.GetJwaSigningAlgorithm(credentials.Algorithm) is SecurityAlgorithms.RsaSha256) ??
+                           credentials.SigningCredentials.First(static credentials => credentials.Key is AsymmetricSecurityKey),
 
                     _ => credentials.SigningCredentials[0]
                 };

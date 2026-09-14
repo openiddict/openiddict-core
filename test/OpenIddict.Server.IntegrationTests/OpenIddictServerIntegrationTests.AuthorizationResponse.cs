@@ -636,6 +636,221 @@ public abstract partial class OpenIddictServerIntegrationTests
         Assert.Equal(SecurityAlgorithms.RsaSha256, token.Alg);
     }
 
+    [Fact]
+    public async Task ValidateAuthorizationRequest_NonJwtResponseModeIsRejectedWhenRequiredByClientAndJarmIsDisabled()
+    {
+        // Arrange
+        var application = new OpenIddictApplication();
+
+        var manager = CreateJwtResponseApplicationManager(application, mock =>
+            mock.Setup(manager => manager.HasRequirementAsync(application,
+                Requirements.Features.JwtSecuredAuthorizationResponses, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(true));
+
+        await using var server = await CreateServerAsync(options => options.Services.AddSingleton(manager));
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
+        {
+            ClientId = "Fabrikam",
+            RedirectUri = "http://www.fabrikam.com/path",
+            ResponseType = ResponseTypes.Code
+        });
+
+        // Assert
+        Assert.Equal(Errors.InvalidRequest, response.Error);
+        Assert.Equal(SR.FormatID2320(Parameters.ResponseMode), response.ErrorDescription);
+        Assert.Equal(SR.FormatID8000(SR.ID2320), response.ErrorUri);
+
+        Mock.Get(manager).Verify(manager => manager.HasRequirementAsync(application,
+            Requirements.Features.JwtSecuredAuthorizationResponses, It.IsAny<CancellationToken>()), Times.Once());
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task ValidatePushedAuthorizationRequest_NonJwtResponseModeIsRejectedWhenRequiredByClient(bool enabled)
+    {
+        // Arrange
+        var application = new OpenIddictApplication();
+
+        var manager = CreateJwtResponseApplicationManager(application, mock =>
+        {
+            mock.Setup(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(true);
+
+            mock.Setup(manager => manager.HasRequirementAsync(application,
+                Requirements.Features.JwtSecuredAuthorizationResponses, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(true);
+        });
+
+        await using var server = await CreateServerAsync(options =>
+        {
+            if (enabled)
+            {
+                options.EnableJwtSecuredAuthorizationResponses();
+            }
+
+            options.Services.AddSingleton(manager);
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/connect/par", new OpenIddictRequest
+        {
+            ClientId = "Fabrikam",
+            RedirectUri = "http://www.fabrikam.com/path",
+            ResponseMode = ResponseModes.Query,
+            ResponseType = ResponseTypes.Code
+        });
+
+        // Assert
+        Assert.Equal(Errors.InvalidRequest, response.Error);
+        Assert.Equal(SR.FormatID2320(Parameters.ResponseMode), response.ErrorDescription);
+        Assert.Equal(SR.FormatID8000(SR.ID2320), response.ErrorUri);
+
+        Mock.Get(manager).Verify(manager => manager.HasRequirementAsync(application,
+            Requirements.Features.JwtSecuredAuthorizationResponses, It.IsAny<CancellationToken>()), Times.Once());
+    }
+
+    [Fact]
+    public async Task ValidatePushedAuthorizationRequest_QueryJwtWithTokensIsRejectedWhenClientDidNotOptInForEncryption()
+    {
+        // Arrange
+        var application = new OpenIddictApplication();
+
+        var manager = CreateJwtResponseApplicationManager(application, mock =>
+            mock.Setup(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(true));
+
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.EnableJwtSecuredAuthorizationResponses();
+            options.Services.AddSingleton(manager);
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/connect/par", new OpenIddictRequest
+        {
+            ClientId = "Fabrikam",
+            Nonce = "n-0S6_WzA2Mj",
+            RedirectUri = "http://www.fabrikam.com/path",
+            ResponseMode = ResponseModes.QueryJwt,
+            ResponseType = "code id_token",
+            Scope = Scopes.OpenId
+        });
+
+        // Assert
+        Assert.Equal(Errors.InvalidRequest, response.Error);
+        Assert.Equal(SR.FormatID2033(Parameters.ResponseType, Parameters.ResponseMode), response.ErrorDescription);
+        Assert.Equal(SR.FormatID8000(SR.ID2033), response.ErrorUri);
+    }
+
+    [Theory]
+    [InlineData("code id_token")]
+    [InlineData("code token")]
+    [InlineData("id_token")]
+    [InlineData("token")]
+    public async Task ValidatePushedAuthorizationRequest_QueryJwtWithTokensIsRejectedInDegradedMode(string type)
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.EnableDegradedMode();
+            options.EnableJwtSecuredAuthorizationResponses();
+
+            options.AddEventHandler<ValidatePushedAuthorizationRequestContext>(builder =>
+                builder.UseInlineHandler(context => ValueTask.CompletedTask));
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/connect/par", new OpenIddictRequest
+        {
+            ClientId = "Fabrikam",
+            Nonce = "n-0S6_WzA2Mj",
+            RedirectUri = "http://www.fabrikam.com/path",
+            ResponseMode = ResponseModes.QueryJwt,
+            ResponseType = type,
+            Scope = Scopes.OpenId
+        });
+
+        // Assert
+        Assert.Equal(Errors.InvalidRequest, response.Error);
+        Assert.Equal(SR.FormatID2033(Parameters.ResponseType, Parameters.ResponseMode), response.ErrorDescription);
+        Assert.Equal(SR.FormatID8000(SR.ID2033), response.ErrorUri);
+    }
+
+    [Fact]
+    public async Task ApplyAuthorizationResponse_SigningAlgorithmSettingMatchesXmlDSigCredentials()
+    {
+        // Arrange
+        using var algorithm = RSA.Create(keySizeInBits: 2048);
+        using var curve = ECDsa.Create(ECCurve.NamedCurves.nistP256);
+
+        var settings = ImmutableDictionary.Create<string, string>(StringComparer.Ordinal)
+            .SetItem(Settings.AuthorizationResponse.SigningAlgorithm, SecurityAlgorithms.RsaSha256);
+
+        var application = new OpenIddictApplication();
+
+        await using var server = await CreateServerAsync(options =>
+        {
+            ConfigureNonDegradedJwtResponseServer(options);
+
+            options.Configure(options => options.SigningCredentials.Clear());
+            options.AddSigningCredentials(new SigningCredentials(
+                new ECDsaSecurityKey(curve) { KeyId = "ec" }, SecurityAlgorithms.EcdsaSha256));
+            options.AddSigningCredentials(new SigningCredentials(
+                new RsaSecurityKey(algorithm) { KeyId = "rsa" }, SecurityAlgorithms.RsaSha256Signature));
+
+            options.Services.AddSingleton(CreateJwtResponseApplicationManager(application, settings, set: null));
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/connect/authorize", CreateJwtResponseRequest());
+
+        // Assert
+        var value = (string?) response[Parameters.Response];
+        Assert.False(string.IsNullOrEmpty(value));
+        Assert.Equal("rsa", new JsonWebToken(value).Kid);
+    }
+
+    [Fact]
+    public async Task ApplyAuthorizationResponse_Rs256CredentialsArePreferredByDefault()
+    {
+        // Arrange
+        using var algorithm = RSA.Create(keySizeInBits: 2048);
+        using var curve = ECDsa.Create(ECCurve.NamedCurves.nistP256);
+
+        await using var server = await CreateServerAsync(options =>
+        {
+            ConfigureJwtResponseServer(options);
+
+            options.Configure(options => options.SigningCredentials.Clear());
+            options.AddSigningCredentials(new SigningCredentials(
+                new ECDsaSecurityKey(curve) { KeyId = "ec" }, SecurityAlgorithms.EcdsaSha256));
+            options.AddSigningCredentials(new SigningCredentials(
+                new RsaSecurityKey(algorithm) { KeyId = "rsa" }, SecurityAlgorithms.RsaSha256));
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/connect/authorize", CreateJwtResponseRequest());
+
+        // Assert
+        var token = await ValidateAuthorizationResponseTokenAsync(client, (string?) response[Parameters.Response]);
+        Assert.Equal("rsa", token.Kid);
+        Assert.Equal(SecurityAlgorithms.RsaSha256, token.Alg);
+    }
+
     private static OpenIddictRequest CreateJwtResponseRequest() => new()
     {
         ClientId = "Fabrikam",

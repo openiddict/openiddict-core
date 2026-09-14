@@ -31,8 +31,10 @@ public static partial class OpenIddictServerHandlers
             /// </summary>
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateAuthorizationRequestContext>()
+                    // Note: unlike the other JARM handlers, this handler is deliberately not filtered by
+                    // RequireJwtSecuredAuthorizationResponsesEnabled so that the per-client requirement
+                    // fails closed (i.e plain responses are rejected) even if JARM support is disabled.
                     .AddFilter<RequireDegradedModeDisabled>()
-                    .AddFilter<RequireJwtSecuredAuthorizationResponsesEnabled>()
                     .UseSingletonHandler<ValidateJwtSecuredAuthorizationResponsesRequirement>()
                     .SetOrder(ValidateSignedRequestObjectsRequirement.Descriptor.Order + 250)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
@@ -234,9 +236,12 @@ public static partial class OpenIddictServerHandlers
                 {
                     var credentials = await OpenIddictServerKeyRing.ResolveCredentialsAsync(context.Transaction);
 
+                    // Note: the algorithms advertised in the discovery document are JWA short names, so the
+                    // algorithm attached to the signing credentials (that can be expressed using the XML-DSig
+                    // form, e.g "http://www.w3.org/2001/04/xmldsig-more#rsa-sha256") is normalized first.
                     context.SigningCredentials = credentials.SigningCredentials.FirstOrDefault(credentials =>
                         credentials.Key is AsymmetricSecurityKey &&
-                        string.Equals(credentials.Algorithm, algorithm, StringComparison.Ordinal))
+                        string.Equals(GetJwaSigningAlgorithm(credentials.Algorithm), algorithm, StringComparison.Ordinal))
                         ?? throw new InvalidOperationException(SR.FormatID0644(algorithm, Settings.AuthorizationResponse.SigningAlgorithm));
                 }
 
@@ -290,8 +295,9 @@ public static partial class OpenIddictServerHandlers
             /// </summary>
             public static OpenIddictServerHandlerDescriptor Descriptor { get; }
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidatePushedAuthorizationRequestContext>()
+                    // Note: this handler is deliberately not filtered by RequireJwtSecuredAuthorizationResponsesEnabled
+                    // so that the per-client requirement fails closed even if JARM support is disabled.
                     .AddFilter<RequireDegradedModeDisabled>()
-                    .AddFilter<RequireJwtSecuredAuthorizationResponsesEnabled>()
                     .UseSingletonHandler<ValidatePushedJwtSecuredAuthorizationResponsesRequirement>()
                     .SetOrder(ValidatePushedSignedRequestObjectsRequirement.Descriptor.Order + 250)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
@@ -318,6 +324,26 @@ public static partial class OpenIddictServerHandlers
                 }
             }
         }
+
+        /// <summary>
+        /// Resolves the JWA short name (RFC 7518, section 3.1) corresponding to the specified signing algorithm,
+        /// which can be expressed using either the JWA or the XML-DSig form. The algorithm is returned as-is if
+        /// no mapping exists.
+        /// </summary>
+        internal static string? GetJwaSigningAlgorithm(string? algorithm) => algorithm switch
+        {
+            SecurityAlgorithms.EcdsaSha256Signature     => SecurityAlgorithms.EcdsaSha256,
+            SecurityAlgorithms.EcdsaSha384Signature     => SecurityAlgorithms.EcdsaSha384,
+            SecurityAlgorithms.EcdsaSha512Signature     => SecurityAlgorithms.EcdsaSha512,
+            SecurityAlgorithms.RsaSha256Signature       => SecurityAlgorithms.RsaSha256,
+            SecurityAlgorithms.RsaSha384Signature       => SecurityAlgorithms.RsaSha384,
+            SecurityAlgorithms.RsaSha512Signature       => SecurityAlgorithms.RsaSha512,
+            SecurityAlgorithms.RsaSsaPssSha256Signature => SecurityAlgorithms.RsaSsaPssSha256,
+            SecurityAlgorithms.RsaSsaPssSha384Signature => SecurityAlgorithms.RsaSsaPssSha384,
+            SecurityAlgorithms.RsaSsaPssSha512Signature => SecurityAlgorithms.RsaSsaPssSha512,
+
+            _ => algorithm
+        };
 
         /// <summary>
         /// Determines whether the JWT response mode specified in the request is enabled.
