@@ -6,6 +6,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\OpenIddict.Server.Owin\OpenIddict.Server.Owin.csproj" />
+    <ProjectReference Include="..\..\src\OpenIddict.Validation.Owin\OpenIddict.Validation.Owin.csproj" />
+    <ProjectReference Include="..\..\src\OpenIddict.Validation.ServerIntegration\OpenIddict.Validation.ServerIntegration.csproj" />
     <ProjectReference Include="..\OpenIddict.Server.IntegrationTests\OpenIddict.Server.IntegrationTests.csproj" />
   </ItemGroup>
 
