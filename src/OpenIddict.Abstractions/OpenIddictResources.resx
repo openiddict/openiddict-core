@@ -2006,12 +2006,15 @@ To send notifications using System.Net.Http, reference the 'OpenIddict.Server.Sy
   <data name="ID0608" xml:space="preserve">
     <value>The notification, the expected client notification token and the token delivery mode must be set. Backchannel notifications can only be processed for the 'ping' and 'push' token delivery modes.</value>
   </data>
+  <data name="ID0609" xml:space="preserve">
+    <value>The push token delivery mode cannot be enabled when DPoP proofs are required for all token requests, as pushed tokens are not issued in response to a token request and thus cannot be bound to a DPoP proof key.</value>
+  </data>
   <data name="ID0610" xml:space="preserve">
     <value>A signed backchannel authentication request must be sent but the authorization server doesn't support signed backchannel authentication requests using the '{0}' algorithm.
 To send signed backchannel authentication requests, attach an asymmetric signing key using an algorithm listed in the 'backchannel_authentication_request_signing_alg_values_supported' server metadata.</value>
   </data>
-  <data name="ID0609" xml:space="preserve">
-    <value>The push token delivery mode cannot be enabled when DPoP proofs are required for all token requests, as pushed tokens are not issued in response to a token request and thus cannot be bound to a DPoP proof key.</value>
+  <data name="ID0611" xml:space="preserve">
+    <value>The client notification token must conform to the syntax of Bearer credentials defined in RFC 6750 section 2.1.</value>
   </data>
   <data name="ID0532" xml:space="preserve">
     <value>The backchannel authentication request was not correctly extracted.
@@ -2972,6 +2975,12 @@ Error URI: {2}</value>
   </data>
   <data name="ID2312" xml:space="preserve">
     <value>The push token delivery mode cannot be used by client applications that require sender-constrained tokens.</value>
+  </data>
+  <data name="ID2313" xml:space="preserve">
+    <value>The '{0}' parameter must conform to the syntax of Bearer credentials.</value>
+  </data>
+  <data name="ID2314" xml:space="preserve">
+    <value>The signed authentication request uses an algorithm that is not supported by the authorization server.</value>
   </data>
   <data name="ID2360" xml:space="preserve">
     <value>The '{0}' setting must be an absolute HTTP or HTTPS URI that doesn't contain a fragment.</value>
@@ -4088,6 +4097,9 @@ This may indicate that the hashed entry is corrupted or malformed.</value>
   </data>
   <data name="ID6417" xml:space="preserve">
     <value>An error occurred while sending the {Mode} notification of the completed backchannel authentication request '{Identifier}' to the client application '{ClientId}'.</value>
+  </data>
+  <data name="ID6418" xml:space="preserve">
+    <value>The signed backchannel authentication request sent by the client application '{ClientId}' was rejected because the '{Algorithm}' signing algorithm is not supported.</value>
   </data>
   <data name="ID6520" xml:space="preserve">
     <value>A concurrency exception occurred while trying to extend the session '{Identifier}'.</value>

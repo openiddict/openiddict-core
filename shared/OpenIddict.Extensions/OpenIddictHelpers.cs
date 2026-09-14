@@ -611,6 +611,69 @@ internal static class OpenIddictHelpers
     }
 
     /// <summary>
+    /// Determines whether the specified value conforms to the syntax of Bearer credentials, as defined in
+    /// <see href="https://datatracker.ietf.org/doc/html/rfc6750#section-2.1">RFC 6750 section 2.1</see>:
+    /// <c>b64token = 1*( ALPHA / DIGIT / "-" / "." / "_" / "~" / "+" / "/" ) *"="</c>.
+    /// </summary>
+    /// <param name="value">The value.</param>
+    /// <returns><see langword="true"/> if the value is a valid b64token, <see langword="false"/> otherwise.</returns>
+    public static bool IsValidBearerCredential([NotNullWhen(true)] string? value)
+    {
+        if (string.IsNullOrEmpty(value))
+        {
+            return false;
+        }
+
+        // Determine where the trailing padding characters start.
+        var length = value.Length;
+        while (length > 0 && value[length - 1] is '=')
+        {
+            length--;
+        }
+
+        // At least one non-padding character is required.
+        if (length is 0)
+        {
+            return false;
+        }
+
+        for (var index = 0; index < length; index++)
+        {
+            if (value[index] is not ((>= 'A' and <= 'Z') or (>= 'a' and <= 'z') or (>= '0' and <= '9') or
+                                     '-' or '.' or '_' or '~' or '+' or '/'))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /// <summary>
+    /// Determines whether the specified value is a valid CIBA client notification endpoint (i.e an
+    /// absolute HTTPS URI that doesn't contain a fragment), as required by
+    /// <see href="https://openid.net/specs/openid-client-initiated-backchannel-authentication-core-1_0.html#rfc.section.4">
+    /// CIBA Core 1.0 section 4</see>.
+    /// </summary>
+    /// <param name="value">The value.</param>
+    /// <param name="endpoint">The parsed endpoint, if valid.</param>
+    /// <returns><see langword="true"/> if the endpoint is valid, <see langword="false"/> otherwise.</returns>
+    public static bool TryParseClientNotificationEndpoint(string? value, [NotNullWhen(true)] out Uri? endpoint)
+    {
+        if (string.IsNullOrEmpty(value) ||
+            !Uri.TryCreate(value, UriKind.Absolute, out Uri? uri) ||
+            !string.Equals(uri.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase) ||
+            !string.IsNullOrEmpty(uri.Fragment))
+        {
+            endpoint = null;
+            return false;
+        }
+
+        endpoint = uri;
+        return true;
+    }
+
+    /// <summary>
     /// Note: this implementation was taken from ASP.NET Core.
     /// </summary>
     private sealed class FormReader

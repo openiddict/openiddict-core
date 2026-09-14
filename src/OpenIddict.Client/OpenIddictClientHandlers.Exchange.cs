@@ -122,6 +122,8 @@ public static partial class OpenIddictClientHandlers
                             Errors.InvalidScope         => Errors.InvalidScope,
                             Errors.InvalidRequest       => Errors.InvalidRequest,
                             Errors.SlowDown             => Errors.SlowDown,
+                            // Note: transaction_failed is only returned by CIBA push notifications (CIBA Core 1.0, section 12).
+                            Errors.TransactionFailed    => Errors.TransactionFailed,
                             Errors.UnauthorizedClient   => Errors.UnauthorizedClient,
                             Errors.UnsupportedGrantType => Errors.UnsupportedGrantType,
                             _                           => Errors.ServerError

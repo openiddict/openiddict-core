@@ -16,6 +16,12 @@ namespace OpenIddict.Client;
 public static class OpenIddictClientHelpers
 {
     /// <summary>
+    /// Represents the maximum length, in bytes, of the JSON body accepted by
+    /// <see cref="CreateBackchannelNotificationAsync"/> (256 KB).
+    /// </summary>
+    public const int MaximumBackchannelNotificationLength = 256 * 1024;
+
+    /// <summary>
     /// Creates a <see cref="BackchannelNotification"/> from the raw HTTP request received by the client notification
     /// endpoint (CIBA ping and push modes): the bearer token is extracted from the "Authorization" header and the
     /// payload from the JSON body. This method is typically used by the ASP.NET Core and OWIN host integrations.
@@ -25,7 +31,8 @@ public static class OpenIddictClientHelpers
     /// <param name="body">The request body.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>
-    /// The notification or <see langword="null"/> if the request is not a valid JSON notification.
+    /// The notification or <see langword="null"/> if the request is not a valid JSON notification, doesn't include
+    /// a syntactically valid bearer token or has a body exceeding <see cref="MaximumBackchannelNotificationLength"/>.
     /// </returns>
     /// <remarks>
     /// See https://openid.net/specs/openid-client-initiated-backchannel-authentication-core-1_0.html#rfc.section.10.2.
@@ -41,11 +48,46 @@ public static class OpenIddictClientHelpers
             return null;
         }
 
+        // Note: the client notification endpoint is publicly reachable, so requests that don't include a syntactically
+        // valid bearer token (RFC 6750, section 2.1) are rejected before the request body is read. The token itself
+        // is validated by OpenIddictClientService.AuthenticateWithBackchannelNotificationAsync().
+        //
+        // Note: the authentication scheme is case-insensitive (RFC 9110, section 11.1).
+        if (string.IsNullOrEmpty(authorization) ||
+            !AuthenticationHeaderValue.TryParse(authorization, out AuthenticationHeaderValue? header) ||
+            !string.Equals(header.Scheme, "Bearer", StringComparison.OrdinalIgnoreCase) ||
+            !OpenIddictHelpers.IsValidBearerCredential(header.Parameter))
+        {
+            return null;
+        }
+
+        // To prevent unbounded allocations, the body is buffered up to the maximum allowed length.
+        using var buffer = new MemoryStream();
+        var chunk = new byte[4096];
+
+        while (true)
+        {
+            var read = await body.ReadAsync(chunk, 0, chunk.Length, cancellationToken);
+            if (read is 0)
+            {
+                break;
+            }
+
+            if (buffer.Length + read > MaximumBackchannelNotificationLength)
+            {
+                return null;
+            }
+
+            buffer.Write(chunk, 0, read);
+        }
+
+        buffer.Position = 0;
+
         JsonDocument document;
 
         try
         {
-            document = await JsonDocument.ParseAsync(body, cancellationToken: cancellationToken);
+            document = await JsonDocument.ParseAsync(buffer, cancellationToken: cancellationToken);
         }
 
         catch (JsonException)
@@ -62,10 +104,7 @@ public static class OpenIddictClientHelpers
 
             return new BackchannelNotification
             {
-                // Note: the authentication scheme is case-insensitive (RFC 9110, section 11.1).
-                ClientNotificationToken = !string.IsNullOrEmpty(authorization) &&
-                    AuthenticationHeaderValue.TryParse(authorization, out AuthenticationHeaderValue? header) &&
-                    string.Equals(header.Scheme, "Bearer", StringComparison.OrdinalIgnoreCase) ? header.Parameter : null,
+                ClientNotificationToken = header.Parameter,
                 Payload = new OpenIddictResponse(document.RootElement.Clone())
             };
         }

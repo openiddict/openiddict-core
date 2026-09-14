@@ -362,8 +362,7 @@ public class OpenIddictServerService
 
         var settings = await manager.GetSettingsAsync(application, cancellationToken);
         if (!settings.TryGetValue(Settings.BackchannelAuthentication.ClientNotificationEndpoint, out string? value) ||
-            !Uri.TryCreate(value, UriKind.Absolute, out Uri? endpoint) ||
-            !string.Equals(endpoint.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase))
+            !OpenIddictHelpers.TryParseClientNotificationEndpoint(value, out Uri? endpoint))
         {
             logger.LogWarning(6403, SR.GetResourceString(SR.ID6403), request.ClientId);
 

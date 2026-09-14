@@ -1054,16 +1054,10 @@ public partial class OpenIddictClientService
                 Errors.InvalidRequest, SR.GetResourceString(SR.ID2311), SR.FormatID8000(SR.ID2311));
         }
 
-        // In push mode, errors (e.g access_denied or expired_token) are directly sent to the client notification endpoint.
-        //
-        // See https://openid.net/specs/openid-client-initiated-backchannel-authentication-core-1_0.html#rfc.section.12.
-        if (request.TokenDeliveryMode is BackchannelTokenDeliveryModes.Push && !string.IsNullOrEmpty(request.Notification.Payload.Error))
-        {
-            var payload = request.Notification.Payload;
-
-            throw new ProtocolException(SR.FormatID0374(payload.Error, payload.ErrorDescription, payload.ErrorUri),
-                payload.Error, payload.ErrorDescription, payload.ErrorUri);
-        }
+        // Note: in push mode, errors (e.g access_denied or expired_token) are directly sent to the client notification
+        // endpoint (see https://openid.net/specs/openid-client-initiated-backchannel-authentication-core-1_0.html#rfc.section.12).
+        // Pushed payloads are handled by the HandleBackchannelPushedTokenResponse handler, that applies the same structural
+        // validation and error handling as the one used for token responses returned by the token endpoint.
 
         await using var scope = _provider.CreateAsyncScope();
 
@@ -3247,6 +3241,58 @@ public partial class OpenIddictClientService
                 return context.Response;
             }
         }
+    }
+
+    /// <summary>
+    /// Handles the token response pushed by the authorization server to the client notification endpoint
+    /// (CIBA push mode) using the same pipeline as the one used for token endpoint responses.
+    /// </summary>
+    /// <param name="registration">The client registration.</param>
+    /// <param name="configuration">The server configuration.</param>
+    /// <param name="response">The pushed token response.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns>The validated token response.</returns>
+    internal async ValueTask<OpenIddictResponse> HandleBackchannelPushedTokenResponseAsync(
+        OpenIddictClientRegistration registration, OpenIddictConfiguration configuration,
+        OpenIddictResponse response, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(registration);
+        ArgumentNullException.ThrowIfNull(configuration);
+        ArgumentNullException.ThrowIfNull(response);
+
+        cancellationToken.ThrowIfCancellationRequested();
+
+        await using var scope = _provider.CreateAsyncScope();
+
+        var dispatcher = scope.ServiceProvider.GetRequiredService<IOpenIddictClientDispatcher>();
+        var options = scope.ServiceProvider.GetRequiredService<IOptionsMonitor<OpenIddictClientOptions>>();
+
+        var transaction = new OpenIddictClientTransaction
+        {
+            CancellationToken = cancellationToken,
+            Options = options.CurrentValue,
+            ServiceProvider = scope.ServiceProvider
+        };
+
+        var context = new HandleTokenResponseContext(transaction)
+        {
+            Configuration = configuration,
+            Registration = registration,
+            // Note: pushed responses are not associated with a token request.
+            Request = new(),
+            Response = response
+        };
+
+        await dispatcher.DispatchAsync(context);
+
+        if (context.IsRejected)
+        {
+            throw new ProtocolException(
+                SR.FormatID0323(context.Error, context.ErrorDescription, context.ErrorUri),
+                context.Error, context.ErrorDescription, context.ErrorUri);
+        }
+
+        return context.Response;
     }
 
     /// <summary>

@@ -466,6 +466,35 @@ public class OpenIddictClientHandlersBackchannelTests
     }
 
     [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("Basic 8C3C7A6D")]
+    [InlineData("Bearer")]
+    [InlineData("Bearer =8C3C7A6D")]
+    public async Task CreateBackchannelNotificationAsync_ReturnsNullWithoutValidBearerToken(string? authorization)
+    {
+        // Arrange
+        using var body = new MemoryStream(Encoding.UTF8.GetBytes("""{ "auth_req_id": "F6B3B1E4" }"""));
+
+        // Act and assert
+        Assert.Null(await OpenIddictClientHelpers.CreateBackchannelNotificationAsync(authorization, "application/json", body));
+
+        // Note: the body must not be read when the bearer token is missing or invalid.
+        Assert.Equal(0, body.Position);
+    }
+
+    [Fact]
+    public async Task CreateBackchannelNotificationAsync_ReturnsNullForOversizedBodies()
+    {
+        // Arrange
+        var payload = "{ \"auth_req_id\": \"" + new string('a', OpenIddictClientHelpers.MaximumBackchannelNotificationLength) + "\" }";
+        using var body = new MemoryStream(Encoding.UTF8.GetBytes(payload));
+
+        // Act and assert
+        Assert.Null(await OpenIddictClientHelpers.CreateBackchannelNotificationAsync("Bearer 8C3C7A6D", "application/json", body));
+    }
+
+    [Theory]
     [InlineData(null, "F6B3B1E4", null, Errors.InvalidToken)]
     [InlineData("invalid", "F6B3B1E4", null, Errors.InvalidToken)]
     [InlineData("8C3C7A6D", null, null, Errors.InvalidRequest)]
@@ -488,6 +517,38 @@ public class OpenIddictClientHandlersBackchannelTests
                 {
                     ClientNotificationToken = token,
                     Payload = new OpenIddictResponse { AuthReqId = identifier, Error = error }
+                },
+                TokenDeliveryMode = BackchannelTokenDeliveryModes.Push
+            }));
+
+        Assert.Equal(expected, exception.Error);
+    }
+
+    [Theory]
+    [InlineData("""{ "auth_req_id": "F6B3B1E4", "access_token": 42, "token_type": "Bearer" }""", Errors.ServerError)]
+    [InlineData("""{ "auth_req_id": "F6B3B1E4", "error": [ "access_denied" ] }""", Errors.ServerError)]
+    [InlineData("""{ "auth_req_id": "F6B3B1E4", "error": "transaction_failed" }""", Errors.TransactionFailed)]
+    [InlineData("""{ "auth_req_id": "F6B3B1E4", "error": "custom_error" }""", Errors.ServerError)]
+    public async Task AuthenticateWithBackchannelNotificationAsync_PushedPayloadsUseStandardTokenResponseValidation(
+        string payload, string expected)
+    {
+        // Arrange
+        using var provider = CreateProvider();
+        var service = provider.GetRequiredService<OpenIddictClientService>();
+
+        using var document = JsonDocument.Parse(payload);
+
+        // Act and assert
+        var exception = await Assert.ThrowsAsync<OpenIddictExceptions.ProtocolException>(async () =>
+            await service.AuthenticateWithBackchannelNotificationAsync(new()
+            {
+                AuthenticationRequestId = "F6B3B1E4",
+                ClientNotificationToken = "8C3C7A6D",
+                DisableUserInfo = true,
+                Notification = new()
+                {
+                    ClientNotificationToken = "8C3C7A6D",
+                    Payload = new OpenIddictResponse(document.RootElement.Clone())
                 },
                 TokenDeliveryMode = BackchannelTokenDeliveryModes.Push
             }));

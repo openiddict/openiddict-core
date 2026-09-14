@@ -11,6 +11,7 @@ using System.Security.Claims;
 using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Tokens;
 
 namespace OpenIddict.Server;
 
@@ -18,6 +19,24 @@ public static partial class OpenIddictServerHandlers
 {
     public static class Backchannel
     {
+        /// <summary>
+        /// Gets the asymmetric signing algorithms that are accepted for signed backchannel authentication
+        /// requests and advertised in the "backchannel_authentication_request_signing_alg_values_supported"
+        /// server metadata (CIBA Core 1.0 section 4 forbids "none" and symmetric algorithms).
+        /// </summary>
+        internal static ImmutableArray<string> RequestSigningAlgorithms { get; } =
+        [
+            SecurityAlgorithms.EcdsaSha256,
+            SecurityAlgorithms.EcdsaSha384,
+            SecurityAlgorithms.EcdsaSha512,
+            SecurityAlgorithms.RsaSha256,
+            SecurityAlgorithms.RsaSha384,
+            SecurityAlgorithms.RsaSha512,
+            SecurityAlgorithms.RsaSsaPssSha256,
+            SecurityAlgorithms.RsaSsaPssSha384,
+            SecurityAlgorithms.RsaSsaPssSha512
+        ];
+
         public static ImmutableArray<OpenIddictServerHandlerDescriptor> DefaultHandlers { get; } =
         [
             /*
@@ -406,6 +425,21 @@ public static partial class OpenIddictServerHandlers
                             description: context.ErrorDescription,
                             uri: context.ErrorUri);
                     }
+
+                    return;
+                }
+
+                // Only the advertised asymmetric algorithms can be used to sign authentication requests.
+                //
+                // See https://openid.net/specs/openid-client-initiated-backchannel-authentication-core-1_0.html#rfc.section.4.
+                if (string.IsNullOrEmpty(algorithm) || !RequestSigningAlgorithms.Contains(algorithm, StringComparer.Ordinal))
+                {
+                    context.Logger.LogInformation(6418, SR.GetResourceString(SR.ID6418), context.Request.ClientId, algorithm);
+
+                    context.Reject(
+                        error: Errors.InvalidRequest,
+                        description: SR.GetResourceString(SR.ID2314),
+                        uri: SR.FormatID8000(SR.ID2314));
 
                     return;
                 }
@@ -1027,16 +1061,9 @@ public static partial class OpenIddictServerHandlers
 
                 Debug.Assert(!string.IsNullOrEmpty(context.ClientId), SR.FormatID4000(Parameters.ClientId));
 
-                // Note: when only the poll mode is enabled, the delivery mode registered by
-                // the client application is not resolved and the poll mode is always used.
-                if (context.Options.BackchannelTokenDeliveryModes.Count is 1 &&
-                    context.Options.BackchannelTokenDeliveryModes.Contains(BackchannelTokenDeliveryModes.Poll))
-                {
-                    context.TokenDeliveryMode = BackchannelTokenDeliveryModes.Poll;
-
-                    return;
-                }
-
+                // Note: the delivery mode registered by the client application is always resolved (even when only
+                // the poll mode is enabled) so that clients registered with a mode that is not enabled are rejected
+                // instead of being silently downgraded to the poll mode and never receiving any notification.
                 var manager = context.ServiceProvider.GetService<IOpenIddictApplicationManager>()
                     ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
 
@@ -1068,9 +1095,7 @@ public static partial class OpenIddictServerHandlers
                     //
                     // See https://openid.net/specs/openid-client-initiated-backchannel-authentication-core-1_0.html#rfc.section.4.
                     if (!settings.TryGetValue(Settings.BackchannelAuthentication.ClientNotificationEndpoint, out string? endpoint) ||
-                        !Uri.TryCreate(endpoint, UriKind.Absolute, out Uri? uri) ||
-                        !string.Equals(uri.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase) ||
-                        !string.IsNullOrEmpty(uri.Fragment))
+                        !OpenIddictHelpers.TryParseClientNotificationEndpoint(endpoint, out _))
                     {
                         context.Logger.LogWarning(6403, SR.GetResourceString(SR.ID6403), context.ClientId);
 
@@ -1101,6 +1126,20 @@ public static partial class OpenIddictServerHandlers
                             error: Errors.InvalidRequest,
                             description: SR.FormatID2052(Parameters.ClientNotificationToken),
                             uri: SR.FormatID8000(SR.ID2052));
+
+                        return;
+                    }
+
+                    // The client_notification_token MUST conform to the syntax for Bearer credentials.
+                    //
+                    // See https://openid.net/specs/openid-client-initiated-backchannel-authentication-core-1_0.html#rfc.section.7.1
+                    // and https://datatracker.ietf.org/doc/html/rfc6750#section-2.1.
+                    if (!OpenIddictHelpers.IsValidBearerCredential(context.Request.ClientNotificationToken))
+                    {
+                        context.Reject(
+                            error: Errors.InvalidRequest,
+                            description: SR.FormatID2313(Parameters.ClientNotificationToken),
+                            uri: SR.FormatID8000(SR.ID2313));
 
                         return;
                     }

@@ -722,23 +722,16 @@ public abstract partial class OpenIddictServerIntegrationTests
     }
 
     [Fact]
-    public async Task ValidateBackchannelAuthenticationRequest_RegisteredDeliveryModeIsIgnoredWhenOnlyPollIsEnabled()
+    public async Task ValidateBackchannelAuthenticationRequest_RegisteredDeliveryModeIsRejectedWhenOnlyPollIsEnabled()
     {
         // Arrange
         await using var server = await CreateServerAsync(options =>
         {
             ConfigureBackchannelAuthentication(options, new(StringComparer.Ordinal)
             {
-                [Settings.BackchannelAuthentication.TokenDeliveryMode] = BackchannelTokenDeliveryModes.Push
+                [Settings.BackchannelAuthentication.TokenDeliveryMode] = BackchannelTokenDeliveryModes.Push,
+                [Settings.BackchannelAuthentication.ClientNotificationEndpoint] = "https://fabrikam.com/ciba/notify"
             });
-
-            options.AddEventHandler<HandleBackchannelAuthenticationRequestContext>(builder =>
-                builder.UseInlineHandler(context =>
-                {
-                    context.Reject("custom_error", "The request was accepted by the validation pipeline.");
-
-                    return ValueTask.CompletedTask;
-                }));
         });
 
         await using var client = await server.CreateClientAsync();
@@ -747,12 +740,51 @@ public abstract partial class OpenIddictServerIntegrationTests
         var response = await client.PostAsync("/connect/ciba", new OpenIddictRequest
         {
             ClientId = "Fabrikam",
+            ClientNotificationToken = "8C3C7A6D",
             LoginHint = "bob@fabrikam.com",
             Scope = Scopes.OpenId
         });
 
         // Assert
-        Assert.Equal("custom_error", response.Error);
+        Assert.Equal(Errors.UnauthorizedClient, response.Error);
+        Assert.Equal(SR.FormatID2302(BackchannelTokenDeliveryModes.Push), response.ErrorDescription);
+        Assert.Equal(SR.FormatID8000(SR.ID2302), response.ErrorUri);
+    }
+
+    [Theory]
+    [InlineData("8C3C7A6D notification")]
+    [InlineData("8C3C7A6D=notification")]
+    [InlineData("=8C3C7A6D")]
+    [InlineData("8C3C7A6Dé")]
+    public async Task ValidateBackchannelAuthenticationRequest_MalformedClientNotificationTokenCausesAnError(string token)
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options =>
+        {
+            ConfigureBackchannelAuthentication(options, new(StringComparer.Ordinal)
+            {
+                [Settings.BackchannelAuthentication.TokenDeliveryMode] = BackchannelTokenDeliveryModes.Ping,
+                [Settings.BackchannelAuthentication.ClientNotificationEndpoint] = "https://fabrikam.com/ciba/notify"
+            });
+
+            options.AllowBackchannelPingTokenDeliveryMode();
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/connect/ciba", new OpenIddictRequest
+        {
+            ClientId = "Fabrikam",
+            ClientNotificationToken = token,
+            LoginHint = "bob@fabrikam.com",
+            Scope = Scopes.OpenId
+        });
+
+        // Assert
+        Assert.Equal(Errors.InvalidRequest, response.Error);
+        Assert.Equal(SR.FormatID2313(Parameters.ClientNotificationToken), response.ErrorDescription);
+        Assert.Equal(SR.FormatID8000(SR.ID2313), response.ErrorUri);
     }
 
     [Fact]
@@ -965,8 +997,10 @@ public abstract partial class OpenIddictServerIntegrationTests
         Assert.Equal(SR.FormatID8000(SR.ID2211), response.ErrorUri);
     }
 
-    [Fact]
-    public async Task ValidateTokenRequest_PushClientsCannotRedeemAuthenticationRequestIdentifiers()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task ValidateTokenRequest_PushClientsCannotRedeemAuthenticationRequestIdentifiers(bool enabled)
     {
         // Arrange
         await using var server = await CreateServerAsync(options =>
@@ -977,7 +1011,10 @@ public abstract partial class OpenIddictServerIntegrationTests
                 [Settings.BackchannelAuthentication.ClientNotificationEndpoint] = "https://fabrikam.com/ciba/notify"
             });
 
-            options.AllowBackchannelPushTokenDeliveryMode();
+            if (enabled)
+            {
+                options.AllowBackchannelPushTokenDeliveryMode();
+            }
         });
 
         await using var client = await server.CreateClientAsync();

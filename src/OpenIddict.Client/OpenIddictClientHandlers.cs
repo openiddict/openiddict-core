@@ -83,6 +83,7 @@ public static partial class OpenIddictClientHandlers
         GenerateClientAssertion.Descriptor,
         AttachTokenRequestClientCredentials.Descriptor,
         SendTokenRequest.Descriptor,
+        HandleBackchannelPushedTokenResponse.Descriptor,
 
         EvaluateValidatedBackchannelTokens.Descriptor,
         ResolveValidatedBackchannelTokens.Descriptor,
@@ -3095,6 +3096,60 @@ public static partial class OpenIddictClientHandlers
                         ? context.Registration.DPoPSigningCredentials
                         : null,
                     context.CancellationToken);
+            }
+
+            catch (ProtocolException exception)
+            {
+                context.Reject(
+                    error: exception.Error,
+                    description: exception.ErrorDescription,
+                    uri: exception.ErrorUri);
+
+                return;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for applying the standard token response validation (well-known parameter
+    /// types and error handling) to the token response pushed to the client notification endpoint (CIBA push mode).
+    /// </summary>
+    /// <remarks>
+    /// See https://openid.net/specs/openid-client-initiated-backchannel-authentication-core-1_0.html#rfc.section.10.3.
+    /// </remarks>
+    public sealed class HandleBackchannelPushedTokenResponse : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    {
+        private readonly OpenIddictClientService _service;
+
+        public HandleBackchannelPushedTokenResponse(OpenIddictClientService service)
+            => _service = service ?? throw new ArgumentNullException(nameof(service));
+
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
+                .UseSingletonHandler<HandleBackchannelPushedTokenResponse>()
+                .SetOrder(SendTokenRequest.Descriptor.Order + 500)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public async ValueTask HandleAsync(ProcessAuthenticationContext context)
+        {
+            ArgumentNullException.ThrowIfNull(context);
+
+            if (context.SendTokenRequest || context.TokenResponse is null ||
+                context.GrantType is not GrantTypes.Ciba ||
+                context.BackchannelTokenDeliveryMode is not BackchannelTokenDeliveryModes.Push)
+            {
+                return;
+            }
+
+            try
+            {
+                context.TokenResponse = await _service.HandleBackchannelPushedTokenResponseAsync(
+                    context.Registration, context.Configuration, context.TokenResponse, context.CancellationToken);
             }
 
             catch (ProtocolException exception)
@@ -7439,6 +7494,16 @@ public static partial class OpenIddictClientHandlers
                 if (context.ClientNotificationToken is { Length: > 1024 })
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0607));
+                }
+
+                // The client_notification_token MUST conform to the syntax for Bearer credentials.
+                //
+                // See https://openid.net/specs/openid-client-initiated-backchannel-authentication-core-1_0.html#rfc.section.7.1
+                // and https://datatracker.ietf.org/doc/html/rfc6750#section-2.1.
+                if (!string.IsNullOrEmpty(context.ClientNotificationToken) &&
+                    !OpenIddictHelpers.IsValidBearerCredential(context.ClientNotificationToken))
+                {
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0611));
                 }
             }
 

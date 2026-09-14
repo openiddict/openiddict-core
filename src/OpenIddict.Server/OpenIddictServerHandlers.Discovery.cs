@@ -902,17 +902,7 @@ public static partial class OpenIddictServerHandlers
                     context.Options.BackchannelAuthenticationEndpointUris.Count is > 0)
                 {
                     context.Metadata[Metadata.BackchannelAuthenticationRequestSigningAlgValuesSupported] = new JsonArray(
-                    [
-                        SecurityAlgorithms.EcdsaSha256,
-                        SecurityAlgorithms.EcdsaSha384,
-                        SecurityAlgorithms.EcdsaSha512,
-                        SecurityAlgorithms.RsaSha256,
-                        SecurityAlgorithms.RsaSha384,
-                        SecurityAlgorithms.RsaSha512,
-                        SecurityAlgorithms.RsaSsaPssSha256,
-                        SecurityAlgorithms.RsaSsaPssSha384,
-                        SecurityAlgorithms.RsaSsaPssSha512
-                    ]);
+                        [.. Backchannel.RequestSigningAlgorithms.Select(static algorithm => (JsonNode) algorithm)]);
                 }
 
                 // If DPoP support was enabled, return the signing algorithms allowed for DPoP proofs.

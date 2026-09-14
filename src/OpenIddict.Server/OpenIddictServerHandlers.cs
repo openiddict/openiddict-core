@@ -1686,9 +1686,9 @@ public static partial class OpenIddictServerHandlers
         {
             ArgumentNullException.ThrowIfNull(context);
 
-            // Note: when the push mode is not enabled, all the clients are treated as poll or ping clients.
-            if (context.EndpointType is not OpenIddictServerEndpointType.Token ||
-                !context.Options.BackchannelTokenDeliveryModes.Contains(BackchannelTokenDeliveryModes.Push))
+            // Note: the registered delivery mode is always resolved, independently of the delivery modes enabled
+            // in the server options, as CIBA 1.0 section 11 forbids push clients from using the token endpoint.
+            if (context.EndpointType is not OpenIddictServerEndpointType.Token)
             {
                 return;
             }
