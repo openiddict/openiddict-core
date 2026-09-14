@@ -60,6 +60,14 @@ public sealed class OpenIddictServerSamlAspNetCoreBuilder
         => Configure(options => options.SingleSignOnPath = path);
 
     /// <summary>
+    /// Sets the path of the artifact resolution endpoint.
+    /// </summary>
+    /// <param name="path">The path.</param>
+    /// <returns>The <see cref="OpenIddictServerSamlAspNetCoreBuilder"/> instance.</returns>
+    public OpenIddictServerSamlAspNetCoreBuilder SetArtifactResolutionPath(PathString path)
+        => Configure(options => options.ArtifactResolutionPath = path);
+
+    /// <summary>
     /// Sets the authentication scheme used to authenticate and challenge the user.
     /// </summary>
     /// <param name="scheme">The authentication scheme.</param>

@@ -60,6 +60,14 @@ public sealed class OpenIddictServerSamlOwinBuilder
         => Configure(options => options.SingleSignOnPath = path);
 
     /// <summary>
+    /// Sets the path of the artifact resolution endpoint.
+    /// </summary>
+    /// <param name="path">The path.</param>
+    /// <returns>The <see cref="OpenIddictServerSamlOwinBuilder"/> instance.</returns>
+    public OpenIddictServerSamlOwinBuilder SetArtifactResolutionPath(PathString path)
+        => Configure(options => options.ArtifactResolutionPath = path);
+
+    /// <summary>
     /// Sets the authentication type used to authenticate and challenge the user.
     /// </summary>
     /// <param name="type">The authentication type.</param>

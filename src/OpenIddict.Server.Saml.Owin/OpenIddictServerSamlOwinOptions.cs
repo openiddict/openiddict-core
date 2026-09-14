@@ -22,6 +22,12 @@ public sealed class OpenIddictServerSamlOwinOptions
     public PathString SingleSignOnPath { get; set; } = new("/saml/sso");
 
     /// <summary>
+    /// Gets or sets the path of the artifact resolution endpoint (SOAP binding), that
+    /// is only handled when the HTTP-Artifact binding is enabled in the SAML options.
+    /// </summary>
+    public PathString ArtifactResolutionPath { get; set; } = new("/saml/artifact");
+
+    /// <summary>
     /// Gets or sets the authentication type used to authenticate and challenge the user (e.g the cookies authentication type).
     /// </summary>
     public string? AuthenticationType { get; set; }

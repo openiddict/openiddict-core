@@ -22,6 +22,12 @@ public sealed class OpenIddictServerSamlAspNetCoreOptions
     public PathString SingleSignOnPath { get; set; } = "/saml/sso";
 
     /// <summary>
+    /// Gets or sets the path of the artifact resolution endpoint (SOAP binding), that
+    /// is only available when the HTTP-Artifact binding is enabled in the SAML options.
+    /// </summary>
+    public PathString ArtifactResolutionPath { get; set; } = "/saml/artifact";
+
+    /// <summary>
     /// Gets or sets the authentication scheme used to authenticate and challenge the user.
     /// If <see langword="null"/>, the default authenticate and challenge schemes are used.
     /// </summary>

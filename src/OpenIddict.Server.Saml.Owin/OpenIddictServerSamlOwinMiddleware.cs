@@ -54,6 +54,13 @@ public sealed class OpenIddictServerSamlOwinMiddleware : OwinMiddleware
             return SingleSignOnAsync(context, provider, options);
         }
 
+        // Note: the artifact resolution endpoint is only handled when the HTTP-Artifact binding is enabled.
+        if (context.Request.Path == options.ArtifactResolutionPath &&
+            provider.GetService<IOptionsMonitor<OpenIddictServerSamlOptions>>()?.CurrentValue is { EnableArtifactBinding: true })
+        {
+            return ArtifactResolutionAsync(context, provider, options);
+        }
+
         return Next?.Invoke(context) ?? Task.CompletedTask;
     }
 
@@ -72,10 +79,37 @@ public sealed class OpenIddictServerSamlOwinMiddleware : OwinMiddleware
         }
 
         var service = GetService(provider);
-        var metadata = service.CreateMetadata(GetEndpointUrl(context, options.SingleSignOnPath));
+        var metadata = service.CreateMetadata(GetEndpointUrl(context, options.SingleSignOnPath),
+            GetEndpointUrl(context, options.ArtifactResolutionPath));
 
         context.Response.ContentType = MediaTypes.Metadata;
         await WriteAsync(context, metadata);
+    }
+
+    private static async Task ArtifactResolutionAsync(IOwinContext context, IServiceProvider provider, OpenIddictServerSamlOwinOptions options)
+    {
+        if (!IsPost(context.Request))
+        {
+            context.Response.StatusCode = 405;
+            return;
+        }
+
+        if (!ValidateTransportSecurity(context, options))
+        {
+            await WriteErrorAsync(context, SR.GetResourceString(SR.ID2264));
+            return;
+        }
+
+        var result = await GetService(provider).ResolveArtifactAsync(context.Request.Body,
+            GetEndpointUrl(context, options.ArtifactResolutionPath), context.Request.CallCancelled);
+
+        // Note: SOAP faults are returned with a 500 status code and SOAP responses must not be cached (SAML bindings, 3.2.3.3).
+        context.Response.StatusCode = result.IsFault ? 500 : 200;
+        context.Response.Headers.Set("Cache-Control", "no-cache, no-store");
+        context.Response.Headers.Set("Pragma", "no-cache");
+        context.Response.ContentType = MediaTypes.Soap + "; charset=utf-8";
+
+        await WriteAsync(context, result.Content);
     }
 
     private static async Task SingleSignOnAsync(IOwinContext context, IServiceProvider provider, OpenIddictServerSamlOwinOptions options)
@@ -181,6 +215,11 @@ public sealed class OpenIddictServerSamlOwinMiddleware : OwinMiddleware
         {
             if (result.Request?.IsPassive is true)
             {
+                if (!await ConsumeRequestStateAsync())
+                {
+                    return;
+                }
+
                 await WriteErrorResponseAsync(result, SamlStatusCodes.Responder, SamlStatusCodes.NoPassive, SR.GetResourceString(SR.ID2260));
                 return;
             }
@@ -204,6 +243,11 @@ public sealed class OpenIddictServerSamlOwinMiddleware : OwinMiddleware
             return;
         }
 
+        if (!await ConsumeRequestStateAsync())
+        {
+            return;
+        }
+
         var assertion = await provider.GetRequiredService<IOpenIddictServerSamlAssertionProvider>()
             .CreateAssertionAsync(new AssertionContext
             {
@@ -220,7 +264,7 @@ public sealed class OpenIddictServerSamlOwinMiddleware : OwinMiddleware
             return;
         }
 
-        await WriteResponseAsync(context, result, service.CreateResponse(new ResponseDescriptor
+        await WriteResponseAsync(context, service, result, service.CreateResponse(new ResponseDescriptor
         {
             Assertion = assertion,
             AssertionConsumerServiceUrl = result.AssertionConsumerServiceUrl!,
@@ -228,8 +272,20 @@ public sealed class OpenIddictServerSamlOwinMiddleware : OwinMiddleware
             ServiceProvider = result.ServiceProvider!
         }));
 
+        // Note: when request replay protection is enabled, a request state can only be used once to return a response.
+        async Task<bool> ConsumeRequestStateAsync()
+        {
+            if (state is null || await service.ConsumeRequestStateAsync(state, cancellationToken))
+            {
+                return true;
+            }
+
+            await WriteErrorAsync(context, SR.GetResourceString(SR.ID2263));
+            return false;
+        }
+
         Task WriteErrorResponseAsync(AuthenticationRequestResult result, string status, string? secondLevelStatus, string? description)
-            => WriteResponseAsync(context, result, service.CreateResponse(new ResponseDescriptor
+            => WriteResponseAsync(context, service, result, service.CreateResponse(new ResponseDescriptor
             {
                 AssertionConsumerServiceUrl = result.AssertionConsumerServiceUrl!,
                 InResponseTo = result.RequestId,
@@ -240,9 +296,25 @@ public sealed class OpenIddictServerSamlOwinMiddleware : OwinMiddleware
             }));
     }
 
-    private static Task WriteResponseAsync(IOwinContext context, AuthenticationRequestResult result, string response)
+    private static async Task WriteResponseAsync(IOwinContext context, OpenIddictServerSamlService service,
+        AuthenticationRequestResult result, string response)
     {
         var url = result.AssertionConsumerServiceUrl!;
+
+        // When the HTTP-Artifact binding is used, the response is stored and the user agent is redirected to
+        // the assertion consumer service with the artifact representing it (SAML bindings, 3.6.3.2 and 3.6.5).
+        if (result.ResponseBinding is Bindings.HttpArtifact)
+        {
+            var artifact = await service.CreateArtifactAsync(result.ServiceProvider!, response, context.Request.CallCancelled);
+
+            context.Response.StatusCode = 303;
+            context.Response.Headers.Set("Cache-Control", "no-cache, no-store");
+            context.Response.Headers.Set("Pragma", "no-cache");
+            context.Response.Headers.Set("Location", OpenIddictServerSamlService.CreateArtifactRedirectUrl(
+                url, artifact, result.RelayState).AbsoluteUri);
+            return;
+        }
+
         var nonce = Base64UrlEncoder.Encode(RandomNumberGenerator.GetBytes(16));
 
         var headers = context.Response.Headers;
@@ -253,7 +325,7 @@ public sealed class OpenIddictServerSamlOwinMiddleware : OwinMiddleware
 
         context.Response.ContentType = "text/html; charset=utf-8";
 
-        return WriteAsync(context, OpenIddictServerSamlService.CreateFormPostPage(url, response, result.RelayState, nonce));
+        await WriteAsync(context, OpenIddictServerSamlService.CreateFormPostPage(url, response, result.RelayState, nonce));
     }
 
     private static Task WriteErrorAsync(IOwinContext context, string description)

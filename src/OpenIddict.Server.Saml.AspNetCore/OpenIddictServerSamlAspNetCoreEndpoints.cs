@@ -38,7 +38,8 @@ internal static class OpenIddictServerSamlAspNetCoreEndpoints
 
         var service = GetService(context);
 
-        var metadata = service.CreateMetadata(GetEndpointUrl(context, options.SingleSignOnPath));
+        var metadata = service.CreateMetadata(GetEndpointUrl(context, options.SingleSignOnPath),
+            GetEndpointUrl(context, options.ArtifactResolutionPath));
 
         context.Response.ContentType = MediaTypes.Metadata;
         await context.Response.WriteAsync(metadata, Encoding.UTF8, context.RequestAborted);
@@ -145,6 +146,11 @@ internal static class OpenIddictServerSamlAspNetCoreEndpoints
         {
             if (result.Request?.IsPassive is true)
             {
+                if (!await ConsumeRequestStateAsync())
+                {
+                    return;
+                }
+
                 await WriteErrorResponseAsync(result, SamlStatusCodes.Responder, SamlStatusCodes.NoPassive, SR.GetResourceString(SR.ID2260));
                 return;
             }
@@ -158,6 +164,11 @@ internal static class OpenIddictServerSamlAspNetCoreEndpoints
             };
 
             await context.ChallengeAsync(options.AuthenticationScheme, properties);
+            return;
+        }
+
+        if (!await ConsumeRequestStateAsync())
+        {
             return;
         }
 
@@ -177,7 +188,7 @@ internal static class OpenIddictServerSamlAspNetCoreEndpoints
             return;
         }
 
-        await WriteResponseAsync(context, result, service.CreateResponse(new ResponseDescriptor
+        await WriteResponseAsync(context, service, result, service.CreateResponse(new ResponseDescriptor
         {
             Assertion = assertion,
             AssertionConsumerServiceUrl = result.AssertionConsumerServiceUrl!,
@@ -185,8 +196,20 @@ internal static class OpenIddictServerSamlAspNetCoreEndpoints
             ServiceProvider = result.ServiceProvider!
         }));
 
+        // Note: when request replay protection is enabled, a request state can only be used once to return a response.
+        async Task<bool> ConsumeRequestStateAsync()
+        {
+            if (state is null || await service.ConsumeRequestStateAsync(state, context.RequestAborted))
+            {
+                return true;
+            }
+
+            await WriteErrorAsync(context, SR.GetResourceString(SR.ID2263));
+            return false;
+        }
+
         Task WriteErrorResponseAsync(AuthenticationRequestResult result, string status, string? secondLevelStatus, string? description)
-            => WriteResponseAsync(context, result, service.CreateResponse(new ResponseDescriptor
+            => WriteResponseAsync(context, service, result, service.CreateResponse(new ResponseDescriptor
             {
                 AssertionConsumerServiceUrl = result.AssertionConsumerServiceUrl!,
                 InResponseTo = result.RequestId,
@@ -197,9 +220,56 @@ internal static class OpenIddictServerSamlAspNetCoreEndpoints
             }));
     }
 
-    private static async Task WriteResponseAsync(HttpContext context, AuthenticationRequestResult result, string response)
+    /// <summary>
+    /// Handles artifact resolution requests (SOAP binding).
+    /// </summary>
+    public static async Task ArtifactResolutionAsync(HttpContext context)
+    {
+        var options = GetOptions(context);
+
+        if (context.RequestServices.GetService<IOptionsMonitor<OpenIddictServerSamlOptions>>()?.CurrentValue is not { EnableArtifactBinding: true })
+        {
+            context.Response.StatusCode = StatusCodes.Status404NotFound;
+            return;
+        }
+
+        if (!ValidateTransportSecurity(context, options))
+        {
+            await WriteErrorAsync(context, SR.GetResourceString(SR.ID2264));
+            return;
+        }
+
+        var result = await GetService(context).ResolveArtifactAsync(context.Request.Body,
+            GetEndpointUrl(context, options.ArtifactResolutionPath), context.RequestAborted);
+
+        // Note: SOAP faults are returned with a 500 status code and SOAP responses must not be cached (SAML bindings, 3.2.3.3).
+        context.Response.StatusCode = result.IsFault ? StatusCodes.Status500InternalServerError : StatusCodes.Status200OK;
+        context.Response.Headers.CacheControl = "no-cache, no-store";
+        context.Response.Headers.Pragma = "no-cache";
+        context.Response.ContentType = MediaTypes.Soap + "; charset=utf-8";
+
+        await context.Response.WriteAsync(result.Content, Encoding.UTF8, context.RequestAborted);
+    }
+
+    private static async Task WriteResponseAsync(HttpContext context, OpenIddictServerSamlService service,
+        AuthenticationRequestResult result, string response)
     {
         var url = result.AssertionConsumerServiceUrl!;
+
+        // When the HTTP-Artifact binding is used, the response is stored and the user agent is redirected to
+        // the assertion consumer service with the artifact representing it (SAML bindings, 3.6.3.2 and 3.6.5).
+        if (result.ResponseBinding is Bindings.HttpArtifact)
+        {
+            var artifact = await service.CreateArtifactAsync(result.ServiceProvider!, response, context.RequestAborted);
+
+            context.Response.StatusCode = StatusCodes.Status303SeeOther;
+            context.Response.Headers.CacheControl = "no-cache, no-store";
+            context.Response.Headers.Pragma = "no-cache";
+            context.Response.Headers.Location = OpenIddictServerSamlService.CreateArtifactRedirectUrl(
+                url, artifact, result.RelayState).AbsoluteUri;
+            return;
+        }
+
         var nonce = Base64Url.EncodeToString(RandomNumberGenerator.GetBytes(16));
 
         var headers = context.Response.Headers;

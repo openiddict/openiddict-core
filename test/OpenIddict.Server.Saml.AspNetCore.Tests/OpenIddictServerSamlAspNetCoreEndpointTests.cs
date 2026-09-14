@@ -381,6 +381,182 @@ public class OpenIddictServerSamlAspNetCoreEndpointTests
             "/samlp:Response/samlp:Status/samlp:StatusCode/samlp:StatusCode/@Value", CreateNamespaceManager(document))!.Value);
     }
 
+    [Fact]
+    public async Task SingleSignOn_ArtifactBinding_RedirectsWithArtifactResolvedOnce()
+    {
+        // Arrange
+        using var host = await CreateHostAsync(sp => sp.AssertionConsumerServiceBindings[0] = Bindings.HttpArtifact,
+            saml => saml.EnableArtifactBinding());
+        using var client = CreateClient(host);
+
+        var cookie = await LoginAsync(client);
+        var query = CreateRedirectQueryString(CreateAuthenticationRequest(id: "_artifact"), relayState: "artifact-relay",
+            certificate: ServiceProviderCertificate);
+
+        using var request = new HttpRequestMessage(HttpMethod.Get, "/saml/sso" + query);
+        request.Headers.Add("Cookie", cookie);
+
+        // Act
+        using var response = await client.SendAsync(request);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.SeeOther, response.StatusCode);
+
+        var location = response.Headers.Location!;
+        Assert.Equal(AssertionConsumerServiceUrl.AbsoluteUri, location.GetLeftPart(UriPartial.Path));
+        Assert.Equal("artifact-relay", QueryValue(location, Parameters.RelayState));
+
+        var artifact = QueryValue(location, Parameters.SamlArtifact);
+
+        using var first = await ResolveAsync(client, CreateArtifactResolveEnvelope(artifact, certificate: ServiceProviderCertificate));
+        using var second = await ResolveAsync(client, CreateArtifactResolveEnvelope(artifact, certificate: ServiceProviderCertificate));
+
+        Assert.Equal(HttpStatusCode.OK, first.StatusCode);
+        Assert.Equal(MediaTypes.Soap, first.Content.Headers.ContentType?.MediaType);
+
+        var resolved = GetArtifactResponse(await first.Content.ReadAsStringAsync());
+        Assert.True(VerifySignature(resolved, IdentityProviderCertificate));
+
+        var embedded = new XmlDocument { PreserveWhitespace = true };
+        embedded.AppendChild(embedded.ImportNode(resolved.SelectSingleNode("samlp:Response", CreateNamespaceManager(resolved.OwnerDocument))!, deep: true));
+        AssertSuccessfulResponse(embedded, "_artifact");
+
+        Assert.Equal(HttpStatusCode.OK, second.StatusCode);
+        var empty = GetArtifactResponse(await second.Content.ReadAsStringAsync());
+        Assert.Null(empty.SelectSingleNode("samlp:Response", CreateNamespaceManager(empty.OwnerDocument)));
+    }
+
+    [Fact]
+    public async Task ArtifactResolution_ReturnsNotFoundWhenArtifactBindingIsDisabled()
+    {
+        // Arrange
+        using var host = await CreateHostAsync();
+        using var client = CreateClient(host);
+
+        // Act
+        using var response = await ResolveAsync(client, CreateArtifactResolveEnvelope("AAQ=", certificate: ServiceProviderCertificate));
+
+        // Assert
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task ArtifactResolution_ReturnsSoapFaultForInvalidMessages()
+    {
+        // Arrange
+        using var host = await CreateHostAsync(configuration: saml => saml.EnableArtifactBinding());
+        using var client = CreateClient(host);
+
+        // Act
+        using var response = await ResolveAsync(client, "<invalid />");
+
+        // Assert
+        Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+        Assert.Contains("soap:Client", await response.Content.ReadAsStringAsync(), StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Metadata_PublishesArtifactResolutionServiceWhenEnabled()
+    {
+        // Arrange
+        using var host = await CreateHostAsync(configuration: saml => saml.EnableArtifactBinding());
+        using var client = CreateClient(host);
+
+        // Act
+        using var response = await client.GetAsync("/saml/metadata");
+
+        // Assert
+        var document = LoadResponse(await response.Content.ReadAsStringAsync());
+        Assert.Equal("https://idp.example.com/saml/artifact", document.SelectSingleNode(
+            "/md:EntityDescriptor/md:IDPSSODescriptor/md:ArtifactResolutionService/@Location", CreateNamespaceManager(document))!.Value);
+    }
+
+    [Fact]
+    public async Task SingleSignOn_ReplayProtection_RejectsReusedRequestAndState()
+    {
+        // Arrange
+        using var host = await CreateHostAsync(configuration: saml => saml.EnableRequestReplayProtection());
+        using var client = CreateClient(host);
+
+        var query = CreateRedirectQueryString(CreateAuthenticationRequest(id: "_single_use"), certificate: ServiceProviderCertificate);
+
+        using var challenge = await client.GetAsync("/saml/sso" + query);
+        var returnUrl = QueryValue(challenge.Headers.Location!, "ReturnUrl");
+
+        using var login = await client.GetAsync("/login?ReturnUrl=" + Uri.EscapeDataString(returnUrl));
+        var cookie = GetCookie(login);
+
+        // Act
+        using var callback = new HttpRequestMessage(HttpMethod.Get, returnUrl);
+        callback.Headers.Add("Cookie", cookie);
+        using var response = await client.SendAsync(callback);
+
+        using var reusedState = new HttpRequestMessage(HttpMethod.Get, returnUrl);
+        reusedState.Headers.Add("Cookie", cookie);
+        using var stateReplay = await client.SendAsync(reusedState);
+
+        using var reusedRequest = new HttpRequestMessage(HttpMethod.Get, "/saml/sso" + query);
+        reusedRequest.Headers.Add("Cookie", cookie);
+        using var requestReplay = await client.SendAsync(reusedRequest);
+
+        // Assert
+        var (_, saml, _) = await ParseFormAsync(response);
+        AssertSuccessfulResponse(LoadResponse(saml), "_single_use");
+
+        Assert.Equal(HttpStatusCode.BadRequest, stateReplay.StatusCode);
+        Assert.Equal(SR.GetResourceString(SR.ID2263), await stateReplay.Content.ReadAsStringAsync());
+
+        Assert.Equal(HttpStatusCode.BadRequest, requestReplay.StatusCode);
+        Assert.Equal(SR.GetResourceString(SR.ID2420), await requestReplay.Content.ReadAsStringAsync());
+    }
+
+    [Fact]
+    public async Task SingleSignOn_ReturnsEncryptedAssertionWhenRequired()
+    {
+        // Arrange
+        var encryption = CreateCertificate("CN=sp-encryption.example.com");
+
+        using var host = await CreateHostAsync(sp =>
+        {
+            sp.EncryptAssertions = true;
+            sp.EncryptionCertificate = encryption;
+        });
+
+        using var client = CreateClient(host);
+
+        var cookie = await LoginAsync(client);
+        var query = CreateRedirectQueryString(CreateAuthenticationRequest(id: "_encrypted"), certificate: ServiceProviderCertificate);
+
+        using var request = new HttpRequestMessage(HttpMethod.Get, "/saml/sso" + query);
+        request.Headers.Add("Cookie", cookie);
+
+        // Act
+        using var response = await client.SendAsync(request);
+
+        // Assert
+        var (_, saml, _) = await ParseFormAsync(response);
+        var document = LoadResponse(saml);
+        var manager = CreateNamespaceManager(document);
+
+        Assert.Null(document.SelectSingleNode("/samlp:Response/saml:Assertion", manager));
+
+        var assertion = DecryptAssertion((XmlElement) document.SelectSingleNode("/samlp:Response/saml:EncryptedAssertion", manager)!, encryption);
+        Assert.True(VerifySignature(assertion, IdentityProviderCertificate));
+        Assert.Equal("alice", assertion.SelectSingleNode("saml:Subject/saml:NameID", CreateNamespaceManager(assertion.OwnerDocument))!.InnerText);
+    }
+
+    private static async Task<HttpResponseMessage> ResolveAsync(HttpClient client, string envelope)
+    {
+        using var request = new HttpRequestMessage(HttpMethod.Post, "/saml/artifact")
+        {
+            Content = new StringContent(envelope, Encoding.UTF8, MediaTypes.Soap)
+        };
+
+        request.Headers.Add("SOAPAction", "http://www.oasis-open.org/committees/security");
+
+        return await client.SendAsync(request);
+    }
+
     private static XmlElement AssertSuccessfulResponse(XmlDocument document, string? inResponseTo)
     {
         var manager = CreateNamespaceManager(document);

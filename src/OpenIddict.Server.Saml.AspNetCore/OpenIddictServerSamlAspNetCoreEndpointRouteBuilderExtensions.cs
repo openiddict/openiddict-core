@@ -17,8 +17,9 @@ namespace Microsoft.AspNetCore.Builder;
 public static class OpenIddictServerSamlAspNetCoreEndpointRouteBuilderExtensions
 {
     /// <summary>
-    /// Maps the SAML metadata and single sign-on endpoints using the paths
-    /// configured in <see cref="OpenIddictServerSamlAspNetCoreOptions"/>.
+    /// Maps the SAML metadata, single sign-on and artifact resolution endpoints using the paths
+    /// configured in <see cref="OpenIddictServerSamlAspNetCoreOptions"/>. Note: the artifact
+    /// resolution endpoint returns a 404 response unless the HTTP-Artifact binding is enabled.
     /// </summary>
     /// <remarks>The endpoints must be mapped after <c>UseAuthentication()</c> is called.</remarks>
     /// <param name="endpoints">The endpoint route builder.</param>
@@ -33,7 +34,8 @@ public static class OpenIddictServerSamlAspNetCoreEndpointRouteBuilderExtensions
         return new CompositeEndpointConventionBuilder(
         [
             endpoints.MapGet(options.MetadataPath.Value!, OpenIddictServerSamlAspNetCoreEndpoints.MetadataAsync),
-            endpoints.MapMethods(options.SingleSignOnPath.Value!, [HttpMethods.Get, HttpMethods.Post], OpenIddictServerSamlAspNetCoreEndpoints.SingleSignOnAsync)
+            endpoints.MapMethods(options.SingleSignOnPath.Value!, [HttpMethods.Get, HttpMethods.Post], OpenIddictServerSamlAspNetCoreEndpoints.SingleSignOnAsync),
+            endpoints.MapPost(options.ArtifactResolutionPath.Value!, OpenIddictServerSamlAspNetCoreEndpoints.ArtifactResolutionAsync)
         ]);
     }
 
