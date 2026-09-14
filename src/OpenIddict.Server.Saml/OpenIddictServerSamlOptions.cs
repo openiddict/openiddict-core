@@ -61,6 +61,44 @@ public sealed class OpenIddictServerSamlOptions
     public TimeSpan ClockSkew { get; set; } = TimeSpan.FromMinutes(2);
 
     /// <summary>
+    /// Gets or sets the algorithm used to encrypt assertions for the service providers that require encrypted
+    /// assertions. This setting can be overridden per service provider. By default, AES-256-GCM.
+    /// </summary>
+    public string DataEncryptionAlgorithm { get; set; } = OpenIddictServerSamlConstants.DataEncryptionAlgorithms.Aes256Gcm;
+
+    /// <summary>
+    /// Gets or sets the algorithm used to encrypt the assertion encryption keys. This setting can be
+    /// overridden per service provider. By default, RSA-OAEP (rsa-oaep-mgf1p, SHA-1 digest and MGF1).
+    /// </summary>
+    public string KeyTransportAlgorithm { get; set; } = OpenIddictServerSamlConstants.KeyTransportAlgorithms.RsaOaepMgf1P;
+
+    /// <summary>
+    /// Gets or sets a boolean indicating whether the HTTP-Artifact binding is enabled: responses can then be
+    /// returned to the assertion consumer services configured to use it and artifacts can be resolved using
+    /// the artifact resolution service (SOAP binding). Disabled by default.
+    /// </summary>
+    public bool EnableArtifactBinding { get; set; }
+
+    /// <summary>
+    /// Gets or sets the lifetime of the artifacts issued using the HTTP-Artifact binding. By default, 1 minute.
+    /// </summary>
+    public TimeSpan ArtifactLifetime { get; set; } = TimeSpan.FromMinutes(1);
+
+    /// <summary>
+    /// Gets or sets a boolean indicating whether replayed messages are rejected: authentication request identifiers
+    /// can only be used once during their validity window and request states can only be used once to return a response.
+    /// Disabled by default.
+    /// </summary>
+    public bool EnableRequestReplayProtection { get; set; }
+
+    /// <summary>
+    /// Gets or sets the value of the WantAuthnRequestsSigned metadata attribute. If <see langword="null"/>, <see langword="true"/>
+    /// is advertised, unless the default service provider store is used and one of the service providers registered in the
+    /// options doesn't require signed authentication requests.
+    /// </summary>
+    public bool? WantAuthenticationRequestsSigned { get; set; }
+
+    /// <summary>
     /// Gets or sets the maximum size, in bytes, of the decoded (and inflated) SAML messages. By default, 64 KiB.
     /// </summary>
     public int MaximumMessageSize { get; set; } = 64 * 1024;

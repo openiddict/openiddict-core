@@ -24,10 +24,13 @@ namespace OpenIddict.Server.Saml;
 /// </summary>
 public sealed class OpenIddictServerSamlService
 {
-    private const byte RequestStateVersion = 2;
+    private const byte LegacyRequestStateVersion = 2;
+    private const byte RequestStateVersion = 3;
 
+    private readonly IOpenIddictServerSamlArtifactStore _artifactStore;
     private readonly ILogger<OpenIddictServerSamlService> _logger;
     private readonly IOptionsMonitor<OpenIddictServerSamlOptions> _options;
+    private readonly IOpenIddictServerSamlReplayCache _replayCache;
     private readonly IOpenIddictServerSamlServiceProviderStore _store;
 
     /// <summary>
@@ -36,14 +39,20 @@ public sealed class OpenIddictServerSamlService
     /// <param name="logger">The logger.</param>
     /// <param name="options">The SAML options.</param>
     /// <param name="store">The service provider store.</param>
+    /// <param name="replayCache">The replay cache.</param>
+    /// <param name="artifactStore">The artifact store.</param>
     public OpenIddictServerSamlService(
         ILogger<OpenIddictServerSamlService> logger,
         IOptionsMonitor<OpenIddictServerSamlOptions> options,
-        IOpenIddictServerSamlServiceProviderStore store)
+        IOpenIddictServerSamlServiceProviderStore store,
+        IOpenIddictServerSamlReplayCache replayCache,
+        IOpenIddictServerSamlArtifactStore artifactStore)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _options = options ?? throw new ArgumentNullException(nameof(options));
         _store = store ?? throw new ArgumentNullException(nameof(store));
+        _replayCache = replayCache ?? throw new ArgumentNullException(nameof(replayCache));
+        _artifactStore = artifactStore ?? throw new ArgumentNullException(nameof(artifactStore));
     }
 
     /// <summary>
@@ -72,7 +81,7 @@ public sealed class OpenIddictServerSamlService
                 throw new InvalidOperationException(SR.GetResourceString(SR.ID0574));
             }
 
-            OpenIddictServerSamlConfiguration.ValidateServiceProvider(provider);
+            OpenIddictServerSamlConfiguration.ValidateServiceProvider(provider, _options.CurrentValue);
 
             return provider;
         }
@@ -235,6 +244,7 @@ public sealed class OpenIddictServerSamlService
                 AssertionConsumerServiceUrl = provider.AssertionConsumerServiceUrls[0],
                 CanReturnErrorToServiceProvider = true,
                 RelayState = relayState,
+                ResponseBinding = GetAssertionConsumerServiceBinding(provider, index: 0),
                 ServiceProvider = provider
             };
         }
@@ -269,10 +279,44 @@ public sealed class OpenIddictServerSamlService
             // Note: authentication tickets typically store their issuance date with a precision of one second.
             CreationDate = new DateTimeOffset(now.UtcTicks - now.UtcTicks % TimeSpan.TicksPerSecond, TimeSpan.Zero),
             ExpirationDate = now + lifetime,
+            Id = CreateIdentifier(),
             RelayState = result.RelayState,
             Request = result.Request,
+            ResponseBinding = result.ResponseBinding,
             ServiceProvider = entityId
         };
+    }
+
+    /// <summary>
+    /// Marks a validated request state as used. When request replay protection is enabled, this method must be called
+    /// before returning a response to the service provider: it returns <see langword="false"/> if the state was
+    /// already used (or doesn't have an identifier), in which case no response must be returned.
+    /// </summary>
+    /// <param name="state">The request state.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns><see langword="true"/> if the state can be used, <see langword="false"/> otherwise.</returns>
+    public ValueTask<bool> ConsumeRequestStateAsync(RequestState state, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(state);
+
+        if (!_options.CurrentValue.EnableRequestReplayProtection)
+        {
+            return new(true);
+        }
+
+        return ExecuteAsync(state, cancellationToken);
+
+        async ValueTask<bool> ExecuteAsync(RequestState state, CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrEmpty(state.Id) || !await _replayCache.TryAddAsync(
+                "request-state:" + state.Id, state.ExpirationDate, cancellationToken))
+            {
+                _logger.LogInformation(6643, SR.GetResourceString(SR.ID6643), SR.GetResourceString(SR.ID2263));
+                return false;
+            }
+
+            return true;
+        }
     }
 
     /// <summary>
@@ -295,8 +339,11 @@ public sealed class OpenIddictServerSamlService
                 return Reject(SR.ID2263);
             }
 
+            var binding = state.ResponseBinding ?? Bindings.HttpPost;
+
             if (await FindServiceProviderAsync(state.ServiceProvider, cancellationToken) is not { } provider ||
-                !provider.AssertionConsumerServiceUrls.Exists(url => IsSameUrl(url, state.AssertionConsumerServiceUrl)) ||
+                !HasAssertionConsumerService(provider, state.AssertionConsumerServiceUrl, binding) ||
+                (binding is Bindings.HttpArtifact && !_options.CurrentValue.EnableArtifactBinding) ||
                 (state.Request is null && !provider.AllowIdentityProviderInitiatedSingleSignOn) ||
                 (state.Request is { IsSigned: false } && provider.RequireSignedAuthenticationRequests) ||
                 (state.Request is not null && !string.Equals(state.Request.Issuer, provider.EntityId, StringComparison.Ordinal)))
@@ -311,8 +358,23 @@ public sealed class OpenIddictServerSamlService
                 RelayState = state.RelayState,
                 Request = state.Request,
                 RequestId = state.Request?.Id,
+                ResponseBinding = binding,
                 ServiceProvider = provider
             };
+        }
+
+        static bool HasAssertionConsumerService(OpenIddictServerSamlServiceProvider provider, Uri url, string binding)
+        {
+            for (var index = 0; index < provider.AssertionConsumerServiceUrls.Count; index++)
+            {
+                if (IsSameUrl(provider.AssertionConsumerServiceUrls[index], url) &&
+                    string.Equals(GetAssertionConsumerServiceBinding(provider, index), binding, StringComparison.Ordinal))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 
@@ -348,6 +410,9 @@ public sealed class OpenIddictServerSamlService
                 WriteNullable(writer, request.NameIdFormat);
                 writer.Write(request.IsSigned);
             }
+
+            WriteNullable(writer, state.Id);
+            WriteNullable(writer, state.ResponseBinding);
         }
 
         return stream.ToArray();
@@ -376,7 +441,9 @@ public sealed class OpenIddictServerSamlService
             using var stream = new MemoryStream(data, writable: false);
             using var reader = new BinaryReader(stream, Encoding.UTF8);
 
-            if (reader.ReadByte() is not RequestStateVersion)
+            // Note: states created by the previous version (without identifier and response binding) are still accepted.
+            var version = reader.ReadByte();
+            if (version is not (RequestStateVersion or LegacyRequestStateVersion))
             {
                 return null;
             }
@@ -404,6 +471,13 @@ public sealed class OpenIddictServerSamlService
                 };
             }
 
+            string? identifier = null, binding = null;
+            if (version is RequestStateVersion)
+            {
+                identifier = ReadNullable(reader);
+                binding = ReadNullable(reader);
+            }
+
             if (stream.Position != stream.Length)
             {
                 return null;
@@ -414,8 +488,10 @@ public sealed class OpenIddictServerSamlService
                 AssertionConsumerServiceUrl = url,
                 CreationDate = creation,
                 ExpirationDate = expiration,
+                Id = identifier,
                 RelayState = relayState,
                 Request = request,
+                ResponseBinding = binding,
                 ServiceProvider = provider
             };
         }
@@ -505,31 +581,52 @@ public sealed class OpenIddictServerSamlService
         // Resolve the assertion consumer service URL, that must correspond to a registered URL.
         var url = root.HasAttribute("AssertionConsumerServiceURL") ? root.GetAttribute("AssertionConsumerServiceURL") : null;
         var index = root.HasAttribute("AssertionConsumerServiceIndex") ? root.GetAttribute("AssertionConsumerServiceIndex") : null;
+        var protocolBinding = root.HasAttribute("ProtocolBinding") ? root.GetAttribute("ProtocolBinding") : null;
 
-        Uri? acs = (url, index) switch
+        int? position = (url, index) switch
         {
             (not null, not null) => null,
-            (not null, null) => provider.AssertionConsumerServiceUrls.Find(candidate => IsSameUrl(url, candidate)),
-            (null, not null) => int.TryParse(index, NumberStyles.None, CultureInfo.InvariantCulture, out var position) &&
-                position < provider.AssertionConsumerServiceUrls.Count ? provider.AssertionConsumerServiceUrls[position] : null,
-            _ => provider.AssertionConsumerServiceUrls[0]
+            (not null, null) => FindAssertionConsumerService(provider, url, protocolBinding),
+            (null, not null) => int.TryParse(index, NumberStyles.None, CultureInfo.InvariantCulture, out var number) &&
+                number < provider.AssertionConsumerServiceUrls.Count ? number : null,
+
+            // Note: when no endpoint is specified, the default endpoint is used: if a ProtocolBinding
+            // is specified, the first endpoint supporting this binding is preferred (SAML profiles, 4.1.4.1).
+            _ => FindAssertionConsumerServiceByBinding(provider, protocolBinding) ?? 0
         };
 
-        if (acs is null)
+        if (position is not int acsIndex)
         {
             return Reject(SR.ID2256, provider, relayState);
         }
 
-        // From this point, errors can be returned to the service provider.
-        if (root.HasAttribute("ProtocolBinding") &&
-            !string.Equals(root.GetAttribute("ProtocolBinding"), Bindings.HttpPost, StringComparison.Ordinal))
+        var acs = provider.AssertionConsumerServiceUrls[acsIndex];
+
+        // Note: the binding used to return the response is the binding of the selected
+        // assertion consumer service endpoint (SAML profiles, 4.1.4.1 and SAML metadata, 2.2.3).
+        var responseBinding = GetAssertionConsumerServiceBinding(provider, acsIndex);
+
+        // When replay protection is enabled, reject authentication requests whose identifier was already used
+        // by the same service provider while the request is still considered fresh (message identifiers are unique
+        // per SAML core, 1.3.4). This check is only done once the issuer, signature and destination were validated.
+        if (options.EnableRequestReplayProtection && !await _replayCache.TryAddAsync(
+            "authentication-request:" + issuer + "\n" + identifier,
+            instant + options.AuthenticationRequestLifetime + options.ClockSkew, cancellationToken))
         {
-            return Reject(SR.ID2257, provider, relayState, acs, identifier, StatusCodes.Responder, StatusCodes.UnsupportedBinding);
+            _logger.LogInformation(6643, SR.GetResourceString(SR.ID6643), SR.GetResourceString(SR.ID2420));
+
+            return Reject(SR.ID2420, provider, relayState);
+        }
+
+        // From this point, errors can be returned to the service provider.
+        if (protocolBinding is not null && !string.Equals(protocolBinding, responseBinding, StringComparison.Ordinal))
+        {
+            return Reject(SR.ID2257, provider, relayState, acs, identifier, StatusCodes.Responder, StatusCodes.UnsupportedBinding, responseBinding);
         }
 
         if (GetChildElements(root, Elements.Subject, Namespaces.Assertion).Count is not 0)
         {
-            return Reject(SR.ID2265, provider, relayState, acs, identifier, StatusCodes.Requester, StatusCodes.RequestUnsupported);
+            return Reject(SR.ID2265, provider, relayState, acs, identifier, StatusCodes.Requester, StatusCodes.RequestUnsupported, responseBinding);
         }
 
         string? format = null;
@@ -537,7 +634,7 @@ public sealed class OpenIddictServerSamlService
         var policies = GetChildElements(root, Elements.NameIdPolicy, Namespaces.Protocol);
         if (policies.Count > 1)
         {
-            return Reject(SR.ID2249, provider, relayState, acs, identifier, StatusCodes.Requester);
+            return Reject(SR.ID2249, provider, relayState, acs, identifier, StatusCodes.Requester, binding: responseBinding);
         }
 
         if (policies.Count is 1 && policies[0].HasAttribute("Format"))
@@ -546,13 +643,13 @@ public sealed class OpenIddictServerSamlService
 
             if (format is not NameIdFormats.Unspecified && !string.Equals(format, provider.NameIdFormat, StringComparison.Ordinal))
             {
-                return Reject(SR.ID2258, provider, relayState, acs, identifier, StatusCodes.Requester, StatusCodes.InvalidNameIdPolicy);
+                return Reject(SR.ID2258, provider, relayState, acs, identifier, StatusCodes.Requester, StatusCodes.InvalidNameIdPolicy, responseBinding);
             }
         }
 
         if (!TryParseBoolean(root, "ForceAuthn", out var force) || !TryParseBoolean(root, "IsPassive", out var passive))
         {
-            return Reject(SR.ID2249, provider, relayState, acs, identifier, StatusCodes.Requester);
+            return Reject(SR.ID2249, provider, relayState, acs, identifier, StatusCodes.Requester, binding: responseBinding);
         }
 
         return new AuthenticationRequestResult
@@ -561,6 +658,7 @@ public sealed class OpenIddictServerSamlService
             CanReturnErrorToServiceProvider = true,
             RelayState = relayState,
             RequestId = identifier,
+            ResponseBinding = responseBinding,
             Request = new AuthenticationRequest
             {
                 Binding = binding,
@@ -576,18 +674,45 @@ public sealed class OpenIddictServerSamlService
             ServiceProvider = provider
         };
 
-        static bool IsNCName(string value)
+        static int? FindAssertionConsumerServiceByBinding(OpenIddictServerSamlServiceProvider provider, string? binding)
         {
-            try
+            if (binding is null)
             {
-                XmlConvert.VerifyNCName(value);
-                return true;
+                return null;
             }
 
-            catch (XmlException)
+            for (var index = 0; index < provider.AssertionConsumerServiceUrls.Count; index++)
             {
-                return false;
+                if (string.Equals(GetAssertionConsumerServiceBinding(provider, index), binding, StringComparison.Ordinal))
+                {
+                    return index;
+                }
             }
+
+            return null;
+        }
+
+        static int? FindAssertionConsumerService(OpenIddictServerSamlServiceProvider provider, string url, string? binding)
+        {
+            int? match = null;
+
+            for (var index = 0; index < provider.AssertionConsumerServiceUrls.Count; index++)
+            {
+                if (!IsSameUrl(url, provider.AssertionConsumerServiceUrls[index]))
+                {
+                    continue;
+                }
+
+                // Prefer the endpoint registered with the requested binding, if any.
+                if (binding is null || string.Equals(GetAssertionConsumerServiceBinding(provider, index), binding, StringComparison.Ordinal))
+                {
+                    return index;
+                }
+
+                match ??= index;
+            }
+
+            return match;
         }
 
         static bool TryParseBoolean(XmlElement element, string name, out bool value)
@@ -615,7 +740,7 @@ public sealed class OpenIddictServerSamlService
 
     private AuthenticationRequestResult Reject(string description, OpenIddictServerSamlServiceProvider? provider = null,
         string? relayState = null, Uri? acs = null, string? identifier = null,
-        string status = StatusCodes.Requester, string? secondLevelStatus = null)
+        string status = StatusCodes.Requester, string? secondLevelStatus = null, string? binding = null)
     {
         var message = SR.GetResourceString(description);
 
@@ -628,6 +753,7 @@ public sealed class OpenIddictServerSamlService
             ErrorDescription = message,
             RelayState = relayState,
             RequestId = identifier,
+            ResponseBinding = acs is not null ? binding ?? Bindings.HttpPost : null,
             SecondLevelStatus = secondLevelStatus,
             ServiceProvider = provider,
             Status = status
@@ -751,7 +877,35 @@ public sealed class OpenIddictServerSamlService
 
             SignElement(element, assertionIssuer, certificate, options.SignatureAlgorithm, options.DigestAlgorithm);
 
-            _logger.LogInformation(6325, SR.GetResourceString(SR.ID6325), provider.EntityId);
+            // When encryption is enabled, the signed assertion is replaced by an EncryptedAssertion element (SAML core, 2.3.4)
+            // containing the serialized assertion encrypted for the service provider (sign-then-encrypt, SAML core, 6.2).
+            if (provider.EncryptAssertions)
+            {
+                if (provider.EncryptionCertificate is not X509Certificate2 encryptionCertificate)
+                {
+                    throw new InvalidOperationException(SR.FormatID0844(provider.EntityId));
+                }
+
+                // Note: the assertion is serialized in its own document to ensure the namespaces
+                // declared by its ancestors are declared on the assertion element itself.
+                var standalone = new XmlDocument { PreserveWhitespace = true, XmlResolver = null };
+                standalone.AppendChild(standalone.ImportNode(element, deep: true));
+
+                var encrypted = document.CreateElement("saml", Elements.EncryptedAssertion, Namespaces.Assertion);
+                encrypted.AppendChild(CreateEncryptedData(document, Encoding.UTF8.GetBytes(standalone.OuterXml), encryptionCertificate,
+                    provider.DataEncryptionAlgorithm ?? options.DataEncryptionAlgorithm,
+                    provider.KeyTransportAlgorithm ?? options.KeyTransportAlgorithm,
+                    provider.EntityId));
+
+                response.ReplaceChild(encrypted, element);
+
+                _logger.LogInformation(6644, SR.GetResourceString(SR.ID6644), provider.EntityId);
+            }
+
+            else
+            {
+                _logger.LogInformation(6325, SR.GetResourceString(SR.ID6325), provider.EntityId);
+            }
         }
 
         else
@@ -773,7 +927,17 @@ public sealed class OpenIddictServerSamlService
     /// </summary>
     /// <param name="endpoint">The absolute URL of the single sign-on endpoint.</param>
     /// <returns>The serialized XML metadata.</returns>
-    public string CreateMetadata(Uri endpoint)
+    public string CreateMetadata(Uri endpoint) => CreateMetadata(endpoint, artifactResolutionEndpoint: null);
+
+    /// <summary>
+    /// Creates the metadata document (EntityDescriptor) of the identity provider.
+    /// </summary>
+    /// <param name="endpoint">The absolute URL of the single sign-on endpoint.</param>
+    /// <param name="artifactResolutionEndpoint">
+    /// The absolute URL of the artifact resolution endpoint, published when the artifact binding is enabled.
+    /// </param>
+    /// <returns>The serialized XML metadata.</returns>
+    public string CreateMetadata(Uri endpoint, Uri? artifactResolutionEndpoint)
     {
         ArgumentNullException.ThrowIfNull(endpoint);
 
@@ -785,9 +949,15 @@ public sealed class OpenIddictServerSamlService
         descriptor.SetAttribute("entityID", options.EntityId);
         document.AppendChild(descriptor);
 
+        // Note: WantAuthnRequestsSigned is an identity provider-wide statement (SAML metadata, 2.4.3). Custom stores
+        // cannot be enumerated: unless it is explicitly set, the attribute is only derived from the service providers
+        // when they are all known (i.e when the default store, backed by the options, is used). Otherwise, the default
+        // requirement of service providers (signed authentication requests) is advertised.
+        var signed = options.WantAuthenticationRequestsSigned ?? (_store is not OpenIddictServerSamlServiceProviderStore ||
+            options.ServiceProviders.TrueForAll(static provider => provider.RequireSignedAuthenticationRequests));
+
         var idp = AppendElement(descriptor, "md", Elements.IdpSsoDescriptor, Namespaces.Metadata);
-        idp.SetAttribute("WantAuthnRequestsSigned", options.ServiceProviders.TrueForAll(
-            static provider => provider.RequireSignedAuthenticationRequests) ? "true" : "false");
+        idp.SetAttribute("WantAuthnRequestsSigned", signed ? "true" : "false");
         idp.SetAttribute("protocolSupportEnumeration", Namespaces.Protocol);
 
         foreach (var certificate in options.SigningCertificates)
@@ -798,6 +968,16 @@ public sealed class OpenIddictServerSamlService
             var info = AppendElement(key, "ds", Elements.KeyInfo, Namespaces.XmlDsig);
             var data = AppendElement(info, "ds", Elements.X509Data, Namespaces.XmlDsig);
             AppendElement(data, "ds", Elements.X509Certificate, Namespaces.XmlDsig, Convert.ToBase64String(certificate.RawData));
+        }
+
+        // Note: ArtifactResolutionService elements must precede NameIDFormat elements (SAML metadata, 2.4.2).
+        if (options.EnableArtifactBinding && artifactResolutionEndpoint is not null)
+        {
+            var service = AppendElement(idp, "md", Elements.ArtifactResolutionService, Namespaces.Metadata);
+            service.SetAttribute("Binding", Bindings.Soap);
+            service.SetAttribute("Location", artifactResolutionEndpoint.AbsoluteUri);
+            service.SetAttribute("index", "0");
+            service.SetAttribute("isDefault", "true");
         }
 
         foreach (var format in (string[]) [NameIdFormats.EmailAddress, NameIdFormats.Persistent, NameIdFormats.Transient, NameIdFormats.Unspecified])
@@ -811,6 +991,302 @@ public sealed class OpenIddictServerSamlService
             service.SetAttribute("Binding", binding);
             service.SetAttribute("Location", endpoint.AbsoluteUri);
         }
+
+        return document.OuterXml;
+    }
+
+    /// <summary>
+    /// Stores a SAML response and returns the artifact (type 0x0004) representing it, that must be returned to the
+    /// assertion consumer service using the HTTP-Artifact binding (SAML bindings, 3.6). The artifact can be resolved
+    /// once, by the service provider the response is intended for, until the configured artifact lifetime elapses.
+    /// </summary>
+    /// <param name="provider">The service provider the response is intended for.</param>
+    /// <param name="response">The serialized XML response returned by <see cref="CreateResponse(ResponseDescriptor)"/>.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns>The base64-encoded artifact.</returns>
+    /// <exception cref="InvalidOperationException">The artifact binding is not enabled.</exception>
+    public ValueTask<string> CreateArtifactAsync(OpenIddictServerSamlServiceProvider provider,
+        string response, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(provider);
+        ArgumentException.ThrowIfNullOrEmpty(response);
+
+        if (!_options.CurrentValue.EnableArtifactBinding)
+        {
+            throw new InvalidOperationException(SR.GetResourceString(SR.ID0846));
+        }
+
+        return ExecuteAsync(provider, response, cancellationToken);
+
+        async ValueTask<string> ExecuteAsync(OpenIddictServerSamlServiceProvider provider, string response, CancellationToken cancellationToken)
+        {
+            var options = _options.CurrentValue;
+
+            var artifact = CreateArtifact(options.EntityId!, endpointIndex: 0, out var handle);
+
+            await _artifactStore.AddAsync(Convert.ToBase64String(handle), new ArtifactMessage
+            {
+                ExpirationDate = options.TimeProvider.GetUtcNow() + options.ArtifactLifetime,
+                Message = response,
+                ServiceProvider = provider.EntityId!
+            }, cancellationToken);
+
+            _logger.LogInformation(6640, SR.GetResourceString(SR.ID6640), provider.EntityId);
+
+            return artifact;
+        }
+    }
+
+    /// <summary>
+    /// Creates the URL used to return an artifact to an assertion consumer service using
+    /// the URL encoding of the HTTP-Artifact binding (SAML bindings, 3.6.3.2).
+    /// </summary>
+    /// <param name="url">The assertion consumer service URL.</param>
+    /// <param name="artifact">The artifact returned by <see cref="CreateArtifactAsync"/>.</param>
+    /// <param name="relayState">The relay state, if any.</param>
+    /// <returns>The URL the user agent must be redirected to (using a 302 or 303 status code).</returns>
+    public static Uri CreateArtifactRedirectUrl(Uri url, string artifact, string? relayState)
+    {
+        ArgumentNullException.ThrowIfNull(url);
+        ArgumentException.ThrowIfNullOrEmpty(artifact);
+
+        var builder = new StringBuilder(url.AbsoluteUri);
+
+        builder.Append(url.Query switch
+        {
+            { Length: > 1 } => "&",
+            "?" => string.Empty,
+            _ => "?"
+        });
+
+        builder.Append(Parameters.SamlArtifact).Append('=').Append(Uri.EscapeDataString(artifact));
+
+        if (relayState is not null)
+        {
+            builder.Append('&').Append(Parameters.RelayState).Append('=').Append(Uri.EscapeDataString(relayState));
+        }
+
+        return new Uri(builder.ToString(), UriKind.Absolute);
+    }
+
+    /// <summary>
+    /// Processes an artifact resolution request sent using the SOAP binding (SAML core, 3.5 and SAML bindings, 3.2) and
+    /// returns the SOAP envelope containing the signed ArtifactResponse or a SOAP fault if the message cannot be processed.
+    /// </summary>
+    /// <remarks>
+    /// The ArtifactResolve message must be signed by the service provider the artifact was issued to: otherwise, and when the
+    /// artifact is unknown, expired or was already resolved, an empty response is returned (SAML core, 3.5.3). Artifacts are
+    /// removed from the store once an authenticated requester tries to resolve them.
+    /// </remarks>
+    /// <param name="body">The HTTP request body.</param>
+    /// <param name="endpoint">The absolute URL of the artifact resolution endpoint.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns>The artifact resolution result.</returns>
+    /// <exception cref="InvalidOperationException">The artifact binding is not enabled.</exception>
+    public ValueTask<ArtifactResolutionResult> ResolveArtifactAsync(Stream body, Uri endpoint, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(body);
+        ArgumentNullException.ThrowIfNull(endpoint);
+
+        if (!_options.CurrentValue.EnableArtifactBinding)
+        {
+            throw new InvalidOperationException(SR.GetResourceString(SR.ID0846));
+        }
+
+        return ExecuteAsync(body, endpoint, cancellationToken);
+
+        async ValueTask<ArtifactResolutionResult> ExecuteAsync(Stream body, Uri endpoint, CancellationToken cancellationToken)
+        {
+            var options = _options.CurrentValue;
+
+            if (await ReadAsync(body, options.MaximumMessageSize, cancellationToken) is not byte[] data ||
+                LoadDocument(data, options.MaximumMessageSize, out _) is not XmlDocument document)
+            {
+                return CreateFault(SoapFaultCodes.Client, SR.ID2421);
+            }
+
+            // Note: the SAML SOAP binding uses SOAP 1.1 (SAML bindings, 3.2.2.1).
+            var envelope = document.DocumentElement!;
+            if (!string.Equals(envelope.LocalName, Elements.Envelope, StringComparison.Ordinal) ||
+                !string.Equals(envelope.NamespaceURI, Namespaces.Soap11, StringComparison.Ordinal) ||
+                GetChildElements(envelope, Elements.Body, Namespaces.Soap11) is not [XmlElement soapBody] ||
+                GetElements(soapBody) is not [XmlElement request])
+            {
+                return CreateFault(SoapFaultCodes.Client, SR.ID2421);
+            }
+
+            // SOAP headers are allowed (SAML bindings, 3.2.2.2) but the headers that must be understood are not supported.
+            foreach (var header in GetChildElements(envelope, Elements.Header, Namespaces.Soap11))
+            {
+                foreach (var entry in GetElements(header))
+                {
+                    if (entry.GetAttribute("mustUnderstand", Namespaces.Soap11) is "1" or "true")
+                    {
+                        return CreateFault(SoapFaultCodes.MustUnderstand, SR.ID2422);
+                    }
+                }
+            }
+
+            if (!string.Equals(request.LocalName, Elements.ArtifactResolve, StringComparison.Ordinal) ||
+                !string.Equals(request.NamespaceURI, Namespaces.Protocol, StringComparison.Ordinal) ||
+                !string.Equals(request.GetAttribute("Version"), "2.0", StringComparison.Ordinal) ||
+                request.GetAttribute("ID") is not { Length: > 0 } identifier || !IsNCName(identifier) ||
+                !TryParseInstant(request.GetAttribute("IssueInstant"), out var instant) ||
+                GetChildElements(request, Elements.Issuer, Namespaces.Assertion) is not [XmlElement issuerElement] ||
+                GetTextContent(issuerElement) is not { Length: > 0 } issuer ||
+                GetChildElements(request, Elements.Artifact, Namespaces.Protocol) is not [XmlElement artifactElement] ||
+                GetTextContent(artifactElement) is not { Length: > 0 } artifact)
+            {
+                return CreateFault(SoapFaultCodes.Client, SR.ID2421);
+            }
+
+            // The requester must be authenticated before the artifact is resolved (SAML bindings, 3.6.5.2).
+            if (await FindServiceProviderAsync(issuer, cancellationToken) is not { } provider ||
+                ValidateEnvelopedSignature(request, provider.SigningCertificates) is not SignatureValidationResult.Valid)
+            {
+                return CreateEmptyResponse(identifier, SR.ID2423);
+            }
+
+            var now = options.TimeProvider.GetUtcNow();
+            if (instant > now + options.ClockSkew || instant < now - options.AuthenticationRequestLifetime - options.ClockSkew ||
+                (request.HasAttribute("Destination") && !IsSameUrl(request.GetAttribute("Destination"), endpoint)))
+            {
+                return CreateEmptyResponse(identifier, SR.ID2424);
+            }
+
+            if (ParseArtifact(artifact, options.EntityId!) is not byte[] handle ||
+                await _artifactStore.RemoveAsync(Convert.ToBase64String(handle), cancellationToken) is not ArtifactMessage message ||
+                message.ExpirationDate < now)
+            {
+                return CreateEmptyResponse(identifier, SR.ID2425);
+            }
+
+            // Note: the artifact is removed even if it was not issued to the requester, to enforce single use (SAML core, 3.5.3).
+            if (!string.Equals(message.ServiceProvider, provider.EntityId, StringComparison.Ordinal))
+            {
+                return CreateEmptyResponse(identifier, SR.ID2426);
+            }
+
+            var payload = Encoding.UTF8.GetBytes(message.Message);
+            if (LoadDocument(payload, payload.Length, out _) is not XmlDocument embedded)
+            {
+                return CreateEmptyResponse(identifier, SR.ID2425);
+            }
+
+            _logger.LogInformation(6641, SR.GetResourceString(SR.ID6641), provider.EntityId);
+
+            return new ArtifactResolutionResult
+            {
+                Content = CreateArtifactResponse(options, identifier, embedded.DocumentElement),
+                Resolved = true
+            };
+        }
+
+        ArtifactResolutionResult CreateEmptyResponse(string identifier, string description)
+        {
+            _logger.LogInformation(6642, SR.GetResourceString(SR.ID6642), SR.GetResourceString(description));
+
+            return new ArtifactResolutionResult { Content = CreateArtifactResponse(_options.CurrentValue, identifier, message: null) };
+        }
+
+        ArtifactResolutionResult CreateFault(string code, string description)
+        {
+            var message = SR.GetResourceString(description);
+
+            _logger.LogInformation(6642, SR.GetResourceString(SR.ID6642), message);
+
+            var document = new XmlDocument { XmlResolver = null };
+
+            var envelope = document.CreateElement("soap", Elements.Envelope, Namespaces.Soap11);
+            envelope.SetAttribute("xmlns:soap", Namespaces.Soap11);
+            document.AppendChild(envelope);
+
+            var fault = AppendElement(AppendElement(envelope, "soap", Elements.Body, Namespaces.Soap11), "soap", Elements.Fault, Namespaces.Soap11);
+
+            // Note: the faultcode and faultstring elements are unqualified (SOAP 1.1, 4.4).
+            var faultCode = document.CreateElement(Elements.FaultCode);
+            faultCode.AppendChild(document.CreateTextNode("soap:" + code));
+            fault.AppendChild(faultCode);
+
+            var faultString = document.CreateElement(Elements.FaultString);
+            faultString.AppendChild(document.CreateTextNode(message));
+            fault.AppendChild(faultString);
+
+            return new ArtifactResolutionResult { Content = document.OuterXml, IsFault = true };
+        }
+
+        static async ValueTask<byte[]?> ReadAsync(Stream body, int maximumSize, CancellationToken cancellationToken)
+        {
+            using var output = new MemoryStream();
+
+            var buffer = new byte[4096];
+            int count;
+
+            while ((count = await body.ReadAsync(buffer, 0, buffer.Length, cancellationToken)) > 0)
+            {
+                if (output.Length + count > maximumSize)
+                {
+                    return null;
+                }
+
+                output.Write(buffer, 0, count);
+            }
+
+            return output.Length is 0 ? null : output.ToArray();
+        }
+
+        static List<XmlElement> GetElements(XmlElement element)
+        {
+            List<XmlElement> elements = [];
+
+            foreach (XmlNode node in element.ChildNodes)
+            {
+                switch (node)
+                {
+                    case XmlElement child:
+                        elements.Add(child);
+                        break;
+
+                    // Note: text content is not allowed in the SOAP envelope, header and body elements.
+                    case XmlText or XmlCDataSection:
+                        return [];
+                }
+            }
+
+            return elements;
+        }
+    }
+
+    private string CreateArtifactResponse(OpenIddictServerSamlOptions options, string inResponseTo, XmlElement? message)
+    {
+        var document = new XmlDocument { PreserveWhitespace = true, XmlResolver = null };
+
+        var envelope = document.CreateElement("soap", Elements.Envelope, Namespaces.Soap11);
+        envelope.SetAttribute("xmlns:soap", Namespaces.Soap11);
+        document.AppendChild(envelope);
+
+        var body = AppendElement(envelope, "soap", Elements.Body, Namespaces.Soap11);
+
+        var response = AppendElement(body, "samlp", Elements.ArtifactResponse, Namespaces.Protocol);
+        response.SetAttribute("xmlns:samlp", Namespaces.Protocol);
+        response.SetAttribute("xmlns:saml", Namespaces.Assertion);
+        response.SetAttribute("ID", CreateIdentifier());
+        response.SetAttribute("Version", "2.0");
+        response.SetAttribute("IssueInstant", FormatInstant(options.TimeProvider.GetUtcNow()));
+        response.SetAttribute("InResponseTo", inResponseTo);
+
+        var issuer = AppendElement(response, "saml", Elements.Issuer, Namespaces.Assertion, options.EntityId);
+
+        // Note: the status is always Success, even for empty responses (SAML core, 3.5.3 and SAML bindings, 3.6.6).
+        var status = AppendElement(response, "samlp", Elements.Status, Namespaces.Protocol);
+        AppendElement(status, "samlp", Elements.StatusCode, Namespaces.Protocol).SetAttribute("Value", StatusCodes.Success);
+
+        if (message is not null)
+        {
+            response.AppendChild(document.ImportNode(message, deep: true));
+        }
+
+        SignElement(response, issuer, GetSigningCertificate(options), options.SignatureAlgorithm, options.DigestAlgorithm);
 
         return document.OuterXml;
     }
@@ -870,6 +1346,23 @@ public sealed class OpenIddictServerSamlService
         parent.AppendChild(element);
 
         return element;
+    }
+
+    private static string GetAssertionConsumerServiceBinding(OpenIddictServerSamlServiceProvider provider, int index)
+        => provider.AssertionConsumerServiceBindings.TryGetValue(index, out var binding) ? binding : Bindings.HttpPost;
+
+    private static bool IsNCName(string value)
+    {
+        try
+        {
+            XmlConvert.VerifyNCName(value);
+            return true;
+        }
+
+        catch (XmlException)
+        {
+            return false;
+        }
     }
 
     private static bool IsSameUrl(string value, Uri url)

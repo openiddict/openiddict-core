@@ -126,6 +126,87 @@ public sealed class OpenIddictServerSamlBuilder
     }
 
     /// <summary>
+    /// Registers a custom replay cache, used to detect replayed authentication requests and request states.
+    /// </summary>
+    /// <typeparam name="TCache">The type of the replay cache.</typeparam>
+    /// <param name="lifetime">The lifetime of the replay cache.</param>
+    /// <returns>The <see cref="OpenIddictServerSamlBuilder"/> instance.</returns>
+    public OpenIddictServerSamlBuilder SetReplayCache<
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TCache>(
+        ServiceLifetime lifetime = ServiceLifetime.Singleton)
+        where TCache : class, IOpenIddictServerSamlReplayCache
+    {
+        Services.Replace(new ServiceDescriptor(typeof(IOpenIddictServerSamlReplayCache), typeof(TCache), lifetime));
+
+        return this;
+    }
+
+    /// <summary>
+    /// Registers a custom artifact store, used to store the messages represented by artifacts.
+    /// </summary>
+    /// <typeparam name="TStore">The type of the artifact store.</typeparam>
+    /// <param name="lifetime">The lifetime of the artifact store.</param>
+    /// <returns>The <see cref="OpenIddictServerSamlBuilder"/> instance.</returns>
+    public OpenIddictServerSamlBuilder SetArtifactStore<
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TStore>(
+        ServiceLifetime lifetime = ServiceLifetime.Singleton)
+        where TStore : class, IOpenIddictServerSamlArtifactStore
+    {
+        Services.Replace(new ServiceDescriptor(typeof(IOpenIddictServerSamlArtifactStore), typeof(TStore), lifetime));
+
+        return this;
+    }
+
+    /// <summary>
+    /// Enables the HTTP-Artifact binding, used to return responses to the assertion consumer services
+    /// registered with this binding, and the artifact resolution service (SOAP binding).
+    /// </summary>
+    /// <returns>The <see cref="OpenIddictServerSamlBuilder"/> instance.</returns>
+    public OpenIddictServerSamlBuilder EnableArtifactBinding()
+        => Configure(options => options.EnableArtifactBinding = true);
+
+    /// <summary>
+    /// Sets the lifetime of the artifacts issued using the HTTP-Artifact binding.
+    /// </summary>
+    /// <param name="lifetime">The lifetime.</param>
+    /// <returns>The <see cref="OpenIddictServerSamlBuilder"/> instance.</returns>
+    public OpenIddictServerSamlBuilder SetArtifactLifetime(TimeSpan lifetime)
+        => Configure(options => options.ArtifactLifetime = lifetime);
+
+    /// <summary>
+    /// Enables request replay protection: authentication request identifiers and request states can only be used once.
+    /// </summary>
+    /// <returns>The <see cref="OpenIddictServerSamlBuilder"/> instance.</returns>
+    public OpenIddictServerSamlBuilder EnableRequestReplayProtection()
+        => Configure(options => options.EnableRequestReplayProtection = true);
+
+    /// <summary>
+    /// Sets the default algorithms used to encrypt assertions for the service providers requiring encrypted assertions.
+    /// </summary>
+    /// <param name="dataEncryptionAlgorithm">The data encryption algorithm (AES-256-GCM or AES-256-CBC).</param>
+    /// <param name="keyTransportAlgorithm">The key transport algorithm (RSA-OAEP-MGF1P or RSA-OAEP).</param>
+    /// <returns>The <see cref="OpenIddictServerSamlBuilder"/> instance.</returns>
+    public OpenIddictServerSamlBuilder SetEncryptionAlgorithms(string dataEncryptionAlgorithm, string keyTransportAlgorithm)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(dataEncryptionAlgorithm);
+        ArgumentException.ThrowIfNullOrEmpty(keyTransportAlgorithm);
+
+        return Configure(options =>
+        {
+            options.DataEncryptionAlgorithm = dataEncryptionAlgorithm;
+            options.KeyTransportAlgorithm = keyTransportAlgorithm;
+        });
+    }
+
+    /// <summary>
+    /// Sets the value of the WantAuthnRequestsSigned attribute published in the metadata.
+    /// </summary>
+    /// <param name="value">The value.</param>
+    /// <returns>The <see cref="OpenIddictServerSamlBuilder"/> instance.</returns>
+    public OpenIddictServerSamlBuilder SetWantAuthenticationRequestsSigned(bool value)
+        => Configure(options => options.WantAuthenticationRequestsSigned = value);
+
+    /// <summary>
     /// Sets the algorithms used to sign responses and assertions.
     /// </summary>
     /// <param name="signatureAlgorithm">The signature algorithm (RSA-SHA256, RSA-SHA384 or RSA-SHA512).</param>

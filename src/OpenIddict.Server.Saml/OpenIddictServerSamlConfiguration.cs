@@ -87,6 +87,17 @@ public sealed class OpenIddictServerSamlConfiguration : IPostConfigureOptions<Op
             return ValidateOptionsResult.Fail(SR.GetResourceString(SR.ID0572));
         }
 
+        if (options.ArtifactLifetime <= TimeSpan.Zero)
+        {
+            return ValidateOptionsResult.Fail(SR.GetResourceString(SR.ID0845));
+        }
+
+        if (!OpenIddictServerSamlHelpers.IsSupportedDataEncryptionAlgorithm(options.DataEncryptionAlgorithm) ||
+            !OpenIddictServerSamlHelpers.IsSupportedKeyTransportAlgorithm(options.KeyTransportAlgorithm))
+        {
+            return ValidateOptionsResult.Fail(SR.FormatID0842(options.DataEncryptionAlgorithm, options.KeyTransportAlgorithm));
+        }
+
         if (OpenIddictServerSamlHelpers.GetHashAlgorithm(options.SignatureAlgorithm) is null ||
             !OpenIddictServerSamlHelpers.IsSupportedDigestAlgorithm(options.DigestAlgorithm))
         {
@@ -99,7 +110,7 @@ public sealed class OpenIddictServerSamlConfiguration : IPostConfigureOptions<Op
         {
             try
             {
-                ValidateServiceProvider(provider);
+                ValidateServiceProvider(provider, options);
             }
 
             catch (InvalidOperationException exception)
@@ -116,8 +127,7 @@ public sealed class OpenIddictServerSamlConfiguration : IPostConfigureOptions<Op
         return ValidateOptionsResult.Success;
     }
 
-    private static bool IsRsaCertificate(X509Certificate2 certificate)
-        => string.Equals(certificate.PublicKey.Oid.Value, "1.2.840.113549.1.1.1", StringComparison.Ordinal);
+    private static bool IsRsaCertificate(X509Certificate2 certificate) => OpenIddictServerSamlHelpers.IsRsaCertificate(certificate);
 
     /// <summary>
     /// Ensures the specified service provider is valid.
@@ -125,9 +135,53 @@ public sealed class OpenIddictServerSamlConfiguration : IPostConfigureOptions<Op
     /// <param name="provider">The service provider.</param>
     /// <exception cref="InvalidOperationException">The service provider is invalid.</exception>
     public static void ValidateServiceProvider(OpenIddictServerSamlServiceProvider provider)
+        => ValidateServiceProvider(provider, options: null);
+
+    /// <summary>
+    /// Ensures the specified service provider is valid and compatible with the identity provider options.
+    /// </summary>
+    /// <param name="provider">The service provider.</param>
+    /// <param name="options">The SAML options, if available.</param>
+    /// <exception cref="InvalidOperationException">The service provider is invalid.</exception>
+    public static void ValidateServiceProvider(OpenIddictServerSamlServiceProvider provider, OpenIddictServerSamlOptions? options)
     {
         ArgumentNullException.ThrowIfNull(provider);
 
+        ValidateCoreSettings(provider);
+
+        foreach (var binding in provider.AssertionConsumerServiceBindings)
+        {
+            if (binding.Key < 0 || binding.Key >= provider.AssertionConsumerServiceUrls.Count ||
+                binding.Value is not (OpenIddictServerSamlConstants.Bindings.HttpPost or OpenIddictServerSamlConstants.Bindings.HttpArtifact))
+            {
+                throw new InvalidOperationException(SR.FormatID0840(provider.EntityId));
+            }
+
+            // Note: the requester of an artifact resolution must be authenticated (SAML bindings, 3.6.5.2),
+            // which is only supported using a signed ArtifactResolve message (TLS client authentication isn't).
+            if (binding.Value is OpenIddictServerSamlConstants.Bindings.HttpArtifact &&
+                ((options is not null && !options.EnableArtifactBinding) || provider.SigningCertificates.Count is 0))
+            {
+                throw new InvalidOperationException(SR.FormatID0843(provider.EntityId));
+            }
+        }
+
+        if (provider.EncryptAssertions && (provider.EncryptionCertificate is null || !IsRsaCertificate(provider.EncryptionCertificate)))
+        {
+            throw new InvalidOperationException(SR.FormatID0844(provider.EntityId));
+        }
+
+        if ((provider.DataEncryptionAlgorithm is not null &&
+            !OpenIddictServerSamlHelpers.IsSupportedDataEncryptionAlgorithm(provider.DataEncryptionAlgorithm)) ||
+            (provider.KeyTransportAlgorithm is not null &&
+            !OpenIddictServerSamlHelpers.IsSupportedKeyTransportAlgorithm(provider.KeyTransportAlgorithm)))
+        {
+            throw new InvalidOperationException(SR.FormatID0842(provider.DataEncryptionAlgorithm, provider.KeyTransportAlgorithm));
+        }
+    }
+
+    private static void ValidateCoreSettings(OpenIddictServerSamlServiceProvider provider)
+    {
         if (string.IsNullOrEmpty(provider.EntityId))
         {
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0567));

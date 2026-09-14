@@ -25,6 +25,15 @@ public sealed class OpenIddictServerSamlServiceProvider
     public List<Uri> AssertionConsumerServiceUrls { get; } = [];
 
     /// <summary>
+    /// Gets the bindings used to return responses to the assertion consumer services, keyed by their index in
+    /// <see cref="AssertionConsumerServiceUrls"/> (i.e the Binding attribute of the corresponding AssertionConsumerService
+    /// element in the service provider metadata). Indexes that are not listed use the HTTP-POST binding.
+    /// Supported values: <see cref="OpenIddictServerSamlConstants.Bindings.HttpPost"/> and
+    /// <see cref="OpenIddictServerSamlConstants.Bindings.HttpArtifact"/> (which requires artifact binding to be enabled).
+    /// </summary>
+    public Dictionary<int, string> AssertionConsumerServiceBindings { get; } = [];
+
+    /// <summary>
     /// Gets the certificates used to validate the signature of the authentication requests.
     /// </summary>
     public List<X509Certificate2> SigningCertificates { get; } = [];
@@ -49,6 +58,28 @@ public sealed class OpenIddictServerSamlServiceProvider
     /// Gets or sets the lifetime of the assertions. If <see langword="null"/>, the global option is used.
     /// </summary>
     public TimeSpan? AssertionLifetime { get; set; }
+
+    /// <summary>
+    /// Gets or sets a boolean indicating whether the assertions issued to this service provider are encrypted
+    /// (EncryptedAssertion) using <see cref="EncryptionCertificate"/>. Disabled by default.
+    /// </summary>
+    public bool EncryptAssertions { get; set; }
+
+    /// <summary>
+    /// Gets or sets the X.509 certificate (with an RSA public key) used to encrypt the assertions, i.e the certificate
+    /// published in the KeyDescriptor use="encryption" element of the service provider metadata.
+    /// </summary>
+    public X509Certificate2? EncryptionCertificate { get; set; }
+
+    /// <summary>
+    /// Gets or sets the algorithm used to encrypt the assertions. If <see langword="null"/>, the global option is used.
+    /// </summary>
+    public string? DataEncryptionAlgorithm { get; set; }
+
+    /// <summary>
+    /// Gets or sets the algorithm used to encrypt the assertion encryption keys. If <see langword="null"/>, the global option is used.
+    /// </summary>
+    public string? KeyTransportAlgorithm { get; set; }
 
     /// <summary>
     /// Gets or sets a boolean indicating whether identity provider-initiated (unsolicited) single sign-on is allowed.

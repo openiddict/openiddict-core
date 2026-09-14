@@ -435,6 +435,237 @@ internal static class OpenIddictServerSamlHelpers
     }
 
     /// <summary>
+    /// Hashes an identifier (SHA-256, base64url) so that it can be safely used as a cache key.
+    /// </summary>
+    public static string HashIdentifier(string identifier)
+    {
+        var hash = SHA256.HashData(Encoding.UTF8.GetBytes(identifier));
+
+        return Convert.ToBase64String(hash).TrimEnd('=').Replace('+', '-').Replace('/', '_');
+    }
+
+    /// <summary>
+    /// Computes the relative lifetime of a cache entry expiring at the specified date. Note: a relative lifetime is used
+    /// as caches use the system clock, that may differ from the configured time provider, and reject past expiration dates.
+    /// </summary>
+    public static TimeSpan GetCacheLifetime(DateTimeOffset expirationDate, DateTimeOffset now)
+    {
+        var lifetime = expirationDate - now;
+
+        return lifetime > TimeSpan.FromSeconds(1) ? lifetime : TimeSpan.FromSeconds(1);
+    }
+
+    /// <summary>
+    /// Determines whether the specified data encryption algorithm is supported.
+    /// </summary>
+    public static bool IsSupportedDataEncryptionAlgorithm(string? algorithm)
+        => algorithm is DataEncryptionAlgorithms.Aes256Gcm or DataEncryptionAlgorithms.Aes256Cbc;
+
+    /// <summary>
+    /// Determines whether the specified key transport algorithm is supported.
+    /// </summary>
+    public static bool IsSupportedKeyTransportAlgorithm(string? algorithm)
+        => algorithm is KeyTransportAlgorithms.RsaOaepMgf1P or KeyTransportAlgorithms.RsaOaep;
+
+    /// <summary>
+    /// Determines whether the specified certificate contains an RSA public key.
+    /// </summary>
+    public static bool IsRsaCertificate(X509Certificate2 certificate)
+        => string.Equals(certificate.PublicKey.Oid.Value, "1.2.840.113549.1.1.1", StringComparison.Ordinal);
+
+    /// <summary>
+    /// Creates an xenc:EncryptedData element (XML Encryption 1.1, type Element) containing the specified
+    /// serialized element, encrypted using a random AES-256 key transported using the RSA public key of the
+    /// certificate in an embedded xenc:EncryptedKey element (SAML core, 6.2).
+    /// </summary>
+    public static XmlElement CreateEncryptedData(XmlDocument document, byte[] plaintext, X509Certificate2 certificate,
+        string dataEncryptionAlgorithm, string keyTransportAlgorithm, string? recipient)
+    {
+        using var rsa = certificate.GetRSAPublicKey() ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0841));
+
+        var key = RandomNumberGenerator.GetBytes(32);
+
+        try
+        {
+            var data = document.CreateElement("xenc", Elements.EncryptedData, Namespaces.XmlEnc);
+            data.SetAttribute("xmlns:xenc", Namespaces.XmlEnc);
+            data.SetAttribute("Type", EncryptedTypes.Element);
+
+            Append(data, "xenc", Elements.EncryptionMethod, Namespaces.XmlEnc).SetAttribute("Algorithm", dataEncryptionAlgorithm);
+
+            var info = Append(data, "ds", Elements.KeyInfo, Namespaces.XmlDsig);
+            info.SetAttribute("xmlns:ds", Namespaces.XmlDsig);
+
+            var encryptedKey = Append(info, "xenc", Elements.EncryptedKey, Namespaces.XmlEnc);
+            if (!string.IsNullOrEmpty(recipient))
+            {
+                encryptedKey.SetAttribute("Recipient", recipient);
+            }
+
+            var method = Append(encryptedKey, "xenc", Elements.EncryptionMethod, Namespaces.XmlEnc);
+            method.SetAttribute("Algorithm", keyTransportAlgorithm);
+
+            RSAEncryptionPadding padding;
+
+            switch (keyTransportAlgorithm)
+            {
+                // Note: rsa-oaep-mgf1p always uses MGF1 with SHA-1 (XML Encryption 1.1, 5.5.2).
+                case KeyTransportAlgorithms.RsaOaepMgf1P:
+                    Append(method, "ds", Elements.DigestMethod, Namespaces.XmlDsig).SetAttribute("Algorithm", DigestAlgorithms.Sha1);
+                    padding = RSAEncryptionPadding.OaepSHA1;
+                    break;
+
+                // Note: .NET uses the same hash algorithm for the OAEP digest and MGF1.
+                case KeyTransportAlgorithms.RsaOaep:
+                    Append(method, "ds", Elements.DigestMethod, Namespaces.XmlDsig).SetAttribute("Algorithm", DigestAlgorithms.Sha256);
+
+                    var mgf = Append(method, "xenc11", Elements.MaskGenerationFunction, Namespaces.XmlEnc11);
+                    mgf.SetAttribute("xmlns:xenc11", Namespaces.XmlEnc11);
+                    mgf.SetAttribute("Algorithm", MaskGenerationFunctions.Mgf1Sha256);
+
+                    padding = RSAEncryptionPadding.OaepSHA256;
+                    break;
+
+                default: throw new InvalidOperationException(SR.FormatID0842(dataEncryptionAlgorithm, keyTransportAlgorithm));
+            }
+
+            var keyInfo = Append(encryptedKey, "ds", Elements.KeyInfo, Namespaces.XmlDsig);
+            var x509 = Append(keyInfo, "ds", Elements.X509Data, Namespaces.XmlDsig);
+            Append(x509, "ds", Elements.X509Certificate, Namespaces.XmlDsig, Convert.ToBase64String(certificate.RawData));
+
+            var keyCipher = Append(encryptedKey, "xenc", Elements.CipherData, Namespaces.XmlEnc);
+            Append(keyCipher, "xenc", Elements.CipherValue, Namespaces.XmlEnc, Convert.ToBase64String(rsa.Encrypt(key, padding)));
+
+            var cipher = Append(data, "xenc", Elements.CipherData, Namespaces.XmlEnc);
+            Append(cipher, "xenc", Elements.CipherValue, Namespaces.XmlEnc, Convert.ToBase64String(dataEncryptionAlgorithm switch
+            {
+                DataEncryptionAlgorithms.Aes256Gcm => EncryptAesGcm(key, plaintext),
+                DataEncryptionAlgorithms.Aes256Cbc => EncryptAesCbc(key, plaintext),
+                _ => throw new InvalidOperationException(SR.FormatID0842(dataEncryptionAlgorithm, keyTransportAlgorithm))
+            }));
+
+            return data;
+        }
+
+        finally
+        {
+            Array.Clear(key, 0, key.Length);
+        }
+
+        static XmlElement Append(XmlElement parent, string prefix, string name, string ns, string? text = null)
+        {
+            var element = parent.OwnerDocument.CreateElement(prefix, name, ns);
+            if (text is not null)
+            {
+                element.AppendChild(parent.OwnerDocument.CreateTextNode(text));
+            }
+
+            parent.AppendChild(element);
+            return element;
+        }
+
+        // Note: the cipher value is the concatenation of the 96-bit IV, the ciphertext
+        // and the 128-bit authentication tag (XML Encryption 1.1, 5.2.4).
+        static byte[] EncryptAesGcm(byte[] key, byte[] plaintext)
+        {
+            var result = new byte[12 + plaintext.Length + 16];
+            var nonce = RandomNumberGenerator.GetBytes(12);
+            var ciphertext = new byte[plaintext.Length];
+            var tag = new byte[16];
+
+            using (var aes = new AesGcm(key, tagSizeInBytes: 16))
+            {
+                aes.Encrypt(nonce, plaintext, ciphertext, tag);
+            }
+
+            Buffer.BlockCopy(nonce, 0, result, 0, 12);
+            Buffer.BlockCopy(ciphertext, 0, result, 12, ciphertext.Length);
+            Buffer.BlockCopy(tag, 0, result, 12 + ciphertext.Length, 16);
+
+            return result;
+        }
+
+        // Note: the cipher value is the concatenation of the 128-bit IV and the ciphertext (XML Encryption 1.1, 5.2.2).
+        // PKCS#7 padding is a valid instance of the padding scheme required by XML Encryption.
+        static byte[] EncryptAesCbc(byte[] key, byte[] plaintext)
+        {
+            using var aes = Aes.Create();
+            aes.Key = key;
+            aes.Mode = CipherMode.CBC;
+            aes.Padding = PaddingMode.PKCS7;
+            aes.GenerateIV();
+
+            using var encryptor = aes.CreateEncryptor();
+            var ciphertext = encryptor.TransformFinalBlock(plaintext, 0, plaintext.Length);
+
+            var result = new byte[aes.IV.Length + ciphertext.Length];
+            Buffer.BlockCopy(aes.IV, 0, result, 0, aes.IV.Length);
+            Buffer.BlockCopy(ciphertext, 0, result, aes.IV.Length, ciphertext.Length);
+
+            return result;
+        }
+    }
+
+    /// <summary>
+    /// Creates a SAML 2.0 artifact of type 0x0004 (SAML bindings, 3.6.4.2).
+    /// </summary>
+    /// <param name="entityId">The entity identifier of the issuer, whose SHA-1 hash is used as the SourceID.</param>
+    /// <param name="endpointIndex">The index of the artifact resolution service.</param>
+    /// <param name="handle">The random message handle.</param>
+    public static string CreateArtifact(string entityId, ushort endpointIndex, out byte[] handle)
+    {
+        handle = RandomNumberGenerator.GetBytes(20);
+
+        var artifact = new byte[44];
+        artifact[0] = (byte) (ArtifactTypes.Saml2 >> 8);
+        artifact[1] = (byte) ArtifactTypes.Saml2;
+        artifact[2] = (byte) (endpointIndex >> 8);
+        artifact[3] = (byte) endpointIndex;
+
+        // Note: SHA-1 is mandated by the artifact format to identify the issuer: it is not used as a security control.
+#pragma warning disable CA5350
+        Buffer.BlockCopy(SHA1.HashData(Encoding.UTF8.GetBytes(entityId)), 0, artifact, 4, 20);
+#pragma warning restore CA5350
+        Buffer.BlockCopy(handle, 0, artifact, 24, 20);
+
+        return Convert.ToBase64String(artifact);
+    }
+
+    /// <summary>
+    /// Parses a SAML 2.0 artifact of type 0x0004 issued by the specified entity.
+    /// </summary>
+    /// <returns>The message handle, or <see langword="null"/> if the artifact is invalid or was not issued by the entity.</returns>
+    public static byte[]? ParseArtifact(string? value, string entityId)
+    {
+        if (string.IsNullOrEmpty(value) || value.Length > 64 || DecodeBase64(value) is not { Length: 44 } artifact)
+        {
+            return null;
+        }
+
+        if (((artifact[0] << 8) | artifact[1]) is not ArtifactTypes.Saml2)
+        {
+            return null;
+        }
+
+#pragma warning disable CA5350
+        var source = SHA1.HashData(Encoding.UTF8.GetBytes(entityId));
+#pragma warning restore CA5350
+
+        for (var index = 0; index < 20; index++)
+        {
+            if (artifact[4 + index] != source[index])
+            {
+                return null;
+            }
+        }
+
+        var handle = new byte[20];
+        Buffer.BlockCopy(artifact, 24, handle, 0, 20);
+
+        return handle;
+    }
+
+    /// <summary>
     /// Represents the result of a signature validation.
     /// </summary>
     public enum SignatureValidationResult

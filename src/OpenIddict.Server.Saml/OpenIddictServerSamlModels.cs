@@ -91,6 +91,13 @@ public static class OpenIddictServerSamlModels
         public string? RequestId { get; init; }
 
         /// <summary>
+        /// Gets the binding used to return the response to the assertion consumer service
+        /// (<see cref="OpenIddictServerSamlConstants.Bindings.HttpPost"/> or
+        /// <see cref="OpenIddictServerSamlConstants.Bindings.HttpArtifact"/>), if available.
+        /// </summary>
+        public string? ResponseBinding { get; init; }
+
+        /// <summary>
         /// Gets the relay state, if specified.
         /// </summary>
         public string? RelayState { get; init; }
@@ -128,9 +135,20 @@ public static class OpenIddictServerSamlModels
     public sealed record class RequestState
     {
         /// <summary>
+        /// Gets the unique identifier of the state, used to enforce single use when request replay protection is enabled.
+        /// </summary>
+        public string? Id { get; init; }
+
+        /// <summary>
         /// Gets the entity identifier of the service provider.
         /// </summary>
         public required string ServiceProvider { get; init; }
+
+        /// <summary>
+        /// Gets the binding used to return the response to the assertion consumer service.
+        /// If <see langword="null"/>, <see cref="OpenIddictServerSamlConstants.Bindings.HttpPost"/> is used.
+        /// </summary>
+        public string? ResponseBinding { get; init; }
 
         /// <summary>
         /// Gets the validated assertion consumer service URL.
@@ -287,5 +305,48 @@ public static class OpenIddictServerSamlModels
         /// Gets or sets the status message, if applicable.
         /// </summary>
         public string? StatusMessage { get; init; }
+    }
+
+    /// <summary>
+    /// Represents a SAML message stored until the artifact representing it is resolved.
+    /// </summary>
+    public sealed record class ArtifactMessage
+    {
+        /// <summary>
+        /// Gets the entity identifier of the service provider the message is intended for.
+        /// </summary>
+        public required string ServiceProvider { get; init; }
+
+        /// <summary>
+        /// Gets the serialized XML message.
+        /// </summary>
+        public required string Message { get; init; }
+
+        /// <summary>
+        /// Gets the date after which the artifact can no longer be resolved.
+        /// </summary>
+        public required DateTimeOffset ExpirationDate { get; init; }
+    }
+
+    /// <summary>
+    /// Represents the result of an artifact resolution request.
+    /// </summary>
+    public sealed record class ArtifactResolutionResult
+    {
+        /// <summary>
+        /// Gets the serialized SOAP envelope returned to the requester.
+        /// </summary>
+        public required string Content { get; init; }
+
+        /// <summary>
+        /// Gets a boolean indicating whether the envelope contains a SOAP fault
+        /// (in which case the HTTP status code must be 500, per SAML bindings, 3.2.3.3).
+        /// </summary>
+        public bool IsFault { get; init; }
+
+        /// <summary>
+        /// Gets a boolean indicating whether the artifact was resolved and a message returned.
+        /// </summary>
+        public bool Resolved { get; init; }
     }
 }

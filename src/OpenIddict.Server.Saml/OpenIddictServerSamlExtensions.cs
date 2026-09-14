@@ -30,6 +30,8 @@ public static class OpenIddictServerSamlExtensions
 
         builder.Services.TryAddSingleton<IOpenIddictServerSamlServiceProviderStore, OpenIddictServerSamlServiceProviderStore>();
         builder.Services.TryAddSingleton<IOpenIddictServerSamlAssertionProvider, OpenIddictServerSamlAssertionProvider>();
+        builder.Services.TryAddSingleton<IOpenIddictServerSamlArtifactStore, OpenIddictServerSamlArtifactStore>();
+        builder.Services.TryAddSingleton<IOpenIddictServerSamlReplayCache, OpenIddictServerSamlReplayCache>();
         builder.Services.TryAddScoped<OpenIddictServerSamlService>();
 
         // Note: TryAddEnumerable() is used here to ensure the initializers are only registered once.

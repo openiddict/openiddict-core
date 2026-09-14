@@ -2050,6 +2050,27 @@ Ensure the server configuration lists this response mode in 'response_modes_supp
     <value>The '{0}' response mode negotiated for the authorization request has no JWT Secured Authorization Response Mode variant.
 When 'OpenIddictClientRegistration.RequireJwtSecuredAuthorizationResponses' is set to true, only the 'query', 'fragment' and 'form_post' response modes (or their JWT variants) can be used.</value>
   </data>
+  <data name="ID0840" xml:space="preserve">
+    <value>The assertion consumer service bindings of the SAML service provider '{0}' must refer to registered assertion consumer service URLs and use the HTTP-POST or HTTP-Artifact binding.</value>
+  </data>
+  <data name="ID0841" xml:space="preserve">
+    <value>The SAML encryption certificate must contain an RSA public key.</value>
+  </data>
+  <data name="ID0842" xml:space="preserve">
+    <value>The SAML data encryption algorithm '{0}' or key transport algorithm '{1}' is not supported.</value>
+  </data>
+  <data name="ID0843" xml:space="preserve">
+    <value>The SAML service provider '{0}' uses the HTTP-Artifact binding but the artifact binding is not enabled or no signing certificate was registered to authenticate its artifact resolution requests. To enable the artifact binding, use 'services.AddOpenIddict().AddServer().UseSaml().EnableArtifactBinding()'.</value>
+  </data>
+  <data name="ID0844" xml:space="preserve">
+    <value>The SAML service provider '{0}' requires encrypted assertions but no encryption certificate with an RSA public key was registered.</value>
+  </data>
+  <data name="ID0845" xml:space="preserve">
+    <value>The SAML artifact lifetime must be positive.</value>
+  </data>
+  <data name="ID0846" xml:space="preserve">
+    <value>The SAML artifact binding is not enabled. To enable it, use 'services.AddOpenIddict().AddServer().UseSaml().EnableArtifactBinding()'.</value>
+  </data>
   <data name="ID0532" xml:space="preserve">
     <value>The backchannel authentication request was not correctly extracted.
 To extract backchannel authentication requests, create a class implementing 'IOpenIddictServerHandler&lt;ExtractBackchannelAuthenticationRequestContext&gt;' and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.</value>
@@ -3331,6 +3352,27 @@ To register a distributed cache, use 'services.AddDistributedMemoryCache()' or a
   <data name="ID2486" xml:space="preserve">
     <value>The authorization response was rejected as the authorization server doesn't advertise support for the 'iss' parameter, which is required by the FAPI 2.0 security profile.</value>
   </data>
+  <data name="ID2420" xml:space="preserve">
+    <value>The SAML authentication request has already been used.</value>
+  </data>
+  <data name="ID2421" xml:space="preserve">
+    <value>The SOAP message is invalid or doesn't contain a valid SAML artifact resolution request.</value>
+  </data>
+  <data name="ID2422" xml:space="preserve">
+    <value>The SOAP message contains a header that must be understood but is not supported.</value>
+  </data>
+  <data name="ID2423" xml:space="preserve">
+    <value>The SAML artifact resolution request was sent by an unknown service provider or its signature is missing or invalid.</value>
+  </data>
+  <data name="ID2424" xml:space="preserve">
+    <value>The SAML artifact resolution request has expired or its destination is invalid.</value>
+  </data>
+  <data name="ID2425" xml:space="preserve">
+    <value>The SAML artifact is invalid, has expired or was already resolved.</value>
+  </data>
+  <data name="ID2426" xml:space="preserve">
+    <value>The SAML artifact was not issued to the service provider that sent the artifact resolution request.</value>
+  </data>
   <data name="ID4000" xml:space="preserve">
     <value>The '{0}' parameter shouldn't be null or empty at this point.</value>
   </data>
@@ -4542,6 +4584,21 @@ This may indicate that the hashed entry is corrupted or malformed.</value>
   </data>
   <data name="ID6760" xml:space="preserve">
     <value>The request was rejected because it didn't comply with the FAPI 2.0 security profile: {Reason}</value>
+  </data>
+  <data name="ID6640" xml:space="preserve">
+    <value>A SAML artifact was issued to the service provider '{ServiceProvider}'.</value>
+  </data>
+  <data name="ID6641" xml:space="preserve">
+    <value>A SAML artifact was resolved by the service provider '{ServiceProvider}'.</value>
+  </data>
+  <data name="ID6642" xml:space="preserve">
+    <value>The SAML artifact resolution request was rejected or returned an empty response: {Description}</value>
+  </data>
+  <data name="ID6643" xml:space="preserve">
+    <value>A replayed SAML message was rejected: {Description}</value>
+  </data>
+  <data name="ID6644" xml:space="preserve">
+    <value>A SAML response containing a signed and encrypted assertion was returned to the service provider '{ServiceProvider}'.</value>
   </data>
   <data name="ID8000" xml:space="preserve">
     <value>https://documentation.openiddict.com/errors/{0}</value>

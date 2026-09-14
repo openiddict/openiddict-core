@@ -196,6 +196,120 @@ public static class OpenIddictServerSamlTestHelpers
         manager.AddNamespace("saml", Namespaces.Assertion);
         manager.AddNamespace("md", Namespaces.Metadata);
         manager.AddNamespace("ds", Namespaces.XmlDsig);
+        manager.AddNamespace("xenc", Namespaces.XmlEnc);
+        manager.AddNamespace("soap", Namespaces.Soap11);
         return manager;
+    }
+
+    /// <summary>
+    /// Decrypts an EncryptedAssertion element as a service provider would. AES-256-CBC payloads are decrypted
+    /// using the System.Security.Cryptography.Xml implementation (EncryptedXml) to validate interoperability.
+    /// </summary>
+    public static XmlElement DecryptAssertion(XmlElement encryptedAssertion, X509Certificate2 certificate)
+    {
+        var manager = CreateNamespaceManager(encryptedAssertion.OwnerDocument);
+
+        var data = (XmlElement) encryptedAssertion.SelectSingleNode("xenc:EncryptedData", manager)!;
+        var key = (XmlElement) data.SelectSingleNode("ds:KeyInfo/xenc:EncryptedKey", manager)!;
+
+        var encryptedKey = new EncryptedKey();
+        encryptedKey.LoadXml(key);
+
+        using var rsa = certificate.GetRSAPrivateKey()!;
+
+        var digest = ((XmlElement?) key.SelectSingleNode("xenc:EncryptionMethod/ds:DigestMethod", manager))?.GetAttribute("Algorithm");
+        var secret = encryptedKey.EncryptionMethod!.KeyAlgorithm switch
+        {
+            // Note: EncryptedXml.DecryptKey() only supports OAEP with SHA-1.
+            KeyTransportAlgorithms.RsaOaepMgf1P => EncryptedXml.DecryptKey(encryptedKey.CipherData.CipherValue!, rsa, useOAEP: true),
+            KeyTransportAlgorithms.RsaOaep when digest is DigestAlgorithms.Sha256
+                => rsa.Decrypt(encryptedKey.CipherData.CipherValue!, RSAEncryptionPadding.OaepSHA256),
+            var algorithm => throw new NotSupportedException(algorithm)
+        };
+
+        var encryptedData = new EncryptedData();
+        encryptedData.LoadXml(data);
+
+        byte[] plaintext;
+
+        switch (encryptedData.EncryptionMethod!.KeyAlgorithm)
+        {
+            case DataEncryptionAlgorithms.Aes256Cbc:
+                using (var aes = Aes.Create())
+                {
+                    aes.Key = secret;
+                    plaintext = new EncryptedXml().DecryptData(encryptedData, aes);
+                }
+                break;
+
+            case DataEncryptionAlgorithms.Aes256Gcm:
+                var value = encryptedData.CipherData.CipherValue!;
+                var nonce = value.Take(12).ToArray();
+                var tag = value.Skip(value.Length - 16).ToArray();
+                var ciphertext = value.Skip(12).Take(value.Length - 28).ToArray();
+                plaintext = new byte[ciphertext.Length];
+
+                using (var gcm = new AesGcm(secret, tagSizeInBytes: 16))
+                {
+                    gcm.Decrypt(nonce, ciphertext, tag, plaintext);
+                }
+                break;
+
+            default: throw new NotSupportedException(encryptedData.EncryptionMethod.KeyAlgorithm);
+        }
+
+        var document = new XmlDocument { PreserveWhitespace = true, XmlResolver = null };
+        document.LoadXml(Encoding.UTF8.GetString(plaintext));
+        return document.DocumentElement!;
+    }
+
+    /// <summary>
+    /// Creates a SOAP envelope containing an ArtifactResolve message, signed if a certificate is specified.
+    /// </summary>
+    public static string CreateArtifactResolveEnvelope(string artifact, string issuer = ServiceProviderEntityId,
+        X509Certificate2? certificate = null, DateTimeOffset? issueInstant = null, string? header = null)
+    {
+        var request = new StringBuilder()
+            .Append("<samlp:ArtifactResolve xmlns:samlp=\"urn:oasis:names:tc:SAML:2.0:protocol\" xmlns:saml=\"urn:oasis:names:tc:SAML:2.0:assertion\"")
+            .Append(" ID=\"_resolve_").Append(Guid.NewGuid().ToString("N")).Append('"')
+            .Append(" Version=\"2.0\"")
+            .Append(" IssueInstant=\"").Append((issueInstant ?? DateTimeOffset.UtcNow).UtcDateTime.ToString("yyyy-MM-dd'T'HH:mm:ss'Z'", CultureInfo.InvariantCulture)).Append("\">")
+            .Append("<saml:Issuer>").Append(issuer).Append("</saml:Issuer>")
+            .Append("<samlp:Artifact>").Append(artifact).Append("</samlp:Artifact>")
+            .Append("</samlp:ArtifactResolve>")
+            .ToString();
+
+        if (certificate is not null)
+        {
+            request = SignDocument(request, certificate).DocumentElement!.OuterXml;
+        }
+
+        var envelope = new StringBuilder().Append("<soap:Envelope xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\">");
+
+        if (header is not null)
+        {
+            envelope.Append("<soap:Header>").Append(header).Append("</soap:Header>");
+        }
+
+        return envelope.Append("<soap:Body>").Append(request).Append("</soap:Body></soap:Envelope>").ToString();
+    }
+
+    /// <summary>
+    /// Returns the ArtifactResponse element contained in a SOAP envelope.
+    /// </summary>
+    public static XmlElement GetArtifactResponse(string envelope)
+    {
+        var document = LoadResponse(envelope);
+        return (XmlElement) document.SelectSingleNode("soap:Envelope/soap:Body/samlp:ArtifactResponse", CreateNamespaceManager(document))!;
+    }
+
+    /// <summary>
+    /// Represents a time provider whose current date can be changed.
+    /// </summary>
+    public sealed class MutableTimeProvider : TimeProvider
+    {
+        public DateTimeOffset Now { get; set; } = DateTimeOffset.UtcNow;
+
+        public override DateTimeOffset GetUtcNow() => Now;
     }
 }

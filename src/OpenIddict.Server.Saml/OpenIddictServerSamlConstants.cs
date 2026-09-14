@@ -11,10 +11,17 @@ namespace OpenIddict.Server.Saml;
 /// </summary>
 public static class OpenIddictServerSamlConstants
 {
+    public static class ArtifactTypes
+    {
+        public const ushort Saml2 = 0x0004;
+    }
+
     public static class Bindings
     {
+        public const string HttpArtifact = "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Artifact";
         public const string HttpPost = "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST";
         public const string HttpRedirect = "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect";
+        public const string Soap = "urn:oasis:names:tc:SAML:2.0:bindings:SOAP";
     }
 
     public static class AuthenticationContextClasses
@@ -35,8 +42,15 @@ public static class OpenIddictServerSamlConstants
         public const string Bearer = "urn:oasis:names:tc:SAML:2.0:cm:bearer";
     }
 
+    public static class DataEncryptionAlgorithms
+    {
+        public const string Aes256Cbc = "http://www.w3.org/2001/04/xmlenc#aes256-cbc";
+        public const string Aes256Gcm = "http://www.w3.org/2009/xmlenc11#aes256-gcm";
+    }
+
     public static class DigestAlgorithms
     {
+        public const string Sha1 = "http://www.w3.org/2000/09/xmldsig#sha1";
         public const string Sha256 = "http://www.w3.org/2001/04/xmlenc#sha256";
         public const string Sha384 = "http://www.w3.org/2001/04/xmldsig-more#sha384";
         public const string Sha512 = "http://www.w3.org/2001/04/xmlenc#sha512";
@@ -44,6 +58,10 @@ public static class OpenIddictServerSamlConstants
 
     public static class Elements
     {
+        public const string Artifact = "Artifact";
+        public const string ArtifactResolutionService = "ArtifactResolutionService";
+        public const string ArtifactResolve = "ArtifactResolve";
+        public const string ArtifactResponse = "ArtifactResponse";
         public const string Assertion = "Assertion";
         public const string AssertionConsumerService = "AssertionConsumerService";
         public const string Attribute = "Attribute";
@@ -55,12 +73,26 @@ public static class OpenIddictServerSamlConstants
         public const string AuthnContextClassRef = "AuthnContextClassRef";
         public const string AuthnRequest = "AuthnRequest";
         public const string AuthnStatement = "AuthnStatement";
+        public const string Body = "Body";
+        public const string CipherData = "CipherData";
+        public const string CipherValue = "CipherValue";
         public const string Conditions = "Conditions";
+        public const string DigestMethod = "DigestMethod";
+        public const string EncryptedAssertion = "EncryptedAssertion";
+        public const string EncryptedData = "EncryptedData";
+        public const string EncryptedKey = "EncryptedKey";
+        public const string EncryptionMethod = "EncryptionMethod";
         public const string EntityDescriptor = "EntityDescriptor";
+        public const string Envelope = "Envelope";
+        public const string Fault = "Fault";
+        public const string FaultCode = "faultcode";
+        public const string FaultString = "faultstring";
+        public const string Header = "Header";
         public const string IdpSsoDescriptor = "IDPSSODescriptor";
         public const string Issuer = "Issuer";
         public const string KeyDescriptor = "KeyDescriptor";
         public const string KeyInfo = "KeyInfo";
+        public const string MaskGenerationFunction = "MGF";
         public const string NameId = "NameID";
         public const string NameIdFormat = "NameIDFormat";
         public const string NameIdPolicy = "NameIDPolicy";
@@ -77,9 +109,26 @@ public static class OpenIddictServerSamlConstants
         public const string X509Data = "X509Data";
     }
 
+    public static class EncryptedTypes
+    {
+        public const string Element = "http://www.w3.org/2001/04/xmlenc#Element";
+    }
+
+    public static class KeyTransportAlgorithms
+    {
+        public const string RsaOaep = "http://www.w3.org/2009/xmlenc11#rsa-oaep";
+        public const string RsaOaepMgf1P = "http://www.w3.org/2001/04/xmlenc#rsa-oaep-mgf1p";
+    }
+
+    public static class MaskGenerationFunctions
+    {
+        public const string Mgf1Sha256 = "http://www.w3.org/2009/xmlenc11#mgf1sha256";
+    }
+
     public static class MediaTypes
     {
         public const string Metadata = "application/samlmetadata+xml";
+        public const string Soap = "text/xml";
     }
 
     public static class NameIdFormats
@@ -95,12 +144,16 @@ public static class OpenIddictServerSamlConstants
         public const string Assertion = "urn:oasis:names:tc:SAML:2.0:assertion";
         public const string Metadata = "urn:oasis:names:tc:SAML:2.0:metadata";
         public const string Protocol = "urn:oasis:names:tc:SAML:2.0:protocol";
+        public const string Soap11 = "http://schemas.xmlsoap.org/soap/envelope/";
         public const string XmlDsig = "http://www.w3.org/2000/09/xmldsig#";
+        public const string XmlEnc = "http://www.w3.org/2001/04/xmlenc#";
+        public const string XmlEnc11 = "http://www.w3.org/2009/xmlenc11#";
     }
 
     public static class Parameters
     {
         public const string RelayState = "RelayState";
+        public const string SamlArtifact = "SAMLart";
         public const string SamlRequest = "SAMLRequest";
         public const string SamlResponse = "SAMLResponse";
         public const string ServiceProvider = "sp";
@@ -114,6 +167,12 @@ public static class OpenIddictServerSamlConstants
         public const string RsaSha256 = "http://www.w3.org/2001/04/xmldsig-more#rsa-sha256";
         public const string RsaSha384 = "http://www.w3.org/2001/04/xmldsig-more#rsa-sha384";
         public const string RsaSha512 = "http://www.w3.org/2001/04/xmldsig-more#rsa-sha512";
+    }
+
+    public static class SoapFaultCodes
+    {
+        public const string Client = "Client";
+        public const string MustUnderstand = "MustUnderstand";
     }
 
     public static class StatusCodes
