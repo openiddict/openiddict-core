@@ -2299,6 +2299,13 @@ Make sure the authorization server supports 'private_key_jwt', 'tls_client_auth'
   <data name="ID0986" xml:space="preserve">
     <value>The token entry cannot be created as another token entry with the same reference identifier already exists.</value>
   </data>
+  <data name="ID0987" xml:space="preserve">
+    <value>The backend-for-frontend distributed token refresh lock timeout must be greater than zero.</value>
+  </data>
+  <data name="ID0988" xml:space="preserve">
+    <value>Distributed caching was enabled in the backend-for-frontend options but no IDistributedCache implementation was registered in the dependency injection container.
+To register a distributed cache, use 'services.AddDistributedMemoryCache()' or a cache provider package (e.g 'services.AddStackExchangeRedisCache()').</value>
+  </data>
   <data name="ID2000" xml:space="preserve">
     <value>The security token is missing.</value>
   </data>

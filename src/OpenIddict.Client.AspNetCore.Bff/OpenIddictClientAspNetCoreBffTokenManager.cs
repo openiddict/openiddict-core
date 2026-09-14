@@ -10,7 +10,11 @@ using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -33,6 +37,7 @@ public class OpenIddictClientAspNetCoreBffTokenManager
     private readonly IOptionsMonitor<OpenIddictClientAspNetCoreBffOptions> _options;
     private readonly IOptionsMonitor<OpenIddictClientOptions> _clientOptions;
     private readonly OpenIddictClientService _service;
+    private readonly IServiceProvider? _provider;
 
     /// <summary>
     /// Creates a new instance of the <see cref="OpenIddictClientAspNetCoreBffTokenManager"/> class.
@@ -52,6 +57,23 @@ public class OpenIddictClientAspNetCoreBffTokenManager
         _clientOptions = clientOptions ?? throw new ArgumentNullException(nameof(clientOptions));
         _service = service ?? throw new ArgumentNullException(nameof(service));
     }
+
+    /// <summary>
+    /// Creates a new instance of the <see cref="OpenIddictClientAspNetCoreBffTokenManager"/> class.
+    /// </summary>
+    /// <param name="logger">The logger.</param>
+    /// <param name="options">The BFF options.</param>
+    /// <param name="clientOptions">The OpenIddict client options.</param>
+    /// <param name="service">The OpenIddict client service.</param>
+    /// <param name="provider">The service provider, used to resolve the distributed cache when distributed caching is enabled.</param>
+    public OpenIddictClientAspNetCoreBffTokenManager(
+        ILogger<OpenIddictClientAspNetCoreBffTokenManager> logger,
+        IOptionsMonitor<OpenIddictClientAspNetCoreBffOptions> options,
+        IOptionsMonitor<OpenIddictClientOptions> clientOptions,
+        OpenIddictClientService service,
+        IServiceProvider provider)
+        : this(logger, options, clientOptions, service)
+        => _provider = provider ?? throw new ArgumentNullException(nameof(provider));
 
     /// <summary>
     /// Refreshes the access token stored in the authentication ticket if it is about to expire and a refresh token
@@ -102,9 +124,13 @@ public class OpenIddictClientAspNetCoreBffTokenManager
             // Note: the operation is keyed by the hash of the refresh token so that concurrent requests
             // carrying the same authentication cookie share the same token request (which is required
             // when the authorization server uses rolling refresh tokens) without keeping the raw token.
+            var hash = ComputeHash(token);
+
             result = await _refreshOperations.RunAsync(
-                key: ComputeHash(token),
-                factory: () => RefreshAsync(token, registration),
+                key: hash,
+                factory: () => options.EnableDistributedCaching
+                    ? RefreshWithDistributedCacheAsync(hash, token, registration, options)
+                    : RefreshAsync(token, registration),
                 retention: options.TokenRefreshResultRetentionPeriod,
                 provider: _clientOptions.CurrentValue.TimeProvider).WaitAsync(context.HttpContext.RequestAborted);
         }
@@ -183,6 +209,100 @@ public class OpenIddictClientAspNetCoreBffTokenManager
             TokenType: result.TokenResponse.TokenType,
             RefreshToken: result.RefreshToken,
             IdentityToken: result.IdentityToken);
+    }
+
+    /// <summary>
+    /// Sends a refresh token request and returns the resulting tokens, using the distributed cache to share
+    /// the result with the other instances of the application that use the same refresh token.
+    /// </summary>
+    /// <param name="hash">The hash of the refresh token.</param>
+    /// <param name="token">The refresh token.</param>
+    /// <param name="registration">The client registration identifier, if available.</param>
+    /// <param name="options">The BFF options.</param>
+    /// <returns>The result of the refresh operation.</returns>
+    private async Task<RefreshResult> RefreshWithDistributedCacheAsync(
+        string hash, string token, string? registration, OpenIddictClientAspNetCoreBffOptions options)
+    {
+        var cache = _provider?.GetService<IDistributedCache>() ??
+            throw new InvalidOperationException(SR.GetResourceString(SR.ID0988));
+
+        // Note: refresh token results contain access, refresh and identity tokens and are always
+        // protected using ASP.NET Core Data Protection before being stored in the distributed cache.
+        var protector = _provider.GetRequiredService<IDataProtectionProvider>()
+            .CreateProtector(OpenIddictClientAspNetCoreBffConstants.Purposes.RefreshResult);
+
+        var provider = _clientOptions.CurrentValue.TimeProvider;
+
+        var result = string.Concat(OpenIddictClientAspNetCoreBffConstants.CacheKeys.RefreshResult, hash);
+        var @lock = string.Concat(OpenIddictClientAspNetCoreBffConstants.CacheKeys.RefreshLock, hash);
+
+        if (await GetResultAsync() is RefreshResult value)
+        {
+            return value;
+        }
+
+        // If another instance is already sending a refresh token request for the same refresh token
+        // (which would be rejected by authorization servers using rolling refresh tokens if it was
+        // sent twice), wait until its result is available, the lock is released or the timeout elapses.
+        //
+        // Note: distributed caches don't offer atomic "add" operations, so two instances starting
+        // a refresh operation at exactly the same time may still both send a token request.
+        var deadline = provider.GetUtcNow() + options.DistributedTokenRefreshLockTimeout;
+
+        while (await cache.GetAsync(@lock) is not null && provider.GetUtcNow() < deadline)
+        {
+            await Task.Delay(TimeSpan.FromMilliseconds(100), provider);
+
+            if (await GetResultAsync() is RefreshResult shared)
+            {
+                return shared;
+            }
+        }
+
+        await cache.SetAsync(@lock, [1], new DistributedCacheEntryOptions
+        {
+            AbsoluteExpirationRelativeToNow = options.DistributedTokenRefreshLockTimeout
+        });
+
+        try
+        {
+            var refreshed = await RefreshAsync(token, registration);
+
+            if (options.TokenRefreshResultRetentionPeriod > TimeSpan.Zero)
+            {
+                await cache.SetAsync(result, protector.Protect(refreshed.Serialize()),
+                    new DistributedCacheEntryOptions
+                    {
+                        AbsoluteExpirationRelativeToNow = options.TokenRefreshResultRetentionPeriod
+                    });
+            }
+
+            return refreshed;
+        }
+
+        finally
+        {
+            await cache.RemoveAsync(@lock);
+        }
+
+        async Task<RefreshResult?> GetResultAsync()
+        {
+            if (await cache.GetAsync(result) is not byte[] payload)
+            {
+                return null;
+            }
+
+            try
+            {
+                return RefreshResult.Deserialize(protector.Unprotect(payload));
+            }
+
+            // Ignore the entries that can't be decrypted or deserialized (e.g entries protected using a revoked key).
+            catch (Exception exception) when (exception is CryptographicException or FormatException or JsonException)
+            {
+                return null;
+            }
+        }
     }
 
     /// <summary>
@@ -339,5 +459,51 @@ public class OpenIddictClientAspNetCoreBffTokenManager
         DateTimeOffset? ExpirationDate,
         string? TokenType,
         string? RefreshToken,
-        string? IdentityToken);
+        string? IdentityToken)
+    {
+        public byte[] Serialize()
+        {
+            using var stream = new MemoryStream();
+            using (var writer = new Utf8JsonWriter(stream))
+            {
+                writer.WriteStartObject();
+                writer.WriteString(nameof(AccessToken), AccessToken);
+
+                if (ExpirationDate is DateTimeOffset date)
+                {
+                    writer.WriteNumber(nameof(ExpirationDate), date.ToUnixTimeMilliseconds());
+                }
+
+                writer.WriteString(nameof(TokenType), TokenType);
+                writer.WriteString(nameof(RefreshToken), RefreshToken);
+                writer.WriteString(nameof(IdentityToken), IdentityToken);
+                writer.WriteEndObject();
+            }
+
+            return stream.ToArray();
+        }
+
+        public static RefreshResult? Deserialize(byte[] payload)
+        {
+            using var document = JsonDocument.Parse(payload);
+            var root = document.RootElement;
+
+            if (root.ValueKind is not JsonValueKind.Object ||
+                !root.TryGetProperty(nameof(AccessToken), out var token) || token.GetString() is not { Length: > 0 } value)
+            {
+                return null;
+            }
+
+            return new RefreshResult(
+                AccessToken: value,
+                ExpirationDate: root.TryGetProperty(nameof(ExpirationDate), out var date) && date.ValueKind is JsonValueKind.Number
+                    ? DateTimeOffset.FromUnixTimeMilliseconds(date.GetInt64()) : null,
+                TokenType: GetString(root, nameof(TokenType)),
+                RefreshToken: GetString(root, nameof(RefreshToken)),
+                IdentityToken: GetString(root, nameof(IdentityToken)));
+
+            static string? GetString(JsonElement element, string name)
+                => element.TryGetProperty(name, out var property) && property.ValueKind is JsonValueKind.String ? property.GetString() : null;
+        }
+    }
 }

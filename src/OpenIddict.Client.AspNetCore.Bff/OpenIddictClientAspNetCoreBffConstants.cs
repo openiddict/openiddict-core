@@ -11,6 +11,13 @@ namespace OpenIddict.Client.AspNetCore.Bff;
 /// </summary>
 public static class OpenIddictClientAspNetCoreBffConstants
 {
+    public static class CacheKeys
+    {
+        public const string LogoutToken = "openiddict:bff:logout_token:";
+        public const string RefreshLock = "openiddict:bff:refresh_lock:";
+        public const string RefreshResult = "openiddict:bff:refresh_result:";
+    }
+
     public static class Claims
     {
         public const string LogoutUrl = "bff:logout_url";
@@ -55,6 +62,11 @@ public static class OpenIddictClientAspNetCoreBffConstants
         /// Name of the YARP route metadata containing the space-separated scopes requested for client access tokens.
         /// </summary>
         public const string Scopes = "OpenIddict.Bff.Scopes";
+    }
+
+    public static class Purposes
+    {
+        public const string RefreshResult = "OpenIddict.Client.AspNetCore.Bff.RefreshResult";
     }
 
     public static class QueryStringParameters

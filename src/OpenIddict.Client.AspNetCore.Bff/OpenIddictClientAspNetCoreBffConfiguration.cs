@@ -163,6 +163,11 @@ public sealed class OpenIddictClientAspNetCoreBffConfiguration : IPostConfigureO
             builder.AddError(SR.GetResourceString(SR.ID0560));
         }
 
+        if (options.DistributedTokenRefreshLockTimeout <= TimeSpan.Zero)
+        {
+            builder.AddError(SR.GetResourceString(SR.ID0987));
+        }
+
         if (string.IsNullOrEmpty(options.AntiforgeryHeaderName) || string.IsNullOrEmpty(options.AntiforgeryHeaderValue))
         {
             builder.AddError(SR.GetResourceString(SR.ID0563));

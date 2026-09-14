@@ -97,4 +97,21 @@ public sealed class OpenIddictClientAspNetCoreBffOptions
     /// Logout tokens without an "exp" claim are only accepted if their "iat" claim is within this window.
     /// </summary>
     public TimeSpan LogoutTokenReplayCacheLifetime { get; set; } = TimeSpan.FromMinutes(5);
+
+    /// <summary>
+    /// Gets or sets a boolean indicating whether the <see cref="Microsoft.Extensions.Caching.Distributed.IDistributedCache"/>
+    /// registered in the dependency injection container should be used, in addition to the in-memory caches, to share the
+    /// results of refresh token requests (protected using ASP.NET Core Data Protection) and the identifiers of the
+    /// logout tokens already received between multiple instances of the application (e.g in a web farm).
+    /// </summary>
+    /// <remarks>
+    /// Note: when enabled, the Data Protection key ring must be shared between all the instances of the application.
+    /// </remarks>
+    public bool EnableDistributedCaching { get; set; }
+
+    /// <summary>
+    /// Gets or sets the maximum period during which an instance waits for the result of a refresh token request sent
+    /// by another instance using the same refresh token, when distributed caching is enabled. By default, 10 seconds.
+    /// </summary>
+    public TimeSpan DistributedTokenRefreshLockTimeout { get; set; } = TimeSpan.FromSeconds(10);
 }

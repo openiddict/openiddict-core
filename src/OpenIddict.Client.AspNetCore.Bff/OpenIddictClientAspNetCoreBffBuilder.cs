@@ -94,6 +94,27 @@ public sealed class OpenIddictClientAspNetCoreBffBuilder
         => Configure(options => options.TokenRefreshResultRetentionPeriod = period);
 
     /// <summary>
+    /// Enables the use of the <see cref="Microsoft.Extensions.Caching.Distributed.IDistributedCache"/> registered in the
+    /// dependency injection container to share the refresh token results and the logout token replay cache between
+    /// multiple instances of the application. The in-memory caches are used when distributed caching is not enabled.
+    /// </summary>
+    /// <param name="timeout">
+    /// The maximum period during which an instance waits for the result of a refresh
+    /// token request sent by another instance, or <see langword="null"/> to use the default value.
+    /// </param>
+    /// <returns>The <see cref="OpenIddictClientAspNetCoreBffBuilder"/> instance.</returns>
+    public OpenIddictClientAspNetCoreBffBuilder EnableDistributedCaching(TimeSpan? timeout = null)
+        => Configure(options =>
+        {
+            options.EnableDistributedCaching = true;
+
+            if (timeout is TimeSpan value)
+            {
+                options.DistributedTokenRefreshLockTimeout = value;
+            }
+        });
+
+    /// <summary>
     /// Sets the name and value of the antiforgery header required by the user and API endpoints.
     /// </summary>
     /// <param name="name">The header name.</param>
