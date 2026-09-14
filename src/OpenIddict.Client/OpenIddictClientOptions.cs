@@ -114,9 +114,8 @@ public sealed class OpenIddictClientOptions
     public List<Uri> FrontchannelLogoutEndpointUris { get; } = [];
 
     /// <summary>
-    /// Gets or sets the maximum age of the logout tokens that don't include an "exp" claim and the maximum
-    /// difference allowed between the current date and the "iat" claim of logout tokens issued in the future.
-    /// Logout token identifiers are kept in the replay cache for at least this period. The default value is 5 minutes.
+    /// Gets or sets the maximum age of the logout tokens that don't include an "exp" claim (only accepted when
+    /// <see cref="DisableLogoutTokenExpirationRequirement"/> is set). Logout token identifiers are kept in the replay cache for at least this period. The default value is 5 minutes.
     /// </summary>
     /// <remarks>
     /// Note: when an <see cref="Microsoft.Extensions.Caching.Distributed.IDistributedCache"/> implementation
@@ -135,6 +134,16 @@ public sealed class OpenIddictClientOptions
     /// Disabling session verification is not recommended.
     /// </remarks>
     public bool DisableFrontchannelLogoutSessionVerification { get; set; }
+
+    /// <summary>
+    /// Gets or sets a boolean indicating whether logout tokens that don't include an "exp" claim should be
+    /// accepted if they were issued during the period configured using <see cref="LogoutTokenMaximumAge"/>.
+    /// </summary>
+    /// <remarks>
+    /// Note: the "exp" claim is required by the final version of OpenID Connect Back-Channel Logout 1.0
+    /// (section 2.4) but was not required by early drafts. Only disable this requirement for legacy servers.
+    /// </remarks>
+    public bool DisableLogoutTokenExpirationRequirement { get; set; }
 
     /// <summary>
     /// Gets the static client registrations used by the OpenIddict client services.

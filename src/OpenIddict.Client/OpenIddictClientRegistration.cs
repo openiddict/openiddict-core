@@ -106,6 +106,18 @@ public sealed class OpenIddictClientRegistration
     /// Front-Channel Logout 1.0, section 2).
     /// </summary>
     /// <remarks>
+    /// <para>
+    /// Important: the default value (<see langword="true"/>) deliberately differs from the default value defined by the
+    /// specification (<see langword="false"/>) and MUST match the "frontchannel_logout_session_required" metadata registered
+    /// for this client at the authorization server: if the authorization server doesn't send these parameters,
+    /// all the front-channel logout requests are rejected (and a warning is logged).
+    /// </para>
+    /// <para>
+    /// Security warning: when set to <see langword="false"/>, front-channel logout requests without parameters cannot
+    /// be distinguished from requests forged by third-party websites: any page able to embed the front-channel logout
+    /// endpoint in an iframe (which is required by the specification and typically implies using "SameSite=None" cookies)
+    /// can sign the user out of this client registration (logout CSRF). Disabling this setting is not recommended.
+    /// </para>
     /// Note: when set to <see langword="false"/>, front-channel logout requests that include neither "iss" nor "sid"
     /// are accepted if a unique registration not requiring these parameters can be resolved (using the front-channel
     /// logout URI when multiple registrations qualify): such requests only terminate the local session attached to the

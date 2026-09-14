@@ -10,6 +10,7 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.Owin;
@@ -70,6 +71,70 @@ public class OpenIddictClientOwinLogoutTests
         using var document = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
         Assert.Equal(Errors.InvalidRequest, document.RootElement.GetProperty(Parameters.Error).GetString());
         Assert.Empty(store.Calls);
+    }
+
+    [Fact]
+    public async Task BackchannelLogout_FailedSessionRemovalReturnsBadRequestAndAllowsRetries()
+    {
+        // Arrange
+        var store = new TestSessionStore { Failures = 1 };
+        using var server = CreateServer(services => services.AddOpenIddict().AddClient().AddSessionStore(store));
+        using var client = server.HttpClient;
+
+        var token = CreateLogoutToken(sub: "Bob", sid: "session");
+
+        // Act
+        using var failure = await client.PostAsync("/backchannel-logout", new FormUrlEncodedContent(
+            [new KeyValuePair<string, string>(Parameters.LogoutToken, token)]));
+
+        using var response = await client.PostAsync("/backchannel-logout", new FormUrlEncodedContent(
+            [new KeyValuePair<string, string>(Parameters.LogoutToken, token)]));
+
+        // Assert
+        Assert.Equal(HttpStatusCode.BadRequest, failure.StatusCode);
+
+        using (var document = JsonDocument.Parse(await failure.Content.ReadAsStringAsync()))
+        {
+            Assert.Equal(Errors.ServerError, document.RootElement.GetProperty(Parameters.Error).GetString());
+        }
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(2, store.Calls.Count);
+    }
+
+    [Fact]
+    public async Task BackchannelLogout_MissingSessionStoreIsRejectedWhenOptionsAreValidated()
+    {
+        // Act and assert
+        var exception = await Assert.ThrowsAsync<OptionsValidationException>(async () =>
+        {
+            using var server = CreateServer(
+                configuration: options => options.SetFrontchannelLogoutSignOutAuthenticationType(CookieAuthenticationDefaults.AuthenticationType),
+                defaults: false);
+
+            using var client = server.HttpClient;
+            using var response = await client.PostAsync("/backchannel-logout", new FormUrlEncodedContent(
+                [new KeyValuePair<string, string>(Parameters.LogoutToken, CreateLogoutToken(sid: "session"))]));
+        });
+
+        Assert.Contains(SR.GetResourceString(SR.ID0760), exception.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task FrontchannelLogout_EndpointThatCannotTerminateSessionsIsRejectedWhenOptionsAreValidated()
+    {
+        // Act and assert
+        var exception = await Assert.ThrowsAsync<OptionsValidationException>(async () =>
+        {
+            using var server = CreateServer(
+                services => services.AddOpenIddict().AddClient().AddSessionStore(new TestSessionStore()),
+                defaults: false);
+
+            using var client = server.HttpClient;
+            using var response = await client.GetAsync($"/frontchannel-logout?iss={Uri.EscapeDataString(Issuer.AbsoluteUri)}&sid=session");
+        });
+
+        Assert.Contains(SR.GetResourceString(SR.ID0766), exception.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -225,7 +290,8 @@ public class OpenIddictClientOwinLogoutTests
 
     private static TestServer CreateServer(
         Action<IServiceCollection>? configure = null,
-        Action<OpenIddictClientOwinBuilder>? configuration = null)
+        Action<OpenIddictClientOwinBuilder>? configuration = null,
+        bool defaults = true)
     {
         var services = new ServiceCollection();
         services.AddLogging();
@@ -282,8 +348,19 @@ public class OpenIddictClientOwinLogoutTests
                     .DisableTransportSecurityRequirement()
                     .EnableRedirectionEndpointPassthrough();
 
+                // Note: the logout endpoints must be able to terminate sessions to pass the options validation.
+                if (defaults)
+                {
+                    host.SetFrontchannelLogoutSignOutAuthenticationType(CookieAuthenticationDefaults.AuthenticationType);
+                }
+
                 configuration?.Invoke(host);
             });
+
+        if (defaults && configure is null)
+        {
+            services.AddOpenIddict().AddClient().AddSessionStore(new TestSessionStore());
+        }
 
         configure?.Invoke(services);
 
@@ -356,10 +433,18 @@ public class OpenIddictClientOwinLogoutTests
     {
         public List<(string?, string?, string?)> Calls { get; } = [];
 
+        public int Failures { get; set; }
+
         public ValueTask<long> RemoveSessionsAsync(OpenIddictClientRegistration registration,
             string? subject, string? sessionId, CancellationToken cancellationToken)
         {
             Calls.Add((registration.RegistrationId, subject, sessionId));
+
+            if (Failures > 0)
+            {
+                Failures--;
+                throw new InvalidOperationException("The session store is not available.");
+            }
 
             return new(1);
         }

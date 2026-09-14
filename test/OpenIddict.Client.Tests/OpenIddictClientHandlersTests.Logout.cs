@@ -66,8 +66,8 @@ public class OpenIddictClientHandlersLogoutTests
     public static IEnumerable<object[]> InvalidTokens => new[]
     {
         "at_jwt_type", "missing_events", "invalid_events", "nonce", "no_subject_or_session", "wrong_audience",
-        "wrong_issuer", "wrong_key", "unsigned", "expired", "stale_iat_without_exp", "future_iat", "missing_iat",
-        "missing_jti", "malformed", "future_nbf", "encrypted_unknown_key"
+        "wrong_issuer", "wrong_key", "unsigned", "expired", "missing_exp", "stale_iat_without_exp", "future_iat",
+        "future_iat_without_exp", "missing_iat", "missing_jti", "malformed", "future_nbf", "encrypted_unknown_key"
     }.Select(static scenario => new object[] { scenario });
 
     [Theory]
@@ -91,7 +91,9 @@ public class OpenIddictClientHandlersLogoutTests
             "unsigned"               => (CreateToken(sid: "session", unsigned: true), SR.GetResourceString(SR.ID2091)),
             "expired"                => (CreateToken(sid: "session", expiration: DateTimeOffset.UtcNow.AddMinutes(-10)), SR.GetResourceString(SR.ID2385)),
             "stale_iat_without_exp"  => (CreateToken(sid: "session", expires: false, issuedAt: DateTimeOffset.UtcNow.AddHours(-1)), SR.GetResourceString(SR.ID2385)),
-            "future_iat"             => (CreateToken(sid: "session", expires: false, issuedAt: DateTimeOffset.UtcNow.AddHours(1)), SR.GetResourceString(SR.ID2385)),
+            "missing_exp"            => (CreateToken(sid: "session", expires: false), SR.FormatID2382(Claims.ExpiresAt)),
+            "future_iat"             => (CreateToken(sid: "session", issuedAt: DateTimeOffset.UtcNow.AddHours(1), expiration: DateTimeOffset.UtcNow.AddHours(2)), SR.GetResourceString(SR.ID2385)),
+            "future_iat_without_exp" => (CreateToken(sid: "session", expires: false, issuedAt: DateTimeOffset.UtcNow.AddHours(1)), SR.GetResourceString(SR.ID2385)),
             "missing_iat"            => (CreateToken(sid: "session", issuedAt: DateTimeOffset.MinValue), SR.FormatID2382(Claims.IssuedAt)),
             "missing_jti"            => (CreateToken(sid: "session", identifier: string.Empty), SR.FormatID2382(Claims.JwtId)),
             "malformed"              => ("eyJhbGciOiJub25lIn0.invalid.", SR.GetResourceString(SR.ID2380)),
@@ -104,7 +106,11 @@ public class OpenIddictClientHandlersLogoutTests
 
         // Act and assert
         var exception = await Assert.ThrowsAsync<ProtocolException>(
-            async () => await service.AuthenticateWithLogoutTokenAsync(new() { LogoutToken = token }));
+            async () => await service.AuthenticateWithLogoutTokenAsync(new()
+            {
+                LogoutToken = token,
+                RequireExpiration = scenario is "stale_iat_without_exp" or "future_iat_without_exp" ? false : null
+            }));
 
         Assert.NotNull(exception.Error);
         Assert.Equal(description, exception.ErrorDescription);
@@ -135,7 +141,7 @@ public class OpenIddictClientHandlersLogoutTests
         // Arrange
         using var provider = CreateProvider();
         var service = provider.GetRequiredService<OpenIddictClientService>();
-        var token = CreateToken(sid: "session", expires: false);
+        var token = CreateToken(sid: "session");
 
         // Act
         await service.AuthenticateWithLogoutTokenAsync(new() { LogoutToken = token });
@@ -163,6 +169,62 @@ public class OpenIddictClientHandlersLogoutTests
         // Assert
         Assert.Equal(SR.GetResourceString(SR.ID2386), exception.ErrorDescription);
         Assert.Contains(cache.Entries.Keys, key => key.EndsWith(" identifier", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task AuthenticateWithLogoutTokenAsync_InMemoryGuardDetectsReplaysWhenDistributedCacheMissesEntries()
+    {
+        // Arrange
+        var cache = new TestDistributedCache { IgnoreWrites = true };
+        using var provider = CreateProvider(services => services.AddSingleton<IDistributedCache>(cache));
+        var service = provider.GetRequiredService<OpenIddictClientService>();
+        var token = CreateToken(sid: "session");
+
+        // Act
+        await service.AuthenticateWithLogoutTokenAsync(new() { LogoutToken = token });
+        var exception = await Assert.ThrowsAsync<ProtocolException>(
+            async () => await service.AuthenticateWithLogoutTokenAsync(new() { LogoutToken = token }));
+
+        // Assert
+        Assert.Equal(SR.GetResourceString(SR.ID2386), exception.ErrorDescription);
+    }
+
+    [Fact]
+    public async Task AuthenticateWithLogoutTokenAsync_FutureIssuedAtIsNotBoundByMaximumAge()
+    {
+        // Arrange
+        using var provider = CreateProvider(services => services.AddOpenIddict().AddClient()
+            .SetLogoutTokenMaximumAge(TimeSpan.FromHours(2)));
+
+        var service = provider.GetRequiredService<OpenIddictClientService>();
+
+        // Act
+        var exception = await Assert.ThrowsAsync<ProtocolException>(async () => await service.AuthenticateWithLogoutTokenAsync(new()
+        {
+            LogoutToken = CreateToken(sid: "session", issuedAt: DateTimeOffset.UtcNow.AddMinutes(30),
+                expiration: DateTimeOffset.UtcNow.AddHours(1))
+        }));
+
+        // Assert
+        Assert.Equal(SR.GetResourceString(SR.ID2385), exception.ErrorDescription);
+    }
+
+    [Fact]
+    public async Task AuthenticateWithLogoutTokenAsync_TokenWithoutExpirationIsAcceptedWhenRequirementIsDisabledForTheRequest()
+    {
+        // Arrange
+        using var provider = CreateProvider();
+        var service = provider.GetRequiredService<OpenIddictClientService>();
+
+        // Act
+        var result = await service.AuthenticateWithLogoutTokenAsync(new()
+        {
+            LogoutToken = CreateToken(sid: "session", expires: false),
+            RequireExpiration = false
+        });
+
+        // Assert
+        Assert.Equal("session", result.SessionId);
     }
 
     [Fact]
@@ -231,7 +293,8 @@ public class OpenIddictClientHandlersLogoutTests
     {
         // Arrange
         using var provider = CreateProvider(services => services.AddOpenIddict().AddClient()
-            .SetLogoutTokenMaximumAge(TimeSpan.FromHours(2)));
+            .SetLogoutTokenMaximumAge(TimeSpan.FromHours(2))
+            .DisableLogoutTokenExpirationRequirement());
 
         var service = provider.GetRequiredService<OpenIddictClientService>();
 
@@ -846,7 +909,9 @@ public class OpenIddictClientHandlersLogoutTests
     {
         public ConcurrentDictionary<string, byte[]> Entries { get; } = new(StringComparer.Ordinal);
 
-        public byte[]? Get(string key) => Entries.TryGetValue(key, out var value) ? value : null;
+        public bool IgnoreWrites { get; set; }
+
+        public byte[]? Get(string key) => !IgnoreWrites && Entries.TryGetValue(key, out var value) ? value : null;
 
         public Task<byte[]?> GetAsync(string key, CancellationToken token = default) => Task.FromResult(Get(key));
 
@@ -864,7 +929,13 @@ public class OpenIddictClientHandlersLogoutTests
             return Task.CompletedTask;
         }
 
-        public void Set(string key, byte[] value, DistributedCacheEntryOptions options) => Entries[key] = value;
+        public void Set(string key, byte[] value, DistributedCacheEntryOptions options)
+        {
+            if (!IgnoreWrites)
+            {
+                Entries[key] = value;
+            }
+        }
 
         public Task SetAsync(string key, byte[] value, DistributedCacheEntryOptions options, CancellationToken token = default)
         {

@@ -35,6 +35,12 @@ public static partial class OpenIddictClientModels
         public TimeSpan? MaximumAge { get; init; }
 
         /// <summary>
+        /// Gets or sets a boolean indicating whether the logout token must include an "exp" claim.
+        /// If no value is specified, <see cref="OpenIddictClientOptions.DisableLogoutTokenExpirationRequirement"/> is used.
+        /// </summary>
+        public bool? RequireExpiration { get; init; }
+
+        /// <summary>
         /// Gets or sets the application-specific properties that will be added to the context.
         /// </summary>
         public Dictionary<string, string?>? Properties { get; init; }

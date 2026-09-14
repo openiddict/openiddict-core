@@ -19,7 +19,7 @@ public static class OpenIddictClientAspNetCoreBffConstants
 
     public static class Events
     {
-        public const string BackchannelLogout = "http://schemas.openid.net/event/backchannel-logout";
+        public const string BackchannelLogout = OpenIddictConstants.SecurityEventTypes.BackchannelLogout;
     }
 
     public static class Headers

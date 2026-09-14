@@ -1988,7 +1988,7 @@ To apply backchannel authentication responses, create a class implementing 'IOpe
   <data name="ID0760" xml:space="preserve">
     <value>The back-channel logout request cannot be handled because no session store was registered.
 To remove the sessions matching back-channel logout requests, register an 'IOpenIddictClientSessionStore' implementation using 'services.AddOpenIddict().AddClient().AddSessionStore()'.
-Alternatively, enable the pass-through mode using 'services.AddOpenIddict().AddClient().UseAspNetCore().EnableBackchannelLogoutEndpointPassthrough()' or handle 'HandleBackchannelLogoutRequestContext' using a custom event handler.</value>
+Alternatively, enable the pass-through mode using 'services.AddOpenIddict().AddClient().UseAspNetCore().EnableBackchannelLogoutEndpointPassthrough()' (or 'UseOwin().EnableBackchannelLogoutEndpointPassthrough()') or handle 'HandleBackchannelLogoutRequestContext' using a custom event handler.</value>
   </data>
   <data name="ID0761" xml:space="preserve">
     <value>The back-channel logout request was not correctly extracted.
@@ -2029,6 +2029,11 @@ To apply front-channel logout responses, create a class implementing 'IOpenIddic
   </data>
   <data name="ID0726" xml:space="preserve">
     <value>The issuer must be explicitly set to terminate sessions outside of an HTTP request. To set it, call 'services.AddOpenIddict().AddServer().SetIssuer()'.</value>
+  </data>
+  <data name="ID0766" xml:space="preserve">
+    <value>The front-channel logout endpoint cannot terminate any session.
+To terminate the local session attached to the user agent, set the sign-out scheme using 'services.AddOpenIddict().AddClient().UseAspNetCore().SetFrontchannelLogoutSignOutScheme()' (or 'UseOwin().SetFrontchannelLogoutSignOutAuthenticationType()').
+Alternatively, enable the pass-through mode using 'EnableFrontchannelLogoutEndpointPassthrough()', handle 'HandleFrontchannelLogoutRequestContext' using a custom event handler or register an 'IOpenIddictClientSessionStore' implementation and disable session verification using 'services.AddOpenIddict().AddClient().DisableFrontchannelLogoutSessionVerification()'.</value>
   </data>
   <data name="ID2000" xml:space="preserve">
     <value>The security token is missing.</value>
@@ -2877,6 +2882,9 @@ To apply front-channel logout responses, create a class implementing 'IOpenIddic
   </data>
   <data name="ID2390" xml:space="preserve">
     <value>The specified issuer doesn't match the client registration.</value>
+  </data>
+  <data name="ID2391" xml:space="preserve">
+    <value>The sessions targeted by the logout request couldn't be terminated.</value>
   </data>
   <data name="ID4000" xml:space="preserve">
     <value>The '{0}' parameter shouldn't be null or empty at this point.</value>
@@ -3909,6 +3917,12 @@ This may indicate that the hashed entry is corrupted or malformed.</value>
   </data>
   <data name="ID6568" xml:space="preserve">
     <value>The session stores were not invoked because the front-channel logout request for the session '{SessionId}' couldn't be verified as being bound to the current user session.</value>
+  </data>
+  <data name="ID6569" xml:space="preserve">
+    <value>An error occurred while terminating the sessions targeted by the back-channel logout request.</value>
+  </data>
+  <data name="ID6570" xml:space="preserve">
+    <value>The front-channel logout request was rejected because it didn't include the 'iss' and 'sid' parameters and no unique client registration allows omitting them. Ensure the 'frontchannel_logout_session_required' metadata registered at the authorization server matches the 'FrontchannelLogoutSessionRequired' property of the client registration.</value>
   </data>
   <data name="ID8000" xml:space="preserve">
     <value>https://documentation.openiddict.com/errors/{0}</value>

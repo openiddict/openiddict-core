@@ -1279,6 +1279,19 @@ public sealed class OpenIddictClientBuilder
         => Configure(options => options.DisableFrontchannelLogoutSessionVerification = true);
 
     /// <summary>
+    /// Allows logout tokens that don't include an "exp" claim to be accepted if they were issued
+    /// during the period configured using <see cref="SetLogoutTokenMaximumAge(TimeSpan)"/>.
+    /// </summary>
+    /// <remarks>
+    /// Note: the "exp" claim is required by the final version of OpenID Connect Back-Channel Logout 1.0 but
+    /// was not required by early drafts. Only disable this requirement for legacy authorization servers.
+    /// </remarks>
+    /// <returns>The <see cref="OpenIddictClientBuilder"/> instance.</returns>
+    [EditorBrowsable(EditorBrowsableState.Advanced)]
+    public OpenIddictClientBuilder DisableLogoutTokenExpirationRequirement()
+        => Configure(options => options.DisableLogoutTokenExpirationRequirement = true);
+
+    /// <summary>
     /// Registers a session store used to remove the sessions targeted by
     /// back-channel and front-channel logout requests (scoped lifetime).
     /// </summary>

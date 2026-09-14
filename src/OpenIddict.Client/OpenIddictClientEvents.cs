@@ -1088,6 +1088,13 @@ public static partial class OpenIddictClientEvents
         public TimeSpan? LogoutTokenMaximumAge { get; set; }
 
         /// <summary>
+        /// Gets or sets a boolean indicating whether the logout token must include an "exp" claim, if applicable.
+        /// When set, this value overrides <see cref="OpenIddictClientOptions.DisableLogoutTokenExpirationRequirement"/>
+        /// for the current demand.
+        /// </summary>
+        public bool? RequireLogoutTokenExpiration { get; set; }
+
+        /// <summary>
         /// Gets or sets the principal extracted from the logout token, if applicable.
         /// </summary>
         public ClaimsPrincipal? LogoutTokenPrincipal { get; set; }

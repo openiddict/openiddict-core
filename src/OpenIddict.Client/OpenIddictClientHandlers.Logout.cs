@@ -232,11 +232,22 @@ public static partial class OpenIddictClientHandlers
                 }
 
                 // If the sessions couldn't be terminated (e.g due to a transient session store failure), release
-                // the logout token identifier so that the authorization server can retry delivering the same token.
+                // the logout token identifier so that the authorization server can retry delivering the same token
+                // and return an error: as required by the specification, the relying party MUST respond with
+                // a 400 Bad Request status code if the logout failed (the exception is only logged).
+                //
+                // See https://openid.net/specs/openid-connect-backchannel-1_0.html#BCResponse for more information.
                 catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
                 {
-                    await ReleaseLogoutTokenIdentifierAsync(context.Transaction, context.CancellationToken);
-                    throw;
+                    context.Logger.LogError(6569, exception, SR.GetResourceString(SR.ID6569));
+
+                    await ReleaseLogoutTokenIdentifierAsync(context.Transaction, CancellationToken.None);
+
+                    context.Reject(
+                        error: Errors.ServerError,
+                        description: SR.GetResourceString(SR.ID2391),
+                        uri: SR.FormatID8000(SR.ID2391));
+                    return;
                 }
 
                 if (notification.IsRequestHandled)
@@ -396,7 +407,9 @@ public static partial class OpenIddictClientHandlers
 
                 // As required by the specification, the relying party MUST respond with an error if the logout
                 // failed. Since no session can be terminated without a session store, an exception is thrown
-                // to inform the developer that the back-channel logout endpoint is not correctly configured.
+                // to inform the developer that the back-channel logout endpoint is not correctly configured
+                // (the exception is logged and converted to an error response by HandleBackchannelLogoutRequest).
+                // Note: this configuration is also validated by the host integrations when the options are resolved.
                 //
                 // See https://openid.net/specs/openid-connect-backchannel-1_0.html#BCResponse for more information.
                 var stores = context.ServiceProvider.GetServices<IOpenIddictClientSessionStore>().ToList();
@@ -974,6 +987,11 @@ public static partial class OpenIddictClientHandlers
 
                     if (candidates is not [OpenIddictClientRegistration candidate])
                     {
+                        // Note: OpenID Connect Front-Channel Logout 1.0 defines "false" as the default value of the
+                        // "frontchannel_logout_session_required" client metadata while OpenIddict client registrations
+                        // require these parameters by default: log a warning to help diagnose mismatched configurations.
+                        context.Logger.LogWarning(6570, SR.GetResourceString(SR.ID6570));
+
                         Reject(context, Errors.InvalidRequest, SR.ID2387);
                         return;
                     }
@@ -1294,7 +1312,17 @@ public static partial class OpenIddictClientHandlers
                     return ValueTask.CompletedTask;
                 }
 
-                // Reject expired logout tokens (the "exp" claim was not required by early drafts of the specification).
+                // The "exp" claim is REQUIRED by the final version of the specification (section 2.4) but was
+                // not required by early drafts: unless explicitly disabled, logout tokens without it are rejected.
+                //
+                // See https://openid.net/specs/openid-connect-backchannel-1_0.html#LogoutToken for more information.
+                if (expiresAt is null && (context.RequireLogoutTokenExpiration ?? !context.Options.DisableLogoutTokenExpirationRequirement))
+                {
+                    Reject(context, Errors.InvalidRequest, SR.ID2382, Claims.ExpiresAt);
+                    return ValueTask.CompletedTask;
+                }
+
+                // Reject expired logout tokens.
                 if (expiresAt is not null && expiresAt.Value + skew < now)
                 {
                     Reject(context, Errors.InvalidRequest, SR.ID2385);
@@ -1311,12 +1339,13 @@ public static partial class OpenIddictClientHandlers
                 }
 
                 // The "iat" claim is validated the same way it's validated for identity tokens: logout tokens issued
-                // too far in the future are rejected. Since the replay cache only retains token identifiers for a
-                // limited period, logout tokens that don't have an expiration date are only accepted if they were
-                // issued during this period, which prevents them from being replayed once their identifier is evicted.
+                // in the future (beyond the clock skew) are rejected (OpenID Connect Core 1.0, section 3.1.3.7, step 10).
+                // Since the replay cache only retains token identifiers for a limited period, logout tokens that don't
+                // have an expiration date are only accepted if they were issued during this period, which prevents
+                // them from being replayed once their identifier is evicted.
                 //
                 // See https://openid.net/specs/openid-connect-backchannel-1_0.html#Validation for more information.
-                if (issuedAt!.Value > now + age + skew || (expiresAt is null && issuedAt.Value + age + skew < now))
+                if (issuedAt!.Value > now + skew || (expiresAt is null && issuedAt.Value + age + skew < now))
                 {
                     Reject(context, Errors.InvalidRequest, SR.ID2385);
                     return ValueTask.CompletedTask;
@@ -1332,8 +1361,9 @@ public static partial class OpenIddictClientHandlers
         /// token identifiers. Otherwise, the identifiers are stored in memory by this handler instance.
         /// </summary>
         /// <remarks>
-        /// Note: <see cref="IDistributedCache"/> doesn't offer an atomic "add if absent" operation: when a distributed
-        /// cache is used, replay detection is best-effort and concurrent deliveries of the same token may be accepted.
+        /// Note: token identifiers are always stored in memory to atomically detect concurrent deliveries to the same
+        /// instance. Since <see cref="IDistributedCache"/> doesn't offer an atomic "add if absent" operation, cross-instance
+        /// replay detection is best-effort: concurrent deliveries of the same token to different instances may be accepted.
         /// If the sessions cannot be terminated by the back-channel logout endpoint, the identifier is released.
         /// </remarks>
         public sealed class RedeemLogoutTokenIdentifier : IOpenIddictClientHandler<ProcessAuthenticationContext>
@@ -1384,25 +1414,6 @@ public static partial class OpenIddictClientHandlers
                 // Note: identifiers are only unique per issuer (the signature of the logout token was already validated).
                 var key = string.Concat("openiddict-client-logout-token:", context.Registration.Issuer.AbsoluteUri, " ", identifier);
 
-                if (context.ServiceProvider.GetService<IDistributedCache>() is IDistributedCache cache)
-                {
-                    if (await cache.GetAsync(key, context.CancellationToken) is not null)
-                    {
-                        Reject(context, Errors.InvalidRequest, SR.ID2386);
-                        return;
-                    }
-
-                    await cache.SetAsync(key, [1], new DistributedCacheEntryOptions
-                    {
-                        AbsoluteExpiration = expiration
-                    }, context.CancellationToken);
-
-                    context.Transaction.SetProperty<Func<CancellationToken, ValueTask>>(LogoutTokenIdentifierReleaseProperty,
-                        async cancellationToken => await cache.RemoveAsync(key, cancellationToken));
-
-                    return;
-                }
-
                 foreach (var entry in _identifiers)
                 {
                     if (entry.Value <= now)
@@ -1411,9 +1422,46 @@ public static partial class OpenIddictClientHandlers
                     }
                 }
 
+                // Note: the in-memory store is always used as an atomic guard, which ensures concurrent deliveries
+                // of the same logout token to the same instance are always detected, even when a distributed cache
+                // (that doesn't offer an atomic "add if absent" operation) is used to detect cross-instance replays.
                 if (!_identifiers.TryAdd(key, expiration))
                 {
                     Reject(context, Errors.InvalidRequest, SR.ID2386);
+                    return;
+                }
+
+                if (context.ServiceProvider.GetService<IDistributedCache>() is IDistributedCache cache)
+                {
+                    try
+                    {
+                        if (await cache.GetAsync(key, context.CancellationToken) is not null)
+                        {
+                            Reject(context, Errors.InvalidRequest, SR.ID2386);
+                            return;
+                        }
+
+                        await cache.SetAsync(key, [1], new DistributedCacheEntryOptions
+                        {
+                            AbsoluteExpiration = expiration
+                        }, context.CancellationToken);
+                    }
+
+                    // If the distributed cache couldn't be used, remove the in-memory entry
+                    // so that the authorization server can retry delivering the same token.
+                    catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
+                    {
+                        _identifiers.TryRemove(key, out _);
+                        throw;
+                    }
+
+                    context.Transaction.SetProperty<Func<CancellationToken, ValueTask>>(LogoutTokenIdentifierReleaseProperty,
+                        async cancellationToken =>
+                        {
+                            _identifiers.TryRemove(key, out _);
+                            await cache.RemoveAsync(key, cancellationToken);
+                        });
+
                     return;
                 }
 

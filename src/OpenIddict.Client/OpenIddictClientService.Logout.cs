@@ -59,6 +59,7 @@ public partial class OpenIddictClientService
         {
             LogoutToken = request.LogoutToken,
             LogoutTokenMaximumAge = request.MaximumAge,
+            RequireLogoutTokenExpiration = request.RequireExpiration,
             Request = new()
         };
 

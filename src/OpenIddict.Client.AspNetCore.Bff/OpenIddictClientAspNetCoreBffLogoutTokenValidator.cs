@@ -54,7 +54,10 @@ internal sealed class OpenIddictClientAspNetCoreBffLogoutTokenValidator
                 LogoutToken = token,
                 // Note: logout tokens without an "exp" claim are only accepted if they were
                 // issued during the replay cache window configured in the BFF options.
-                MaximumAge = _options.CurrentValue.LogoutTokenReplayCacheLifetime
+                MaximumAge = _options.CurrentValue.LogoutTokenReplayCacheLifetime,
+                // Note: for backward compatibility, the BFF endpoint doesn't require the "exp" claim
+                // (which was not required by early drafts of OpenID Connect Back-Channel Logout 1.0).
+                RequireExpiration = false
             });
         }
 

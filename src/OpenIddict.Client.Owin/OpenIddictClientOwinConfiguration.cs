@@ -117,7 +117,35 @@ public sealed class OpenIddictClientOwinConfiguration : IConfigureOptions<OpenId
             }
         }
 
+        // Ensure the back-channel and front-channel logout endpoints, if enabled, can terminate sessions.
+        var client = _provider.GetRequiredService<IOptionsMonitor<OpenIddictClientOptions>>().CurrentValue;
+
+        // Note: if the service provider doesn't implement IServiceProviderIsService, the session stores are assumed to be registered.
+        var stores = _provider.GetService<IServiceProviderIsService>()?.IsService(typeof(IOpenIddictClientSessionStore)) ?? true;
+
+        // As required by OpenID Connect Back-Channel Logout 1.0, section 2.8, the relying party MUST return
+        // an error if the logout failed: since no session can be terminated without a session store, the
+        // pass-through mode or a custom event handler, reject this configuration when the options are resolved.
+        if (client.BackchannelLogoutEndpointUris.Count is not 0 && !options.EnableBackchannelLogoutEndpointPassthrough &&
+            !stores && !HasCustomHandler<HandleBackchannelLogoutRequestContext>(client))
+        {
+            builder.AddError(SR.GetResourceString(SR.ID0760));
+        }
+
+        // Note: session stores are only invoked for unverified front-channel logout requests when session verification
+        // is disabled. Otherwise, the sign-out authentication type is needed to verify the request and terminate the local session.
+        if (client.FrontchannelLogoutEndpointUris.Count is not 0 && !options.EnableFrontchannelLogoutEndpointPassthrough &&
+            string.IsNullOrEmpty(options.FrontchannelLogoutSignOutAuthenticationType) && !(stores && client.DisableFrontchannelLogoutSessionVerification) &&
+            !HasCustomHandler<HandleFrontchannelLogoutRequestContext>(client))
+        {
+            builder.AddError(SR.GetResourceString(SR.ID0766));
+        }
+
         return builder.Build();
+
+        static bool HasCustomHandler<TContext>(OpenIddictClientOptions options) where TContext : BaseContext
+            => options.Handlers.Exists(static descriptor => descriptor.ContextType == typeof(TContext) &&
+                                                            descriptor.Type is OpenIddictClientHandlerType.Custom);
     }
 
     /// <inheritdoc/>
