@@ -2423,6 +2423,12 @@ To register a distributed cache, use 'services.AddDistributedMemoryCache()' or a
   <data name="ID0909" xml:space="preserve">
     <value>The SAML assertion consumer service URL must be an absolute URL.</value>
   </data>
+  <data name="ID0910" xml:space="preserve">
+    <value>No sign-in scheme was configured for the OpenIddict SAML service provider ASP.NET Core integration. To set it, use 'services.AddOpenIddict().AddClient().UseSaml().UseAspNetCore().SetSignInScheme()' or register a default sign-in scheme.</value>
+  </data>
+  <data name="ID0911" xml:space="preserve">
+    <value>The SAML correlation cookie builder and its name must be set.</value>
+  </data>
   <data name="ID2000" xml:space="preserve">
     <value>The security token is missing.</value>
   </data>
