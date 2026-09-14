@@ -2280,6 +2280,88 @@ public sealed class OpenIddictServerBuilder
         => Configure(options => options.RequireDPoPNonces = true);
 
     /// <summary>
+    /// Restricts the signing algorithms that can be used to sign JSON Web Token introspection responses.
+    /// </summary>
+    /// <param name="algorithms">The allowed signing algorithms (e.g "PS256" or "ES256").</param>
+    /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
+    [EditorBrowsable(EditorBrowsableState.Advanced)]
+    public OpenIddictServerBuilder SetIntrospectionResponseSigningAlgorithms(params string[] algorithms)
+    {
+        ArgumentNullException.ThrowIfNull(algorithms);
+
+        if (Array.Exists(algorithms, string.IsNullOrEmpty))
+        {
+            throw new ArgumentException(SR.FormatID0457(nameof(algorithms)), nameof(algorithms));
+        }
+
+        return Configure(options =>
+        {
+            options.IntrospectionResponseSigningAlgorithms.Clear();
+            options.IntrospectionResponseSigningAlgorithms.UnionWith(algorithms);
+        });
+    }
+
+    /// <summary>
+    /// Enforces the FAPI 2.0 security profile (https://openid.net/specs/fapi-security-profile-2_0-final.html):
+    /// <list type="bullet">
+    ///   <item><description>pushed authorization requests and PKCE (S256 only) are required;</description></item>
+    ///   <item><description>only the "code" response type is allowed (the password, implicit and hybrid flows are rejected);</description></item>
+    ///   <item><description>only confidential clients authenticating using private_key_jwt or mTLS are accepted;</description></item>
+    ///   <item><description>access tokens must be sender-constrained using DPoP or mTLS (one of them must be enabled);</description></item>
+    ///   <item><description>JWTs sent by clients (client assertions, request objects) must use PS256, ES256 or EdDSA
+    ///   and the RSA signing credentials of the server use PS256;</description></item>
+    ///   <item><description>authorization codes expire after at most 60 seconds and request URIs after less than 600 seconds;</description></item>
+    ///   <item><description>pushed authorization requests must include an https (or loopback) redirect_uri;</description></item>
+    ///   <item><description>rolling refresh tokens are disabled by default, as recommended by the profile.</description></item>
+    /// </list>
+    /// </summary>
+    /// <remarks>
+    /// Note: settings that conflict with the profile (e.g enabling the password flow or setting a longer
+    /// authorization code lifetime after calling this method) are reported when the options are validated.
+    /// </remarks>
+    /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
+    public OpenIddictServerBuilder EnableFapi2SecurityProfile()
+        => Configure(static options =>
+        {
+            options.EnableFapi2SecurityProfile = true;
+            options.RequirePushedAuthorizationRequests = true;
+            options.RequireProofKeyForCodeExchange = true;
+            options.DisableRollingRefreshTokens = true;
+
+            if (options.AuthorizationCodeLifetime is null ||
+                options.AuthorizationCodeLifetime > OpenIddictServerFapi2Profile.MaximumAuthorizationCodeLifetime)
+            {
+                options.AuthorizationCodeLifetime = OpenIddictServerFapi2Profile.MaximumAuthorizationCodeLifetime;
+            }
+
+            if (options.RequestTokenLifetime is null ||
+                options.RequestTokenLifetime >= OpenIddictServerFapi2Profile.MaximumRequestUriLifetime)
+            {
+                options.RequestTokenLifetime = OpenIddictServerFapi2Profile.DefaultRequestUriLifetime;
+            }
+
+            if (options.DPoPProofLifetime > OpenIddictServerFapi2Profile.MaximumFutureDateOffset)
+            {
+                options.DPoPProofLifetime = OpenIddictServerFapi2Profile.MaximumFutureDateOffset;
+            }
+        });
+
+    /// <summary>
+    /// Enforces the FAPI 2.0 message signing profile
+    /// (https://openid.net/specs/fapi-message-signing-2_0.html), which includes the FAPI 2.0 security profile
+    /// (see <see cref="EnableFapi2SecurityProfile"/>), signed request objects (JAR) and JSON Web Token introspection responses.
+    /// </summary>
+    /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
+    public OpenIddictServerBuilder EnableFapi2MessageSigningProfile()
+        => EnableFapi2SecurityProfile().Configure(static options =>
+        {
+            options.EnableFapi2MessageSigningProfile = true;
+            options.EnableRequestObjectSupport = true;
+            options.RequireSignedRequestObjects = true;
+            options.EnableJsonWebTokenIntrospectionResponses = true;
+        });
+
+    /// <summary>
     /// Sets the maximum difference allowed between the issuance date of a DPoP proof and the current date.
     /// </summary>
     /// <param name="lifetime">The DPoP proof lifetime.</param>

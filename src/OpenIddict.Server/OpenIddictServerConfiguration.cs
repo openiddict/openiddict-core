@@ -74,6 +74,36 @@ public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenId
             options.UserCodeDisplayFormat = null;
         }
 
+        // When the FAPI 2.0 security profile is enforced, remove the values it doesn't allow from
+        // the lists that include default values or values automatically added by the host integrations.
+        if (options.EnableFapi2SecurityProfile)
+        {
+            // See https://openid.net/specs/fapi-security-profile-2_0-final.html#section-5.3.2.1 (item 6).
+            options.ClientAuthenticationMethods.RemoveWhere(static method =>
+                !OpenIddictServerFapi2Profile.ClientAuthenticationMethods.Contains(method, StringComparer.Ordinal));
+
+            // See https://openid.net/specs/fapi-security-profile-2_0-final.html#section-5.3.2.2 (item 5).
+            options.CodeChallengeMethods.RemoveWhere(static method => method is not CodeChallengeMethods.Sha256);
+
+            // See https://openid.net/specs/fapi-security-profile-2_0-final.html#section-5.4.1.
+            options.DPoPSigningAlgorithms.RemoveWhere(static algorithm =>
+                !OpenIddictServerFapi2Profile.SigningAlgorithms.Contains(algorithm, StringComparer.Ordinal));
+
+            // RSASSA-PKCS1-v1_5 is not allowed by the profile but the same RSA keys can be used with RSASSA-PSS:
+            // to support the credentials registered using the default RS256 algorithm, PS256 is used instead.
+            for (var index = 0; index < options.SigningCredentials.Count; index++)
+            {
+                var credentials = options.SigningCredentials[index];
+                if (credentials.Key is not SymmetricSecurityKey && credentials.Algorithm is
+                    SecurityAlgorithms.RsaSha256 or SecurityAlgorithms.RsaSha256Signature or
+                    SecurityAlgorithms.RsaSha384 or SecurityAlgorithms.RsaSha384Signature or
+                    SecurityAlgorithms.RsaSha512 or SecurityAlgorithms.RsaSha512Signature)
+                {
+                    options.SigningCredentials[index] = new SigningCredentials(credentials.Key, SecurityAlgorithms.RsaSsaPssSha256);
+                }
+            }
+        }
+
         // Sort the handlers collection using the order associated with each handler.
         options.Handlers.Sort(static (left, right) => left.Order.CompareTo(right.Order));
 
@@ -525,6 +555,73 @@ public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenId
         if (string.IsNullOrEmpty(options.BrowserStateCookieName))
         {
             builder.AddError(SR.GetResourceString(SR.ID0725));
+        }
+
+        if (options.IntrospectionResponseSigningAlgorithms.Any(string.IsNullOrEmpty))
+        {
+            builder.AddError(SR.GetResourceString(SR.ID0971));
+        }
+
+        // Ensure the configuration complies with the FAPI 2.0 security profile, if enforced.
+        //
+        // See https://openid.net/specs/fapi-security-profile-2_0-final.html#section-5.3.2 for more information.
+        if (options.EnableFapi2SecurityProfile)
+        {
+            if (options.GrantTypes.Contains(GrantTypes.Password) || options.GrantTypes.Contains(GrantTypes.Implicit))
+            {
+                builder.AddError(SR.GetResourceString(SR.ID0960));
+            }
+
+            if (options.ResponseTypes.Any(static type => type is not ResponseTypes.Code))
+            {
+                builder.AddError(SR.GetResourceString(SR.ID0961));
+            }
+
+            if (options.AuthorizationCodeLifetime is null or { Ticks: <= 0 } ||
+                options.AuthorizationCodeLifetime > OpenIddictServerFapi2Profile.MaximumAuthorizationCodeLifetime)
+            {
+                builder.AddError(SR.GetResourceString(SR.ID0962));
+            }
+
+            if (options.RequestTokenLifetime is null or { Ticks: <= 0 } ||
+                options.RequestTokenLifetime >= OpenIddictServerFapi2Profile.MaximumRequestUriLifetime)
+            {
+                builder.AddError(SR.GetResourceString(SR.ID0963));
+            }
+
+            if (!options.RequirePushedAuthorizationRequests || !options.RequireProofKeyForCodeExchange ||
+                options.CodeChallengeMethods.Count is not 1 || !options.CodeChallengeMethods.Contains(CodeChallengeMethods.Sha256))
+            {
+                builder.AddError(SR.GetResourceString(SR.ID0964));
+            }
+
+            if (!options.EnableDPoPSupport && !options.UseClientCertificateBoundAccessTokens)
+            {
+                builder.AddError(SR.GetResourceString(SR.ID0965));
+            }
+
+            if (options.SigningCredentials.Exists(static credentials =>
+                !OpenIddictServerFapi2Profile.SigningAlgorithms.Contains(credentials.Algorithm switch
+                {
+                    SecurityAlgorithms.RsaSsaPssSha256Signature => SecurityAlgorithms.RsaSsaPssSha256,
+                    SecurityAlgorithms.EcdsaSha256Signature     => SecurityAlgorithms.EcdsaSha256,
+                    string algorithm                            => algorithm
+                }, StringComparer.Ordinal)))
+            {
+                builder.AddError(SR.GetResourceString(SR.ID0966));
+            }
+
+            if (options.AcceptAnonymousClients)
+            {
+                builder.AddError(SR.GetResourceString(SR.ID0967));
+            }
+        }
+
+        if (options.EnableFapi2MessageSigningProfile && (!options.EnableFapi2SecurityProfile ||
+            !options.EnableRequestObjectSupport || !options.RequireSignedRequestObjects ||
+            !options.EnableJsonWebTokenIntrospectionResponses))
+        {
+            builder.AddError(SR.GetResourceString(SR.ID0968));
         }
 
         // Ensure the client authentication methods/client assertion types configuration is consistent.

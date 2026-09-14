@@ -833,6 +833,31 @@ public sealed class OpenIddictServerOptions
     public TimeSpan AuthorizationResponseLifetime { get; set; } = TimeSpan.FromMinutes(5);
 
     /// <summary>
+    /// Gets the signing algorithms that can be used to sign JSON Web Token introspection responses (RFC 9701).
+    /// If no algorithm is explicitly listed, all the asymmetric signing credentials can be used.
+    /// </summary>
+    /// <remarks>
+    /// Note: client applications can select one of these algorithms using the
+    /// <see cref="Settings.IntrospectionResponse.SigningAlgorithm"/> setting.
+    /// </remarks>
+    [EditorBrowsable(EditorBrowsableState.Advanced)]
+    public HashSet<string> IntrospectionResponseSigningAlgorithms { get; } = new(StringComparer.Ordinal);
+
+    /// <summary>
+    /// Gets or sets a boolean indicating whether the FAPI 2.0 security profile is enforced.
+    /// See <c>OpenIddictServerBuilder.EnableFapi2SecurityProfile()</c> for the list of enforced requirements.
+    /// </summary>
+    public bool EnableFapi2SecurityProfile { get; set; }
+
+    /// <summary>
+    /// Gets or sets a boolean indicating whether the FAPI 2.0 message signing profile is enforced.
+    /// When enabled, the FAPI 2.0 security profile, signed request objects and JSON Web Token
+    /// introspection responses must also be enabled. Handlers producing signed authorization
+    /// responses can use this option to determine whether they must be enforced.
+    /// </summary>
+    public bool EnableFapi2MessageSigningProfile { get; set; }
+
+    /// <summary>
     /// Gets or sets a boolean indicating whether all token requests must include a valid DPoP proof.
     /// </summary>
     /// <remarks>

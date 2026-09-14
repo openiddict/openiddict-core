@@ -768,6 +768,7 @@ public static class OpenIddictConstants
         {
             public const string EncryptionAlgorithm = "intr_rsp:enc_alg";
             public const string EncryptionMethod = "intr_rsp:enc_enc";
+            public const string SigningAlgorithm = "intr_rsp:sig_alg";
         }
 
         public static class TokenLifetimes

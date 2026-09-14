@@ -52,6 +52,7 @@ public static partial class OpenIddictServerHandlers
              * Token generation:
              */
             AttachSecurityCredentials.Descriptor,
+            AttachIntrospectionResponseSigningCredentials.Descriptor,
             AttachIntrospectionResponseEncryptionCredentials.Descriptor,
             CreateTokenEntry.Descriptor,
             AttachTokenSubject.Descriptor,
@@ -1724,6 +1725,103 @@ public static partial class OpenIddictServerHandlers
                             credentials.SigningCredentials.First(static credentials => credentials.Key is AsymmetricSecurityKey)),
 
                     _ => credentials.SigningCredentials[0]
+                };
+            }
+        }
+
+        /// <summary>
+        /// Contains the logic responsible for resolving the signing credentials used to sign introspection responses
+        /// when the signing algorithms were restricted in the server options or selected by the client application.
+        /// </summary>
+        public sealed class AttachIntrospectionResponseSigningCredentials : IOpenIddictServerHandler<GenerateTokenContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<GenerateTokenContext>()
+                    .UseSingletonHandler<AttachIntrospectionResponseSigningCredentials>()
+                    .SetOrder(AttachSecurityCredentials.Descriptor.Order + 250)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public async ValueTask HandleAsync(GenerateTokenContext context)
+            {
+                ArgumentNullException.ThrowIfNull(context);
+
+                if (context.TokenType is not TokenTypeIdentifiers.Private.IntrospectionResponse)
+                {
+                    return;
+                }
+
+                // Resolve the algorithm selected by the client application (the equivalent of the
+                // "introspection_signed_response_alg" client metadata defined by RFC 9701), if any.
+                //
+                // See https://datatracker.ietf.org/doc/html/rfc9701#section-6 for more information.
+                string? algorithm = null;
+
+                if (!context.Options.EnableDegradedMode && !string.IsNullOrEmpty(context.ClientId))
+                {
+                    var manager = context.ServiceProvider.GetService<IOpenIddictApplicationManager>()
+                        ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
+
+                    var application = await manager.FindByClientIdAsync(context.ClientId, context.CancellationToken)
+                        ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0017));
+
+                    var settings = await manager.GetSettingsAsync(application, context.CancellationToken);
+                    if (settings.TryGetValue(Settings.IntrospectionResponse.SigningAlgorithm, out string? value) &&
+                        !string.IsNullOrEmpty(value))
+                    {
+                        algorithm = value;
+                    }
+                }
+
+                if (string.IsNullOrEmpty(algorithm) && context.Options.IntrospectionResponseSigningAlgorithms.Count is 0)
+                {
+                    return;
+                }
+
+                var credentials = await OpenIddictServerKeyRing.ResolveCredentialsAsync(context.Transaction);
+
+                if (!string.IsNullOrEmpty(algorithm))
+                {
+                    // Note: an exception is thrown if the algorithm is not allowed or cannot be used,
+                    // to ensure the response is never signed using an algorithm the client didn't select.
+                    if (context.Options.IntrospectionResponseSigningAlgorithms.Count is > 0 &&
+                        !context.Options.IntrospectionResponseSigningAlgorithms.Contains(algorithm))
+                    {
+                        throw new InvalidOperationException(SR.FormatID0969(algorithm, Settings.IntrospectionResponse.SigningAlgorithm));
+                    }
+
+                    context.SigningCredentials = credentials.SigningCredentials.FirstOrDefault(item =>
+                        item.Key is AsymmetricSecurityKey &&
+                        string.Equals(GetAlgorithm(item.Algorithm), algorithm, StringComparison.Ordinal))
+                        ?? throw new InvalidOperationException(SR.FormatID0969(algorithm, Settings.IntrospectionResponse.SigningAlgorithm));
+
+                    return;
+                }
+
+                context.SigningCredentials = credentials.SigningCredentials.FirstOrDefault(item =>
+                    item.Key is AsymmetricSecurityKey &&
+                    GetAlgorithm(item.Algorithm) is string value &&
+                    context.Options.IntrospectionResponseSigningAlgorithms.Contains(value))
+                    ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0970));
+
+                // Note: signing credentials can use either the JWA short names or the XML DSig URIs.
+                static string? GetAlgorithm(string algorithm) => algorithm switch
+                {
+                    SecurityAlgorithms.EcdsaSha256Signature     => SecurityAlgorithms.EcdsaSha256,
+                    SecurityAlgorithms.EcdsaSha384Signature     => SecurityAlgorithms.EcdsaSha384,
+                    SecurityAlgorithms.EcdsaSha512Signature     => SecurityAlgorithms.EcdsaSha512,
+                    SecurityAlgorithms.RsaSha256Signature       => SecurityAlgorithms.RsaSha256,
+                    SecurityAlgorithms.RsaSha384Signature       => SecurityAlgorithms.RsaSha384,
+                    SecurityAlgorithms.RsaSha512Signature       => SecurityAlgorithms.RsaSha512,
+                    SecurityAlgorithms.RsaSsaPssSha256Signature => SecurityAlgorithms.RsaSsaPssSha256,
+                    SecurityAlgorithms.RsaSsaPssSha384Signature => SecurityAlgorithms.RsaSsaPssSha384,
+                    SecurityAlgorithms.RsaSsaPssSha512Signature => SecurityAlgorithms.RsaSsaPssSha512,
+
+                    _ => algorithm
                 };
             }
         }

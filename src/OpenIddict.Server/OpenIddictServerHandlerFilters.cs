@@ -880,6 +880,34 @@ public static class OpenIddictServerHandlerFilters
     }
 
     /// <summary>
+    /// Represents a filter that excludes the associated handlers if the FAPI 2.0 security profile is not enforced.
+    /// </summary>
+    public sealed class RequireFapi2SecurityProfileEnabled : IOpenIddictServerHandlerFilter<BaseContext>
+    {
+        /// <inheritdoc/>
+        public ValueTask<bool> IsActiveAsync(BaseContext context)
+        {
+            ArgumentNullException.ThrowIfNull(context);
+
+            return new(context.Options.EnableFapi2SecurityProfile);
+        }
+    }
+
+    /// <summary>
+    /// Represents a filter that excludes the associated handlers if the FAPI 2.0 message signing profile is not enforced.
+    /// </summary>
+    public sealed class RequireFapi2MessageSigningProfileEnabled : IOpenIddictServerHandlerFilter<BaseContext>
+    {
+        /// <inheritdoc/>
+        public ValueTask<bool> IsActiveAsync(BaseContext context)
+        {
+            ArgumentNullException.ThrowIfNull(context);
+
+            return new(context.Options.EnableFapi2MessageSigningProfile);
+        }
+    }
+
+    /// <summary>
     /// Represents a filter that excludes the associated handlers if JSON Web Token introspection responses were not enabled.
     /// </summary>
     public sealed class RequireJsonWebTokenIntrospectionResponsesEnabled : IOpenIddictServerHandlerFilter<BaseContext>

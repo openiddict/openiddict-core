@@ -140,6 +140,7 @@ public static partial class OpenIddictServerHandlers
         .. Device.DefaultHandlers,
         .. Discovery.DefaultHandlers,
         .. Exchange.DefaultHandlers,
+        .. Fapi.DefaultHandlers,
         .. Introspection.DefaultHandlers,
         .. Logout.DefaultHandlers,
         .. Protection.DefaultHandlers,

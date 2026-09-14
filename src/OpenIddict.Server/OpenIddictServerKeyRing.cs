@@ -206,7 +206,11 @@ public sealed class OpenIddictServerKeyRing
 
                 if (usage is JsonWebKeyUseNames.Sig)
                 {
-                    signing.Add(new SigningCredentials(key, entry.Algorithm));
+                    // Note: the FAPI 2.0 security profile doesn't allow RSASSA-PKCS1-v1_5. Since the same RSA keys
+                    // can be used with RSASSA-PSS, keys created with RS256 are used with PS256 when it is enforced.
+                    signing.Add(new SigningCredentials(key, options.EnableFapi2SecurityProfile &&
+                        entry.Algorithm is SecurityAlgorithms.RsaSha256 or SecurityAlgorithms.RsaSha384 or SecurityAlgorithms.RsaSha512
+                        ? SecurityAlgorithms.RsaSsaPssSha256 : entry.Algorithm));
                 }
 
                 else
@@ -255,7 +259,12 @@ public sealed class OpenIddictServerKeyRing
         var descriptor = new OpenIddictKeyDescriptor
         {
             ActivationDate = activation,
-            Algorithm = usage is JsonWebKeyUseNames.Sig ? SecurityAlgorithms.RsaSha256 : SecurityAlgorithms.RsaOAEP,
+            Algorithm = usage switch
+            {
+                JsonWebKeyUseNames.Sig when options.EnableFapi2SecurityProfile => SecurityAlgorithms.RsaSsaPssSha256,
+                JsonWebKeyUseNames.Sig                                         => SecurityAlgorithms.RsaSha256,
+                _                                                              => SecurityAlgorithms.RsaOAEP
+            },
             CreationDate = now,
             ExpirationDate = activation + options.KeyRotationInterval,
             KeyId = Base64Url.EncodeToString(SHA256.HashData(parameters.Modulus!))[..40],

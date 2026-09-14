@@ -964,7 +964,10 @@ public static partial class OpenIddictServerHandlers
                 if (context.Options.EnableJsonWebTokenIntrospectionResponses && context.IntrospectionEndpoint is not null)
                 {
                     context.Metadata[Metadata.IntrospectionSigningAlgValuesSupported] = new JsonArray(
-                        [.. context.IdTokenSigningAlgorithms.Select(static algorithm => (JsonNode) algorithm)]);
+                        [.. context.IdTokenSigningAlgorithms
+                            .Where(algorithm => context.Options.IntrospectionResponseSigningAlgorithms.Count is 0 ||
+                                                context.Options.IntrospectionResponseSigningAlgorithms.Contains(algorithm))
+                            .Select(static algorithm => (JsonNode) algorithm)]);
 
                     if (!context.Options.EnableDegradedMode)
                     {

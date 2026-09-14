@@ -472,6 +472,149 @@ public abstract partial class OpenIddictServerIntegrationTests
         Assert.Equal(SR.FormatID0552(value, name), exception.Message);
     }
 
+    [Fact]
+    public async Task HandleConfigurationRequest_IntrospectionSigningAlgorithmsAreRestrictedToAllowedValues()
+    {
+        // Arrange
+        using var algorithm = ECDsa.Create(ECCurve.NamedCurves.nistP256);
+
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.EnableJsonWebTokenIntrospectionResponses();
+            options.AddSigningKey(new ECDsaSecurityKey(algorithm));
+            options.SetIntrospectionResponseSigningAlgorithms(SecurityAlgorithms.EcdsaSha256);
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.GetAsync("/.well-known/openid-configuration");
+
+        // Assert
+        var algorithms = (ImmutableArray<string?>?) response[Metadata.IntrospectionSigningAlgValuesSupported];
+        Assert.NotNull(algorithms);
+        Assert.Equal([SecurityAlgorithms.EcdsaSha256], algorithms.Value, StringComparer.Ordinal);
+    }
+
+    [Fact]
+    public async Task ApplyIntrospectionResponse_TokenIsSignedUsingAllowedAlgorithm()
+    {
+        // Arrange
+        using var algorithm = ECDsa.Create(ECCurve.NamedCurves.nistP256);
+
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.EnableDegradedMode();
+            options.EnableJsonWebTokenIntrospectionResponses();
+            options.AddSigningKey(new ECDsaSecurityKey(algorithm));
+            options.SetIntrospectionResponseSigningAlgorithms(SecurityAlgorithms.EcdsaSha256);
+
+            ConfigureIntrospectedToken(options);
+        });
+
+        await using var client = await server.CreateClientAsync();
+        client.RequestHeaders["Accept"] = [IntrospectionResponseMediaType];
+
+        // Act
+        await client.PostAsync("/connect/introspect", CreateIntrospectionRequest());
+
+        // Assert
+        Assert.NotNull(client.ResponseToken);
+
+        var token = await ValidateIntrospectionResponseTokenAsync(client, client.ResponseToken);
+        Assert.Equal(SecurityAlgorithms.EcdsaSha256, token.Alg);
+    }
+
+    [Fact]
+    public async Task ApplyIntrospectionResponse_TokenIsSignedUsingAlgorithmSelectedByClient()
+    {
+        // Arrange
+        using var algorithm = ECDsa.Create(ECCurve.NamedCurves.nistP256);
+
+        var settings = ImmutableDictionary.Create<string, string>(StringComparer.Ordinal)
+            .SetItem(Settings.IntrospectionResponse.SigningAlgorithm, SecurityAlgorithms.EcdsaSha256);
+
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.EnableJsonWebTokenIntrospectionResponses();
+            options.AddSigningKey(new ECDsaSecurityKey(algorithm));
+            options.Services.AddSingleton(CreateIntrospectionResponseApplicationManager(settings, CreateRequestObjectJsonWebKeySet()));
+
+            ConfigureIntrospectedToken(options);
+        });
+
+        await using var client = await server.CreateClientAsync();
+        client.RequestHeaders["Accept"] = [IntrospectionResponseMediaType];
+
+        // Act
+        await client.PostAsync("/connect/introspect", CreateIntrospectionRequest(secret: "7Fjfp0ZBr1KtDRbnfVdmIw"));
+
+        // Assert
+        Assert.NotNull(client.ResponseToken);
+
+        var token = await ValidateIntrospectionResponseTokenAsync(client, client.ResponseToken);
+        Assert.Equal(SecurityAlgorithms.EcdsaSha256, token.Alg);
+    }
+
+    [Theory]
+    [InlineData(SecurityAlgorithms.EcdsaSha384, null)]
+    [InlineData(SecurityAlgorithms.RsaSha256, SecurityAlgorithms.EcdsaSha256)]
+    public async Task ApplyIntrospectionResponse_UnusableAlgorithmSelectedByClientCausesAnException(string value, string? allowed)
+    {
+        // Arrange
+        var settings = ImmutableDictionary.Create<string, string>(StringComparer.Ordinal)
+            .SetItem(Settings.IntrospectionResponse.SigningAlgorithm, value);
+
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.EnableJsonWebTokenIntrospectionResponses();
+            options.Services.AddSingleton(CreateIntrospectionResponseApplicationManager(settings, CreateRequestObjectJsonWebKeySet()));
+
+            if (allowed is not null)
+            {
+                options.SetIntrospectionResponseSigningAlgorithms(allowed);
+            }
+
+            ConfigureIntrospectedToken(options);
+        });
+
+        await using var client = await server.CreateClientAsync();
+        client.RequestHeaders["Accept"] = [IntrospectionResponseMediaType];
+
+        // Act and assert
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(delegate
+        {
+            return client.PostAsync("/connect/introspect", CreateIntrospectionRequest(secret: "7Fjfp0ZBr1KtDRbnfVdmIw"));
+        });
+
+        Assert.Equal(SR.FormatID0969(value, Settings.IntrospectionResponse.SigningAlgorithm), exception.Message);
+    }
+
+    [Fact]
+    public async Task ApplyIntrospectionResponse_MissingCredentialsForAllowedAlgorithmsCauseAnException()
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.EnableDegradedMode();
+            options.EnableJsonWebTokenIntrospectionResponses();
+            options.SetIntrospectionResponseSigningAlgorithms(SecurityAlgorithms.EcdsaSha256);
+
+            ConfigureIntrospectedToken(options);
+        });
+
+        await using var client = await server.CreateClientAsync();
+        client.RequestHeaders["Accept"] = [IntrospectionResponseMediaType];
+
+        // Act and assert
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(delegate
+        {
+            return client.PostAsync("/connect/introspect", CreateIntrospectionRequest());
+        });
+
+        Assert.Equal(SR.GetResourceString(SR.ID0970), exception.Message);
+    }
+
     private OpenIddictApplicationManager<OpenIddictApplication> CreateIntrospectionResponseApplicationManager(
         ImmutableDictionary<string, string> settings, JsonWebKeySet set)
     {

@@ -61,6 +61,8 @@ public static class OpenIddictServerExtensions
         builder.Services.TryAddSingleton<RequireRegistrationRequest>();
         builder.Services.TryAddSingleton<RequireDeviceAuthorizationRequest>();
         builder.Services.TryAddSingleton<RequireDPoPSupportEnabled>();
+        builder.Services.TryAddSingleton<RequireFapi2MessageSigningProfileEnabled>();
+        builder.Services.TryAddSingleton<RequireFapi2SecurityProfileEnabled>();
         builder.Services.TryAddSingleton<RequireJsonWebTokenIntrospectionResponseRequested>();
         builder.Services.TryAddSingleton<RequireJsonWebTokenIntrospectionResponsesEnabled>();
         builder.Services.TryAddSingleton<RequireJwtSecuredAuthorizationResponsesEnabled>();
