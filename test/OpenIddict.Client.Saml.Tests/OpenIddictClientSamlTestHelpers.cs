@@ -226,6 +226,45 @@ public static class OpenIddictClientSamlTestHelpers
     }
 
     /// <summary>
+    /// Modifies the assertion of the specified response and signs it again using the identity provider certificate
+    /// (or leaves it unsigned if <paramref name="sign"/> is <see langword="false"/>).
+    /// </summary>
+    public static string ModifyAssertion(string response, Action<XmlElement, XmlNamespaceManager> modification, bool sign = true)
+    {
+        var document = Load(response);
+        var manager = CreateNamespaceManager(document);
+        var assertion = (XmlElement) document.SelectSingleNode("/samlp:Response/saml:Assertion", manager)!;
+
+        if (assertion.SelectSingleNode("ds:Signature", manager) is XmlNode signature)
+        {
+            assertion.RemoveChild(signature);
+        }
+
+        modification(assertion, manager);
+
+        if (!sign)
+        {
+            return document.OuterXml;
+        }
+
+        using var key = IdentityProviderCertificate.GetRSAPrivateKey()!;
+
+        var signed = new SignedXml(document) { SigningKey = key };
+        signed.SignedInfo!.CanonicalizationMethod = SignedXml.XmlDsigExcC14NTransformUrl;
+        signed.SignedInfo.SignatureMethod = "http://www.w3.org/2001/04/xmldsig-more#rsa-sha256";
+
+        var reference = new Reference("#" + assertion.GetAttribute("ID")) { DigestMethod = "http://www.w3.org/2001/04/xmlenc#sha256" };
+        reference.AddTransform(new XmlDsigEnvelopedSignatureTransform());
+        reference.AddTransform(new XmlDsigExcC14NTransform());
+        signed.AddReference(reference);
+        signed.ComputeSignature();
+
+        assertion.InsertAfter(document.ImportNode(signed.GetXml(), deep: true), assertion.SelectSingleNode("saml:Issuer", manager));
+
+        return document.OuterXml;
+    }
+
+    /// <summary>
     /// Signs the root element of the specified document (enveloped signature inserted after the issuer).
     /// </summary>
     public static string SignRoot(string xml, X509Certificate2 certificate)

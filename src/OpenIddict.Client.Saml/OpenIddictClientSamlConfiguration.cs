@@ -116,12 +116,25 @@ public sealed class OpenIddictClientSamlConfiguration : IPostConfigureOptions<Op
     }
 
     /// <summary>
-    /// Ensures the specified registration is valid.
+    /// Ensures the specified static registration is valid.
     /// </summary>
     /// <param name="options">The SAML options.</param>
     /// <param name="registration">The registration.</param>
     /// <exception cref="InvalidOperationException">The registration is invalid.</exception>
     public static void ValidateRegistration(OpenIddictClientSamlOptions options, OpenIddictClientSamlRegistration registration)
+        => ValidateRegistration(options, registration, isDynamic: false);
+
+    /// <summary>
+    /// Ensures the specified registration is valid.
+    /// </summary>
+    /// <param name="options">The SAML options.</param>
+    /// <param name="registration">The registration.</param>
+    /// <param name="isDynamic">
+    /// Whether the registration was resolved dynamically, in which case file metadata addresses are rejected and
+    /// HTTPS metadata addresses are restricted to <see cref="OpenIddictClientSamlOptions.AllowedDynamicMetadataHosts"/>.
+    /// </param>
+    /// <exception cref="InvalidOperationException">The registration is invalid.</exception>
+    public static void ValidateRegistration(OpenIddictClientSamlOptions options, OpenIddictClientSamlRegistration registration, bool isDynamic)
     {
         ArgumentNullException.ThrowIfNull(options);
         ArgumentNullException.ThrowIfNull(registration);
@@ -132,10 +145,20 @@ public sealed class OpenIddictClientSamlConfiguration : IPostConfigureOptions<Op
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0885));
         }
 
+        // Note: file URIs are only accepted for local paths (UNC paths would trigger outbound SMB connections).
         if (registration.MetadataAddress is Uri address && (!address.IsAbsoluteUri ||
-            (!address.IsFile && !string.Equals(address.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase))))
+            (!address.IsFile && !string.Equals(address.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase)) ||
+            (address.IsFile && (address.IsUnc || !string.IsNullOrEmpty(address.Host)))))
         {
             throw new InvalidOperationException(SR.FormatID0888(registration.RegistrationId));
+        }
+
+        // Dynamic registrations are typically data-driven: to prevent server-side request forgery, file URIs are
+        // never accepted and HTTPS addresses are restricted to the allowed hosts, if configured.
+        if (isDynamic && registration.MetadataAddress is Uri metadata && (metadata.IsFile ||
+            (options.AllowedDynamicMetadataHosts.Count is not 0 && !options.AllowedDynamicMetadataHosts.Contains(metadata.IdnHost))))
+        {
+            throw new InvalidOperationException(SR.FormatID0912(registration.RegistrationId));
         }
 
         if (registration.MetadataAddress is null &&
@@ -145,8 +168,7 @@ public sealed class OpenIddictClientSamlConfiguration : IPostConfigureOptions<Op
         }
 
         if (registration.SingleSignOnServiceUrl is Uri url && (!url.IsAbsoluteUri || !string.IsNullOrEmpty(url.Fragment) ||
-            (!string.Equals(url.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase) &&
-             !string.Equals(url.Scheme, Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase))))
+            !IsAllowedEndpointScheme(options, url)))
         {
             throw new InvalidOperationException(SR.FormatID0887(registration.RegistrationId));
         }
@@ -171,7 +193,22 @@ public sealed class OpenIddictClientSamlConfiguration : IPostConfigureOptions<Op
         {
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0881));
         }
+
+        // SAML metadata, 2.4.4: the AuthnRequestsSigned attribute of the service provider metadata (set to "true" when
+        // signing certificates are configured) indicates that all the authentication requests will be signed.
+        if (registration.SignAuthenticationRequests is false && options.SigningCertificates.Count is not 0)
+        {
+            throw new InvalidOperationException(SR.FormatID0913(registration.RegistrationId));
+        }
     }
+
+    /// <summary>
+    /// Determines whether the scheme of the specified identity provider endpoint is allowed
+    /// (HTTPS, or HTTP if <see cref="OpenIddictClientSamlOptions.AllowInsecureIdentityProviderEndpoints"/> is enabled).
+    /// </summary>
+    internal static bool IsAllowedEndpointScheme(OpenIddictClientSamlOptions options, Uri url)
+        => string.Equals(url.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase) ||
+          (options.AllowInsecureIdentityProviderEndpoints && string.Equals(url.Scheme, Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase));
 
     /// <summary>
     /// Computes the default identifier of a registration from its identity provider entity identifier

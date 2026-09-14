@@ -33,6 +33,12 @@ public sealed class OpenIddictClientSamlMetadataRetriever : IOpenIddictClientSam
 
             if (address.IsFile)
             {
+                // Note: UNC paths are never accepted, as they would trigger outbound SMB connections.
+                if (address.IsUnc || !string.IsNullOrEmpty(address.Host))
+                {
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0907));
+                }
+
                 var file = new FileInfo(address.LocalPath);
                 if (file.Exists && file.Length > maximumSize)
                 {

@@ -218,4 +218,30 @@ public sealed class OpenIddictClientSamlBuilder
     /// <returns>The <see cref="OpenIddictClientSamlBuilder"/> instance.</returns>
     public OpenIddictClientSamlBuilder SetDynamicRegistrationCacheLifetime(TimeSpan? lifetime)
         => Configure(options => options.DynamicRegistrationCacheLifetime = lifetime);
+
+    /// <summary>
+    /// Adds hosts allowed in the metadata addresses of dynamic registrations. Once a host is added,
+    /// dynamic registrations whose metadata address uses another host are rejected.
+    /// </summary>
+    /// <param name="hosts">The hosts.</param>
+    /// <returns>The <see cref="OpenIddictClientSamlBuilder"/> instance.</returns>
+    public OpenIddictClientSamlBuilder AddAllowedDynamicMetadataHosts(params string[] hosts)
+    {
+        ArgumentNullException.ThrowIfNull(hosts);
+
+        if (Array.Exists(hosts, string.IsNullOrEmpty))
+        {
+            throw new ArgumentException(SR.FormatID0457(nameof(hosts)), nameof(hosts));
+        }
+
+        return Configure(options => options.AllowedDynamicMetadataHosts.UnionWith(hosts));
+    }
+
+    /// <summary>
+    /// Allows HTTP (non-TLS) single sign-on service URLs in the registrations and imported metadata
+    /// (not recommended outside development environments).
+    /// </summary>
+    /// <returns>The <see cref="OpenIddictClientSamlBuilder"/> instance.</returns>
+    public OpenIddictClientSamlBuilder AllowInsecureIdentityProviderEndpoints()
+        => Configure(options => options.AllowInsecureIdentityProviderEndpoints = true);
 }

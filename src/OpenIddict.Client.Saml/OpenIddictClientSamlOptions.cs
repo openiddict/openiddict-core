@@ -67,11 +67,30 @@ public sealed class OpenIddictClientSamlOptions
     public TimeSpan MetadataRefreshInterval { get; set; } = TimeSpan.FromHours(24);
 
     /// <summary>
-    /// Gets or sets the duration during which the dynamic registrations resolved from
-    /// <see cref="IOpenIddictClientSamlRegistrationProvider"/> implementations are cached by identifier.
-    /// If set to <see langword="null"/> or <see cref="TimeSpan.Zero"/>, dynamic registrations are not cached.
+    /// Gets or sets the duration during which the registration lookups (by identifier, provider name, entity identifier
+    /// or listing, including empty results) performed using the <see cref="IOpenIddictClientSamlRegistrationProvider"/>
+    /// implementations are cached. If set to <see langword="null"/> or <see cref="TimeSpan.Zero"/>, lookups are not cached.
+    /// By default, 5 minutes.
     /// </summary>
-    public TimeSpan? DynamicRegistrationCacheLifetime { get; set; } = TimeSpan.FromMinutes(30);
+    /// <remarks>
+    /// Updated or removed registrations may be used until the corresponding cache entries expire:
+    /// call <see cref="OpenIddictClientSamlService.ClearCache"/> to apply changes immediately.
+    /// </remarks>
+    public TimeSpan? DynamicRegistrationCacheLifetime { get; set; } = TimeSpan.FromMinutes(5);
+
+    /// <summary>
+    /// Gets the hosts allowed in the metadata addresses of dynamic registrations (case-insensitive). If empty, any HTTPS
+    /// host is allowed: applications resolving registrations from user-controlled data should restrict the hosts (or replace
+    /// the <see cref="IOpenIddictClientSamlMetadataRetriever"/>) to prevent server-side request forgery.
+    /// File metadata addresses are never allowed for dynamic registrations.
+    /// </summary>
+    public HashSet<string> AllowedDynamicMetadataHosts { get; } = new(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>
+    /// Gets or sets a boolean indicating whether HTTP (non-TLS) single sign-on service URLs are accepted in the
+    /// registrations and in the imported metadata. Not recommended outside development environments.
+    /// </summary>
+    public bool AllowInsecureIdentityProviderEndpoints { get; set; }
 
     /// <summary>
     /// Gets the identity provider registrations registered in the options.

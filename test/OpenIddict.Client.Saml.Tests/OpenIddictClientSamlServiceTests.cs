@@ -95,7 +95,7 @@ public class OpenIddictClientSamlServiceTests
         registration.NameIdFormat = NameIdFormats.Persistent;
         registration.AuthenticationContextClasses.Add("urn:oasis:names:tc:SAML:2.0:ac:classes:PasswordProtectedTransport");
 
-        using var sp = CreateServiceProvider(registration: registration);
+        using var sp = CreateServiceProvider(saml => saml.Configure(options => options.SigningCertificates.Clear()), registration);
         var service = sp.GetRequiredService<OpenIddictClientSamlService>();
 
         // Act
@@ -612,6 +612,9 @@ public class OpenIddictClientSamlServiceTests
         Assert.Equal(StatusCodes.RequestDenied, result.SecondLevelStatus);
         Assert.Equal("denied", result.StatusMessage);
         Assert.Null(result.Principal);
+
+        // The values controlled by the sender of the response are never included in the error description.
+        Assert.Equal(SR.GetResourceString(SR.ID2449), result.ErrorDescription);
     }
 
     [Theory]
@@ -1030,6 +1033,479 @@ public class OpenIddictClientSamlServiceTests
         Assert.Contains(SR.FormatID0886(registration.RegistrationId), exception.Message, StringComparison.Ordinal);
     }
 
+    [Fact]
+    public void Options_RejectDisabledRequestSigningWhenSigningCertificatesAreConfigured()
+    {
+        // Arrange
+        var registration = CreateRegistration();
+        registration.SignAuthenticationRequests = false;
+
+        using var sp = CreateServiceProvider(registration: registration);
+
+        // Act and assert
+        var exception = Assert.Throws<OptionsValidationException>(() => sp.GetRequiredService<IOptionsMonitor<OpenIddictClientSamlOptions>>().CurrentValue);
+        Assert.Contains(SR.FormatID0913(registration.RegistrationId), exception.Message, StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Options_RejectHttpSingleSignOnServiceUrlUnlessAllowed(bool allowed)
+    {
+        // Arrange
+        var registration = CreateRegistration();
+        registration.SingleSignOnServiceUrl = new Uri("http://idp.example.com/saml/sso", UriKind.Absolute);
+
+        using var sp = CreateServiceProvider(saml =>
+        {
+            if (allowed)
+            {
+                saml.AllowInsecureIdentityProviderEndpoints();
+            }
+        }, registration);
+
+        // Act and assert
+        if (allowed)
+        {
+            Assert.NotNull(sp.GetRequiredService<IOptionsMonitor<OpenIddictClientSamlOptions>>().CurrentValue);
+        }
+
+        else
+        {
+            var exception = Assert.Throws<OptionsValidationException>(() => sp.GetRequiredService<IOptionsMonitor<OpenIddictClientSamlOptions>>().CurrentValue);
+            Assert.Contains(SR.FormatID0887(registration.RegistrationId), exception.Message, StringComparison.Ordinal);
+        }
+    }
+
+    [Fact]
+    public void Options_RejectUncMetadataAddress()
+    {
+        // Arrange
+        var registration = new OpenIddictClientSamlRegistration
+        {
+            MetadataAddress = new Uri("file://server/share/metadata.xml", UriKind.Absolute),
+            RegistrationId = "unc"
+        };
+
+        using var sp = CreateServiceProvider(registration: registration);
+
+        // Act and assert
+        var exception = Assert.Throws<OptionsValidationException>(() => sp.GetRequiredService<IOptionsMonitor<OpenIddictClientSamlOptions>>().CurrentValue);
+        Assert.Contains(SR.FormatID0888("unc"), exception.Message, StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData("file")]
+    [InlineData("https://internal.example.com/metadata")]
+    public async Task GetRegistrationByIdAsync_RejectsDisallowedDynamicMetadataAddress(string address)
+    {
+        // Arrange
+        var registration = new OpenIddictClientSamlRegistration
+        {
+            MetadataAddress = address is "file"
+                ? new Uri(Path.Combine(Path.GetTempPath(), "metadata.xml"), UriKind.Absolute)
+                : new Uri(address, UriKind.Absolute),
+            RegistrationId = "dynamic"
+        };
+
+        using var sp = CreateServiceProvider(saml => saml.AddRegistrationProvider(new TestRegistrationProvider(registration))
+            .AddAllowedDynamicMetadataHosts("idp.example.com"), addRegistration: false);
+        var service = sp.GetRequiredService<OpenIddictClientSamlService>();
+
+        // Act and assert
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () => await service.GetRegistrationByIdAsync("dynamic"));
+        Assert.Equal(SR.FormatID0912("dynamic"), exception.Message);
+    }
+
+    [Fact]
+    public async Task GetRegistrationByIdAsync_AcceptsDynamicMetadataAddressWithAllowedHost()
+    {
+        // Arrange
+        var registration = new OpenIddictClientSamlRegistration
+        {
+            MetadataAddress = new Uri("https://IDP.example.com/saml/metadata", UriKind.Absolute),
+            RegistrationId = "dynamic"
+        };
+
+        using var sp = CreateServiceProvider(saml => saml.AddRegistrationProvider(new TestRegistrationProvider(registration))
+            .AddAllowedDynamicMetadataHosts("idp.example.com"), addRegistration: false);
+        var service = sp.GetRequiredService<OpenIddictClientSamlService>();
+
+        // Act and assert
+        Assert.Same(registration, await service.GetRegistrationByIdAsync("dynamic"));
+    }
+
+    [Fact]
+    public async Task GetRegistrationByIdAsync_UsesUpdatedDynamicRegistrationReturnedByAnotherLookup()
+    {
+        // Arrange
+        var original = CreateRegistration();
+        original.RegistrationId = "dynamic";
+        original.AllowUnsolicitedResponses = true;
+
+        var updated = CreateRegistration();
+        updated.RegistrationId = "dynamic";
+        updated.SigningCertificates.Clear();
+        updated.SigningCertificates.Add(GetPublicCertificate(UnrelatedCertificate));
+
+        var source = new TestRegistrationProvider(original);
+
+        using var sp = CreateServiceProvider(saml => saml.AddRegistrationProvider(source), addRegistration: false);
+        var service = sp.GetRequiredService<OpenIddictClientSamlService>();
+
+        Assert.Same(original, await service.GetRegistrationByIdAsync("dynamic"));
+
+        // Act
+        source.Registrations = [updated];
+        var resolved = await service.GetRegistrationsByProviderNameAsync(ProviderName);
+
+        // Assert
+        Assert.Same(updated, Assert.Single(resolved));
+        Assert.Same(updated, await service.GetRegistrationByIdAsync("dynamic"));
+        Assert.Equal(1, source.FindByIdCount);
+    }
+
+    [Fact]
+    public async Task GetRegistrationByIdAsync_UsesUpdatedDynamicRegistrationOnceTheCacheEntryExpires()
+    {
+        // Arrange
+        var time = new TestTimeProvider();
+
+        var original = CreateRegistration();
+        original.RegistrationId = "dynamic";
+
+        var updated = CreateRegistration();
+        updated.RegistrationId = "dynamic";
+        updated.RequireEncryptedAssertions = true;
+
+        var source = new TestRegistrationProvider(original);
+
+        using var sp = CreateServiceProvider(saml => saml.AddRegistrationProvider(source)
+            .SetDynamicRegistrationCacheLifetime(TimeSpan.FromMinutes(5))
+            .Configure(options => options.TimeProvider = time), addRegistration: false);
+        var service = sp.GetRequiredService<OpenIddictClientSamlService>();
+
+        Assert.Same(original, await service.GetRegistrationByIdAsync("dynamic"));
+        source.Registrations = [updated];
+
+        // Act and assert
+        time.UtcNow += TimeSpan.FromMinutes(1);
+        Assert.Same(original, await service.GetRegistrationByIdAsync("dynamic"));
+
+        time.UtcNow += TimeSpan.FromMinutes(5);
+        Assert.Same(updated, await service.GetRegistrationByIdAsync("dynamic"));
+        Assert.Equal(2, source.FindByIdCount);
+    }
+
+    [Fact]
+    public async Task ClearCache_RemovesDeletedDynamicRegistrations()
+    {
+        // Arrange
+        var registration = CreateRegistration();
+        registration.RegistrationId = "dynamic";
+
+        var source = new TestRegistrationProvider(registration);
+
+        using var sp = CreateServiceProvider(saml => saml.AddRegistrationProvider(source), addRegistration: false);
+        var service = sp.GetRequiredService<OpenIddictClientSamlService>();
+
+        Assert.Same(registration, await service.GetRegistrationByIdAsync("dynamic"));
+        Assert.Single(await service.GetRegistrationsAsync());
+        source.Registrations = [];
+
+        // Act
+        service.ClearCache();
+
+        // Assert
+        await Assert.ThrowsAsync<InvalidOperationException>(async () => await service.GetRegistrationByIdAsync("dynamic"));
+        Assert.Empty(await service.GetRegistrationsAsync());
+    }
+
+    [Fact]
+    public async Task GetRegistrationsByProviderNameAsync_CachesLookupsIncludingEmptyResults()
+    {
+        // Arrange
+        var registration = CreateRegistration();
+        registration.RegistrationId = "dynamic";
+
+        var source = new TestRegistrationProvider(registration);
+
+        using var sp = CreateServiceProvider(saml => saml.AddRegistrationProvider(source), addRegistration: false);
+        var service = sp.GetRequiredService<OpenIddictClientSamlService>();
+
+        // Act
+        for (var index = 0; index < 3; index++)
+        {
+            Assert.Single(await service.GetRegistrationsByProviderNameAsync(ProviderName));
+            Assert.Empty(await service.GetRegistrationsByProviderNameAsync("Unknown"));
+            Assert.Single(await service.GetRegistrationsAsync());
+        }
+
+        // Assert
+        Assert.Equal(2, source.FindByProviderNameCount);
+        Assert.Equal(1, source.ListCount);
+    }
+
+    [Fact]
+    public async Task GetRegistrationsAsync_IgnoresInvalidDynamicRegistrations()
+    {
+        // Arrange
+        var valid = CreateRegistration();
+        valid.RegistrationId = "valid";
+
+        var invalid = new OpenIddictClientSamlRegistration { IdentityProviderEntityId = "https://invalid.example.com/", RegistrationId = "invalid" };
+
+        using var sp = CreateServiceProvider(saml => saml.AddRegistrationProvider(new TestRegistrationProvider(invalid, valid)), addRegistration: false);
+        var service = sp.GetRequiredService<OpenIddictClientSamlService>();
+
+        // Act
+        var registrations = await service.GetRegistrationsAsync();
+
+        // Assert
+        Assert.Same(valid, Assert.Single(registrations));
+    }
+
+    [Theory]
+    [InlineData(AssertionNamespace, "Unknown")]
+    [InlineData("urn:example:conditions", "Custom")]
+    public async Task ValidateResponseAsync_RejectsUnknownCondition(string ns, string name)
+    {
+        // Arrange
+        using var sp = CreateServiceProvider();
+        using var idp = CreateIdentityProvider();
+        var (service, _, request, state) = await StartAsync(sp);
+
+        var response = ModifyAssertion(CreateResponse(idp, request.RequestId), (assertion, manager) =>
+        {
+            var conditions = (XmlElement) assertion.SelectSingleNode("saml:Conditions", manager)!;
+            conditions.AppendChild(assertion.OwnerDocument.CreateElement("x", name, ns));
+        });
+
+        // Act
+        var result = await service.ValidateResponseAsync(Encode(response), "relay", state, AssertionConsumerServiceUrl);
+
+        // Assert
+        Assert.False(result.Succeeded);
+        Assert.Equal(SR.GetResourceString(SR.ID2454), result.ErrorDescription);
+    }
+
+    [Fact]
+    public async Task ValidateResponseAsync_AcceptsModifiedAndResignedAssertion()
+    {
+        // Arrange
+        using var sp = CreateServiceProvider();
+        using var idp = CreateIdentityProvider();
+        var (service, _, request, state) = await StartAsync(sp);
+
+        var response = ModifyAssertion(CreateResponse(idp, request.RequestId), static (_, _) => { });
+
+        // Act
+        var result = await service.ValidateResponseAsync(Encode(response), "relay", state, AssertionConsumerServiceUrl);
+
+        // Assert
+        Assert.True(result.Succeeded, result.ErrorDescription);
+    }
+
+    [Fact]
+    public async Task ValidateResponseAsync_RejectsSubjectConfirmationInResponseToMismatch()
+    {
+        // Arrange
+        using var sp = CreateServiceProvider();
+        using var idp = CreateIdentityProvider();
+        var (service, _, request, state) = await StartAsync(sp);
+
+        var response = ModifyAssertion(CreateResponse(idp, request.RequestId), static (assertion, manager) =>
+            ((XmlElement) assertion.SelectSingleNode("saml:Subject/saml:SubjectConfirmation/saml:SubjectConfirmationData", manager)!)
+                .SetAttribute("InResponseTo", "_other"));
+
+        // Act
+        var result = await service.ValidateResponseAsync(Encode(response), "relay", state, AssertionConsumerServiceUrl);
+
+        // Assert
+        Assert.False(result.Succeeded);
+        Assert.Equal(SR.GetResourceString(SR.ID2453), result.ErrorDescription);
+    }
+
+    [Fact]
+    public async Task ValidateResponseAsync_RejectsBearerSubjectConfirmationWithNotBefore()
+    {
+        // Arrange
+        using var sp = CreateServiceProvider();
+        using var idp = CreateIdentityProvider();
+        var (service, _, request, state) = await StartAsync(sp);
+
+        var response = ModifyAssertion(CreateResponse(idp, request.RequestId), static (assertion, manager) =>
+            ((XmlElement) assertion.SelectSingleNode("saml:Subject/saml:SubjectConfirmation/saml:SubjectConfirmationData", manager)!)
+                .SetAttribute("NotBefore", XmlConvert.ToString(DateTime.UtcNow.AddMinutes(-1), XmlDateTimeSerializationMode.Utc)));
+
+        // Act
+        var result = await service.ValidateResponseAsync(Encode(response), "relay", state, AssertionConsumerServiceUrl);
+
+        // Assert
+        Assert.False(result.Succeeded);
+        Assert.Equal(SR.GetResourceString(SR.ID2453), result.ErrorDescription);
+    }
+
+    [Fact]
+    public async Task ValidateResponseAsync_RejectsEncryptedAssertionWithAdditionalPlainAssertion()
+    {
+        // Arrange
+        using var sp = CreateServiceProvider();
+        using var idp = CreateIdentityProvider();
+        var (service, _, request, state) = await StartAsync(sp);
+
+        var plain = CreateResponse(idp, request.RequestId);
+        var document = Load(EncryptAssertion(plain, GetPublicCertificate(EncryptionCertificate)));
+        var manager = CreateNamespaceManager(document);
+
+        // Add a (forged) plain assertion next to the encrypted assertion.
+        var assertion = Load(plain).SelectSingleNode("/samlp:Response/saml:Assertion", manager)!;
+        document.DocumentElement!.AppendChild(document.ImportNode(assertion, deep: true));
+
+        // Act
+        var result = await service.ValidateResponseAsync(Encode(document.OuterXml), "relay", state, AssertionConsumerServiceUrl);
+
+        // Assert
+        Assert.False(result.Succeeded);
+        Assert.Equal(SR.GetResourceString(SR.ID2450), result.ErrorDescription);
+    }
+
+    [Fact]
+    public async Task ValidateResponseAsync_RejectsUnsignedEncryptedAssertionInUnsignedResponse()
+    {
+        // Arrange
+        using var sp = CreateServiceProvider();
+        using var idp = CreateIdentityProvider();
+        var (service, _, request, state) = await StartAsync(sp);
+
+        var unsigned = ModifyAssertion(CreateResponse(idp, request.RequestId), static (_, _) => { }, sign: false);
+        var response = EncryptAssertion(unsigned, GetPublicCertificate(EncryptionCertificate));
+
+        // Act
+        var result = await service.ValidateResponseAsync(Encode(response), "relay", state, AssertionConsumerServiceUrl);
+
+        // Assert
+        Assert.False(result.Succeeded);
+        Assert.Equal(SR.GetResourceString(SR.ID2452), result.ErrorDescription);
+    }
+
+    [Fact]
+    public async Task ValidateResponseAsync_RejectsSignedResponseWithReplacedUnsignedAssertion()
+    {
+        // Arrange
+        using var sp = CreateServiceProvider();
+        using var idp = CreateIdentityProvider();
+        var (service, _, request, state) = await StartAsync(sp);
+
+        // Create a signed response containing an unsigned assertion, then replace the assertion by a forged one.
+        var response = Load(SignRoot(ModifyAssertion(CreateResponse(idp, request.RequestId), static (_, _) => { }, sign: false),
+            IdentityProviderCertificate));
+        var manager = CreateNamespaceManager(response);
+        response.SelectSingleNode("/samlp:Response/saml:Assertion/saml:Subject/saml:NameID", manager)!.InnerText = "mallory";
+
+        // Act
+        var result = await service.ValidateResponseAsync(Encode(response.OuterXml), "relay", state, AssertionConsumerServiceUrl);
+
+        // Assert
+        Assert.False(result.Succeeded);
+        Assert.Equal(SR.GetResourceString(SR.ID2445), result.ErrorDescription);
+    }
+
+    [Fact]
+    public async Task GetIdentityProviderConfigurationAsync_NeverUsesMetadataAfterValidUntil()
+    {
+        // Arrange
+        var time = new TestTimeProvider();
+
+        using var idp = CreateIdentityProvider();
+        var document = Load(idp.GetRequiredService<OpenIddictServerSamlService>().CreateMetadata(SingleSignOnServiceUrl));
+        document.DocumentElement!.SetAttribute("validUntil", XmlConvert.ToString((time.UtcNow + TimeSpan.FromHours(1)).UtcDateTime,
+            XmlDateTimeSerializationMode.Utc));
+
+        var retriever = new TestMetadataRetriever(document.OuterXml);
+        var registration = new OpenIddictClientSamlRegistration
+        {
+            MetadataAddress = new Uri("https://idp.example.com/saml/metadata", UriKind.Absolute),
+            ProviderName = ProviderName
+        };
+
+        using var sp = CreateServiceProvider(saml => saml.SetMetadataRefreshInterval(TimeSpan.FromMinutes(10))
+            .Configure(options => options.TimeProvider = time)
+            .Services.AddSingleton<IOpenIddictClientSamlMetadataRetriever>(retriever), registration);
+        var service = sp.GetRequiredService<OpenIddictClientSamlService>();
+
+        // Act and assert
+        var configuration = await service.GetIdentityProviderConfigurationAsync(registration);
+        Assert.NotNull(configuration.ExpirationDate);
+
+        // Before validUntil, the previous metadata is used when the refresh fails.
+        retriever.Fail = true;
+        time.UtcNow += TimeSpan.FromMinutes(20);
+        Assert.Equal(IdentityProviderEntityId, (await service.GetIdentityProviderConfigurationAsync(registration)).EntityId);
+        Assert.Equal(2, retriever.Count);
+
+        // After validUntil, the stale metadata is never used again.
+        time.UtcNow += TimeSpan.FromHours(1);
+        await Assert.ThrowsAsync<InvalidOperationException>(async () => await service.GetIdentityProviderConfigurationAsync(registration));
+        Assert.Equal(3, retriever.Count);
+    }
+
+    [Fact]
+    public async Task GetIdentityProviderConfigurationAsync_HonorsCacheDuration()
+    {
+        // Arrange
+        var time = new TestTimeProvider();
+
+        using var idp = CreateIdentityProvider();
+        var document = Load(idp.GetRequiredService<OpenIddictServerSamlService>().CreateMetadata(SingleSignOnServiceUrl));
+        document.DocumentElement!.SetAttribute("cacheDuration", "PT10M");
+
+        var retriever = new TestMetadataRetriever(document.OuterXml);
+        var registration = new OpenIddictClientSamlRegistration
+        {
+            MetadataAddress = new Uri("https://idp.example.com/saml/metadata", UriKind.Absolute),
+            ProviderName = ProviderName
+        };
+
+        using var sp = CreateServiceProvider(saml => saml.Configure(options => options.TimeProvider = time)
+            .Services.AddSingleton<IOpenIddictClientSamlMetadataRetriever>(retriever), registration);
+        var service = sp.GetRequiredService<OpenIddictClientSamlService>();
+
+        // Act
+        await service.GetIdentityProviderConfigurationAsync(registration);
+        time.UtcNow += TimeSpan.FromMinutes(5);
+        await service.GetIdentityProviderConfigurationAsync(registration);
+        time.UtcNow += TimeSpan.FromMinutes(10);
+        await service.GetIdentityProviderConfigurationAsync(registration);
+
+        // Assert
+        Assert.Equal(2, retriever.Count);
+    }
+
+    [Fact]
+    public async Task GetIdentityProviderConfigurationAsync_IgnoresInsecureSingleSignOnServiceUrls()
+    {
+        // Arrange
+        using var idp = CreateIdentityProvider();
+        var metadata = idp.GetRequiredService<OpenIddictServerSamlService>().CreateMetadata(new Uri("http://idp.example.com/saml/sso", UriKind.Absolute));
+
+        var registration = new OpenIddictClientSamlRegistration
+        {
+            MetadataAddress = new Uri("https://idp.example.com/saml/metadata", UriKind.Absolute),
+            ProviderName = ProviderName
+        };
+
+        using var sp = CreateServiceProvider(saml => saml.Services.AddSingleton<IOpenIddictClientSamlMetadataRetriever>(
+            new TestMetadataRetriever(metadata)), registration);
+        var service = sp.GetRequiredService<OpenIddictClientSamlService>();
+
+        // Act
+        var configuration = await service.GetIdentityProviderConfigurationAsync(registration);
+
+        // Assert
+        Assert.Empty(configuration.SingleSignOnServices);
+    }
+
     private static async Task<(OpenIddictClientSamlService Service, OpenIddictClientSamlRegistration Registration,
         AuthenticationRequestMessage Request, RequestState State)> StartAsync(IServiceProvider provider)
     {
@@ -1044,30 +1520,52 @@ public class OpenIddictClientSamlServiceTests
     {
         public int Count { get; private set; }
 
+        public string Metadata { get; set; } = metadata;
+
+        public bool Fail { get; set; }
+
         public ValueTask<byte[]> RetrieveAsync(Uri address, int maximumSize, CancellationToken cancellationToken)
         {
             Count++;
-            return new(Encoding.UTF8.GetBytes(metadata));
+
+            if (Fail)
+            {
+                throw new InvalidOperationException("unavailable");
+            }
+
+            return new(Encoding.UTF8.GetBytes(Metadata));
         }
     }
 
-    private sealed class TestRegistrationProvider(OpenIddictClientSamlRegistration registration) : IOpenIddictClientSamlRegistrationProvider
+    private sealed class TestRegistrationProvider(params OpenIddictClientSamlRegistration[] registrations) : IOpenIddictClientSamlRegistrationProvider
     {
+        public OpenIddictClientSamlRegistration[] Registrations { get; set; } = registrations;
+
         public int FindByIdCount { get; private set; }
+
+        public int FindByProviderNameCount { get; private set; }
+
+        public int ListCount { get; private set; }
 
         public ValueTask<OpenIddictClientSamlRegistration?> FindByIdAsync(string identifier, CancellationToken cancellationToken)
         {
             FindByIdCount++;
-            return new(string.Equals(identifier, registration.RegistrationId, StringComparison.Ordinal) ? registration : null);
+            return new(Array.Find(Registrations, registration => string.Equals(identifier, registration.RegistrationId, StringComparison.Ordinal)));
         }
 
         public ValueTask<ImmutableArray<OpenIddictClientSamlRegistration>> FindByEntityIdAsync(string entityId, CancellationToken cancellationToken)
-            => new(string.Equals(entityId, registration.IdentityProviderEntityId, StringComparison.Ordinal) ? [registration] : []);
+            => new([.. Registrations.Where(registration => string.Equals(entityId, registration.IdentityProviderEntityId, StringComparison.Ordinal))]);
 
         public ValueTask<ImmutableArray<OpenIddictClientSamlRegistration>> FindByProviderNameAsync(string name, CancellationToken cancellationToken)
-            => new(string.Equals(name, registration.ProviderName, StringComparison.Ordinal) ? [registration] : []);
+        {
+            FindByProviderNameCount++;
+            return new([.. Registrations.Where(registration => string.Equals(name, registration.ProviderName, StringComparison.Ordinal))]);
+        }
 
         public ValueTask<ImmutableArray<OpenIddictClientSamlRegistration>> ListAsync(CancellationToken cancellationToken)
-            => new([registration]);
+        {
+            ListCount++;
+            return new([.. Registrations]);
+        }
     }
 }

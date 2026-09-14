@@ -192,9 +192,12 @@ public sealed partial class OpenIddictClientSamlService
 
                 _logger.LogInformation(6683, SR.GetResourceString(SR.ID6683), value, secondLevelStatus, message);
 
+                // Note: the status values are controlled by the sender of the response (that may not be authenticated
+                // at this stage): they are exposed as-is in the result but never included in the error description,
+                // that is typically returned to the user agent by the hosts.
                 return new ResponseValidationResult
                 {
-                    ErrorDescription = SR.FormatID2449(secondLevelStatus ?? value, message),
+                    ErrorDescription = SR.GetResourceString(SR.ID2449),
                     Registration = registration,
                     RelayState = relayState,
                     SecondLevelStatus = secondLevelStatus,
@@ -296,11 +299,12 @@ public sealed partial class OpenIddictClientSamlService
                     continue;
                 }
 
-                if (!IsSameUrl(GetAttributeOrNull(confirmationData, "Recipient"), acs) ||
+                // SAML profiles, 4.1.4.2: the bearer SubjectConfirmationData MUST contain Recipient and NotOnOrAfter
+                // attributes and MUST NOT contain a NotBefore attribute (confirmations containing it are ignored).
+                if (confirmationData.HasAttribute("NotBefore") ||
+                    !IsSameUrl(GetAttributeOrNull(confirmationData, "Recipient"), acs) ||
                     !TryParseInstant(confirmationData.GetAttribute("NotOnOrAfter"), out var notOnOrAfter) ||
                     notOnOrAfter <= now - options.ClockSkew ||
-                    (confirmationData.HasAttribute("NotBefore") && (!TryParseInstant(confirmationData.GetAttribute("NotBefore"), out var notBefore) ||
-                        notBefore > now + options.ClockSkew)) ||
                     !string.Equals(GetAttributeOrNull(confirmationData, "InResponseTo"), state?.RequestId, StringComparison.Ordinal))
                 {
                     continue;

@@ -27,10 +27,15 @@ namespace OpenIddict.Client.Saml;
 public sealed partial class OpenIddictClientSamlService
 {
     private const byte RequestStateVersion = 1;
+    private const int MaximumCachedLookups = 4096;
+    private const string ListCacheKey = "list";
+    private const string IdentifierCacheKeyPrefix = "id:";
+    private const string EntityIdCacheKeyPrefix = "entity:";
+    private const string ProviderNameCacheKeyPrefix = "name:";
 
     private readonly ConcurrentDictionary<string, (IdentityProviderConfiguration Configuration, Uri Address, DateTimeOffset ExpirationDate)> _configurations
         = new(StringComparer.Ordinal);
-    private readonly ConcurrentDictionary<string, (OpenIddictClientSamlRegistration Registration, DateTimeOffset ExpirationDate)> _registrations
+    private readonly ConcurrentDictionary<string, (ImmutableArray<OpenIddictClientSamlRegistration> Registrations, DateTimeOffset ExpirationDate)> _lookups
         = new(StringComparer.Ordinal);
 
     private readonly ILogger<OpenIddictClientSamlService> _logger;
@@ -60,8 +65,12 @@ public sealed partial class OpenIddictClientSamlService
     /// </summary>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>The registrations.</returns>
+    /// <remarks>
+    /// The results are cached for <see cref="OpenIddictClientSamlOptions.DynamicRegistrationCacheLifetime"/>.
+    /// Invalid dynamic registrations are logged and ignored.
+    /// </remarks>
     public ValueTask<ImmutableArray<OpenIddictClientSamlRegistration>> GetRegistrationsAsync(CancellationToken cancellationToken = default)
-        => ResolveRegistrationsAsync(static (provider, _, cancellationToken) => provider.ListAsync(cancellationToken),
+        => ResolveRegistrationsAsync(ListCacheKey, static (provider, _, cancellationToken) => provider.ListAsync(cancellationToken),
             state: (object?) null, cancellationToken);
 
     /// <summary>
@@ -70,12 +79,16 @@ public sealed partial class OpenIddictClientSamlService
     /// <param name="entityId">The entity identifier of the identity provider.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>The registrations.</returns>
+    /// <remarks>
+    /// The results are cached for <see cref="OpenIddictClientSamlOptions.DynamicRegistrationCacheLifetime"/>.
+    /// Invalid dynamic registrations are logged and ignored.
+    /// </remarks>
     public ValueTask<ImmutableArray<OpenIddictClientSamlRegistration>> GetRegistrationsByEntityIdAsync(
         string entityId, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrEmpty(entityId);
 
-        return ResolveRegistrationsAsync(static (provider, entityId, cancellationToken) =>
+        return ResolveRegistrationsAsync(EntityIdCacheKeyPrefix + entityId, static (provider, entityId, cancellationToken) =>
             provider.FindByEntityIdAsync(entityId, cancellationToken), entityId, cancellationToken);
     }
 
@@ -85,12 +98,16 @@ public sealed partial class OpenIddictClientSamlService
     /// <param name="name">The provider name.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>The registrations.</returns>
+    /// <remarks>
+    /// The results (including empty results) are cached for <see cref="OpenIddictClientSamlOptions.DynamicRegistrationCacheLifetime"/>.
+    /// Invalid dynamic registrations are logged and ignored.
+    /// </remarks>
     public ValueTask<ImmutableArray<OpenIddictClientSamlRegistration>> GetRegistrationsByProviderNameAsync(
         string name, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrEmpty(name);
 
-        return ResolveRegistrationsAsync(static (provider, name, cancellationToken) =>
+        return ResolveRegistrationsAsync(ProviderNameCacheKeyPrefix + name, static (provider, name, cancellationToken) =>
             provider.FindByProviderNameAsync(name, cancellationToken), name, cancellationToken);
     }
 
@@ -108,8 +125,7 @@ public sealed partial class OpenIddictClientSamlService
         return ExecuteAsync(name, cancellationToken);
 
         async ValueTask<OpenIddictClientSamlRegistration> ExecuteAsync(string name, CancellationToken cancellationToken)
-            => await ResolveRegistrationsAsync(static (provider, name, cancellationToken) =>
-                provider.FindByProviderNameAsync(name, cancellationToken), name, cancellationToken) switch
+            => await GetRegistrationsByProviderNameAsync(name, cancellationToken) switch
             {
                 [var registration] => registration,
                 [] => throw new InvalidOperationException(SR.GetResourceString(SR.ID0894)),
@@ -124,6 +140,11 @@ public sealed partial class OpenIddictClientSamlService
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>The registration.</returns>
     /// <exception cref="InvalidOperationException">No registration was found or the resolved registration is invalid.</exception>
+    /// <remarks>
+    /// Dynamic registrations are cached for <see cref="OpenIddictClientSamlOptions.DynamicRegistrationCacheLifetime"/>:
+    /// a registration updated or removed by its provider is only taken into account once the cache entry expires,
+    /// once another lookup returns the updated registration or once <see cref="ClearCache"/> is called.
+    /// </remarks>
     public ValueTask<OpenIddictClientSamlRegistration> GetRegistrationByIdAsync(string identifier, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrEmpty(identifier);
@@ -137,9 +158,9 @@ public sealed partial class OpenIddictClientSamlService
             return new(registration);
         }
 
-        if (_registrations.TryGetValue(identifier, out var entry) && entry.ExpirationDate > options.TimeProvider.GetUtcNow())
+        if (TryGetCachedLookup(IdentifierCacheKeyPrefix + identifier, options, out var cached))
         {
-            return new(entry.Registration);
+            return cached is [var result] ? new(result) : throw new InvalidOperationException(SR.GetResourceString(SR.ID0893));
         }
 
         return ExecuteAsync(identifier, cancellationToken);
@@ -162,26 +183,64 @@ public sealed partial class OpenIddictClientSamlService
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0896));
                 }
 
+                CacheLookup(IdentifierCacheKeyPrefix + identifier, [registration]);
+
                 return registration;
             }
+
+            // Note: negative results are also cached (identifiers are typically extracted from protected request states).
+            CacheLookup(IdentifierCacheKeyPrefix + identifier, []);
 
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0893));
         }
     }
 
-    private async ValueTask<ImmutableArray<OpenIddictClientSamlRegistration>> ResolveRegistrationsAsync<TState>(
+    /// <summary>
+    /// Removes all the cached registration lookups and identity provider configurations, which forces
+    /// the registration providers to be queried and the metadata documents to be retrieved again.
+    /// Applications using dynamic registrations should call it when a registration is updated or removed.
+    /// </summary>
+    public void ClearCache()
+    {
+        _lookups.Clear();
+        _configurations.Clear();
+    }
+
+    private async ValueTask<ImmutableArray<OpenIddictClientSamlRegistration>> ResolveRegistrationsAsync<TState>(string key,
         Func<IOpenIddictClientSamlRegistrationProvider, TState, CancellationToken, ValueTask<ImmutableArray<OpenIddictClientSamlRegistration>>> resolver,
         TState state, CancellationToken cancellationToken)
     {
+        if (TryGetCachedLookup(key, _options.CurrentValue, out var cached))
+        {
+            return cached;
+        }
+
         var builder = ImmutableArray.CreateBuilder<OpenIddictClientSamlRegistration>();
 
         foreach (var provider in GetRegistrationProviders())
         {
             foreach (var registration in await resolver(provider, state, cancellationToken))
             {
-                var result = InitializeRegistration(registration);
+                if (registration is null)
+                {
+                    continue;
+                }
 
-                // Note: the same registration may be returned by multiple providers (or by the cache).
+                OpenIddictClientSamlRegistration result;
+
+                try
+                {
+                    result = InitializeRegistration(registration);
+                }
+
+                // Note: an invalid dynamic registration must not prevent the other registrations from being used.
+                catch (InvalidOperationException exception)
+                {
+                    _logger.LogWarning(6685, exception, SR.GetResourceString(SR.ID6685), registration.RegistrationId);
+                    continue;
+                }
+
+                // Note: the same registration may be returned by multiple providers.
                 if (!Contains(builder, result))
                 {
                     builder.Add(result);
@@ -189,7 +248,21 @@ public sealed partial class OpenIddictClientSamlService
             }
         }
 
-        return builder.ToImmutable();
+        var registrations = builder.ToImmutable();
+
+        CacheLookup(key, registrations);
+
+        // Note: registrations freshly returned by a provider are authoritative and replace the registrations
+        // previously cached by identifier, so that updated registrations are used as soon as they are resolved.
+        foreach (var registration in registrations)
+        {
+            if (!string.IsNullOrEmpty(registration.RegistrationId) && !IsStaticRegistration(registration))
+            {
+                CacheLookup(IdentifierCacheKeyPrefix + registration.RegistrationId, [registration]);
+            }
+        }
+
+        return registrations;
 
         static bool Contains(ImmutableArray<OpenIddictClientSamlRegistration>.Builder builder, OpenIddictClientSamlRegistration registration)
         {
@@ -205,6 +278,51 @@ public sealed partial class OpenIddictClientSamlService
         }
     }
 
+    private bool TryGetCachedLookup(string key, OpenIddictClientSamlOptions options,
+        out ImmutableArray<OpenIddictClientSamlRegistration> registrations)
+    {
+        if (_lookups.TryGetValue(key, out var entry) && entry.ExpirationDate > options.TimeProvider.GetUtcNow())
+        {
+            registrations = entry.Registrations;
+            return true;
+        }
+
+        registrations = default;
+        return false;
+    }
+
+    private void CacheLookup(string key, ImmutableArray<OpenIddictClientSamlRegistration> registrations)
+    {
+        var options = _options.CurrentValue;
+
+        if (options.DynamicRegistrationCacheLifetime is not TimeSpan lifetime || lifetime <= TimeSpan.Zero)
+        {
+            return;
+        }
+
+        var now = options.TimeProvider.GetUtcNow();
+
+        if (_lookups.Count >= MaximumCachedLookups)
+        {
+            foreach (var item in _lookups)
+            {
+                if (item.Value.ExpirationDate <= now)
+                {
+                    ((ICollection<KeyValuePair<string, (ImmutableArray<OpenIddictClientSamlRegistration>, DateTimeOffset)>>) _lookups).Remove(item);
+                }
+            }
+
+            // Note: to prevent unbounded memory consumption (e.g when the entity identifiers of unsolicited
+            // responses are attacker-controlled), new lookups are not cached when the cache is full.
+            if (_lookups.Count >= MaximumCachedLookups && !_lookups.ContainsKey(key))
+            {
+                return;
+            }
+        }
+
+        _lookups[key] = (registrations, now + lifetime);
+    }
+
     private ImmutableArray<IOpenIddictClientSamlRegistrationProvider> GetRegistrationProviders()
     {
         if (_registrationProviders.IsDefault)
@@ -215,8 +333,11 @@ public sealed partial class OpenIddictClientSamlService
         return _registrationProviders;
     }
 
+    private bool IsStaticRegistration(OpenIddictClientSamlRegistration registration)
+        => _options.CurrentValue.Registrations.Exists(item => ReferenceEquals(item, registration));
+
     /// <summary>
-    /// Initializes and validates the specified dynamic registration and caches it, if applicable.
+    /// Initializes and validates the specified registration returned by a registration provider.
     /// </summary>
     private OpenIddictClientSamlRegistration InitializeRegistration(OpenIddictClientSamlRegistration registration)
     {
@@ -228,49 +349,17 @@ public sealed partial class OpenIddictClientSamlService
             return registration;
         }
 
+        // Note: dynamic registrations are always validated when they are returned by a provider, as their
+        // settings (e.g signing certificates or unsolicited responses support) may have been updated.
         OpenIddictClientSamlConfiguration.ConfigureRegistration(registration);
-
-        var now = options.TimeProvider.GetUtcNow();
-
-        // Note: a cached instance is only reused if the lookup criteria are unchanged, so that
-        // updated registrations (e.g a new metadata address) are validated again and replace it.
-        if (!string.IsNullOrEmpty(registration.RegistrationId) &&
-            _registrations.TryGetValue(registration.RegistrationId, out var entry) && entry.ExpirationDate > now &&
-            IsEquivalent(entry.Registration, registration))
-        {
-            return entry.Registration;
-        }
-
-        OpenIddictClientSamlConfiguration.ValidateRegistration(options, registration);
+        OpenIddictClientSamlConfiguration.ValidateRegistration(options, registration, isDynamic: true);
 
         if (options.Registrations.Exists(item => string.Equals(item.RegistrationId, registration.RegistrationId, StringComparison.Ordinal)))
         {
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0897));
         }
 
-        if (options.DynamicRegistrationCacheLifetime is not TimeSpan lifetime || lifetime <= TimeSpan.Zero)
-        {
-            return registration;
-        }
-
-        foreach (var item in _registrations)
-        {
-            if (item.Value.ExpirationDate <= now)
-            {
-                ((ICollection<KeyValuePair<string, (OpenIddictClientSamlRegistration, DateTimeOffset)>>) _registrations).Remove(item);
-            }
-        }
-
-        _registrations[registration.RegistrationId!] = (registration, now + lifetime);
-
         return registration;
-
-        static bool IsEquivalent(OpenIddictClientSamlRegistration left, OpenIddictClientSamlRegistration right)
-            => ReferenceEquals(left, right) || (
-                string.Equals(left.IdentityProviderEntityId, right.IdentityProviderEntityId, StringComparison.Ordinal) &&
-                string.Equals(left.ProviderName, right.ProviderName, StringComparison.Ordinal) &&
-                left.MetadataAddress == right.MetadataAddress &&
-                left.SingleSignOnServiceUrl == right.SingleSignOnServiceUrl);
     }
 
     /// <summary>
@@ -303,7 +392,8 @@ public sealed partial class OpenIddictClientSamlService
         var now = options.TimeProvider.GetUtcNow();
         var key = registration.RegistrationId ?? address.AbsoluteUri;
 
-        if (_configurations.TryGetValue(key, out var entry) && entry.ExpirationDate > now && entry.Address == address)
+        if (_configurations.TryGetValue(key, out var entry) && entry.ExpirationDate > now && entry.Address == address &&
+            !IsExpired(entry.Configuration, now))
         {
             return new(Merge(registration, entry.Configuration));
         }
@@ -330,22 +420,33 @@ public sealed partial class OpenIddictClientSamlService
             {
                 _logger.LogWarning(6684, exception, SR.GetResourceString(SR.ID6684), registration.RegistrationId);
 
-                // If a previous version of the metadata is available, keep using it and retry later.
-                if (_configurations.TryGetValue(key, out var stale) && stale.Address == address)
+                // If a previous version of the metadata is available and is not expired (SAML metadata, 2.3.1: validUntil),
+                // keep using it and retry later. Expired metadata (and the signing keys it contains) is never trusted.
+                var now = options.TimeProvider.GetUtcNow();
+                if (_configurations.TryGetValue(key, out var stale) && stale.Address == address && !IsExpired(stale.Configuration, now))
                 {
                     var delay = options.MetadataRefreshInterval < TimeSpan.FromMinutes(5) ? options.MetadataRefreshInterval : TimeSpan.FromMinutes(5);
-                    _configurations[key] = (stale.Configuration, address, options.TimeProvider.GetUtcNow() + delay);
+                    _configurations[key] = (stale.Configuration, address, GetCacheExpiration(stale.Configuration, now + delay));
 
                     return Merge(registration, stale.Configuration);
                 }
 
+                _configurations.TryRemove(key, out _);
+
                 throw new InvalidOperationException(SR.FormatID0898(registration.RegistrationId, exception.Message), exception);
             }
 
-            _configurations[key] = (configuration, address, options.TimeProvider.GetUtcNow() + options.MetadataRefreshInterval);
+            _configurations[key] = (configuration, address, GetCacheExpiration(configuration,
+                options.TimeProvider.GetUtcNow() + options.MetadataRefreshInterval));
 
             return Merge(registration, configuration);
         }
+
+        static DateTimeOffset GetCacheExpiration(IdentityProviderConfiguration configuration, DateTimeOffset date)
+            => configuration.ExpirationDate is DateTimeOffset expiration && expiration < date ? expiration : date;
+
+        static bool IsExpired(IdentityProviderConfiguration configuration, DateTimeOffset now)
+            => configuration.ExpirationDate is DateTimeOffset expiration && expiration <= now;
 
         static IdentityProviderConfiguration Merge(OpenIddictClientSamlRegistration registration, IdentityProviderConfiguration configuration)
             => configuration with
@@ -424,8 +525,7 @@ public sealed partial class OpenIddictClientSamlService
         {
             if (service.GetAttribute("Binding") is { Length: > 0 } binding && !services.ContainsKey(binding) &&
                 Uri.TryCreate(service.GetAttribute("Location"), UriKind.Absolute, out var location) &&
-                (string.Equals(location.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase) ||
-                 string.Equals(location.Scheme, Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase)))
+                string.IsNullOrEmpty(location.Fragment) && OpenIddictClientSamlConfiguration.IsAllowedEndpointScheme(options, location))
             {
                 services[binding] = location;
             }
@@ -436,9 +536,48 @@ public sealed partial class OpenIddictClientSamlService
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0904));
         }
 
+        // SAML metadata, 2.3.1: validUntil indicates the expiration of the metadata and cacheDuration the maximum length
+        // of time it should be cached. The most restrictive values of the descriptor and its ancestors are used.
+        DateTimeOffset? expiration = null;
+
+        for (var node = descriptor; node is not null; node = node.ParentNode as XmlElement)
+        {
+            if (node.HasAttribute("validUntil") && TryParseInstant(node.GetAttribute("validUntil"), out var date) &&
+                (expiration is null || date < expiration))
+            {
+                expiration = date;
+            }
+
+            if (node.HasAttribute("cacheDuration"))
+            {
+                TimeSpan duration;
+
+                try
+                {
+                    duration = XmlConvert.ToTimeSpan(node.GetAttribute("cacheDuration").Trim());
+                }
+
+                catch (Exception exception) when (exception is FormatException or OverflowException)
+                {
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0904), exception);
+                }
+
+                if (duration < TimeSpan.Zero)
+                {
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0904));
+                }
+
+                if (expiration is null || now + duration < expiration)
+                {
+                    expiration = now + duration;
+                }
+            }
+        }
+
         return new IdentityProviderConfiguration
         {
             EntityId = entity.GetAttribute("entityID"),
+            ExpirationDate = expiration,
             SigningCertificates = certificates.ToImmutable(),
             SingleSignOnServices = services.ToImmutable(),
             WantAuthenticationRequestsSigned = descriptor.GetAttribute("WantAuthnRequestsSigned").Trim() is "true" or "1"

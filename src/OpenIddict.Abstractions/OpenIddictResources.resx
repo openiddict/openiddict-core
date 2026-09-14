@@ -2355,10 +2355,10 @@ To register a distributed cache, use 'services.AddDistributedMemoryCache()' or a
     <value>The SAML registration '{0}' must specify a metadata address or both a single sign-on service URL and at least one identity provider signing certificate.</value>
   </data>
   <data name="ID0887" xml:space="preserve">
-    <value>The single sign-on service URL of the SAML registration '{0}' must be an absolute HTTP or HTTPS URL without fragment.</value>
+    <value>The single sign-on service URL of the SAML registration '{0}' must be an absolute HTTPS URL without fragment (HTTP URLs are only accepted when 'OpenIddictClientSamlOptions.AllowInsecureIdentityProviderEndpoints' is enabled).</value>
   </data>
   <data name="ID0888" xml:space="preserve">
-    <value>The metadata address of the SAML registration '{0}' must be an absolute HTTPS or file URI.</value>
+    <value>The metadata address of the SAML registration '{0}' must be an absolute HTTPS URI or a local (non-UNC) file URI.</value>
   </data>
   <data name="ID0889" xml:space="preserve">
     <value>The authentication request binding of the SAML registration '{0}' must be HTTP-Redirect or HTTP-POST.</value>
@@ -2428,6 +2428,12 @@ To register a distributed cache, use 'services.AddDistributedMemoryCache()' or a
   </data>
   <data name="ID0911" xml:space="preserve">
     <value>The SAML correlation cookie builder and its name must be set.</value>
+  </data>
+  <data name="ID0912" xml:space="preserve">
+    <value>The metadata address of the dynamic SAML registration '{0}' is not allowed: dynamic registrations cannot use file URIs and their HTTPS metadata addresses must use one of the hosts configured in 'OpenIddictClientSamlOptions.AllowedDynamicMetadataHosts', if any.</value>
+  </data>
+  <data name="ID0913" xml:space="preserve">
+    <value>The SAML registration '{0}' cannot disable authentication request signing when service provider signing certificates are configured, as the service provider metadata advertises that all the authentication requests are signed (AuthnRequestsSigned).</value>
   </data>
   <data name="ID2000" xml:space="preserve">
     <value>The security token is missing.</value>
@@ -3497,7 +3503,7 @@ To register a distributed cache, use 'services.AddDistributedMemoryCache()' or a
     <value>Unsolicited SAML responses are not allowed for this identity provider.</value>
   </data>
   <data name="ID2449" xml:space="preserve">
-    <value>The identity provider returned an error status ({0}): {1}</value>
+    <value>The identity provider returned an error status.</value>
   </data>
   <data name="ID2450" xml:space="preserve">
     <value>The SAML response must contain exactly one assertion.</value>
@@ -4770,6 +4776,12 @@ This may indicate that the hashed entry is corrupted or malformed.</value>
   </data>
   <data name="ID6684" xml:space="preserve">
     <value>The SAML metadata of the registration '{Registration}' couldn't be retrieved or is invalid.</value>
+  </data>
+  <data name="ID6685" xml:space="preserve">
+    <value>The dynamic SAML registration '{Registration}' returned by a registration provider is invalid and was ignored.</value>
+  </data>
+  <data name="ID6686" xml:space="preserve">
+    <value>The SAML challenge couldn't be applied because the response headers were already sent by another component.</value>
   </data>
   <data name="ID8000" xml:space="preserve">
     <value>https://documentation.openiddict.com/errors/{0}</value>

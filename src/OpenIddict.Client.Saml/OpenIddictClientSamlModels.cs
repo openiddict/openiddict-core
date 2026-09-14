@@ -39,6 +39,12 @@ public static class OpenIddictClientSamlModels
         /// Gets a boolean indicating whether the identity provider requires signed authentication requests.
         /// </summary>
         public bool WantAuthenticationRequestsSigned { get; init; }
+
+        /// <summary>
+        /// Gets the date after which the imported metadata must no longer be used (computed from the validUntil and
+        /// cacheDuration attributes), or <see langword="null"/> if the metadata doesn't expire.
+        /// </summary>
+        public DateTimeOffset? ExpirationDate { get; init; }
     }
 
     /// <summary>
