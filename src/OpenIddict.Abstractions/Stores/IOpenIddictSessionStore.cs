@@ -159,6 +159,28 @@ public interface IOpenIddictSessionStore<TSession> where TSession : class
     ValueTask<DateTimeOffset?> GetCreationDateAsync(TSession session, CancellationToken cancellationToken);
 
     /// <summary>
+    /// Retrieves the expiration date associated with a session.
+    /// </summary>
+    /// <param name="session">The session.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns>
+    /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
+    /// whose result returns the expiration date associated with the specified session.
+    /// </returns>
+    ValueTask<DateTimeOffset?> GetExpirationDateAsync(TSession session, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Retrieves the date of the last activity recorded for a session.
+    /// </summary>
+    /// <param name="session">The session.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns>
+    /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
+    /// whose result returns the last activity date associated with the specified session.
+    /// </returns>
+    ValueTask<DateTimeOffset?> GetLastActivityDateAsync(TSession session, CancellationToken cancellationToken);
+
+    /// <summary>
     /// Retrieves the unique identifier associated with a session.
     /// </summary>
     /// <param name="session">The session.</param>
@@ -246,8 +268,8 @@ public interface IOpenIddictSessionStore<TSession> where TSession : class
         TState state, CancellationToken cancellationToken);
 
     /// <summary>
-    /// Removes the sessions that are marked as invalid and don't have any token attached.
-    /// Only sessions created before the specified <paramref name="threshold"/> are removed.
+    /// Removes the sessions that are marked as invalid or have expired and don't have any token
+    /// attached. Only sessions created before the specified <paramref name="threshold"/> are removed.
     /// </summary>
     /// <remarks>
     /// Since sessions with tokens still attached are not deleted, tokens should always be pruned first.
@@ -283,6 +305,24 @@ public interface IOpenIddictSessionStore<TSession> where TSession : class
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
     ValueTask SetCreationDateAsync(TSession session, DateTimeOffset? date, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Sets the expiration date associated with a session.
+    /// </summary>
+    /// <param name="session">The session.</param>
+    /// <param name="date">The expiration date.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
+    ValueTask SetExpirationDateAsync(TSession session, DateTimeOffset? date, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Sets the date of the last activity recorded for a session.
+    /// </summary>
+    /// <param name="session">The session.</param>
+    /// <param name="date">The last activity date.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns>A <see cref="ValueTask"/> that can be used to monitor the asynchronous operation.</returns>
+    ValueTask SetLastActivityDateAsync(TSession session, DateTimeOffset? date, CancellationToken cancellationToken);
 
     /// <summary>
     /// Sets the login identifier associated with a session.

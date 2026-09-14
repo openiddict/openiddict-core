@@ -266,6 +266,34 @@ public class OpenIddictEntityFrameworkTokenStore<
     }
 
     /// <inheritdoc/>
+    public virtual IAsyncEnumerable<TToken> FindBySessionIdAsync(string identifier, CancellationToken cancellationToken)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(identifier);
+
+        return ExecuteAsync(cancellationToken);
+
+        async IAsyncEnumerable<TToken> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
+        {
+            var context = await Context.GetDbContextAsync(cancellationToken);
+            var key = ConvertIdentifierFromString(identifier);
+
+            var tokens = from token in context.Set<TToken>()
+                             .Include(static token => token.Application)
+                             .Include(static token => token.Authorization)
+                             .Include(static token => token.Session)
+                         where token.Session!.Id!.Equals(key)
+                         select token;
+
+            using var enumerator = ((IDbAsyncEnumerable<TToken>) tokens).GetAsyncEnumerator();
+
+            while (await enumerator.MoveNextAsync(cancellationToken))
+            {
+                yield return enumerator.Current;
+            }
+        }
+    }
+
+    /// <inheritdoc/>
     public virtual IAsyncEnumerable<TToken> FindBySubjectAsync(string subject, CancellationToken cancellationToken)
     {
         ArgumentException.ThrowIfNullOrEmpty(subject);
@@ -758,6 +786,55 @@ public class OpenIddictEntityFrameworkTokenStore<
                                         .Include(static token => token.Application)
                                         .Include(static token => token.Authorization)
                                      where token.Authorization!.Id!.Equals(key)
+                                     where token.Status != Statuses.Revoked
+                                     select token).ToListAsync(cancellationToken))
+        {
+            token.Status = Statuses.Revoked;
+
+            try
+            {
+                await context.SaveChangesAsync(cancellationToken);
+            }
+
+            catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
+            {
+                // Reset the state of the updated entities to prevents future calls from failing.
+                context.Entry(token).State = EntityState.Unchanged;
+
+                exceptions ??= new List<Exception>(capacity: 1);
+                exceptions.Add(exception);
+
+                continue;
+            }
+
+            result++;
+        }
+
+        if (exceptions is { Count: > 0 })
+        {
+            throw new AggregateException(exceptions);
+        }
+
+        return result;
+    }
+
+    /// <inheritdoc/>
+    public virtual async ValueTask<long> RevokeBySessionIdAsync(string identifier, CancellationToken cancellationToken)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(identifier);
+
+        var context = await Context.GetDbContextAsync(cancellationToken);
+        var key = ConvertIdentifierFromString(identifier);
+
+        List<Exception>? exceptions = null;
+
+        var result = 0L;
+
+        foreach (var token in await (from token in context.Set<TToken>()
+                                        .Include(static token => token.Application)
+                                        .Include(static token => token.Authorization)
+                                        .Include(static token => token.Session)
+                                     where token.Session!.Id!.Equals(key)
                                      where token.Status != Statuses.Revoked
                                      select token).ToListAsync(cancellationToken))
         {

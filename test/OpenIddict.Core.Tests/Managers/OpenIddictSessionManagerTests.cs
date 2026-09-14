@@ -857,5 +857,145 @@ public class OpenIddictSessionManagerTests
         Assert.DoesNotContain(results, static result => result != ValidationResult.Success);
     }
 
+    [Fact]
+    public async Task TryRevokeAsync_UpdatesStatus()
+    {
+        // Arrange
+        var session = new CustomSession();
+        var store = CreateValidStore(session);
+        var manager = CreateManager(store.Object);
+
+        // Act
+        var result = await manager.TryRevokeAsync(session);
+
+        // Assert
+        Assert.True(result);
+        store.Verify(store => store.SetStatusAsync(session, Statuses.Revoked, It.IsAny<CancellationToken>()), Times.Once());
+        store.Verify(store => store.UpdateAsync(session, It.IsAny<CancellationToken>()), Times.Once());
+    }
+
+    [Fact]
+    public async Task TryRevokeAsync_DoesNotUpdateAlreadyRevokedSession()
+    {
+        // Arrange
+        var session = new CustomSession();
+        var store = CreateValidStore(session);
+
+        store.Setup(store => store.GetStatusAsync(session, It.IsAny<CancellationToken>()))
+             .ReturnsAsync(Statuses.Revoked);
+
+        var manager = CreateManager(store.Object);
+
+        // Act
+        var result = await manager.TryRevokeAsync(session);
+
+        // Assert
+        Assert.True(result);
+        store.Verify(store => store.UpdateAsync(session, It.IsAny<CancellationToken>()), Times.Never());
+    }
+
+    [Fact]
+    public async Task TryRevokeAsync_ReturnsFalseForConcurrencyException()
+    {
+        // Arrange
+        var session = new CustomSession();
+        var store = CreateValidStore(session);
+
+        store.Setup(store => store.UpdateAsync(session, It.IsAny<CancellationToken>()))
+             .Returns(ValueTask.FromException(new OpenIddictExceptions.ConcurrencyException("concurrency")));
+
+        var manager = CreateManager(store.Object);
+
+        // Act
+        var result = await manager.TryRevokeAsync(session);
+
+        // Assert
+        Assert.False(result);
+    }
+
+    [Fact]
+    public async Task TryExtendAsync_UpdatesDates()
+    {
+        // Arrange
+        var session = new CustomSession();
+        var store = CreateValidStore(session);
+        var manager = CreateManager(store.Object);
+
+        var date = new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero);
+
+        // Act
+        var result = await manager.TryExtendAsync(session, date, date.AddHours(1));
+
+        // Assert
+        Assert.True(result);
+        store.Verify(store => store.SetLastActivityDateAsync(session, date, It.IsAny<CancellationToken>()), Times.Once());
+        store.Verify(store => store.SetExpirationDateAsync(session, date.AddHours(1), It.IsAny<CancellationToken>()), Times.Once());
+        store.Verify(store => store.UpdateAsync(session, It.IsAny<CancellationToken>()), Times.Once());
+    }
+
+    [Fact]
+    public async Task TryExtendAsync_KeepsExpirationDateWhenNullIsSpecified()
+    {
+        // Arrange
+        var session = new CustomSession();
+        var store = CreateValidStore(session);
+        var manager = CreateManager(store.Object);
+
+        // Act
+        var result = await manager.TryExtendAsync(session, DateTimeOffset.UtcNow, expirationDate: null);
+
+        // Assert
+        Assert.True(result);
+        store.Verify(store => store.SetExpirationDateAsync(session, It.IsAny<DateTimeOffset?>(), It.IsAny<CancellationToken>()), Times.Never());
+    }
+
+    [Theory]
+    [InlineData(-1, true)]
+    [InlineData(1, false)]
+    public async Task HasExpiredAsync_ReturnsExpectedResult(int offset, bool expired)
+    {
+        // Arrange
+        var session = new CustomSession();
+        var store = CreateValidStore(session);
+
+        store.Setup(store => store.GetExpirationDateAsync(session, It.IsAny<CancellationToken>()))
+             .ReturnsAsync(DateTimeOffset.UtcNow.AddHours(offset));
+
+        var manager = CreateManager(store.Object);
+
+        // Act and assert
+        Assert.Equal(expired, await manager.HasExpiredAsync(session));
+    }
+
+    [Fact]
+    public async Task HasExpiredAsync_ReturnsFalseWhenNoExpirationDateIsSet()
+    {
+        // Arrange
+        var session = new CustomSession();
+        var manager = CreateManager(CreateValidStore(session).Object);
+
+        // Act and assert
+        Assert.False(await manager.HasExpiredAsync(session));
+    }
+
+    private static Mock<IOpenIddictSessionStore<CustomSession>> CreateValidStore(CustomSession session)
+    {
+        var store = new Mock<IOpenIddictSessionStore<CustomSession>>();
+
+        store.Setup(store => store.GetStatusAsync(session, It.IsAny<CancellationToken>()))
+             .ReturnsAsync(Statuses.Valid);
+
+        store.Setup(store => store.GetLoginIdAsync(session, It.IsAny<CancellationToken>()))
+             .ReturnsAsync("login-id");
+
+        return store;
+    }
+
+    private static OpenIddictSessionManager<CustomSession> CreateManager(IOpenIddictSessionStore<CustomSession> store)
+        => new(Mock.Of<IOpenIddictSessionCache<CustomSession>>(),
+               Mock.Of<ILogger<OpenIddictSessionManager<CustomSession>>>(),
+               Mock.Of<IOptionsMonitor<OpenIddictCoreOptions>>(mock => mock.CurrentValue == new OpenIddictCoreOptions { TimeProvider = TimeProvider.System }),
+               store);
+
     public class CustomSession;
 }

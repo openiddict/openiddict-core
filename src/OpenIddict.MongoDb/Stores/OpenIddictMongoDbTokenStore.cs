@@ -203,6 +203,26 @@ public class OpenIddictMongoDbTokenStore<
     }
 
     /// <inheritdoc/>
+    public virtual IAsyncEnumerable<TToken> FindBySessionIdAsync(string identifier, CancellationToken cancellationToken)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(identifier);
+
+        return ExecuteAsync(cancellationToken);
+
+        async IAsyncEnumerable<TToken> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
+        {
+            var database = await Context.GetDatabaseAsync(cancellationToken);
+            var collection = database.GetCollection<TToken>(Options.CurrentValue.TokensCollectionName);
+
+            await foreach (var token in collection.Find(token =>
+                token.SessionId == ObjectId.Parse(identifier)).ToAsyncEnumerable().WithCancellation(cancellationToken))
+            {
+                yield return token;
+            }
+        }
+    }
+
+    /// <inheritdoc/>
     public virtual IAsyncEnumerable<TToken> FindBySubjectAsync(string subject, CancellationToken cancellationToken)
     {
         ArgumentException.ThrowIfNullOrEmpty(subject);
@@ -504,6 +524,21 @@ public class OpenIddictMongoDbTokenStore<
 
         return (await collection.UpdateManyAsync(
             filter           : token => token.AuthorizationId == ObjectId.Parse(identifier),
+            update           : Builders<TToken>.Update.Set(token => token.Status, Statuses.Revoked),
+            options          : null,
+            cancellationToken: cancellationToken)).MatchedCount;
+    }
+
+    /// <inheritdoc/>
+    public virtual async ValueTask<long> RevokeBySessionIdAsync(string identifier, CancellationToken cancellationToken)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(identifier);
+
+        var database = await Context.GetDatabaseAsync(cancellationToken);
+        var collection = database.GetCollection<TToken>(Options.CurrentValue.TokensCollectionName);
+
+        return (await collection.UpdateManyAsync(
+            filter           : token => token.SessionId == ObjectId.Parse(identifier),
             update           : Builders<TToken>.Update.Set(token => token.Status, Statuses.Revoked),
             options          : null,
             cancellationToken: cancellationToken)).MatchedCount;

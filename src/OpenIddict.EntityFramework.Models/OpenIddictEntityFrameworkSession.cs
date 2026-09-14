@@ -52,9 +52,19 @@ public class OpenIddictEntityFrameworkSession<TKey, TApplication, TAuthorization
     public virtual DateTime? CreationDate { get; set; }
 
     /// <summary>
+    /// Gets or sets the UTC expiration date of the session.
+    /// </summary>
+    public virtual DateTime? ExpirationDate { get; set; }
+
+    /// <summary>
     /// Gets or sets the unique identifier of the session.
     /// </summary>
     public virtual TKey? Id { get; set; }
+
+    /// <summary>
+    /// Gets or sets the UTC date of the last activity recorded for the session.
+    /// </summary>
+    public virtual DateTime? LastActivityDate { get; set; }
 
     /// <summary>
     /// Gets or sets the login identifier of the session.

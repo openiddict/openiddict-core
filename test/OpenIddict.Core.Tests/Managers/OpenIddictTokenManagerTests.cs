@@ -1064,6 +1064,56 @@ public class OpenIddictTokenManagerTests
     }
 
     [Fact]
+    public async Task RevokeBySessionIdAsync_CallsStoreMethod()
+    {
+        // Arrange
+        var cache = Mock.Of<IOpenIddictTokenCache<CustomToken>>();
+        var logger = Mock.Of<ILogger<OpenIddictTokenManager<CustomToken>>>();
+        var options = Mock.Of<IOptionsMonitor<OpenIddictCoreOptions>>();
+        var store = new Mock<IOpenIddictTokenStore<CustomToken>>();
+
+        store.Setup(store => store.RevokeBySessionIdAsync("session", It.IsAny<CancellationToken>()))
+             .ReturnsAsync(3);
+
+        var manager = new OpenIddictTokenManager<CustomToken>(cache, logger, options, store.Object);
+
+        // Act and assert
+        Assert.Equal(3, await manager.RevokeBySessionIdAsync("session"));
+        await Assert.ThrowsAsync<ArgumentException>(() => manager.RevokeBySessionIdAsync(string.Empty).AsTask());
+    }
+
+    [Fact]
+    public async Task FindBySessionIdAsync_FiltersTokensWithDifferentSessionIdentifiers()
+    {
+        // Arrange
+        var first = new CustomToken();
+        var second = new CustomToken();
+
+        var cache = Mock.Of<IOpenIddictTokenCache<CustomToken>>();
+        var logger = Mock.Of<ILogger<OpenIddictTokenManager<CustomToken>>>();
+        var options = Mock.Of<IOptionsMonitor<OpenIddictCoreOptions>>(
+            mock => mock.CurrentValue == new OpenIddictCoreOptions());
+        var store = new Mock<IOpenIddictTokenStore<CustomToken>>();
+
+        store.Setup(store => store.FindBySessionIdAsync("session", It.IsAny<CancellationToken>()))
+             .Returns(new[] { first, second }.ToAsyncEnumerable());
+
+        store.Setup(store => store.GetSessionIdAsync(first, It.IsAny<CancellationToken>()))
+             .ReturnsAsync("session");
+
+        store.Setup(store => store.GetSessionIdAsync(second, It.IsAny<CancellationToken>()))
+             .ReturnsAsync("SESSION");
+
+        var manager = new OpenIddictTokenManager<CustomToken>(cache, logger, options, store.Object);
+
+        // Act
+        var tokens = await manager.FindBySessionIdAsync("session").ToListAsync();
+
+        // Assert
+        Assert.Equal([first], tokens);
+    }
+
+    [Fact]
     public async Task RevokeBySubjectAsync_ThrowsAnExceptionForNullSubject()
     {
         // Arrange

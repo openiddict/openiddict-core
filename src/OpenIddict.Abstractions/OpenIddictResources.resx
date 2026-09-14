@@ -3736,6 +3736,21 @@ This may indicate that the hashed entry is corrupted or malformed.</value>
   <data name="ID6326" xml:space="preserve">
     <value>A SAML error response ({Status}) was returned to the service provider '{ServiceProvider}': {Description}</value>
   </data>
+  <data name="ID6520" xml:space="preserve">
+    <value>A concurrency exception occurred while trying to extend the session '{Identifier}'.</value>
+  </data>
+  <data name="ID6521" xml:space="preserve">
+    <value>An exception occurred while trying to extend the session '{Identifier}'.</value>
+  </data>
+  <data name="ID6522" xml:space="preserve">
+    <value>The session '{Identifier}' was successfully revoked.</value>
+  </data>
+  <data name="ID6523" xml:space="preserve">
+    <value>A concurrency exception occurred while trying to revoke the session '{Identifier}'.</value>
+  </data>
+  <data name="ID6524" xml:space="preserve">
+    <value>An exception occurred while trying to revoke the session '{Identifier}'.</value>
+  </data>
   <data name="ID8000" xml:space="preserve">
     <value>https://documentation.openiddict.com/errors/{0}</value>
   </data>

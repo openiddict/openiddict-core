@@ -415,6 +415,43 @@ public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TTok
     }
 
     /// <summary>
+    /// Retrieves the list of tokens corresponding to the specified session identifier.
+    /// </summary>
+    /// <param name="identifier">The session identifier associated with the tokens.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns>The tokens corresponding to the specified session.</returns>
+    public virtual IAsyncEnumerable<TToken> FindBySessionIdAsync(
+        string identifier, CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(identifier);
+
+        // Note: session-based lookups are not cached, as they are typically only used when revoking sessions.
+        var tokens = Store.FindBySessionIdAsync(identifier, cancellationToken);
+
+        if (Options.CurrentValue.DisableAdditionalFiltering)
+        {
+            return tokens;
+        }
+
+        // SQL engines like Microsoft SQL Server or MySQL are known to use case-insensitive lookups by default.
+        // To ensure a case-sensitive comparison is enforced independently of the database/table/query collation
+        // used by the store, a second pass using string.Equals(StringComparison.Ordinal) is manually made here.
+
+        return ExecuteAsync(cancellationToken);
+
+        async IAsyncEnumerable<TToken> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
+        {
+            await foreach (var token in tokens.WithCancellation(cancellationToken))
+            {
+                if (string.Equals(await Store.GetSessionIdAsync(token, cancellationToken), identifier, StringComparison.Ordinal))
+                {
+                    yield return token;
+                }
+            }
+        }
+    }
+
+    /// <summary>
     /// Retrieves the list of tokens corresponding to the specified subject.
     /// </summary>
     /// <param name="subject">The subject associated with the tokens.</param>
@@ -932,6 +969,19 @@ public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TTok
     }
 
     /// <summary>
+    /// Revokes all the tokens associated with the specified session identifier.
+    /// </summary>
+    /// <param name="identifier">The session identifier associated with the tokens.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns>The number of tokens associated with the specified session that were marked as revoked.</returns>
+    public virtual ValueTask<long> RevokeBySessionIdAsync(string identifier, CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(identifier);
+
+        return Store.RevokeBySessionIdAsync(identifier, cancellationToken);
+    }
+
+    /// <summary>
     /// Revokes all the tokens associated with the specified subject.
     /// </summary>
     /// <param name="subject">The subject associated with the tokens.</param>
@@ -1249,6 +1299,10 @@ public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TTok
         => await FindByReferenceIdAsync(identifier, cancellationToken);
 
     /// <inheritdoc/>
+    IAsyncEnumerable<object> IOpenIddictTokenManager.FindBySessionIdAsync(string identifier, CancellationToken cancellationToken)
+        => FindBySessionIdAsync(identifier, cancellationToken);
+
+    /// <inheritdoc/>
     IAsyncEnumerable<object> IOpenIddictTokenManager.FindBySubjectAsync(string subject, CancellationToken cancellationToken)
         => FindBySubjectAsync(subject, cancellationToken);
 
@@ -1359,6 +1413,10 @@ public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TTok
     /// <inheritdoc/>
     ValueTask<long> IOpenIddictTokenManager.RevokeByAuthorizationIdAsync(string identifier, CancellationToken cancellationToken)
         => RevokeByAuthorizationIdAsync(identifier, cancellationToken);
+
+    /// <inheritdoc/>
+    ValueTask<long> IOpenIddictTokenManager.RevokeBySessionIdAsync(string identifier, CancellationToken cancellationToken)
+        => RevokeBySessionIdAsync(identifier, cancellationToken);
 
     /// <inheritdoc/>
     ValueTask<long> IOpenIddictTokenManager.RevokeBySubjectAsync(string subject, CancellationToken cancellationToken)

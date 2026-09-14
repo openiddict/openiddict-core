@@ -204,6 +204,28 @@ public interface IOpenIddictSessionManager
     ValueTask<DateTimeOffset?> GetCreationDateAsync(object session, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Retrieves the expiration date associated with a session.
+    /// </summary>
+    /// <param name="session">The session.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns>
+    /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
+    /// whose result returns the expiration date associated with the specified session.
+    /// </returns>
+    ValueTask<DateTimeOffset?> GetExpirationDateAsync(object session, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Retrieves the date of the last activity recorded for a session.
+    /// </summary>
+    /// <param name="session">The session.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns>
+    /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
+    /// whose result returns the last activity date associated with the specified session.
+    /// </returns>
+    ValueTask<DateTimeOffset?> GetLastActivityDateAsync(object session, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Retrieves the unique identifier associated with a session.
     /// </summary>
     /// <param name="session">The session.</param>
@@ -266,6 +288,14 @@ public interface IOpenIddictSessionManager
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns><see langword="true"/> if the session has the specified status, <see langword="false"/> otherwise.</returns>
     ValueTask<bool> HasStatusAsync(object session, string status, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Determines whether a given session has expired.
+    /// </summary>
+    /// <param name="session">The session.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns><see langword="true"/> if the session has an expiration date in the past, <see langword="false"/> otherwise.</returns>
+    ValueTask<bool> HasExpiredAsync(object session, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Executes the specified query and returns all the corresponding elements.
@@ -333,6 +363,25 @@ public interface IOpenIddictSessionManager
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>The number of sessions that were removed.</returns>
     ValueTask<long> PruneAsync(DateTimeOffset threshold, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Tries to extend the lifetime of a session by updating its last activity and expiration dates.
+    /// </summary>
+    /// <param name="session">The session to extend.</param>
+    /// <param name="date">The last activity date.</param>
+    /// <param name="expirationDate">The new expiration date, or <see langword="null"/> to keep the current value.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns><see langword="true"/> if the session was successfully updated, <see langword="false"/> otherwise.</returns>
+    ValueTask<bool> TryExtendAsync(object session, DateTimeOffset date,
+        DateTimeOffset? expirationDate, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Tries to revoke a session.
+    /// </summary>
+    /// <param name="session">The session to revoke.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns><see langword="true"/> if the session was successfully revoked, <see langword="false"/> otherwise.</returns>
+    ValueTask<bool> TryRevokeAsync(object session, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Updates an existing session.

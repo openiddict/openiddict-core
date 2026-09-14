@@ -24,6 +24,16 @@ public class OpenIddictSessionDescriptor
     public DateTimeOffset? CreationDate { get; set; }
 
     /// <summary>
+    /// Gets or sets the optional expiration date of the session.
+    /// </summary>
+    public DateTimeOffset? ExpirationDate { get; set; }
+
+    /// <summary>
+    /// Gets or sets the optional date of the last activity recorded for the session.
+    /// </summary>
+    public DateTimeOffset? LastActivityDate { get; set; }
+
+    /// <summary>
     /// Gets or sets the login identifier of the session.
     /// </summary>
     public string? LoginId { get; set; }

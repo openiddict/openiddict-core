@@ -398,6 +398,22 @@ public class OpenIddictEntityFrameworkSessionStore<
     }
 
     /// <inheritdoc/>
+    public virtual ValueTask<DateTimeOffset?> GetExpirationDateAsync(TSession session, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(session);
+
+        return new(session.ExpirationDate is DateTime date ? new DateTimeOffset(DateTime.SpecifyKind(date, DateTimeKind.Utc)) : null);
+    }
+
+    /// <inheritdoc/>
+    public virtual ValueTask<DateTimeOffset?> GetLastActivityDateAsync(TSession session, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(session);
+
+        return new(session.LastActivityDate is DateTime date ? new DateTimeOffset(DateTime.SpecifyKind(date, DateTimeKind.Utc)) : null);
+    }
+
+    /// <inheritdoc/>
     public virtual ValueTask<string?> GetIdAsync(TSession session, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(session);
@@ -558,7 +574,8 @@ public class OpenIddictEntityFrameworkSessionStore<
             var sessions =
                 await (from session in context.Set<TSession>().Include(static session => session.Tokens)
                        where session.CreationDate < date
-                       where session.Status != Statuses.Valid
+                       where session.Status != Statuses.Valid ||
+                            (session.ExpirationDate != null && session.ExpirationDate < DateTime.UtcNow)
                        where !session.Tokens.Any()
                        orderby session.Id
                        select session).Take(1_000).ToListAsync(cancellationToken);
@@ -673,6 +690,26 @@ public class OpenIddictEntityFrameworkSessionStore<
         ArgumentNullException.ThrowIfNull(session);
 
         session.CreationDate = date?.UtcDateTime;
+
+        return ValueTask.CompletedTask;
+    }
+
+    /// <inheritdoc/>
+    public virtual ValueTask SetExpirationDateAsync(TSession session, DateTimeOffset? date, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(session);
+
+        session.ExpirationDate = date?.UtcDateTime;
+
+        return ValueTask.CompletedTask;
+    }
+
+    /// <inheritdoc/>
+    public virtual ValueTask SetLastActivityDateAsync(TSession session, DateTimeOffset? date, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(session);
+
+        session.LastActivityDate = date?.UtcDateTime;
 
         return ValueTask.CompletedTask;
     }

@@ -140,6 +140,14 @@ public interface IOpenIddictTokenManager
     ValueTask<object?> FindByReferenceIdAsync(string identifier, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Retrieves the list of tokens corresponding to the specified session identifier.
+    /// </summary>
+    /// <param name="identifier">The session identifier associated with the tokens.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns>The tokens corresponding to the specified session.</returns>
+    IAsyncEnumerable<object> FindBySessionIdAsync(string identifier, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Retrieves the list of tokens corresponding to the specified subject.
     /// </summary>
     /// <param name="subject">The subject associated with the tokens.</param>
@@ -438,6 +446,14 @@ public interface IOpenIddictTokenManager
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>The number of tokens associated with the specified authorization that were marked as revoked.</returns>
     ValueTask<long> RevokeByAuthorizationIdAsync(string identifier, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Revokes all the tokens associated with the specified session identifier.
+    /// </summary>
+    /// <param name="identifier">The session identifier associated with the tokens.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns>The number of tokens associated with the specified session that were marked as revoked.</returns>
+    ValueTask<long> RevokeBySessionIdAsync(string identifier, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Revokes all the tokens associated with the specified subject.

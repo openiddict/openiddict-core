@@ -39,10 +39,22 @@ public class OpenIddictMongoDbSession
     public virtual DateTime? CreationDate { get; set; }
 
     /// <summary>
+    /// Gets or sets the UTC expiration date of the session.
+    /// </summary>
+    [BsonElement("expiration_date"), BsonIgnoreIfNull]
+    public virtual DateTime? ExpirationDate { get; set; }
+
+    /// <summary>
     /// Gets or sets the unique identifier of the session.
     /// </summary>
     [BsonId, BsonRequired]
     public virtual ObjectId Id { get; set; }
+
+    /// <summary>
+    /// Gets or sets the UTC date of the last activity recorded for the session.
+    /// </summary>
+    [BsonElement("last_activity_date"), BsonIgnoreIfNull]
+    public virtual DateTime? LastActivityDate { get; set; }
 
     /// <summary>
     /// Gets or sets the login identifier of the session.

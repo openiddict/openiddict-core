@@ -11,6 +11,7 @@ using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using ConcurrencyException = OpenIddict.Abstractions.OpenIddictExceptions.ConcurrencyException;
 using ValidationException = OpenIddict.Abstractions.OpenIddictExceptions.ValidationException;
 
 namespace OpenIddict.Core;
@@ -527,6 +528,38 @@ public class OpenIddictSessionManager<TSession> : IOpenIddictSessionManager wher
     }
 
     /// <summary>
+    /// Retrieves the expiration date associated with a session.
+    /// </summary>
+    /// <param name="session">The session.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns>
+    /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
+    /// whose result returns the expiration date associated with the specified session.
+    /// </returns>
+    public virtual ValueTask<DateTimeOffset?> GetExpirationDateAsync(TSession session, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(session);
+
+        return Store.GetExpirationDateAsync(session, cancellationToken);
+    }
+
+    /// <summary>
+    /// Retrieves the date of the last activity recorded for a session.
+    /// </summary>
+    /// <param name="session">The session.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns>
+    /// A <see cref="ValueTask{TResult}"/> that can be used to monitor the asynchronous operation,
+    /// whose result returns the last activity date associated with the specified session.
+    /// </returns>
+    public virtual ValueTask<DateTimeOffset?> GetLastActivityDateAsync(TSession session, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(session);
+
+        return Store.GetLastActivityDateAsync(session, cancellationToken);
+    }
+
+    /// <summary>
     /// Retrieves the unique identifier associated with a session.
     /// </summary>
     /// <param name="session">The session.</param>
@@ -623,6 +656,20 @@ public class OpenIddictSessionManager<TSession> : IOpenIddictSessionManager wher
     }
 
     /// <summary>
+    /// Determines whether a given session has expired.
+    /// </summary>
+    /// <param name="session">The session.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns><see langword="true"/> if the session has an expiration date in the past, <see langword="false"/> otherwise.</returns>
+    public virtual async ValueTask<bool> HasExpiredAsync(TSession session, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(session);
+
+        return await GetExpirationDateAsync(session, cancellationToken) is DateTimeOffset date &&
+            date < Options.CurrentValue.TimeProvider.GetUtcNow();
+    }
+
+    /// <summary>
     /// Executes the specified query and returns all the corresponding elements.
     /// </summary>
     /// <param name="count">The number of results to return.</param>
@@ -684,6 +731,8 @@ public class OpenIddictSessionManager<TSession> : IOpenIddictSessionManager wher
         await Store.SetApplicationIdAsync(session, descriptor.ApplicationId, cancellationToken);
         await Store.SetAuthorizationIdAsync(session, descriptor.AuthorizationId, cancellationToken);
         await Store.SetCreationDateAsync(session, descriptor.CreationDate, cancellationToken);
+        await Store.SetExpirationDateAsync(session, descriptor.ExpirationDate, cancellationToken);
+        await Store.SetLastActivityDateAsync(session, descriptor.LastActivityDate, cancellationToken);
         await Store.SetLoginIdAsync(session, descriptor.LoginId, cancellationToken);
         await Store.SetPropertiesAsync(session, [.. descriptor.Properties], cancellationToken);
         await Store.SetStatusAsync(session, descriptor.Status, cancellationToken);
@@ -709,6 +758,8 @@ public class OpenIddictSessionManager<TSession> : IOpenIddictSessionManager wher
         descriptor.ApplicationId = await Store.GetApplicationIdAsync(session, cancellationToken);
         descriptor.AuthorizationId = await Store.GetAuthorizationIdAsync(session, cancellationToken);
         descriptor.CreationDate = await Store.GetCreationDateAsync(session, cancellationToken);
+        descriptor.ExpirationDate = await Store.GetExpirationDateAsync(session, cancellationToken);
+        descriptor.LastActivityDate = await Store.GetLastActivityDateAsync(session, cancellationToken);
         descriptor.LoginId = await Store.GetLoginIdAsync(session, cancellationToken);
         descriptor.Status = await Store.GetStatusAsync(session, cancellationToken);
         descriptor.Subject = await Store.GetSubjectAsync(session, cancellationToken);
@@ -732,6 +783,90 @@ public class OpenIddictSessionManager<TSession> : IOpenIddictSessionManager wher
     /// <returns>The number of sessions that were removed.</returns>
     public virtual ValueTask<long> PruneAsync(DateTimeOffset threshold, CancellationToken cancellationToken)
         => Store.PruneAsync(threshold, cancellationToken);
+
+    /// <summary>
+    /// Tries to extend the lifetime of a session by updating its last activity and expiration dates.
+    /// </summary>
+    /// <param name="session">The session to extend.</param>
+    /// <param name="date">The last activity date.</param>
+    /// <param name="expirationDate">The new expiration date, or <see langword="null"/> to keep the current value.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns><see langword="true"/> if the session was successfully updated, <see langword="false"/> otherwise.</returns>
+    public virtual async ValueTask<bool> TryExtendAsync(TSession session, DateTimeOffset date,
+        DateTimeOffset? expirationDate, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(session);
+
+        await Store.SetLastActivityDateAsync(session, date, cancellationToken);
+
+        if (expirationDate is not null)
+        {
+            await Store.SetExpirationDateAsync(session, expirationDate, cancellationToken);
+        }
+
+        try
+        {
+            await UpdateAsync(session, cancellationToken);
+
+            return true;
+        }
+
+        catch (ConcurrencyException exception)
+        {
+            Logger.LogDebug(6520, exception, SR.GetResourceString(SR.ID6520), await Store.GetIdAsync(session, cancellationToken));
+
+            return false;
+        }
+
+        catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
+        {
+            Logger.LogWarning(6521, exception, SR.GetResourceString(SR.ID6521), await Store.GetIdAsync(session, cancellationToken));
+
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Tries to revoke a session.
+    /// </summary>
+    /// <param name="session">The session to revoke.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns><see langword="true"/> if the session was successfully revoked, <see langword="false"/> otherwise.</returns>
+    public virtual async ValueTask<bool> TryRevokeAsync(TSession session, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(session);
+
+        var status = await Store.GetStatusAsync(session, cancellationToken);
+        if (status is Statuses.Revoked)
+        {
+            return true;
+        }
+
+        await Store.SetStatusAsync(session, Statuses.Revoked, cancellationToken);
+
+        try
+        {
+            await UpdateAsync(session, cancellationToken);
+
+            Logger.LogInformation(6522, SR.GetResourceString(SR.ID6522), await Store.GetIdAsync(session, cancellationToken));
+
+            return true;
+        }
+
+        catch (ConcurrencyException exception)
+        {
+            Logger.LogDebug(6523, exception, SR.GetResourceString(SR.ID6523), await Store.GetIdAsync(session, cancellationToken));
+
+            return false;
+        }
+
+        catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
+        {
+            Logger.LogWarning(6524, exception, SR.GetResourceString(SR.ID6524), await Store.GetIdAsync(session, cancellationToken));
+
+            return false;
+        }
+    }
 
     /// <summary>
     /// Updates an existing session.
@@ -900,6 +1035,14 @@ public class OpenIddictSessionManager<TSession> : IOpenIddictSessionManager wher
         => GetCreationDateAsync((TSession) session, cancellationToken);
 
     /// <inheritdoc/>
+    ValueTask<DateTimeOffset?> IOpenIddictSessionManager.GetExpirationDateAsync(object session, CancellationToken cancellationToken)
+        => GetExpirationDateAsync((TSession) session, cancellationToken);
+
+    /// <inheritdoc/>
+    ValueTask<DateTimeOffset?> IOpenIddictSessionManager.GetLastActivityDateAsync(object session, CancellationToken cancellationToken)
+        => GetLastActivityDateAsync((TSession) session, cancellationToken);
+
+    /// <inheritdoc/>
     ValueTask<string?> IOpenIddictSessionManager.GetIdAsync(object session, CancellationToken cancellationToken)
         => GetIdAsync((TSession) session, cancellationToken);
 
@@ -922,6 +1065,19 @@ public class OpenIddictSessionManager<TSession> : IOpenIddictSessionManager wher
     /// <inheritdoc/>
     ValueTask<bool> IOpenIddictSessionManager.HasStatusAsync(object session, string status, CancellationToken cancellationToken)
         => HasStatusAsync((TSession) session, status, cancellationToken);
+
+    /// <inheritdoc/>
+    ValueTask<bool> IOpenIddictSessionManager.HasExpiredAsync(object session, CancellationToken cancellationToken)
+        => HasExpiredAsync((TSession) session, cancellationToken);
+
+    /// <inheritdoc/>
+    ValueTask<bool> IOpenIddictSessionManager.TryExtendAsync(object session, DateTimeOffset date,
+        DateTimeOffset? expirationDate, CancellationToken cancellationToken)
+        => TryExtendAsync((TSession) session, date, expirationDate, cancellationToken);
+
+    /// <inheritdoc/>
+    ValueTask<bool> IOpenIddictSessionManager.TryRevokeAsync(object session, CancellationToken cancellationToken)
+        => TryRevokeAsync((TSession) session, cancellationToken);
 
     /// <inheritdoc/>
     IAsyncEnumerable<object> IOpenIddictSessionManager.ListAsync(int? count, int? offset, CancellationToken cancellationToken)
