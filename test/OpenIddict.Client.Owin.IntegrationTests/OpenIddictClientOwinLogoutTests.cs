@@ -94,8 +94,10 @@ public class OpenIddictClientOwinLogoutTests
     public async Task FrontchannelLogout_OnlyMatchingSessionIsSignedOut(string session, bool expected)
     {
         // Arrange
-        using var server = CreateServer(configuration: options =>
-            options.SetFrontchannelLogoutSignOutAuthenticationType(CookieAuthenticationDefaults.AuthenticationType));
+        var store = new TestSessionStore();
+        using var server = CreateServer(
+            services => services.AddOpenIddict().AddClient().AddSessionStore(store),
+            options => options.SetFrontchannelLogoutSignOutAuthenticationType(CookieAuthenticationDefaults.AuthenticationType));
 
         using var client = server.HttpClient;
 
@@ -111,15 +113,36 @@ public class OpenIddictClientOwinLogoutTests
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        // Note: the Katana cookies middleware replaces the Cache-Control header by "no-cache" when signing out.
-        Assert.True(response.Headers.CacheControl is { NoCache: true });
+        Assert.True(response.Headers.CacheControl is { NoCache: true, NoStore: true });
         Assert.Equal(expected, response.Headers.TryGetValues("Set-Cookie", out var values) &&
             values.Any(static value => value.Contains("1970", StringComparison.Ordinal)));
+        Assert.Equal(expected ? 1 : 0, store.Calls.Count);
+    }
+
+    [Fact]
+    public async Task FrontchannelLogout_ForgedRequestWithoutSessionDoesNotReachSessionStores()
+    {
+        // Arrange
+        var store = new TestSessionStore();
+        using var server = CreateServer(
+            services => services.AddOpenIddict().AddClient().AddSessionStore(store),
+            options => options.SetFrontchannelLogoutSignOutAuthenticationType(CookieAuthenticationDefaults.AuthenticationType));
+
+        using var client = server.HttpClient;
+
+        // Act
+        using var response = await client.GetAsync($"/frontchannel-logout?iss={Uri.EscapeDataString(Issuer.AbsoluteUri)}&sid=session");
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.True(response.Headers.CacheControl is { NoCache: true, NoStore: true });
+        Assert.Empty(store.Calls);
     }
 
     [Theory]
     [InlineData("?sid=session")]
     [InlineData("?iss=https%3A%2F%2Ffabrikam.com%2F&sid=session")]
+    [InlineData("")]
     public async Task FrontchannelLogout_InvalidRequestsAreRejected(string query)
     {
         // Arrange

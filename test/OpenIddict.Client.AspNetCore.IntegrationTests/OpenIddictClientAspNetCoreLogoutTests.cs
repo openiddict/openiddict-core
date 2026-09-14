@@ -141,6 +141,99 @@ public class OpenIddictClientAspNetCoreLogoutTests
     }
 
     [Fact]
+    public async Task BackchannelLogout_FailedSessionRemovalAllowsTheLogoutTokenToBeSentAgain()
+    {
+        // Arrange
+        var store = new TestSessionStore { Failures = 1 };
+        using var host = await CreateHostAsync(services => services.AddOpenIddict().AddClient().AddSessionStore(store));
+        using var client = host.GetTestClient();
+
+        var token = CreateLogoutToken(sub: "Bob", sid: "session");
+
+        // Act
+        await Assert.ThrowsAnyAsync<Exception>(() => client.PostAsync("/backchannel-logout", new FormUrlEncodedContent(
+            [new KeyValuePair<string, string>(Parameters.LogoutToken, token)])));
+
+        using var response = await client.PostAsync("/backchannel-logout", new FormUrlEncodedContent(
+            [new KeyValuePair<string, string>(Parameters.LogoutToken, token)]));
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(2, store.Calls.Count);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task FrontchannelLogout_ForgedRequestWithoutSessionDoesNotReachSessionStores(bool scheme)
+    {
+        // Arrange
+        var store = new TestSessionStore();
+        using var host = await CreateHostAsync(
+            services => services.AddOpenIddict().AddClient().AddSessionStore(store),
+            options =>
+            {
+                if (scheme)
+                {
+                    options.SetFrontchannelLogoutSignOutScheme(CookieAuthenticationDefaults.AuthenticationScheme);
+                }
+            });
+
+        using var client = host.GetTestClient();
+
+        // Act
+        using var response = await client.GetAsync($"/frontchannel-logout?iss={Uri.EscapeDataString(Issuer.AbsoluteUri)}&sid=session");
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Empty(store.Calls);
+    }
+
+    [Fact]
+    public async Task FrontchannelLogout_UnverifiedRequestReachesSessionStoresWhenVerificationIsDisabled()
+    {
+        // Arrange
+        var store = new TestSessionStore();
+        using var host = await CreateHostAsync(services => services.AddOpenIddict().AddClient()
+            .AddSessionStore(store)
+            .DisableFrontchannelLogoutSessionVerification());
+
+        using var client = host.GetTestClient();
+
+        // Act
+        using var response = await client.GetAsync($"/frontchannel-logout?iss={Uri.EscapeDataString(Issuer.AbsoluteUri)}&sid=session");
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(("Contoso", null, "session"), Assert.Single(store.Calls));
+    }
+
+    [Fact]
+    public async Task FrontchannelLogout_RequestWithoutParametersSignsOutRegistrationSessionWhenAllowed()
+    {
+        // Arrange
+        var store = new TestSessionStore();
+        using var host = await CreateHostAsync(
+            services => services.AddOpenIddict().AddClient().AddSessionStore(store),
+            options => options.SetFrontchannelLogoutSignOutScheme(CookieAuthenticationDefaults.AuthenticationScheme),
+            registration => registration.FrontchannelLogoutSessionRequired = false);
+
+        using var client = host.GetTestClient();
+        var cookie = await SignInAsync(client, "session");
+
+        using var request = new HttpRequestMessage(HttpMethod.Get, "/frontchannel-logout");
+        request.Headers.Add("Cookie", cookie);
+
+        // Act
+        using var response = await client.SendAsync(request);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Contains(response.Headers.GetValues("Set-Cookie"), value => value.Contains("expires=Thu, 01 Jan 1970", StringComparison.OrdinalIgnoreCase));
+        Assert.Empty(store.Calls);
+    }
+
+    [Fact]
     public async Task FrontchannelLogout_NonMatchingSessionIsNotSignedOut()
     {
         // Arrange
@@ -166,6 +259,7 @@ public class OpenIddictClientAspNetCoreLogoutTests
     [InlineData("?sid=session")]
     [InlineData("?iss=https%3A%2F%2Fcontoso.com%2F")]
     [InlineData("?iss=https%3A%2F%2Ffabrikam.com%2F&sid=session")]
+    [InlineData("")]
     public async Task FrontchannelLogout_InvalidRequestsAreRejected(string query)
     {
         // Arrange
@@ -269,7 +363,8 @@ public class OpenIddictClientAspNetCoreLogoutTests
 
     private static async Task<IHost> CreateHostAsync(
         Action<IServiceCollection>? services = null,
-        Action<OpenIddictClientAspNetCoreBuilder>? configuration = null)
+        Action<OpenIddictClientAspNetCoreBuilder>? configuration = null,
+        Action<OpenIddictClientRegistration>? settings = null)
     {
         var builder = new HostBuilder();
 
@@ -311,6 +406,8 @@ public class OpenIddictClientAspNetCoreLogoutTests
                     };
 
                     registration.Configuration.SigningKeys.Add(SigningKey);
+
+                    settings?.Invoke(registration);
 
                     options.AddRegistration(registration);
 
@@ -398,10 +495,18 @@ public class OpenIddictClientAspNetCoreLogoutTests
     {
         public List<(string?, string?, string?)> Calls { get; } = [];
 
+        public int Failures { get; set; }
+
         public ValueTask<long> RemoveSessionsAsync(OpenIddictClientRegistration registration,
             string? subject, string? sessionId, CancellationToken cancellationToken)
         {
             Calls.Add((registration.RegistrationId, subject, sessionId));
+
+            if (Failures > 0)
+            {
+                Failures--;
+                throw new InvalidOperationException("The session store is not available.");
+            }
 
             return new(1);
         }
