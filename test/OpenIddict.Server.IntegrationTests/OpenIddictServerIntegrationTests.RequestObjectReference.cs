@@ -244,6 +244,161 @@ public abstract partial class OpenIddictServerIntegrationTests
     }
 
     [Fact]
+    public async Task ValidateAuthorizationRequest_FragmentHashIsComputedOnUntrimmedContents()
+    {
+        // Arrange
+        var token = CreateRequestObject(new(StringComparer.Ordinal)
+        {
+            [Parameters.Nonce] = "n-0S6_WzA2Mj",
+            [Parameters.RedirectUri] = "http://www.fabrikam.com/path",
+            [Parameters.ResponseType] = ResponseTypes.Token
+        }) + "\n";
+
+        await using var server = await CreateServerAsync(options =>
+        {
+            ConfigureRequestObjectReferenceServer(options, _ => token);
+
+            options.AddEventHandler<HandleAuthorizationRequestContext>(builder =>
+                builder.UseInlineHandler(context =>
+                {
+                    context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                        .SetClaim(Claims.Subject, "Bob le Magnifique");
+
+                    return ValueTask.CompletedTask;
+                }));
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
+        {
+            ClientId = "Fabrikam",
+            RequestUri = ExternalRequestUri + "#" + Base64Url.EncodeToString(SHA256.HashData(Encoding.UTF8.GetBytes(token)))
+        });
+
+        // Assert
+        Assert.Null(response.Error);
+        Assert.NotNull(response.AccessToken);
+    }
+
+    [Fact]
+    public async Task ValidateAuthorizationRequest_ExternalRequestUriIsRejectedWhenPushedAuthorizationRequestsAreRequired()
+    {
+        // Arrange
+        var fetched = false;
+
+        await using var server = await CreateServerAsync(options =>
+        {
+            ConfigureRequestObjectReferenceServer(options, _ =>
+            {
+                fetched = true;
+
+                return CreateRequestObject(new(StringComparer.Ordinal)
+                {
+                    [Parameters.Nonce] = "n-0S6_WzA2Mj",
+                    [Parameters.RedirectUri] = "http://www.fabrikam.com/path",
+                    [Parameters.ResponseType] = ResponseTypes.Token
+                });
+            });
+
+            options.RequirePushedAuthorizationRequests();
+
+            options.AddEventHandler<HandleAuthorizationRequestContext>(builder =>
+                builder.UseInlineHandler(context =>
+                {
+                    context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                        .SetClaim(Claims.Subject, "Bob le Magnifique");
+
+                    return ValueTask.CompletedTask;
+                }));
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
+        {
+            ClientId = "Fabrikam",
+            RequestUri = ExternalRequestUri
+        });
+
+        // Assert
+        Assert.Equal(Errors.InvalidRequestUri, response.Error);
+        Assert.Equal(SR.FormatID2466(Parameters.RequestUri), response.ErrorDescription);
+        Assert.Equal(SR.FormatID8000(SR.ID2466), response.ErrorUri);
+        Assert.Null(response.AccessToken);
+        Assert.False(fetched);
+    }
+
+    [Fact]
+    public async Task ValidateAuthorizationRequest_ReferencedRequestObjectSatisfiesSignedRequestObjectsRequirement()
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options =>
+        {
+            ConfigureRequestObjectReferenceServer(options, _ => CreateRequestObject(new(StringComparer.Ordinal)
+            {
+                [Parameters.Nonce] = "n-0S6_WzA2Mj",
+                [Parameters.RedirectUri] = "http://www.fabrikam.com/path",
+                [Parameters.ResponseType] = ResponseTypes.Token
+            }));
+
+            options.RequireSignedRequestObjects();
+
+            options.AddEventHandler<HandleAuthorizationRequestContext>(builder =>
+                builder.UseInlineHandler(context =>
+                {
+                    context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                        .SetClaim(Claims.Subject, "Bob le Magnifique");
+
+                    return ValueTask.CompletedTask;
+                }));
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
+        {
+            ClientId = "Fabrikam",
+            RequestUri = ExternalRequestUri
+        });
+
+        // Assert
+        Assert.Null(response.Error);
+        Assert.NotNull(response.AccessToken);
+    }
+
+    [Fact]
+    public async Task ValidateAuthorizationRequest_UnsignedReferencedRequestObjectIsRejectedWhenSignedRequestObjectsAreRequired()
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options =>
+        {
+            ConfigureRequestObjectReferenceServer(options, _ => CreateRequestObject(new(StringComparer.Ordinal)
+            {
+                [Parameters.ResponseType] = ResponseTypes.Token
+            }, unsigned: true));
+
+            options.RequireSignedRequestObjects();
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
+        {
+            ClientId = "Fabrikam",
+            RequestUri = ExternalRequestUri
+        });
+
+        // Assert
+        Assert.Equal(Errors.InvalidRequestObject, response.Error);
+        Assert.Equal(SR.GetResourceString(SR.ID2211), response.ErrorDescription);
+    }
+
+    [Fact]
     public async Task ValidateAuthorizationRequest_ThrowsAnExceptionWhenNoFetcherIsRegistered()
     {
         // Arrange

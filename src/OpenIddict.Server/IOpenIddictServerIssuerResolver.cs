@@ -13,6 +13,10 @@ namespace OpenIddict.Server;
 /// <remarks>
 /// The resolved issuer is used as the base URI of the request: relative endpoint URIs are resolved relatively
 /// to it, the discovery document advertises it and tokens are issued for and validated against it.
+/// As such, the returned issuer must share the scheme, host and port of the request URI and the request path
+/// must be located under the issuer path, otherwise no endpoint is matched. When the server is hosted behind
+/// a reverse proxy, the forwarded headers must be applied (e.g using the ASP.NET Core forwarded headers
+/// middleware) before OpenIddict processes the request so that the request URI reflects the public address.
 /// </remarks>
 public interface IOpenIddictServerIssuerResolver
 {

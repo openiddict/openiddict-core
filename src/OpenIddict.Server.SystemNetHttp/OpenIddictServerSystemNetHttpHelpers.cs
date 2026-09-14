@@ -17,7 +17,8 @@ public static class OpenIddictServerSystemNetHttpHelpers
     /// <summary>
     /// Determines whether the specified address is a public unicast address, i.e an address that is not part of
     /// the unspecified, loopback, private (RFC 1918, RFC 4193), shared (RFC 6598), link-local (RFC 3927, RFC 4291),
-    /// documentation (RFC 5737, RFC 3849), benchmarking (RFC 2544), multicast or reserved ranges (RFC 6890).
+    /// documentation (RFC 5737, RFC 3849, RFC 9637), benchmarking (RFC 2544, RFC 5180), local-use NAT64 (RFC 8215),
+    /// ORCHID (RFC 7343), multicast or reserved ranges (RFC 6890).
     /// </summary>
     /// <param name="address">The IP address.</param>
     /// <returns><see langword="true"/> if the address is a public unicast address, <see langword="false"/> otherwise.</returns>
@@ -77,9 +78,14 @@ public static class OpenIddictServerSystemNetHttpHelpers
             return bytes switch
             {
                 [0, 0x64, 0xff, 0x9b, 0, 0, 0, 0, 0, 0, 0, 0, ..] => IsPublicIPv4Address(bytes.AsSpan(12, 4)), // 64:ff9b::/96 (NAT64)
+                [0, 0x64, 0xff, 0x9b, 0, 0x01, ..]                 => false, // 64:ff9b:1::/48 (local-use NAT64, RFC 8215)
                 [0x20, 0x02, ..]                                   => IsPublicIPv4Address(bytes.AsSpan(2, 4)), // 2002::/16 (6to4)
                 [0x20, 0x01, 0x00, 0x00, ..]                       => false, // 2001::/32 (Teredo)
+                [0x20, 0x01, 0x00, 0x02, 0x00, 0x00, ..]           => false, // 2001:2::/48 (benchmarking, RFC 5180)
+                [0x20, 0x01, 0x00, >= 0x10 and <= 0x2f, ..]        => false, // 2001:10::/28 and 2001:20::/28 (ORCHID, RFC 4843 and RFC 7343)
                 [0x20, 0x01, 0x0d, 0xb8, ..]                       => false, // 2001:db8::/32 (documentation)
+                [0x3f, 0xff, >= 0x00 and <= 0x0f, ..]              => false, // 3fff::/20 (documentation, RFC 9637)
+                [0x5f, 0x00, ..]                                   => false, // 5f00::/16 (segment routing SIDs, RFC 9602)
                 [0x01, 0x00, 0, 0, 0, 0, 0, 0, ..]                 => false, // 100::/64 (discard-only)
                 [>= 0xfc and <= 0xfd, ..]                          => false, // fc00::/7 (unique local)
                 [0xfe, >= 0x80, ..]                                => false, // fe80::/10 (link-local) and fec0::/10 (site-local)

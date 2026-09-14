@@ -200,6 +200,15 @@ public static partial class OpenIddictServerHandlers
 
             context.Logger.LogDebug(6725, SR.GetResourceString(SR.ID6725), issuer, context.RequestUri);
 
+            // Note: since the resolved issuer is used as the base URI, endpoints can only be matched if the request URI
+            // shares the scheme, host and port of the issuer and is located under its path. When this is not the case
+            // (e.g when the application is behind a reverse proxy that doesn't flow the forwarded headers), log a message
+            // to help diagnose why no endpoint is matched.
+            if (OpenIddictServerIssuerResolution.MatchIssuer([issuer], context.RequestUri) is null)
+            {
+                context.Logger.LogDebug(6736, SR.GetResourceString(SR.ID6736), issuer, context.RequestUri);
+            }
+
             context.BaseUri = issuer;
         }
     }

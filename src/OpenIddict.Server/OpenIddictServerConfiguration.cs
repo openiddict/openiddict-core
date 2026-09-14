@@ -451,6 +451,12 @@ public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenId
                 builder.AddError(SR.GetResourceString(SR.ID0924));
             }
 
+            // Note: a missing issuer source would otherwise cause every request handled by the host to fail.
+            if (options.Issuers.Count is 0 && !HasIssuerResolver())
+            {
+                builder.AddError(SR.GetResourceString(SR.ID0929));
+            }
+
             if (options.GrantTypes.Contains(GrantTypes.Ciba) ||
                 options.MtlsDeviceAuthorizationEndpointAliasUri is not null ||
                 options.MtlsIntrospectionEndpointAliasUri       is not null ||
@@ -898,5 +904,20 @@ public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenId
 
         static bool TryValidateMtlsEndpointAlias(Uri? uri) => uri is null ||
           (uri.IsAbsoluteUri && string.Equals(uri.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase));
+
+        bool HasIssuerResolver()
+        {
+            try
+            {
+                return _provider.GetService<IOpenIddictServerIssuerResolver>() is not null;
+            }
+
+            // Note: resolvers registered with a scoped lifetime can't be resolved from the root
+            // provider when scope validation is enabled: in this case, assume a resolver exists.
+            catch (InvalidOperationException)
+            {
+                return true;
+            }
+        }
     }
 }

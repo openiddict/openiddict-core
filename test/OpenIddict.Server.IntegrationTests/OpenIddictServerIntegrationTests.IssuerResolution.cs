@@ -245,20 +245,6 @@ public abstract partial class OpenIddictServerIntegrationTests
     }
 
     [Fact]
-    public async Task IssuerResolution_MissingIssuerSourceCausesAnException()
-    {
-        // Arrange
-        await using var server = await CreateServerAsync(options => ConfigureIssuerResolution(options));
-        await using var client = await server.CreateClientAsync();
-
-        // Act and assert
-        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
-            () => client.GetAsync("http://localhost/.well-known/openid-configuration"));
-
-        Assert.Equal(SR.GetResourceString(SR.ID0929), exception.Message);
-    }
-
-    [Fact]
     public async Task IssuerResolution_IssuerSpecificCredentialsAreUsed()
     {
         // Arrange

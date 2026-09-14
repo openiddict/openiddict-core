@@ -181,15 +181,72 @@ public class OpenIddictServerIssuerResolutionTests
         => Assert.False(OpenIddictServerIssuerResolution.IsIssuedBy(
             new ClaimsPrincipal(new ClaimsIdentity()), new Uri("https://contoso.com/")));
 
+    [Fact]
+    public void Validate_ReturnsAnErrorWhenNoIssuerSourceIsConfigured()
+    {
+        // Arrange
+        var options = CreateOptions();
+
+        // Act
+        var failures = Validate(options);
+
+        // Assert
+        Assert.Contains(SR.GetResourceString(SR.ID0929), failures, StringComparer.Ordinal);
+    }
+
+    [Fact]
+    public void Validate_DoesNotReturnAnErrorWhenIssuersAreRegistered()
+    {
+        // Arrange
+        var options = CreateOptions();
+        options.Issuers.Add(new Uri("https://contoso.com/"));
+
+        // Act
+        var failures = Validate(options);
+
+        // Assert
+        Assert.DoesNotContain(SR.GetResourceString(SR.ID0929), failures, StringComparer.Ordinal);
+    }
+
+    [Fact]
+    public void Validate_DoesNotReturnAnErrorWhenCustomResolverIsRegistered()
+    {
+        // Arrange
+        var options = CreateOptions();
+        var services = new ServiceCollection();
+        services.AddSingleton<IOpenIddictServerIssuerResolver, NullIssuerResolver>();
+
+        // Act
+        var failures = Validate(options, services.BuildServiceProvider());
+
+        // Assert
+        Assert.DoesNotContain(SR.GetResourceString(SR.ID0929), failures, StringComparer.Ordinal);
+    }
+
+    [Fact]
+    public void Validate_DoesNotReturnAnErrorWhenScopedResolverIsRegistered()
+    {
+        // Arrange
+        var options = CreateOptions();
+        var services = new ServiceCollection();
+        services.AddScoped<IOpenIddictServerIssuerResolver, NullIssuerResolver>();
+
+        // Act
+        var failures = Validate(options, services.BuildServiceProvider(validateScopes: true));
+
+        // Assert
+        Assert.DoesNotContain(SR.GetResourceString(SR.ID0929), failures, StringComparer.Ordinal);
+    }
+
     private static OpenIddictServerOptions CreateOptions() => new()
     {
         EnableIssuerResolution = true,
         TimeProvider = TimeProvider.System
     };
 
-    private static string[] Validate(OpenIddictServerOptions options)
+    private static string[] Validate(OpenIddictServerOptions options, IServiceProvider? provider = null)
     {
-        var configuration = new OpenIddictServerConfiguration(new ServiceCollection().BuildServiceProvider());
+        var configuration = new OpenIddictServerConfiguration(provider ?? new ServiceCollection().BuildServiceProvider());
 
         return [.. configuration.Validate(name: null, options).Failures ?? []];
     }

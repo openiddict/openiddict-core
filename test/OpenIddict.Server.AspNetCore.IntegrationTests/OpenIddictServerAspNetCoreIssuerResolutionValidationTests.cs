@@ -69,6 +69,31 @@ public class OpenIddictServerAspNetCoreIssuerResolutionValidationTests
         Assert.Equal(status, response.StatusCode);
     }
 
+    [Theory]
+    [InlineData(false, HttpStatusCode.OK)]
+    [InlineData(true, HttpStatusCode.Unauthorized)]
+    public async Task Validation_TokenWithCorrectIssuerSignedWithAnotherIssuerKeyIsRejected(
+        bool credentials, HttpStatusCode status)
+    {
+        // Arrange
+        var toggle = new CredentialsSwitch { Enabled = false };
+
+        using var host = await CreateHostAsync(credentials: true, encryption: false, toggle);
+        using var client = host.GetTestClient();
+
+        // Note: while the issuer-specific credentials are disabled, the token issued for tenant2 carries
+        // the correct "iss" claim but is signed using the default signing key (i.e the key of tenant1).
+        var token = await GetAccessTokenAsync(client, "tenant2");
+
+        toggle.Enabled = credentials;
+
+        // Act
+        using var response = await CallApiAsync(client, "tenant2", token);
+
+        // Assert
+        Assert.Equal(status, response.StatusCode);
+    }
+
     private static async Task<string> GetAccessTokenAsync(HttpClient client, string tenant)
     {
         using var response = await client.PostAsync($"http://localhost/{tenant}/connect/token", new FormUrlEncodedContent(
@@ -94,13 +119,15 @@ public class OpenIddictServerAspNetCoreIssuerResolutionValidationTests
         return await client.SendAsync(request);
     }
 
-    private static async Task<IHost> CreateHostAsync(bool credentials)
+    private static async Task<IHost> CreateHostAsync(bool credentials, bool encryption = true, CredentialsSwitch? toggle = null)
     {
         var builder = new HostBuilder();
         builder.UseEnvironment("Testing");
 
         builder.ConfigureServices(services =>
         {
+            services.AddSingleton(toggle ?? new CredentialsSwitch { Enabled = true });
+
             services.AddOpenIddict()
                 .AddServer(options =>
                 {
@@ -116,6 +143,11 @@ public class OpenIddictServerAspNetCoreIssuerResolutionValidationTests
 
                     options.UseAspNetCore()
                            .DisableTransportSecurityRequirement();
+
+                    if (!encryption)
+                    {
+                        options.DisableAccessTokenEncryption();
+                    }
 
                     if (credentials)
                     {
@@ -171,7 +203,12 @@ public class OpenIddictServerAspNetCoreIssuerResolutionValidationTests
         return await builder.StartAsync();
     }
 
-    private sealed class TenantCredentialsProvider : IOpenIddictServerIssuerCredentialsProvider
+    private sealed class CredentialsSwitch
+    {
+        public bool Enabled { get; set; }
+    }
+
+    private sealed class TenantCredentialsProvider(CredentialsSwitch toggle) : IOpenIddictServerIssuerCredentialsProvider
     {
         private static readonly SigningCredentials Credentials = new(
             new RsaSecurityKey(RSA.Create(keySizeInBits: 2048)) { KeyId = "tenant2" }, SecurityAlgorithms.RsaSha256);
@@ -182,7 +219,7 @@ public class OpenIddictServerAspNetCoreIssuerResolutionValidationTests
 
         public ValueTask<OpenIddictServerCredentials?> GetCredentialsAsync(
             Uri issuer, IServiceProvider provider, CancellationToken cancellationToken)
-            => new(issuer.AbsoluteUri is "http://localhost/tenant2/" ?
+            => new(toggle.Enabled && issuer.AbsoluteUri is "http://localhost/tenant2/" ?
                 new OpenIddictServerCredentials([Credentials], [Encryption]) : null);
     }
 }

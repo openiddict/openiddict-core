@@ -4,10 +4,12 @@
  * the license and the contributors participating to this project.
  */
 
+using System.Collections.Concurrent;
 using System.Globalization;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Net.Sockets;
 using System.Text;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -44,6 +46,15 @@ public class OpenIddictServerSystemNetHttpRequestObjectFetcherTests
     [InlineData("fd12:3456::1", false)]
     [InlineData("fe80::1", false)]
     [InlineData("ff02::1", false)]
+    [InlineData("64:ff9b:1::a00:1", false)]
+    [InlineData("2001:2::1", false)]
+    [InlineData("2001:10::1", false)]
+    [InlineData("2001:20::1", false)]
+    [InlineData("2001:2f::1", false)]
+    [InlineData("3fff::1", false)]
+    [InlineData("5f00::1", false)]
+    [InlineData("2001:30::1", true)]
+    [InlineData("2001:4860:4860::8888", true)]
     [InlineData("8.8.8.8", true)]
     [InlineData("172.32.0.1", true)]
     [InlineData("100.128.0.1", true)]
@@ -295,19 +306,115 @@ public class OpenIddictServerSystemNetHttpRequestObjectFetcherTests
     }
 
     [Theory]
-    [InlineData("https://127.0.0.1/request_objects/1")]
-    [InlineData("https://[::1]/request_objects/1")]
-    [InlineData("https://10.0.0.1/request_objects/1")]
-    [InlineData("https://169.254.169.254/latest/meta-data")]
-    [InlineData("https://localhost/request_objects/1")]
-    public async Task FetchAsync_RejectsDisallowedRemoteAddresses(string uri)
+    [InlineData("10.0.0.1")]
+    [InlineData("169.254.169.254")]
+    [InlineData("[::1]")]
+    public async Task FetchAsync_RejectsDisallowedRemoteAddressesUsingFilter(string host)
     {
         // Arrange
-        using var fetcher = new OpenIddictServerSystemNetHttpRequestObjectFetcher(
-            CreateOptions(), NullLogger<OpenIddictServerSystemNetHttpRequestObjectFetcher>.Instance);
+        var addresses = new ConcurrentBag<IPAddress>();
 
-        // Act and assert
-        Assert.Null(await fetcher.FetchAsync(new Uri(uri, UriKind.Absolute), CancellationToken.None));
+        using var fetcher = new OpenIddictServerSystemNetHttpRequestObjectFetcher(
+            CreateOptions(options => options.RemoteAddressFilter = address =>
+            {
+                addresses.Add(address);
+                return OpenIddictServerSystemNetHttpHelpers.IsPublicAddress(address);
+            }),
+            NullLogger<OpenIddictServerSystemNetHttpRequestObjectFetcher>.Instance);
+
+        // Act
+        var result = await fetcher.FetchAsync(new Uri($"https://{host}/request_objects/1", UriKind.Absolute), CancellationToken.None);
+
+        // Assert
+        Assert.Null(result);
+        Assert.Contains(IPAddress.Parse(host.Trim('[', ']')), addresses);
+    }
+
+    [Theory]
+    [InlineData("127.0.0.1")]
+    [InlineData("localhost")]
+    public async Task FetchAsync_DoesNotConnectToDisallowedRemoteAddresses(string host)
+    {
+        // Arrange
+        var listener = TcpListener.Create(0);
+        listener.Start();
+
+        try
+        {
+            var port = ((IPEndPoint) listener.LocalEndpoint).Port.ToString(CultureInfo.InvariantCulture);
+            var addresses = new ConcurrentBag<IPAddress>();
+
+            using var fetcher = new OpenIddictServerSystemNetHttpRequestObjectFetcher(
+                CreateOptions(options => options.RemoteAddressFilter = address =>
+                {
+                    addresses.Add(address);
+                    return OpenIddictServerSystemNetHttpHelpers.IsPublicAddress(address);
+                }),
+                NullLogger<OpenIddictServerSystemNetHttpRequestObjectFetcher>.Instance);
+
+            // Act
+            var result = await fetcher.FetchAsync(new Uri($"https://{host}:{port}/request_objects/1", UriKind.Absolute), CancellationToken.None);
+
+            // Assert
+            Assert.Null(result);
+            Assert.NotEmpty(addresses);
+            Assert.All(addresses, address => Assert.True(IPAddress.IsLoopback(address)));
+            Assert.False(listener.Pending());
+        }
+
+        finally
+        {
+            listener.Stop();
+        }
+    }
+
+    [Fact]
+    public async Task FetchAsync_ConnectsToRemoteAddressesAllowedByFilter()
+    {
+        // Arrange
+        var listener = new TcpListener(IPAddress.Loopback, 0);
+        listener.Start();
+
+        try
+        {
+            var port = ((IPEndPoint) listener.LocalEndpoint).Port.ToString(CultureInfo.InvariantCulture);
+            var addresses = new ConcurrentBag<IPAddress>();
+
+            using var fetcher = new OpenIddictServerSystemNetHttpRequestObjectFetcher(
+                CreateOptions(options =>
+                {
+                    options.RequestObjectTimeout = TimeSpan.FromSeconds(10);
+                    options.RemoteAddressFilter = address =>
+                    {
+                        addresses.Add(address);
+                        return true;
+                    };
+                }),
+                NullLogger<OpenIddictServerSystemNetHttpRequestObjectFetcher>.Instance);
+
+            // Act
+            var task = fetcher.FetchAsync(new Uri($"https://127.0.0.1:{port}/request_objects/1", UriKind.Absolute), CancellationToken.None).AsTask();
+            var accept = listener.AcceptTcpClientAsync();
+
+            // Assert
+#if NET
+            var delay = Task.Delay(TimeSpan.FromSeconds(10), TimeProvider.System);
+#else
+            var delay = TimeProvider.System.Delay(TimeSpan.FromSeconds(10));
+#endif
+            Assert.Same(accept, await Task.WhenAny(accept, delay));
+
+            // Close the connection without completing the TLS handshake.
+            (await accept).Dispose();
+
+            Assert.Null(await task);
+            Assert.Contains(IPAddress.Loopback, addresses);
+        }
+
+        finally
+        {
+            listener.Stop();
+        }
     }
 
     [Fact]

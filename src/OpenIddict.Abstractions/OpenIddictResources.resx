@@ -3204,6 +3204,9 @@ To register issuers, call 'services.AddOpenIddict().AddServer().AddIssuers()' or
   <data name="ID2465" xml:space="preserve">
     <value>The issuer of the current request couldn't be resolved.</value>
   </data>
+  <data name="ID2466" xml:space="preserve">
+    <value>The '{0}' parameter must reference a pushed authorization request.</value>
+  </data>
   <data name="ID4000" xml:space="preserve">
     <value>The '{0}' parameter shouldn't be null or empty at this point.</value>
   </data>
@@ -4406,6 +4409,12 @@ This may indicate that the hashed entry is corrupted or malformed.</value>
   </data>
   <data name="ID6734" xml:space="preserve">
     <value>The request object retrieved from '{RequestUri}' was rejected because it is not a valid UTF-8 string.</value>
+  </data>
+  <data name="ID6735" xml:space="preserve">
+    <value>The authorization request was rejected because the external request_uri '{RequestUri}' was used while pushed authorization requests are required.</value>
+  </data>
+  <data name="ID6736" xml:space="preserve">
+    <value>The issuer '{Issuer}' resolved for the request '{RequestUri}' doesn't share the scheme, host and port of the request URI or the request is not located under the issuer path: no endpoint can be matched.</value>
   </data>
   <data name="ID8000" xml:space="preserve">
     <value>https://documentation.openiddict.com/errors/{0}</value>
