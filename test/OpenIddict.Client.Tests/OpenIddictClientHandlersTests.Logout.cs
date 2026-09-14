@@ -67,7 +67,7 @@ public class OpenIddictClientHandlersLogoutTests
     {
         "at_jwt_type", "missing_events", "invalid_events", "nonce", "no_subject_or_session", "wrong_audience",
         "wrong_issuer", "wrong_key", "unsigned", "expired", "stale_iat_without_exp", "future_iat", "missing_iat",
-        "missing_jti", "malformed"
+        "missing_jti", "malformed", "future_nbf", "encrypted_unknown_key"
     }.Select(static scenario => new object[] { scenario });
 
     [Theory]
@@ -88,13 +88,16 @@ public class OpenIddictClientHandlersLogoutTests
             "wrong_audience"         => (CreateToken(sid: "session", audience: "Other"), SR.GetResourceString(SR.ID2381)),
             "wrong_issuer"           => (CreateToken(sid: "session", issuer: "https://www.fabrikam.com/"), SR.GetResourceString(SR.ID2381)),
             "wrong_key"              => (CreateToken(sid: "session", key: new RsaSecurityKey(RSA.Create(2048)) { KeyId = "server_key" }), SR.GetResourceString(SR.ID2091)),
-            "unsigned"               => (CreateToken(sid: "session", unsigned: true), null),
+            "unsigned"               => (CreateToken(sid: "session", unsigned: true), SR.GetResourceString(SR.ID2091)),
             "expired"                => (CreateToken(sid: "session", expiration: DateTimeOffset.UtcNow.AddMinutes(-10)), SR.GetResourceString(SR.ID2385)),
             "stale_iat_without_exp"  => (CreateToken(sid: "session", expires: false, issuedAt: DateTimeOffset.UtcNow.AddHours(-1)), SR.GetResourceString(SR.ID2385)),
             "future_iat"             => (CreateToken(sid: "session", expires: false, issuedAt: DateTimeOffset.UtcNow.AddHours(1)), SR.GetResourceString(SR.ID2385)),
             "missing_iat"            => (CreateToken(sid: "session", issuedAt: DateTimeOffset.MinValue), SR.FormatID2382(Claims.IssuedAt)),
             "missing_jti"            => (CreateToken(sid: "session", identifier: string.Empty), SR.FormatID2382(Claims.JwtId)),
             "malformed"              => ("eyJhbGciOiJub25lIn0.invalid.", SR.GetResourceString(SR.ID2380)),
+            "future_nbf"             => (CreateToken(sid: "session", notBefore: DateTimeOffset.UtcNow.AddMinutes(30), expiration: DateTimeOffset.UtcNow.AddHours(1)), SR.GetResourceString(SR.ID2385)),
+            "encrypted_unknown_key"  => (CreateToken(sid: "session", encryption: new EncryptingCredentials(
+                new RsaSecurityKey(RSA.Create(2048)) { KeyId = "unknown" }, SecurityAlgorithms.RsaOAEP, SecurityAlgorithms.Aes256CbcHmacSha512)), SR.GetResourceString(SR.ID2380)),
 
             _ => throw new InvalidOperationException()
         };
@@ -104,11 +107,26 @@ public class OpenIddictClientHandlersLogoutTests
             async () => await service.AuthenticateWithLogoutTokenAsync(new() { LogoutToken = token }));
 
         Assert.NotNull(exception.Error);
+        Assert.Equal(description, exception.ErrorDescription);
+    }
 
-        if (description is not null)
+    [Fact]
+    public async Task AuthenticateWithLogoutTokenAsync_EncryptedTokenIsAccepted()
+    {
+        // Arrange
+        using var provider = CreateProvider();
+        var service = provider.GetRequiredService<OpenIddictClientService>();
+        var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictClientOptions>>().CurrentValue;
+
+        // Act
+        var result = await service.AuthenticateWithLogoutTokenAsync(new()
         {
-            Assert.Equal(description, exception.ErrorDescription);
-        }
+            LogoutToken = CreateToken(sid: "session", encryption: options.EncryptionCredentials[0])
+        });
+
+        // Assert
+        Assert.Equal("Contoso", result.Registration.RegistrationId);
+        Assert.Equal("session", result.SessionId);
     }
 
     [Fact]
@@ -205,7 +223,7 @@ public class OpenIddictClientHandlersLogoutTests
         }));
 
         // Assert
-        Assert.Equal(SR.GetResourceString(SR.ID2381), exception.ErrorDescription);
+        Assert.Equal(SR.GetResourceString(SR.ID2389), exception.ErrorDescription);
     }
 
     [Fact]
@@ -296,6 +314,42 @@ public class OpenIddictClientHandlersLogoutTests
     }
 
     [Theory]
+    [InlineData(OpenIddictClientEndpointType.Redirection, true)]
+    [InlineData(OpenIddictClientEndpointType.PostLogoutRedirection, false)]
+    [InlineData(OpenIddictClientEndpointType.BackchannelLogout, false)]
+    [InlineData(OpenIddictClientEndpointType.FrontchannelLogout, false)]
+    [InlineData(OpenIddictClientEndpointType.Unknown, false)]
+    public async Task ResolveSessionState_HandlerIsOnlyActiveForRedirectionRequests(OpenIddictClientEndpointType type, bool expected)
+    {
+        // Arrange
+        using var provider = CreateProvider();
+        var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictClientOptions>>().CurrentValue;
+
+        var context = new ProcessAuthenticationContext(new OpenIddictClientTransaction
+        {
+            CancellationToken = CancellationToken.None,
+            EndpointType = type,
+            Options = options,
+            ServiceProvider = provider
+        })
+        {
+            Request = new OpenIddictRequest { [Parameters.SessionState] = "state" }
+        };
+
+        // Act: evaluate the filters attached to the registered handler, as done by the dispatcher.
+        var descriptor = Assert.Single(options.Handlers, static descriptor => descriptor.ServiceDescriptor.ServiceType == typeof(ResolveSessionState));
+        var active = true;
+
+        foreach (var filter in descriptor.FilterTypes)
+        {
+            active &= await ((IOpenIddictClientHandlerFilter<BaseContext>) provider.GetRequiredService(filter)).IsActiveAsync(context);
+        }
+
+        // Assert
+        Assert.Equal(expected, active);
+    }
+
+    [Theory]
     [InlineData(OpenIddictClientEndpointType.Redirection, "state", "state")]
     [InlineData(OpenIddictClientEndpointType.Redirection, null, null)]
     public async Task ResolveSessionState_SessionStateIsResolvedFromAuthorizationResponse(
@@ -371,6 +425,150 @@ public class OpenIddictClientHandlersLogoutTests
         Assert.Equal(("Contoso", "Bob", "session"), call);
     }
 
+    [Fact]
+    public async Task RemoveFrontchannelLogoutSessions_UnverifiedRequestsDoNotReachSessionStores()
+    {
+        // Arrange
+        var store = new TestSessionStore();
+        using var provider = CreateProvider(services => services.AddOpenIddict().AddClient().AddSessionStore(store));
+        var context = CreateFrontchannelHandleContext(provider);
+
+        // Act
+        await new RemoveFrontchannelLogoutSessions().HandleAsync(context);
+
+        // Assert
+        Assert.Empty(store.Calls);
+    }
+
+    [Fact]
+    public async Task RemoveFrontchannelLogoutSessions_VerifiedRequestsReachSessionStores()
+    {
+        // Arrange
+        var store = new TestSessionStore();
+        using var provider = CreateProvider(services => services.AddOpenIddict().AddClient().AddSessionStore(store));
+        var context = CreateFrontchannelHandleContext(provider);
+        context.IsSessionVerified = true;
+
+        // Act
+        await new RemoveFrontchannelLogoutSessions().HandleAsync(context);
+
+        // Assert
+        Assert.Equal(("Contoso", null, "session"), Assert.Single(store.Calls));
+    }
+
+    [Fact]
+    public async Task RemoveFrontchannelLogoutSessions_UnverifiedRequestsReachSessionStoresWhenVerificationIsDisabled()
+    {
+        // Arrange
+        var store = new TestSessionStore();
+        using var provider = CreateProvider(services => services.AddOpenIddict().AddClient()
+            .AddSessionStore(store)
+            .DisableFrontchannelLogoutSessionVerification());
+        var context = CreateFrontchannelHandleContext(provider);
+
+        // Act
+        await new RemoveFrontchannelLogoutSessions().HandleAsync(context);
+
+        // Assert
+        Assert.Equal(("Contoso", null, "session"), Assert.Single(store.Calls));
+    }
+
+    [Theory]
+    [InlineData("https://www.contoso.com/", "session", true, "Contoso", null)]
+    [InlineData(null, null, true, null, SR.ID2387)]
+    [InlineData(null, null, false, "Contoso", null)]
+    [InlineData("https://www.contoso.com/", null, false, null, SR.ID2387)]
+    [InlineData(null, "session", false, null, SR.ID2387)]
+    [InlineData("https://www.fabrikam.com/", "session", true, null, SR.ID2388)]
+    public async Task ResolveClientRegistrationFromFrontchannelLogoutRequest_RegistrationIsResolved(
+        string? issuer, string? session, bool required, string? registration, string? error)
+    {
+        // Arrange
+        using var provider = CreateProvider(configuration: registration => registration.FrontchannelLogoutSessionRequired = required);
+        var context = CreateFrontchannelAuthenticationContext(provider, issuer, session, "https://www.fabrikam.com/frontchannel-logout");
+
+        // Act
+        await new ResolveClientRegistrationFromFrontchannelLogoutRequest(
+            provider.GetRequiredService<OpenIddictClientService>()).HandleAsync(context);
+
+        // Assert
+        Assert.Equal(error is not null, context.IsRejected);
+        Assert.Equal(error is null ? null : SR.FormatID8000(error), context.ErrorUri);
+        Assert.Equal(registration, context.IsRejected ? null : context.Registration.RegistrationId);
+        Assert.Equal(context.IsRejected ? null : session, context.SessionId);
+    }
+
+    [Fact]
+    public async Task ResolveClientRegistrationFromFrontchannelLogoutRequest_ExplicitRegistrationMustMatchIssuer()
+    {
+        // Arrange
+        using var provider = CreateProvider();
+        var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictClientOptions>>().CurrentValue;
+        var context = CreateFrontchannelAuthenticationContext(provider, "https://www.fabrikam.com/", "session", "https://www.fabrikam.com/frontchannel-logout");
+        context.Registration = options.Registrations[0];
+
+        // Act
+        await new ResolveClientRegistrationFromFrontchannelLogoutRequest(
+            provider.GetRequiredService<OpenIddictClientService>()).HandleAsync(context);
+
+        // Assert
+        Assert.True(context.IsRejected);
+        Assert.Equal(SR.GetResourceString(SR.ID2390), context.ErrorDescription);
+    }
+
+    [Theory]
+    [InlineData("https://www.fabrikam.com/frontchannel-logout", "Contoso")]
+    [InlineData("https://www.fabrikam.com/other/frontchannel-logout", "Other")]
+    [InlineData("https://www.fabrikam.com/unknown", null)]
+    public async Task ResolveClientRegistrationFromFrontchannelLogoutRequest_RegistrationsSharingIssuerAreSelectedUsingLogoutUri(
+        string uri, string? registration)
+    {
+        // Arrange
+        using var provider = CreateProvider(
+            services => services.AddOpenIddict().AddClient().AddRegistration(new OpenIddictClientRegistration
+            {
+                ClientId = "Other",
+                Configuration = CreateConfiguration(),
+                FrontchannelLogoutUri = new Uri("other/frontchannel-logout", UriKind.Relative),
+                Issuer = new Uri(Issuer, UriKind.Absolute),
+                RegistrationId = "Other"
+            }),
+            configuration: registration => registration.FrontchannelLogoutUri = new Uri("frontchannel-logout", UriKind.Relative));
+
+        var context = CreateFrontchannelAuthenticationContext(provider, Issuer, "session", uri);
+
+        // Act
+        await new ResolveClientRegistrationFromFrontchannelLogoutRequest(
+            provider.GetRequiredService<OpenIddictClientService>()).HandleAsync(context);
+
+        // Assert
+        Assert.Equal(registration is null, context.IsRejected);
+        Assert.Equal(registration, context.IsRejected ? null : context.Registration.RegistrationId);
+    }
+
+    [Theory]
+    [InlineData("Contoso", true, true)]
+    [InlineData("Contoso", false, false)]
+    [InlineData("Other", true, false)]
+    [InlineData(null, true, false)]
+    public void IsMatchingSession_RegistrationIsUsedWhenNoSessionIdentifierIsSpecified(string? registration, bool optional, bool expected)
+    {
+        // Arrange
+        using var provider = CreateProvider(configuration: registration => registration.FrontchannelLogoutSessionRequired = !optional);
+        var context = CreateFrontchannelHandleContext(provider);
+        context.SessionId = null;
+
+        var identity = new System.Security.Claims.ClaimsIdentity("Cookies");
+
+        if (registration is not null)
+        {
+            identity.AddClaim(new System.Security.Claims.Claim(Claims.Private.RegistrationId, registration));
+        }
+
+        // Act and assert
+        Assert.Equal(expected, context.IsMatchingSession(new System.Security.Claims.ClaimsPrincipal(identity)));
+    }
+
     [Theory]
     [InlineData("session", "Contoso", "https://www.contoso.com/", true)]
     [InlineData("session", null, null, true)]
@@ -433,6 +631,45 @@ public class OpenIddictClientHandlersLogoutTests
         };
     }
 
+    private static HandleFrontchannelLogoutRequestContext CreateFrontchannelHandleContext(ServiceProvider provider)
+    {
+        var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictClientOptions>>().CurrentValue;
+
+        return new HandleFrontchannelLogoutRequestContext(new OpenIddictClientTransaction
+        {
+            CancellationToken = CancellationToken.None,
+            EndpointType = OpenIddictClientEndpointType.FrontchannelLogout,
+            Options = options,
+            Registration = options.Registrations[0],
+            Request = new OpenIddictRequest(),
+            ServiceProvider = provider
+        })
+        {
+            SessionId = "session"
+        };
+    }
+
+    private static ProcessAuthenticationContext CreateFrontchannelAuthenticationContext(
+        ServiceProvider provider, string? issuer, string? session, string uri)
+    {
+        var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictClientOptions>>().CurrentValue;
+
+        return new ProcessAuthenticationContext(new OpenIddictClientTransaction
+        {
+            BaseUri = new Uri("https://www.fabrikam.com/", UriKind.Absolute),
+            CancellationToken = CancellationToken.None,
+            EndpointType = OpenIddictClientEndpointType.FrontchannelLogout,
+            Options = options,
+            Request = new OpenIddictRequest
+            {
+                [Parameters.Iss] = issuer,
+                [Parameters.Sid] = session
+            },
+            RequestUri = new Uri(uri, UriKind.Absolute),
+            ServiceProvider = provider
+        });
+    }
+
     private static HandleConfigurationResponseContext CreateConfigurationContext(ServiceProvider provider, OpenIddictResponse response)
     {
         var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictClientOptions>>().CurrentValue;
@@ -465,7 +702,9 @@ public class OpenIddictClientHandlersLogoutTests
         bool expires = true,
         DateTimeOffset? expiration = null,
         DateTimeOffset? issuedAt = null,
-        string? identifier = null)
+        string? identifier = null,
+        DateTimeOffset? notBefore = null,
+        EncryptingCredentials? encryption = null)
     {
         var claims = new Dictionary<string, object>(StringComparer.Ordinal)
         {
@@ -513,10 +752,16 @@ public class OpenIddictClientHandlersLogoutTests
             claims[Claims.Nonce] = nonce;
         }
 
+        if (notBefore is not null)
+        {
+            claims[Claims.NotBefore] = notBefore.Value.ToUnixTimeSeconds();
+        }
+
         var handler = new JsonWebTokenHandler { SetDefaultTimesOnTokenCreation = false };
         var descriptor = new SecurityTokenDescriptor
         {
             Claims = claims,
+            EncryptingCredentials = encryption,
             SigningCredentials = unsigned ? null : new SigningCredentials(key ?? ServerSigningKey, SecurityAlgorithms.RsaSha256)
         };
 

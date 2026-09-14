@@ -78,6 +78,10 @@ public static class OpenIddictClientAspNetCoreBffModels
         /// <summary>
         /// Gets or sets the principal extracted from the validated logout token.
         /// </summary>
+        /// <remarks>
+        /// Note: this principal is created by the OpenIddict client token validation pipeline: in addition to the
+        /// claims of the logout token, it can contain private OpenIddict claims (e.g the token type).
+        /// </remarks>
         public required ClaimsPrincipal Principal { get; init; }
 
         /// <summary>

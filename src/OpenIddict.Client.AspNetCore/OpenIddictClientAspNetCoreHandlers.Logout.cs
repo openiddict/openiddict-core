@@ -161,7 +161,7 @@ public static partial class OpenIddictClientAspNetCoreHandlers
                 ArgumentNullException.ThrowIfNull(context);
 
                 var scheme = _options.CurrentValue.FrontchannelLogoutSignOutScheme;
-                if (string.IsNullOrEmpty(scheme) || string.IsNullOrEmpty(context.SessionId))
+                if (string.IsNullOrEmpty(scheme))
                 {
                     return;
                 }
@@ -181,6 +181,9 @@ public static partial class OpenIddictClientAspNetCoreHandlers
                     context.Logger.LogInformation(6567, SR.GetResourceString(SR.ID6567));
                     return;
                 }
+
+                // Mark the request as bound to the current session so that the session stores can be invoked.
+                context.IsSessionVerified = true;
 
                 await request.HttpContext.SignOutAsync(scheme);
 

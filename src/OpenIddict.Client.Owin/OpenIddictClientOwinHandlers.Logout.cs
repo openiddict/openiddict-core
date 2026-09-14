@@ -165,7 +165,7 @@ public static partial class OpenIddictClientOwinHandlers
                 ArgumentNullException.ThrowIfNull(context);
 
                 var type = _options.CurrentValue.FrontchannelLogoutSignOutAuthenticationType;
-                if (string.IsNullOrEmpty(type) || string.IsNullOrEmpty(context.SessionId))
+                if (string.IsNullOrEmpty(type))
                 {
                     return;
                 }
@@ -185,6 +185,9 @@ public static partial class OpenIddictClientOwinHandlers
                     context.Logger.LogInformation(6567, SR.GetResourceString(SR.ID6567));
                     return;
                 }
+
+                // Mark the request as bound to the current session so that the session stores can be invoked.
+                context.IsSessionVerified = true;
 
                 request.Context.Authentication.SignOut(type);
 
@@ -223,6 +226,17 @@ public static partial class OpenIddictClientOwinHandlers
 
                 response.Headers[Headers.CacheControl] = "no-cache, no-store";
                 response.Headers[Headers.Pragma] = "no-cache";
+
+                // Note: the Katana cookies middleware replaces the Cache-Control header by "no-cache" when applying
+                // a sign-out operation (which typically happens after this handler is invoked). To ensure the
+                // "no-store" directive recommended by the specification is always returned, the headers are
+                // applied again when the response headers are about to be sent.
+                response.OnSendingHeaders(static state =>
+                {
+                    var response = (IOwinResponse) state;
+                    response.Headers[Headers.CacheControl] = "no-cache, no-store";
+                    response.Headers[Headers.Pragma] = "no-cache";
+                }, response);
 
                 return ValueTask.CompletedTask;
             }

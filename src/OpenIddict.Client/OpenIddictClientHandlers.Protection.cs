@@ -220,6 +220,10 @@ public static partial class OpenIddictClientHandlers
 
                             _ => throw new SecurityTokenInvalidTypeException(SR.GetResourceString(SR.ID2089)) { InvalidType = type }
                         };
+
+                        // Logout tokens can be encrypted by the authorization server using the public encryption
+                        // keys registered for the client (OpenID Connect Back-Channel Logout 1.0, section 2.6, step 1).
+                        parameters.TokenDecryptionKeys = context.Options.TokenValidationParameters.TokenDecryptionKeys;
                     }
 
                     return parameters;

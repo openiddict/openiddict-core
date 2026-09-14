@@ -1977,6 +1977,14 @@ To register them, use 'services.AddOpenIddict().AddServer().UseSaml().UseOwin()'
   <data name="ID0579" xml:space="preserve">
     <value>The authentication type used by the OpenIddict SAML identity provider OWIN integration must be set. To set it, use 'services.AddOpenIddict().AddServer().UseSaml().UseOwin().SetAuthenticationType()'.</value>
   </data>
+  <data name="ID0532" xml:space="preserve">
+    <value>The backchannel authentication request was not correctly extracted.
+To extract backchannel authentication requests, create a class implementing 'IOpenIddictServerHandler&lt;ExtractBackchannelAuthenticationRequestContext&gt;' and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.</value>
+  </data>
+  <data name="ID0533" xml:space="preserve">
+    <value>The backchannel authentication response was not correctly applied.
+To apply backchannel authentication responses, create a class implementing 'IOpenIddictServerHandler&lt;ApplyBackchannelAuthenticationResponseContext&gt;' and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.</value>
+  </data>
   <data name="ID0760" xml:space="preserve">
     <value>The back-channel logout request cannot be handled because no session store was registered.
 To remove the sessions matching back-channel logout requests, register an 'IOpenIddictClientSessionStore' implementation using 'services.AddOpenIddict().AddClient().AddSessionStore()'.
@@ -2000,14 +2008,6 @@ To apply front-channel logout responses, create a class implementing 'IOpenIddic
   </data>
   <data name="ID0765" xml:space="preserve">
     <value>The logout token maximum age cannot be negative.</value>
-  </data>
-  <data name="ID0532" xml:space="preserve">
-    <value>The backchannel authentication request was not correctly extracted.
-To extract backchannel authentication requests, create a class implementing 'IOpenIddictServerHandler&lt;ExtractBackchannelAuthenticationRequestContext&gt;' and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.</value>
-  </data>
-  <data name="ID0533" xml:space="preserve">
-    <value>The backchannel authentication response was not correctly applied.
-To apply backchannel authentication responses, create a class implementing 'IOpenIddictServerHandler&lt;ApplyBackchannelAuthenticationResponseContext&gt;' and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.</value>
   </data>
   <data name="ID0720" xml:space="preserve">
     <value>No asymmetric signing key was registered to sign logout tokens. Register an asymmetric signing credential (e.g using 'services.AddOpenIddict().AddServer().AddSigningCertificate()').</value>
@@ -2871,6 +2871,12 @@ To apply backchannel authentication responses, create a class implementing 'IOpe
   </data>
   <data name="ID2388" xml:space="preserve">
     <value>No unique client registration matches the specified issuer.</value>
+  </data>
+  <data name="ID2389" xml:space="preserve">
+    <value>The issuer of the logout token doesn't match the specified client registration.</value>
+  </data>
+  <data name="ID2390" xml:space="preserve">
+    <value>The specified issuer doesn't match the client registration.</value>
   </data>
   <data name="ID4000" xml:space="preserve">
     <value>The '{0}' parameter shouldn't be null or empty at this point.</value>
@@ -3900,6 +3906,9 @@ This may indicate that the hashed entry is corrupted or malformed.</value>
   </data>
   <data name="ID6567" xml:space="preserve">
     <value>The current user session was not signed out because it doesn't match the front-channel logout request.</value>
+  </data>
+  <data name="ID6568" xml:space="preserve">
+    <value>The session stores were not invoked because the front-channel logout request for the session '{SessionId}' couldn't be verified as being bound to the current user session.</value>
   </data>
   <data name="ID8000" xml:space="preserve">
     <value>https://documentation.openiddict.com/errors/{0}</value>

@@ -223,10 +223,26 @@ public static partial class OpenIddictClientEvents
         public string? SessionId { get; set; }
 
         /// <summary>
+        /// Gets or sets a boolean indicating whether the front-channel logout request was verified as being bound
+        /// to the session attached to the current user agent (e.g using <see cref="IsMatchingSession(ClaimsPrincipal)"/>
+        /// with the principal extracted from the local authentication cookie). The host integrations set this
+        /// property when a sign-out scheme/authentication type is configured and the local session matches.
+        /// </summary>
+        /// <remarks>
+        /// Note: since front-channel logout requests are not authenticated, the registered session stores
+        /// are only invoked for verified requests, unless session verification was explicitly disabled
+        /// using <see cref="OpenIddictClientOptions.DisableFrontchannelLogoutSessionVerification"/>.
+        /// </remarks>
+        public bool IsSessionVerified { get; set; }
+
+        /// <summary>
         /// Determines whether the specified principal (typically extracted from the local authentication
         /// cookie) represents the session targeted by the front-channel logout request: the principal
         /// must contain a "sid" claim matching <see cref="SessionId"/> and, when present, its registration
         /// identifier and the issuer of its "sid" claim must match the resolved client registration.
+        /// If no session identifier was sent by the authorization server (which is only allowed when
+        /// <see cref="OpenIddictClientRegistration.FrontchannelLogoutSessionRequired"/> is set to
+        /// <see langword="false"/>), the principal must contain a registration identifier matching the registration.
         /// </summary>
         /// <param name="principal">The principal.</param>
         /// <returns><see langword="true"/> if the principal matches the session, <see langword="false"/> otherwise.</returns>
@@ -234,9 +250,20 @@ public static partial class OpenIddictClientEvents
         {
             ArgumentNullException.ThrowIfNull(principal);
 
-            if (string.IsNullOrEmpty(SessionId) || Transaction.Registration is not OpenIddictClientRegistration registration)
+            if (Transaction.Registration is not OpenIddictClientRegistration registration)
             {
                 return false;
+            }
+
+            // Note: the "iss" and "sid" parameters are optional when the registration doesn't require them,
+            // in which case the logout request applies to the session of this client registration.
+            //
+            // See https://openid.net/specs/openid-connect-frontchannel-1_0.html#RPLogout for more information.
+            if (string.IsNullOrEmpty(SessionId))
+            {
+                return !registration.FrontchannelLogoutSessionRequired && string.Equals(
+                    principal.GetClaim(Claims.Private.RegistrationId), registration.RegistrationId, StringComparison.Ordinal) &&
+                    !string.IsNullOrEmpty(registration.RegistrationId);
             }
 
             // Note: session identifiers are only unique per issuer.

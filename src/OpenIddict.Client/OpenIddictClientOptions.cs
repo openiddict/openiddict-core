@@ -126,6 +126,17 @@ public sealed class OpenIddictClientOptions
     public TimeSpan LogoutTokenMaximumAge { get; set; } = TimeSpan.FromMinutes(5);
 
     /// <summary>
+    /// Gets or sets a boolean indicating whether the registered session stores should be invoked for front-channel
+    /// logout requests that couldn't be verified as being bound to the session attached to the current user agent.
+    /// </summary>
+    /// <remarks>
+    /// Note: front-channel logout requests are not authenticated: when session verification is disabled,
+    /// anyone knowing the issuer and a session identifier can terminate the corresponding session.
+    /// Disabling session verification is not recommended.
+    /// </remarks>
+    public bool DisableFrontchannelLogoutSessionVerification { get; set; }
+
+    /// <summary>
     /// Gets the static client registrations used by the OpenIddict client services.
     /// </summary>
     /// <remarks>

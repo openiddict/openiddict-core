@@ -106,8 +106,12 @@ public sealed class OpenIddictClientRegistration
     /// Front-Channel Logout 1.0, section 2).
     /// </summary>
     /// <remarks>
-    /// Note: the OpenIddict client always requires these parameters, as they are needed to identify the
-    /// client registration and the session to terminate (and to mitigate logout CSRF attacks).
+    /// Note: when set to <see langword="false"/>, front-channel logout requests that include neither "iss" nor "sid"
+    /// are accepted if a unique registration not requiring these parameters can be resolved (using the front-channel
+    /// logout URI when multiple registrations qualify): such requests only terminate the local session attached to the
+    /// user agent (via the sign-out scheme/authentication type configured in the host) and don't invoke the session stores.
+    /// Requests that include either parameter must always include both. Front-channel logout requests are not authenticated:
+    /// session stores are only invoked for requests verified as being bound to the session of the user agent.
     /// </remarks>
     public bool FrontchannelLogoutSessionRequired { get; set; } = true;
 

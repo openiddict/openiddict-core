@@ -1265,6 +1265,20 @@ public sealed class OpenIddictClientBuilder
     }
 
     /// <summary>
+    /// Allows the registered session stores to be invoked for front-channel logout requests that
+    /// couldn't be verified as being bound to the session attached to the current user agent.
+    /// </summary>
+    /// <remarks>
+    /// Note: front-channel logout requests are not authenticated: when session verification is disabled,
+    /// anyone knowing the issuer and a session identifier can terminate the corresponding session.
+    /// Disabling session verification is not recommended.
+    /// </remarks>
+    /// <returns>The <see cref="OpenIddictClientBuilder"/> instance.</returns>
+    [EditorBrowsable(EditorBrowsableState.Advanced)]
+    public OpenIddictClientBuilder DisableFrontchannelLogoutSessionVerification()
+        => Configure(options => options.DisableFrontchannelLogoutSessionVerification = true);
+
+    /// <summary>
     /// Registers a session store used to remove the sessions targeted by
     /// back-channel and front-channel logout requests (scoped lifetime).
     /// </summary>

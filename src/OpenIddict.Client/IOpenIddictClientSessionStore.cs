@@ -11,8 +11,18 @@ namespace OpenIddict.Client;
 /// authorization servers to the back-channel and front-channel logout endpoints of the client.
 /// </summary>
 /// <remarks>
+/// <para>
 /// Implementations are invoked after the logout requests have been fully validated, unless
 /// the pass-through mode was enabled for the corresponding endpoint in the host integration.
+/// For front-channel logout requests, implementations are only invoked when the request was verified as being
+/// bound to the session attached to the user agent (see <see cref="OpenIddictClientOptions.DisableFrontchannelLogoutSessionVerification"/>).
+/// </para>
+/// <para>
+/// As required by <see href="https://openid.net/specs/openid-connect-backchannel-1_0.html#BCActions">OpenID Connect
+/// Back-Channel Logout 1.0, section 2.7</see>, implementations are also expected to revoke the refresh tokens
+/// attached to the removed sessions that were not issued with the "offline_access" scope.
+/// If an exception is thrown, the logout request is considered failed and the logout token can be sent again.
+/// </para>
 /// </remarks>
 public interface IOpenIddictClientSessionStore
 {

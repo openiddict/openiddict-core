@@ -382,7 +382,8 @@ public class OpenIddictClientAspNetCoreBffEndpointTests
         ["malformed"],
         ["unsigned"],
         ["stale_iat_without_exp"],
-        ["future_iat"]
+        ["future_iat"],
+        ["future_nbf"]
     ];
 
     [Theory]
@@ -408,6 +409,7 @@ public class OpenIddictClientAspNetCoreBffEndpointTests
             "unsigned" => CreateLogoutToken(host, sid: "session", unsigned: true),
             "stale_iat_without_exp" => CreateLogoutToken(host, sid: "session", expires: false, issuedAt: DateTime.UtcNow.AddHours(-1)),
             "future_iat" => CreateLogoutToken(host, sid: "session", expires: false, issuedAt: DateTime.UtcNow.AddHours(1)),
+            "future_nbf" => CreateLogoutToken(host, sid: "session", expiration: DateTime.UtcNow.AddHours(1), issuedAt: DateTime.UtcNow, notBefore: DateTime.UtcNow.AddMinutes(30)),
             _ => "not_a_jwt"
         };
 
@@ -626,7 +628,7 @@ public class OpenIddictClientAspNetCoreBffEndpointTests
 
     private static string CreateLogoutToken(OpenIddictClientAspNetCoreBffTestHost host, string? sub = null, string? sid = null,
         bool events = true, bool nonce = false, string audience = "Fabrikam", SecurityKey? key = null,
-        DateTime? expiration = null, string? identifier = null, bool unsigned = false, bool expires = true, DateTime? issuedAt = null)
+        DateTime? expiration = null, string? identifier = null, bool unsigned = false, bool expires = true, DateTime? issuedAt = null, DateTime? notBefore = null)
     {
         var claims = new Dictionary<string, object>(StringComparer.Ordinal)
         {
@@ -664,7 +666,7 @@ public class OpenIddictClientAspNetCoreBffEndpointTests
             Claims = claims,
             Expires = expires ? expiration ?? now.AddMinutes(2) : null,
             IssuedAt = issuedAt ?? (expiration ?? now.AddMinutes(2)).AddMinutes(-2),
-            NotBefore = expires ? (expiration ?? now.AddMinutes(2)).AddMinutes(-2) : null,
+            NotBefore = notBefore ?? (expires ? (expiration ?? now.AddMinutes(2)).AddMinutes(-2) : null),
             Issuer = OpenIddictClientAspNetCoreBffTestHost.Issuer.AbsoluteUri,
             SigningCredentials = unsigned ? null : new SigningCredentials(key ?? host.SigningKey, SecurityAlgorithms.RsaSha256),
             TokenType = JsonWebTokenTypes.LogoutToken

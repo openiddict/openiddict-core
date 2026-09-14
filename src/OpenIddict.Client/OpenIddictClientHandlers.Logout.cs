@@ -226,7 +226,18 @@ public static partial class OpenIddictClientHandlers
                     Subject = authentication?.Subject
                 };
 
-                await _dispatcher.DispatchAsync(notification);
+                try
+                {
+                    await _dispatcher.DispatchAsync(notification);
+                }
+
+                // If the sessions couldn't be terminated (e.g due to a transient session store failure), release
+                // the logout token identifier so that the authorization server can retry delivering the same token.
+                catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
+                {
+                    await ReleaseLogoutTokenIdentifierAsync(context.Transaction, context.CancellationToken);
+                    throw;
+                }
 
                 if (notification.IsRequestHandled)
                 {
@@ -242,6 +253,8 @@ public static partial class OpenIddictClientHandlers
 
                 if (notification.IsRejected)
                 {
+                    await ReleaseLogoutTokenIdentifierAsync(context.Transaction, context.CancellationToken);
+
                     context.Reject(
                         error: notification.Error ?? Errors.InvalidRequest,
                         description: notification.ErrorDescription,
@@ -707,6 +720,19 @@ public static partial class OpenIddictClientHandlers
                     return;
                 }
 
+                // Front-channel logout requests are not authenticated: the "iss" and "sid" parameters can be
+                // forged by anyone knowing them (e.g another client of the same authorization server receiving
+                // the same "sid" claim in its identity tokens). To prevent unrelated sessions from being terminated,
+                // the session stores are only invoked if the request was verified as being bound to the session
+                // attached to the user agent, unless session verification was explicitly disabled.
+                //
+                // See https://openid.net/specs/openid-connect-frontchannel-1_0.html#RPLogout for more information.
+                if (!context.IsSessionVerified && !context.Options.DisableFrontchannelLogoutSessionVerification)
+                {
+                    context.Logger.LogInformation(6568, SR.GetResourceString(SR.ID6568), context.SessionId);
+                    return;
+                }
+
                 await RemoveSessionsAsync(context, stores, subject: null, context.SessionId);
             }
         }
@@ -849,7 +875,10 @@ public static partial class OpenIddictClientHandlers
                 // Note: the logout token is read without being validated to determine which authorization
                 // server issued it: the token is fully validated (including its signature) by a dedicated
                 // handler using the signing keys of the authorization server attached to the registration.
-                if (!TryReadJsonWebToken(context.Options.JsonWebTokenHandler, context.LogoutToken, out var token) ||
+                //
+                // Encrypted logout tokens are decrypted using the encryption keys of the client to access
+                // the issuer (OpenID Connect Back-Channel Logout 1.0, section 2.6, step 1).
+                if (!TryReadJsonWebToken(context.Options, context.LogoutToken, out var token) ||
                     !Uri.TryCreate(token.Issuer, UriKind.Absolute, out Uri? issuer) || OpenIddictHelpers.IsImplicitFileUri(issuer))
                 {
                     Reject(context, Errors.InvalidRequest, SR.ID2380);
@@ -861,7 +890,7 @@ public static partial class OpenIddictClientHandlers
                 {
                     if (!IssuerMatches(context.Registration.Issuer, issuer))
                     {
-                        Reject(context, Errors.InvalidRequest, SR.ID2381);
+                        Reject(context, Errors.InvalidRequest, SR.ID2389);
                         return;
                     }
                 }
@@ -870,12 +899,16 @@ public static partial class OpenIddictClientHandlers
                 {
                     // Note: multiple registrations can point to the same authorization server (e.g when using
                     // multiple client identifiers): in this case, the audiences are used to select the registration.
+                    // If multiple registrations share the same issuer and client identifier, the registration whose
+                    // back-channel logout URI matches the request URI is selected, if applicable.
                     var audiences = token.Audiences.ToHashSet(StringComparer.Ordinal);
 
-                    var registrations = (await _service.GetClientRegistrationsAsync(context.CancellationToken))
-                        .Where(registration => IssuerMatches(registration.Issuer, issuer) &&
-                            !string.IsNullOrEmpty(registration.ClientId) && audiences.Contains(registration.ClientId))
-                        .ToList();
+                    var registrations = NarrowByRequestUri(context,
+                        (await _service.GetClientRegistrationsAsync(context.CancellationToken))
+                            .Where(registration => IssuerMatches(registration.Issuer, issuer) &&
+                                !string.IsNullOrEmpty(registration.ClientId) && audiences.Contains(registration.ClientId))
+                            .ToList(),
+                        static registration => registration.BackchannelLogoutUri);
 
                     if (registrations is not [OpenIddictClientRegistration registration])
                     {
@@ -919,14 +952,38 @@ public static partial class OpenIddictClientHandlers
             {
                 ArgumentNullException.ThrowIfNull(context);
 
-                // Note: the "iss" and "sid" parameters are only sent by authorization servers when the client registration
-                // requires them. Since they are needed to identify the authorization server and the session that must
-                // be terminated (and to prevent unrelated sessions from being terminated by forged requests), they are
-                // always required by the OpenIddict client. If either is included, both MUST be included.
+                // Note: the "iss" and "sid" parameters are sent by authorization servers when the client registration
+                // requires them (which is the default for OpenIddict client registrations). If either is included,
+                // both MUST be included. When they are not included, the request is only accepted if a unique client
+                // registration that doesn't require them can be resolved, in which case the logout request only
+                // applies to the session attached to the user agent for this registration.
                 //
                 // See https://openid.net/specs/openid-connect-frontchannel-1_0.html#RPLogout for more information.
                 var value = (string?) context.Request?[Parameters.Iss];
                 var session = (string?) context.Request?[Parameters.Sid];
+
+                if (string.IsNullOrEmpty(value) && string.IsNullOrEmpty(session))
+                {
+                    IEnumerable<OpenIddictClientRegistration> source = context.Transaction.Registration is not null
+                        ? [context.Registration]
+                        : await _service.GetClientRegistrationsAsync(context.CancellationToken);
+
+                    var candidates = NarrowByRequestUri(context,
+                        source.Where(static registration => !registration.FrontchannelLogoutSessionRequired).ToList(),
+                        static registration => registration.FrontchannelLogoutUri);
+
+                    if (candidates is not [OpenIddictClientRegistration candidate])
+                    {
+                        Reject(context, Errors.InvalidRequest, SR.ID2387);
+                        return;
+                    }
+
+                    context.Registration = candidate;
+                    context.Issuer = candidate.Issuer;
+
+                    await ResolveConfigurationAsync(context);
+                    return;
+                }
 
                 if (string.IsNullOrEmpty(value) || string.IsNullOrEmpty(session) ||
                     !Uri.TryCreate(value, UriKind.Absolute, out Uri? issuer) || OpenIddictHelpers.IsImplicitFileUri(issuer))
@@ -939,16 +996,20 @@ public static partial class OpenIddictClientHandlers
                 {
                     if (!IssuerMatches(context.Registration.Issuer, issuer))
                     {
-                        Reject(context, Errors.InvalidRequest, SR.ID2388);
+                        Reject(context, Errors.InvalidRequest, SR.ID2390);
                         return;
                     }
                 }
 
                 else
                 {
-                    var registrations = (await _service.GetClientRegistrationsAsync(context.CancellationToken))
-                        .Where(registration => IssuerMatches(registration.Issuer, issuer))
-                        .ToList();
+                    // Note: if multiple registrations share the same issuer, the registration
+                    // whose front-channel logout URI matches the request URI is selected, if applicable.
+                    var registrations = NarrowByRequestUri(context,
+                        (await _service.GetClientRegistrationsAsync(context.CancellationToken))
+                            .Where(registration => IssuerMatches(registration.Issuer, issuer))
+                            .ToList(),
+                        static registration => registration.FrontchannelLogoutUri);
 
                     if (registrations is not [OpenIddictClientRegistration registration])
                     {
@@ -1240,6 +1301,15 @@ public static partial class OpenIddictClientHandlers
                     return ValueTask.CompletedTask;
                 }
 
+                // While not required by the specification, the "nbf" claim is a registered JWT claim that
+                // MUST be honored when present (RFC 7519, section 4.1.5): reject tokens that are not valid yet.
+                if (!TryGetDate(context.LogoutTokenPrincipal, Claims.NotBefore, out var notBefore) ||
+                    (notBefore is not null && notBefore.Value > now + skew))
+                {
+                    Reject(context, Errors.InvalidRequest, SR.ID2385);
+                    return ValueTask.CompletedTask;
+                }
+
                 // The "iat" claim is validated the same way it's validated for identity tokens: logout tokens issued
                 // too far in the future are rejected. Since the replay cache only retains token identifiers for a
                 // limited period, logout tokens that don't have an expiration date are only accepted if they were
@@ -1261,6 +1331,11 @@ public static partial class OpenIddictClientHandlers
         /// When an <see cref="IDistributedCache"/> implementation is registered, it is used to store the
         /// token identifiers. Otherwise, the identifiers are stored in memory by this handler instance.
         /// </summary>
+        /// <remarks>
+        /// Note: <see cref="IDistributedCache"/> doesn't offer an atomic "add if absent" operation: when a distributed
+        /// cache is used, replay detection is best-effort and concurrent deliveries of the same token may be accepted.
+        /// If the sessions cannot be terminated by the back-channel logout endpoint, the identifier is released.
+        /// </remarks>
         public sealed class RedeemLogoutTokenIdentifier : IOpenIddictClientHandler<ProcessAuthenticationContext>
         {
             private readonly ConcurrentDictionary<string, DateTimeOffset> _identifiers = new(StringComparer.Ordinal);
@@ -1322,6 +1397,9 @@ public static partial class OpenIddictClientHandlers
                         AbsoluteExpiration = expiration
                     }, context.CancellationToken);
 
+                    context.Transaction.SetProperty<Func<CancellationToken, ValueTask>>(LogoutTokenIdentifierReleaseProperty,
+                        async cancellationToken => await cache.RemoveAsync(key, cancellationToken));
+
                     return;
                 }
 
@@ -1338,6 +1416,12 @@ public static partial class OpenIddictClientHandlers
                     Reject(context, Errors.InvalidRequest, SR.ID2386);
                     return;
                 }
+
+                context.Transaction.SetProperty<Func<CancellationToken, ValueTask>>(LogoutTokenIdentifierReleaseProperty, cancellationToken =>
+                {
+                    _identifiers.TryRemove(key, out _);
+                    return ValueTask.CompletedTask;
+                });
             }
         }
 
@@ -1488,6 +1572,52 @@ public static partial class OpenIddictClientHandlers
             }
         }
 
+        private const string LogoutTokenIdentifierReleaseProperty = ".logout_token_identifier_release";
+
+        private static async ValueTask ReleaseLogoutTokenIdentifierAsync(
+            OpenIddictClientTransaction transaction, CancellationToken cancellationToken)
+        {
+            var release = transaction.GetProperty<Func<CancellationToken, ValueTask>>(LogoutTokenIdentifierReleaseProperty);
+            if (release is null)
+            {
+                return;
+            }
+
+            transaction.SetProperty<Func<CancellationToken, ValueTask>>(LogoutTokenIdentifierReleaseProperty, null);
+
+            await release(cancellationToken);
+        }
+
+        private static List<OpenIddictClientRegistration> NarrowByRequestUri(BaseContext context,
+            List<OpenIddictClientRegistration> registrations, Func<OpenIddictClientRegistration, Uri?> selector)
+        {
+            if (registrations.Count < 2 || context.RequestUri is not { IsAbsoluteUri: true } request)
+            {
+                return registrations;
+            }
+
+            var matches = registrations.FindAll(registration => selector(registration) switch
+            {
+                { IsAbsoluteUri: true } uri => UriMatches(uri, request),
+
+                Uri uri when context.BaseUri is { IsAbsoluteUri: true } => OpenIddictHelpers.CreateAbsoluteUri(context.BaseUri, uri) is Uri absolute &&
+                    !OpenIddictHelpers.IsImplicitFileUri(absolute) &&
+                     OpenIddictHelpers.IsBaseOf(context.BaseUri, absolute) && UriMatches(absolute, request),
+
+                _ => false
+            });
+
+            return matches.Count is 0 ? registrations : matches;
+
+            // Note: paths that only differ by their casing or by a trailing slash are considered equivalent,
+            // which matches the logic used to infer the endpoint type from the request URI.
+            static bool UriMatches(Uri left, Uri right) =>
+                string.Equals(left.Scheme, right.Scheme, StringComparison.OrdinalIgnoreCase) &&
+                string.Equals(left.Host, right.Host, StringComparison.OrdinalIgnoreCase) &&
+                left.Port == right.Port &&
+                string.Equals(left.AbsolutePath.TrimEnd('/'), right.AbsolutePath.TrimEnd('/'), StringComparison.OrdinalIgnoreCase);
+        }
+
         private static bool IssuerMatches(Uri? left, Uri right)
             // Note: issuers that only differ by a trailing slash are considered equivalent.
             => left is { IsAbsoluteUri: true } && string.Equals(
@@ -1525,8 +1655,9 @@ public static partial class OpenIddictClientHandlers
             return true;
         }
 
-        private static bool TryReadJsonWebToken(JsonWebTokenHandler handler, string token, out JsonWebToken result)
+        private static bool TryReadJsonWebToken(OpenIddictClientOptions options, string token, out JsonWebToken result)
         {
+            var handler = options.JsonWebTokenHandler;
             if (!handler.CanReadToken(token))
             {
                 result = null!;
@@ -1536,6 +1667,23 @@ public static partial class OpenIddictClientHandlers
             try
             {
                 result = handler.ReadJsonWebToken(token);
+
+                // If the token is encrypted, decrypt it using the encryption keys of the client to access its claims.
+                if (result.IsEncrypted)
+                {
+                    var keys = options.TokenValidationParameters.TokenDecryptionKeys;
+                    if (keys is null || !keys.Any())
+                    {
+                        result = null!;
+                        return false;
+                    }
+
+                    result = handler.ReadJsonWebToken(handler.DecryptToken(result, new TokenValidationParameters
+                    {
+                        TokenDecryptionKeys = keys
+                    }));
+                }
+
                 return true;
             }
 
