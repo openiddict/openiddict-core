@@ -371,6 +371,49 @@ public class OpenIddictClientHandlersLogoutTests
         Assert.Equal(("Contoso", "Bob", "session"), call);
     }
 
+    [Theory]
+    [InlineData("session", "Contoso", "https://www.contoso.com/", true)]
+    [InlineData("session", null, null, true)]
+    [InlineData("other", "Contoso", "https://www.contoso.com/", false)]
+    [InlineData("session", "Other", "https://www.contoso.com/", false)]
+    [InlineData("session", "Contoso", "https://www.fabrikam.com/", false)]
+    [InlineData(null, "Contoso", "https://www.contoso.com/", false)]
+    public void IsMatchingSession_ReturnsExpectedResult(string? sid, string? registration, string? issuer, bool expected)
+    {
+        // Arrange
+        using var provider = CreateProvider();
+        var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictClientOptions>>().CurrentValue;
+
+        var context = new HandleFrontchannelLogoutRequestContext(new OpenIddictClientTransaction
+        {
+            CancellationToken = CancellationToken.None,
+            EndpointType = OpenIddictClientEndpointType.FrontchannelLogout,
+            Options = options,
+            Registration = options.Registrations[0],
+            Request = new OpenIddictRequest(),
+            ServiceProvider = provider
+        })
+        {
+            SessionId = "session"
+        };
+
+        var identity = new System.Security.Claims.ClaimsIdentity("Cookies");
+
+        if (sid is not null)
+        {
+            identity.AddClaim(new System.Security.Claims.Claim(Claims.SessionId, sid,
+                System.Security.Claims.ClaimValueTypes.String, issuer ?? System.Security.Claims.ClaimsIdentity.DefaultIssuer));
+        }
+
+        if (registration is not null)
+        {
+            identity.AddClaim(new System.Security.Claims.Claim(Claims.Private.RegistrationId, registration));
+        }
+
+        // Act and assert
+        Assert.Equal(expected, context.IsMatchingSession(new System.Security.Claims.ClaimsPrincipal(identity)));
+    }
+
     private static HandleBackchannelLogoutRequestContext CreateBackchannelHandleContext(ServiceProvider provider)
     {
         var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictClientOptions>>().CurrentValue;
