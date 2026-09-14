@@ -1,0 +1,83 @@
+@* Displays an authorization and the tokens attached to it. *@
+@using static OpenIddict.Server.AspNetCore.AdminUI.OpenIddictServerAspNetCoreAdminUIFormatting
+
+<AdminLayout BasePath="@BasePath" Title="@("Authorization " + Id)" Section="@Paths.Authorizations" Notice="@Notice" Errors="@Errors">
+    <dl class="oi-details">
+        <dt>Identifier</dt><dd><code>@Id</code></dd>
+        <dt>Subject</dt><dd>@FormatValue(Descriptor.Subject)</dd>
+        <dt>Client</dt><dd>@FormatClient(ClientIds, Descriptor.ApplicationId)</dd>
+        <dt>Type</dt><dd>@FormatValue(Descriptor.Type)</dd>
+        <dt>Status</dt><dd>@FormatValue(Descriptor.Status)</dd>
+        <dt>Scopes</dt><dd>@string.Join(" ", Descriptor.Scopes.Order(StringComparer.Ordinal))</dd>
+        <dt>Created</dt><dd>@FormatDate(Descriptor.CreationDate)</dd>
+    </dl>
+
+    @if (Descriptor.Status != Statuses.Revoked)
+    {
+        <form method="post" action="@(ItemUrl + "/" + Paths.Revoke)">
+            <AntiforgeryToken />
+            <p><button type="submit" class="oi-danger">Revoke this authorization and its tokens</button></p>
+        </form>
+    }
+
+    <h2>Tokens</h2>
+    @if (Tokens.Count is 0)
+    {
+        <p class="oi-muted">No token is attached to this authorization.</p>
+    }
+    else
+    {
+        <div class="oi-table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th scope="col">Identifier</th>
+                        <th scope="col">Type</th>
+                        <th scope="col">Status</th>
+                        <th scope="col">Created</th>
+                        <th scope="col">Expires</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var (id, token) in Tokens)
+                    {
+                        <tr>
+                            <td><a href="@(BasePath + "/" + Paths.Tokens + "/" + Uri.EscapeDataString(id))"><code>@id</code></a></td>
+                            <td>@FormatValue(token.Type)</td>
+                            <td>@FormatValue(token.Status)</td>
+                            <td>@FormatDate(token.CreationDate)</td>
+                            <td>@FormatDate(token.ExpirationDate)</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+
+    <p><a href="@(BasePath + "/" + Paths.Authorizations)">Back to the authorizations</a></p>
+</AdminLayout>
+
+@code {
+    /// <summary>Gets or sets the base path of the admin UI.</summary>
+    [Parameter, EditorRequired] public string BasePath { get; set; } = default!;
+
+    /// <summary>Gets or sets the identifier of the authorization.</summary>
+    [Parameter, EditorRequired] public string Id { get; set; } = default!;
+
+    /// <summary>Gets or sets the authorization descriptor.</summary>
+    [Parameter, EditorRequired] public OpenIddictAuthorizationDescriptor Descriptor { get; set; } = default!;
+
+    /// <summary>Gets or sets the tokens attached to the authorization (without payload).</summary>
+    [Parameter, EditorRequired] public IReadOnlyList<(string Id, OpenIddictTokenDescriptor Descriptor)> Tokens { get; set; } = default!;
+
+    /// <summary>Gets or sets the client identifiers, indexed by application identifier.</summary>
+    [Parameter, EditorRequired] public IReadOnlyDictionary<string, string> ClientIds { get; set; } = default!;
+
+    /// <summary>Gets or sets the errors to display.</summary>
+    [Parameter] public IReadOnlyList<string>? Errors { get; set; }
+
+    /// <summary>Gets or sets the notice code to display, if any.</summary>
+    [Parameter] public string? Notice { get; set; }
+
+    private string ItemUrl => BasePath + "/" + Paths.Authorizations + "/" + Uri.EscapeDataString(Id);
+}

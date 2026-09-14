@@ -1,0 +1,180 @@
+@* Creates or edits an application. The stored client secret is never rendered: only a newly generated secret is displayed, once. *@
+
+<AdminLayout BasePath="@BasePath" Title="@(Id is null ? "New application" : "Application " + (Descriptor.ClientId ?? Id))"
+             Section="@Paths.Applications" Notice="@Notice" Errors="@Errors">
+
+    @if (NewClientSecret is not null)
+    {
+        <div class="oi-secret" role="status">
+            <p><strong>New client secret.</strong> Copy it now: it is stored hashed and will not be displayed again.</p>
+            <p><code id="new-client-secret">@NewClientSecret</code></p>
+        </div>
+    }
+
+    <form method="post" action="@(Id is null ? ListUrl + "/" + Paths.New : ItemUrl)">
+        <AntiforgeryToken />
+
+        <fieldset>
+            <legend>General</legend>
+
+            <label for="client_id">Client ID</label>
+            <input id="client_id" type="text" name="@FormFields.ClientId" value="@Descriptor.ClientId" required autocomplete="off" />
+
+            <label for="display_name">Display name</label>
+            <input id="display_name" type="text" name="@FormFields.DisplayName" value="@Descriptor.DisplayName" autocomplete="off" />
+
+            <label for="client_type">Client type</label>
+            <select id="client_type" name="@FormFields.ClientType">
+                <option value="" selected="@(Descriptor.ClientType is null)">(not specified)</option>
+                @foreach (var value in OpenIddictServerAspNetCoreAdminUIForms.KnownClientTypes)
+                {
+                    <option value="@value" selected="@(Descriptor.ClientType == value)">@value</option>
+                }
+            </select>
+
+            <label for="application_type">Application type</label>
+            <select id="application_type" name="@FormFields.ApplicationType">
+                <option value="" selected="@(Descriptor.ApplicationType is null)">(not specified)</option>
+                @foreach (var value in OpenIddictServerAspNetCoreAdminUIForms.KnownApplicationTypes)
+                {
+                    <option value="@value" selected="@(Descriptor.ApplicationType == value)">@value</option>
+                }
+            </select>
+
+            <label for="consent_type">Consent type</label>
+            <select id="consent_type" name="@FormFields.ConsentType">
+                <option value="" selected="@(Descriptor.ConsentType is null)">(not specified)</option>
+                @foreach (var value in OpenIddictServerAspNetCoreAdminUIForms.KnownConsentTypes)
+                {
+                    <option value="@value" selected="@(Descriptor.ConsentType == value)">@value</option>
+                }
+            </select>
+        </fieldset>
+
+        @if (Id is null)
+        {
+            <fieldset>
+                <legend>Client secret</legend>
+                <label class="oi-check"><input type="radio" name="@FormFields.Mode" value="" checked /> No secret</label>
+                <label class="oi-check"><input type="radio" name="@FormFields.Mode" value="@SecretModes.Generate" /> Generate a secret</label>
+                <label class="oi-check"><input type="radio" name="@FormFields.Mode" value="@SecretModes.Set" /> Use the following secret</label>
+                <input type="password" name="@FormFields.ClientSecret" autocomplete="new-password" aria-label="Client secret" />
+            </fieldset>
+        }
+
+        <fieldset>
+            <legend>Redirect URIs</legend>
+
+            <label for="redirect_uris">Redirect URIs (one per line)</label>
+            <textarea id="redirect_uris" name="@FormFields.RedirectUris" value="@Lines(Descriptor.RedirectUris.Select(static uri => uri.AbsoluteUri))"></textarea>
+
+            <label for="post_logout_redirect_uris">Post-logout redirect URIs (one per line)</label>
+            <textarea id="post_logout_redirect_uris" name="@FormFields.PostLogoutRedirectUris" value="@Lines(Descriptor.PostLogoutRedirectUris.Select(static uri => uri.AbsoluteUri))"></textarea>
+        </fieldset>
+
+        <fieldset>
+            <legend>Permissions</legend>
+            @foreach (var permission in OpenIddictServerAspNetCoreAdminUIForms.KnownPermissions)
+            {
+                <label class="oi-check">
+                    <input type="checkbox" name="@FormFields.Permissions" value="@permission" checked="@Descriptor.Permissions.Contains(permission)" />
+                    <code>@permission</code>
+                </label>
+            }
+
+            <label for="additional_permissions">Other permissions (one per line, e.g. <code>scp:api</code>)</label>
+            <textarea id="additional_permissions" name="@FormFields.AdditionalPermissions" value="@Lines(Descriptor.Permissions.Except(OpenIddictServerAspNetCoreAdminUIForms.KnownPermissions))"></textarea>
+        </fieldset>
+
+        <fieldset>
+            <legend>Requirements</legend>
+            @foreach (var requirement in OpenIddictServerAspNetCoreAdminUIForms.KnownRequirements)
+            {
+                <label class="oi-check">
+                    <input type="checkbox" name="@FormFields.Requirements" value="@requirement" checked="@Descriptor.Requirements.Contains(requirement)" />
+                    <code>@requirement</code>
+                </label>
+            }
+
+            <label for="additional_requirements">Other requirements (one per line)</label>
+            <textarea id="additional_requirements" name="@FormFields.AdditionalRequirements" value="@Lines(Descriptor.Requirements.Except(OpenIddictServerAspNetCoreAdminUIForms.KnownRequirements))"></textarea>
+        </fieldset>
+
+        <fieldset>
+            <legend>Settings</legend>
+            <label for="settings">Settings (one <code>name=value</code> pair per line, e.g. <code>tkn_lft:act=00:30:00</code>)</label>
+            <textarea id="settings" name="@FormFields.Settings" value="@Lines(Descriptor.Settings.OrderBy(static setting => setting.Key, StringComparer.Ordinal).Select(static setting => setting.Key + "=" + setting.Value))"></textarea>
+        </fieldset>
+
+        <fieldset>
+            <legend>JSON Web Key Set</legend>
+            @if (PublicJsonWebKeySet is not null)
+            {
+                <p class="oi-muted">Current key set (private key parameters are never displayed):</p>
+                <pre>@PublicJsonWebKeySet</pre>
+                <label class="oi-check"><input type="checkbox" name="@FormFields.RemoveJsonWebKeySet" value="true" /> Remove the key set</label>
+            }
+            <label for="json_web_key_set">@(PublicJsonWebKeySet is null ? "Key set (JSON)" : "Replace the key set (JSON, leave empty to keep the current key set)")</label>
+            <textarea id="json_web_key_set" name="@FormFields.JsonWebKeySet"></textarea>
+        </fieldset>
+
+        <button type="submit">@(Id is null ? "Create" : "Save")</button>
+        <a href="@ListUrl">Cancel</a>
+    </form>
+
+    @if (Id is not null)
+    {
+        <h2>Client secret</h2>
+        <p class="oi-muted">@(HasClientSecret ? "A client secret is configured." : "No client secret is configured.")</p>
+
+        <form method="post" action="@(ItemUrl + "/" + Paths.Secret)">
+            <AntiforgeryToken />
+            <fieldset>
+                <legend>Change the client secret</legend>
+                <label class="oi-check"><input type="radio" name="@FormFields.Mode" value="@SecretModes.Generate" checked /> Generate a new secret</label>
+                <label class="oi-check"><input type="radio" name="@FormFields.Mode" value="@SecretModes.Set" /> Use the following secret</label>
+                <label class="oi-check"><input type="radio" name="@FormFields.Mode" value="@SecretModes.Remove" /> Remove the secret</label>
+                <input type="password" name="@FormFields.ClientSecret" autocomplete="new-password" aria-label="New client secret" />
+                <p><button type="submit" class="oi-secondary">Change the secret</button></p>
+            </fieldset>
+        </form>
+
+        <h2>Delete</h2>
+        <form method="post" action="@(ItemUrl + "/" + Paths.Delete)">
+            <AntiforgeryToken />
+            <button type="submit" class="oi-danger">Delete this application</button>
+        </form>
+    }
+</AdminLayout>
+
+@code {
+    /// <summary>Gets or sets the base path of the admin UI.</summary>
+    [Parameter, EditorRequired] public string BasePath { get; set; } = default!;
+
+    /// <summary>Gets or sets the identifier of the application (<see langword="null"/> when creating an application).</summary>
+    [Parameter] public string? Id { get; set; }
+
+    /// <summary>Gets or sets the application descriptor (without client secret).</summary>
+    [Parameter, EditorRequired] public OpenIddictApplicationDescriptor Descriptor { get; set; } = default!;
+
+    /// <summary>Gets or sets a value indicating whether a client secret is stored.</summary>
+    [Parameter] public bool HasClientSecret { get; set; }
+
+    /// <summary>Gets or sets the newly generated client secret to display once, if any.</summary>
+    [Parameter] public string? NewClientSecret { get; set; }
+
+    /// <summary>Gets or sets the JSON Web Key Set without private key parameters, if any.</summary>
+    [Parameter] public string? PublicJsonWebKeySet { get; set; }
+
+    /// <summary>Gets or sets the errors to display.</summary>
+    [Parameter] public IReadOnlyList<string>? Errors { get; set; }
+
+    /// <summary>Gets or sets the notice code to display, if any.</summary>
+    [Parameter] public string? Notice { get; set; }
+
+    private string ListUrl => BasePath + "/" + Paths.Applications;
+
+    private string ItemUrl => ListUrl + "/" + Uri.EscapeDataString(Id ?? string.Empty);
+
+    private static string Lines(IEnumerable<string> values) => string.Join("\n", values.Order(StringComparer.Ordinal));
+}

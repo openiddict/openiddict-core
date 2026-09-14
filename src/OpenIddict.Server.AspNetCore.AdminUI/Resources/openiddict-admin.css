@@ -1,0 +1,149 @@
+/* OpenIddict admin UI - minimal stylesheet (no external dependencies). */
+:root {
+  color-scheme: light dark;
+  --oi-bg: #f7f7f8;
+  --oi-fg: #1d1d1f;
+  --oi-muted: #6b6b70;
+  --oi-card: #ffffff;
+  --oi-border: #d9d9de;
+  --oi-accent: #3b5bdb;
+  --oi-accent-fg: #ffffff;
+  --oi-danger: #c92a2a;
+  --oi-success-bg: #e6f4ea;
+  --oi-danger-bg: #fdecea;
+  --oi-code-bg: #f0f0f3;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --oi-bg: #17171a;
+    --oi-fg: #ececf1;
+    --oi-muted: #a0a0a8;
+    --oi-card: #212126;
+    --oi-border: #3a3a42;
+    --oi-accent: #748ffc;
+    --oi-accent-fg: #0b0b0d;
+    --oi-danger: #ff8787;
+    --oi-success-bg: #1f3326;
+    --oi-danger-bg: #3b1f1f;
+    --oi-code-bg: #2a2a30;
+  }
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font: 14px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  background: var(--oi-bg);
+  color: var(--oi-fg);
+}
+
+a { color: var(--oi-accent); }
+
+.oi-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1.5rem;
+  padding: 0.75rem 1.5rem;
+  background: var(--oi-card);
+  border-bottom: 1px solid var(--oi-border);
+}
+
+.oi-brand { font-weight: 600; color: var(--oi-fg); text-decoration: none; }
+
+.oi-nav { display: flex; flex-wrap: wrap; gap: 0.25rem 1rem; }
+.oi-nav a { text-decoration: none; color: var(--oi-muted); padding: 0.25rem 0; }
+.oi-nav a[aria-current="page"] { color: var(--oi-fg); border-bottom: 2px solid var(--oi-accent); }
+
+.oi-main { max-width: 72rem; margin: 0 auto; padding: 1.5rem; }
+
+h1 { font-size: 1.5rem; margin: 0 0 1rem; }
+h2 { font-size: 1.1rem; margin: 1.5rem 0 0.5rem; }
+
+.oi-notice, .oi-errors {
+  padding: 0.75rem 1rem;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+}
+.oi-notice { background: var(--oi-success-bg); }
+.oi-errors { background: var(--oi-danger-bg); color: var(--oi-danger); }
+.oi-errors ul { margin: 0; padding-left: 1.25rem; }
+
+.oi-secret {
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--oi-accent);
+  border-radius: 6px;
+  margin-bottom: 1rem;
+}
+
+.oi-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.oi-table-wrap { overflow-x: auto; }
+
+table { width: 100%; border-collapse: collapse; background: var(--oi-card); }
+th, td { text-align: left; padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--oi-border); vertical-align: top; }
+th { font-weight: 600; color: var(--oi-muted); }
+
+dl.oi-details { display: grid; grid-template-columns: max-content 1fr; gap: 0.25rem 1rem; }
+dl.oi-details dt { color: var(--oi-muted); }
+dl.oi-details dd { margin: 0; overflow-wrap: anywhere; }
+
+fieldset {
+  border: 1px solid var(--oi-border);
+  border-radius: 6px;
+  padding: 0.75rem 1rem;
+  margin: 0 0 1rem;
+  background: var(--oi-card);
+}
+legend { font-weight: 600; padding: 0 0.25rem; }
+
+label { display: block; margin: 0.5rem 0 0.25rem; }
+label.oi-check { display: inline-flex; align-items: center; gap: 0.35rem; margin: 0.15rem 1rem 0.15rem 0; }
+
+input[type="text"], input[type="password"], input[type="search"], select, textarea {
+  width: 100%;
+  max-width: 40rem;
+  padding: 0.4rem 0.5rem;
+  border: 1px solid var(--oi-border);
+  border-radius: 4px;
+  background: var(--oi-bg);
+  color: var(--oi-fg);
+  font: inherit;
+}
+.oi-toolbar input, .oi-toolbar select { width: auto; }
+textarea { min-height: 5rem; font-family: ui-monospace, Consolas, monospace; }
+
+button, .oi-button {
+  display: inline-block;
+  padding: 0.4rem 0.9rem;
+  border: 1px solid var(--oi-accent);
+  border-radius: 4px;
+  background: var(--oi-accent);
+  color: var(--oi-accent-fg);
+  font: inherit;
+  text-decoration: none;
+  cursor: pointer;
+}
+button.oi-secondary { background: transparent; color: var(--oi-accent); }
+button.oi-danger { background: transparent; border-color: var(--oi-danger); color: var(--oi-danger); }
+
+form.oi-inline { display: inline; }
+
+code, pre {
+  font-family: ui-monospace, Consolas, monospace;
+  background: var(--oi-code-bg);
+  border-radius: 4px;
+}
+code { padding: 0.1rem 0.3rem; overflow-wrap: anywhere; }
+pre { padding: 0.75rem; overflow-x: auto; }
+
+.oi-muted { color: var(--oi-muted); }
+.oi-pager { display: flex; gap: 1rem; margin-top: 1rem; }

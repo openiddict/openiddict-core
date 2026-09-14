@@ -1930,6 +1930,20 @@ To register them, use 'services.AddOpenIddict().AddClient().UseBff()'.</value>
     <value>The OpenIddict admin API requires the core services.
 To register the OpenIddict core services, reference the 'OpenIddict.Core' package and call 'services.AddOpenIddict().AddCore()' from 'ConfigureServices'.</value>
   </data>
+  <data name="ID0680" xml:space="preserve">
+    <value>The OpenIddict admin UI requires the core services.
+To register the OpenIddict core services, reference the 'OpenIddict.Core' package and call 'services.AddOpenIddict().AddCore()' from 'ConfigureServices'.</value>
+  </data>
+  <data name="ID0681" xml:space="preserve">
+    <value>The OpenIddict admin UI services must be registered before mapping the admin UI endpoints.
+To register them, call 'services.AddOpenIddictAdminUI()' from 'ConfigureServices'.</value>
+  </data>
+  <data name="ID0682" xml:space="preserve">
+    <value>The OpenIddict admin UI page size must be between 1 and 1000.</value>
+  </data>
+  <data name="ID0683" xml:space="preserve">
+    <value>The OpenIddict admin UI stylesheet cannot be found in the assembly resources.</value>
+  </data>
   <data name="ID0565" xml:space="preserve">
     <value>The SAML identity provider entity identifier must be set. To set it, use 'services.AddOpenIddict().AddServer().UseSaml().SetEntityId()' or 'SetIssuer()'.</value>
   </data>
@@ -3171,6 +3185,18 @@ To register a distributed cache, use 'services.AddDistributedMemoryCache()' or a
   </data>
   <data name="ID2245" xml:space="preserve">
     <value>The entry is invalid.</value>
+  </data>
+  <data name="ID2340" xml:space="preserve">
+    <value>The antiforgery token is missing or invalid. Reload the page and try again.</value>
+  </data>
+  <data name="ID2341" xml:space="preserve">
+    <value>The '{0}' field is invalid.</value>
+  </data>
+  <data name="ID2342" xml:space="preserve">
+    <value>The requested entry cannot be found.</value>
+  </data>
+  <data name="ID2343" xml:space="preserve">
+    <value>The '{0}' field cannot be used with '{1}'.</value>
   </data>
   <data name="ID2246" xml:space="preserve">
     <value>The SAML message is missing or malformed.</value>
@@ -4470,6 +4496,21 @@ This may indicate that the hashed entry is corrupted or malformed.</value>
   </data>
   <data name="ID6320" xml:space="preserve">
     <value>The back-channel logout request was rejected because the logout token is invalid: {Reason}</value>
+  </data>
+  <data name="ID6480" xml:space="preserve">
+    <value>The {Type} entry '{Identifier}' was created by '{User}' using the admin UI.</value>
+  </data>
+  <data name="ID6481" xml:space="preserve">
+    <value>The {Type} entry '{Identifier}' was updated by '{User}' using the admin UI.</value>
+  </data>
+  <data name="ID6482" xml:space="preserve">
+    <value>The {Type} entry '{Identifier}' was deleted by '{User}' using the admin UI.</value>
+  </data>
+  <data name="ID6483" xml:space="preserve">
+    <value>The {Type} entry '{Identifier}' was revoked by '{User}' using the admin UI.</value>
+  </data>
+  <data name="ID6484" xml:space="preserve">
+    <value>The client secret of the application '{Identifier}' was changed by '{User}' using the admin UI.</value>
   </data>
   <data name="ID6321" xml:space="preserve">
     <value>A back-channel logout notification was received from {Issuer} for the subject '{Subject}' and the session '{SessionId}'.</value>

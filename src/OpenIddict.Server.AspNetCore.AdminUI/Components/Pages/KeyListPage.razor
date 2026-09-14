@@ -1,0 +1,77 @@
+@* Lists the automatic keys (the key material is never rendered). *@
+@using static OpenIddict.Server.AspNetCore.AdminUI.OpenIddictServerAspNetCoreAdminUIFormatting
+
+<AdminLayout BasePath="@BasePath" Title="Keys" Section="@Paths.Keys" Notice="@Notice" Errors="@Errors">
+    @if (Items.Count is 0)
+    {
+        <p class="oi-muted">No key was found.</p>
+    }
+    else
+    {
+        <div class="oi-table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th scope="col">Key ID</th>
+                        <th scope="col">Algorithm</th>
+                        <th scope="col">Usage</th>
+                        <th scope="col">Status</th>
+                        <th scope="col">Created</th>
+                        <th scope="col">Activation</th>
+                        <th scope="col">Expiration</th>
+                        <th scope="col">Retirement</th>
+                        <th scope="col"><span class="oi-muted">Actions</span></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var (id, descriptor) in Items)
+                    {
+                        <tr>
+                            <td><code>@(descriptor.KeyId ?? id)</code></td>
+                            <td>@FormatValue(descriptor.Algorithm)</td>
+                            <td>@FormatValue(descriptor.Usage)</td>
+                            <td>@FormatValue(descriptor.Status)</td>
+                            <td>@FormatDate(descriptor.CreationDate)</td>
+                            <td>@FormatDate(descriptor.ActivationDate)</td>
+                            <td>@FormatDate(descriptor.ExpirationDate)</td>
+                            <td>@FormatDate(descriptor.RetirementDate)</td>
+                            <td>
+                                @if (descriptor.Status != Statuses.Revoked)
+                                {
+                                    <form class="oi-inline" method="post" action="@(Url + "/" + Uri.EscapeDataString(id) + "/" + Paths.Revoke)">
+                                        <AntiforgeryToken />
+                                        <button type="submit" class="oi-danger">Revoke</button>
+                                    </form>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+
+    <Pager Url="@Url" PageNumber="@PageNumber" HasNextPage="@HasNextPage" />
+</AdminLayout>
+
+@code {
+    /// <summary>Gets or sets the base path of the admin UI.</summary>
+    [Parameter, EditorRequired] public string BasePath { get; set; } = default!;
+
+    /// <summary>Gets or sets the keys (identifier and descriptor, without key material).</summary>
+    [Parameter, EditorRequired] public IReadOnlyList<(string Id, OpenIddictKeyDescriptor Descriptor)> Items { get; set; } = default!;
+
+    /// <summary>Gets or sets the current page number.</summary>
+    [Parameter] public int PageNumber { get; set; } = 1;
+
+    /// <summary>Gets or sets a value indicating whether a next page exists.</summary>
+    [Parameter] public bool HasNextPage { get; set; }
+
+    /// <summary>Gets or sets the errors to display.</summary>
+    [Parameter] public IReadOnlyList<string>? Errors { get; set; }
+
+    /// <summary>Gets or sets the notice code to display, if any.</summary>
+    [Parameter] public string? Notice { get; set; }
+
+    private string Url => BasePath + "/" + Paths.Keys;
+}

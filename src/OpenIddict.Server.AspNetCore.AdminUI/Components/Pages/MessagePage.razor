@@ -1,0 +1,24 @@
+@* Generic page used to render errors (not found, conflicts, invalid antiforgery tokens). *@
+
+<AdminLayout BasePath="@BasePath" Title="@GetTitle()">
+    <p>@Message</p>
+    <p><a href="@(BasePath + "/")">Back to the administration home page</a></p>
+</AdminLayout>
+
+@code {
+    /// <summary>Gets or sets the base path of the admin UI.</summary>
+    [Parameter, EditorRequired] public string BasePath { get; set; } = default!;
+
+    /// <summary>Gets or sets the HTTP status code associated with the message.</summary>
+    [Parameter] public int StatusCode { get; set; }
+
+    /// <summary>Gets or sets the message.</summary>
+    [Parameter, EditorRequired] public string Message { get; set; } = default!;
+
+    private string GetTitle() => StatusCode switch
+    {
+        404 => "Not found",
+        409 => "Conflict",
+        _ => "Invalid request"
+    };
+}

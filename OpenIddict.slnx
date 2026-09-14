@@ -78,6 +78,7 @@
     <Project Path="src/OpenIddict.Owin/OpenIddict.Owin.csproj" />
     <Project Path="src/OpenIddict.Quartz/OpenIddict.Quartz.csproj" />
     <Project Path="src/OpenIddict.Server.AspNetCore/OpenIddict.Server.AspNetCore.csproj" />
+    <Project Path="src/OpenIddict.Server.AspNetCore.AdminUI/OpenIddict.Server.AspNetCore.AdminUI.csproj" />
     <Project Path="src/OpenIddict.Server.DataProtection/OpenIddict.Server.DataProtection.csproj" />
     <Project Path="src/OpenIddict.Server.Owin/OpenIddict.Server.Owin.csproj" />
     <Project Path="src/OpenIddict.Server.Saml.AspNetCore/OpenIddict.Server.Saml.AspNetCore.csproj" />
@@ -114,6 +115,7 @@
     <Project Path="test/OpenIddict.EntityFrameworkCore.Tests/OpenIddict.EntityFrameworkCore.Tests.csproj" />
     <Project Path="test/OpenIddict.MongoDb.Tests/OpenIddict.MongoDb.Tests.csproj" />
     <Project Path="test/OpenIddict.Quartz.Tests/OpenIddict.Quartz.Tests.csproj" />
+    <Project Path="test/OpenIddict.Server.AspNetCore.AdminUI.Tests/OpenIddict.Server.AspNetCore.AdminUI.Tests.csproj" />
     <Project Path="test/OpenIddict.Server.AspNetCore.IntegrationTests/OpenIddict.Server.AspNetCore.IntegrationTests.csproj" />
     <Project Path="test/OpenIddict.Server.AspNetCore.Tests/OpenIddict.Server.AspNetCore.Tests.csproj" Id="21d81c43-35e2-4a09-8866-448b86d3c710" />
     <Project Path="test/OpenIddict.Server.DataProtection.Tests/OpenIddict.Server.DataProtection.Tests.csproj" />

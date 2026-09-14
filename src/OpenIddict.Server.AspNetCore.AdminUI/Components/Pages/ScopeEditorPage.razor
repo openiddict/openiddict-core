@@ -1,0 +1,58 @@
+@* Creates or edits a scope. *@
+
+<AdminLayout BasePath="@BasePath" Title="@(Id is null ? "New scope" : "Scope " + (Descriptor.Name ?? Id))"
+             Section="@Paths.Scopes" Notice="@Notice" Errors="@Errors">
+
+    <form method="post" action="@(Id is null ? ListUrl + "/" + Paths.New : ItemUrl)">
+        <AntiforgeryToken />
+
+        <fieldset>
+            <legend>Scope</legend>
+
+            <label for="name">Name</label>
+            <input id="name" type="text" name="@FormFields.Name" value="@Descriptor.Name" required autocomplete="off" />
+
+            <label for="display_name">Display name</label>
+            <input id="display_name" type="text" name="@FormFields.DisplayName" value="@Descriptor.DisplayName" autocomplete="off" />
+
+            <label for="description">Description</label>
+            <input id="description" type="text" name="@FormFields.Description" value="@Descriptor.Description" autocomplete="off" />
+
+            <label for="resources">Resources (one per line)</label>
+            <textarea id="resources" name="@FormFields.Resources" value="@string.Join("\n", Descriptor.Resources.Order(StringComparer.Ordinal))"></textarea>
+        </fieldset>
+
+        <button type="submit">@(Id is null ? "Create" : "Save")</button>
+        <a href="@ListUrl">Cancel</a>
+    </form>
+
+    @if (Id is not null)
+    {
+        <h2>Delete</h2>
+        <form method="post" action="@(ItemUrl + "/" + Paths.Delete)">
+            <AntiforgeryToken />
+            <button type="submit" class="oi-danger">Delete this scope</button>
+        </form>
+    }
+</AdminLayout>
+
+@code {
+    /// <summary>Gets or sets the base path of the admin UI.</summary>
+    [Parameter, EditorRequired] public string BasePath { get; set; } = default!;
+
+    /// <summary>Gets or sets the identifier of the scope (<see langword="null"/> when creating a scope).</summary>
+    [Parameter] public string? Id { get; set; }
+
+    /// <summary>Gets or sets the scope descriptor.</summary>
+    [Parameter, EditorRequired] public OpenIddictScopeDescriptor Descriptor { get; set; } = default!;
+
+    /// <summary>Gets or sets the errors to display.</summary>
+    [Parameter] public IReadOnlyList<string>? Errors { get; set; }
+
+    /// <summary>Gets or sets the notice code to display, if any.</summary>
+    [Parameter] public string? Notice { get; set; }
+
+    private string ListUrl => BasePath + "/" + Paths.Scopes;
+
+    private string ItemUrl => ListUrl + "/" + Uri.EscapeDataString(Id ?? string.Empty);
+}

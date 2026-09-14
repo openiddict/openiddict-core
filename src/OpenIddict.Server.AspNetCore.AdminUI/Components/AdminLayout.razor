@@ -1,0 +1,85 @@
+@* Shared layout of the admin UI pages. *@
+@inject IOptions<OpenIddictServerAspNetCoreAdminUIOptions> Options
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>@Title - @Options.Value.Title</title>
+    <link rel="stylesheet" href="@(BasePath + "/" + Paths.Stylesheet)" />
+</head>
+<body>
+    <header class="oi-header">
+        <a class="oi-brand" href="@(BasePath + "/")">@Options.Value.Title</a>
+        <nav class="oi-nav" aria-label="Sections">
+            @foreach (var (section, label) in Sections)
+            {
+                <a href="@(BasePath + "/" + section)" aria-current="@(section == Section ? "page" : null)">@label</a>
+            }
+        </nav>
+    </header>
+    <main class="oi-main">
+        <h1>@Title</h1>
+
+        @if (GetNoticeText() is string text)
+        {
+            <p class="oi-notice" role="status">@text</p>
+        }
+
+        @if (Errors is { Count: > 0 })
+        {
+            <div class="oi-errors" role="alert">
+                <ul>
+                    @foreach (var error in Errors)
+                    {
+                        <li>@error</li>
+                    }
+                </ul>
+            </div>
+        }
+
+        @ChildContent
+    </main>
+</body>
+</html>
+
+@code {
+    private static readonly (string Section, string Label)[] Sections =
+    [
+        (Paths.Applications, "Applications"),
+        (Paths.Scopes, "Scopes"),
+        (Paths.Authorizations, "Authorizations"),
+        (Paths.Tokens, "Tokens"),
+        (Paths.Keys, "Keys")
+    ];
+
+    /// <summary>Gets or sets the base path of the admin UI.</summary>
+    [Parameter, EditorRequired] public string BasePath { get; set; } = default!;
+
+    /// <summary>Gets or sets the title of the page.</summary>
+    [Parameter, EditorRequired] public string Title { get; set; } = default!;
+
+    /// <summary>Gets or sets the section the page belongs to.</summary>
+    [Parameter] public string? Section { get; set; }
+
+    /// <summary>Gets or sets the notice code to display, if any.</summary>
+    [Parameter] public string? Notice { get; set; }
+
+    /// <summary>Gets or sets the errors to display, if any.</summary>
+    [Parameter] public IReadOnlyList<string>? Errors { get; set; }
+
+    /// <summary>Gets or sets the content of the page.</summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    // Note: only well-known notice codes are rendered to prevent content injection via the query string.
+    private string? GetNoticeText() => Notice switch
+    {
+        Notices.Created => "The entry was created.",
+        Notices.Deleted => "The entry was deleted.",
+        Notices.Revoked => "The entry was revoked.",
+        Notices.Updated => "The entry was updated.",
+        _ => null
+    };
+}

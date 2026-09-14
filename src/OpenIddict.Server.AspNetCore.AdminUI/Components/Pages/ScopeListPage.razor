@@ -1,0 +1,57 @@
+@* Lists the scopes. *@
+
+<AdminLayout BasePath="@BasePath" Title="Scopes" Section="@Paths.Scopes" Notice="@Notice">
+    <div class="oi-toolbar">
+        <a class="oi-button" href="@(Url + "/" + Paths.New)">New scope</a>
+    </div>
+
+    @if (Items.Count is 0)
+    {
+        <p class="oi-muted">No scope was found.</p>
+    }
+    else
+    {
+        <div class="oi-table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th scope="col">Name</th>
+                        <th scope="col">Display name</th>
+                        <th scope="col">Resources</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var (id, descriptor) in Items)
+                    {
+                        <tr>
+                            <td><a href="@(Url + "/" + Uri.EscapeDataString(id))">@(descriptor.Name ?? id)</a></td>
+                            <td>@descriptor.DisplayName</td>
+                            <td>@string.Join(", ", descriptor.Resources.Order(StringComparer.Ordinal))</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+
+    <Pager Url="@Url" PageNumber="@PageNumber" HasNextPage="@HasNextPage" />
+</AdminLayout>
+
+@code {
+    /// <summary>Gets or sets the base path of the admin UI.</summary>
+    [Parameter, EditorRequired] public string BasePath { get; set; } = default!;
+
+    /// <summary>Gets or sets the scopes (identifier and descriptor).</summary>
+    [Parameter, EditorRequired] public IReadOnlyList<(string Id, OpenIddictScopeDescriptor Descriptor)> Items { get; set; } = default!;
+
+    /// <summary>Gets or sets the current page number.</summary>
+    [Parameter] public int PageNumber { get; set; } = 1;
+
+    /// <summary>Gets or sets a value indicating whether a next page exists.</summary>
+    [Parameter] public bool HasNextPage { get; set; }
+
+    /// <summary>Gets or sets the notice code to display, if any.</summary>
+    [Parameter] public string? Notice { get; set; }
+
+    private string Url => BasePath + "/" + Paths.Scopes;
+}

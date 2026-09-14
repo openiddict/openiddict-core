@@ -1,0 +1,70 @@
+@* Lists the applications (client secrets are never rendered). *@
+
+<AdminLayout BasePath="@BasePath" Title="Applications" Section="@Paths.Applications" Notice="@Notice">
+    <form class="oi-toolbar" method="get" action="@Url" role="search">
+        <div>
+            <label for="search">Client ID, display name or identifier</label>
+            <input id="search" type="search" name="@QueryStringParameters.Search" value="@Search" />
+        </div>
+        <button type="submit" class="oi-secondary">Search</button>
+        <a class="oi-button" href="@(Url + "/" + Paths.New)">New application</a>
+    </form>
+
+    @if (Items.Count is 0)
+    {
+        <p class="oi-muted">No application was found.</p>
+    }
+    else
+    {
+        <div class="oi-table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th scope="col">Client ID</th>
+                        <th scope="col">Display name</th>
+                        <th scope="col">Client type</th>
+                        <th scope="col">Application type</th>
+                        <th scope="col">Redirect URIs</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var (id, descriptor) in Items)
+                    {
+                        <tr>
+                            <td><a href="@(Url + "/" + Uri.EscapeDataString(id))">@(descriptor.ClientId ?? id)</a></td>
+                            <td>@descriptor.DisplayName</td>
+                            <td>@descriptor.ClientType</td>
+                            <td>@descriptor.ApplicationType</td>
+                            <td>@descriptor.RedirectUris.Count</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+
+    <Pager Url="@Url" PageNumber="@PageNumber" HasNextPage="@HasNextPage"
+           Filters="@(new Dictionary<string, string?> { [QueryStringParameters.Search] = Search })" />
+</AdminLayout>
+
+@code {
+    /// <summary>Gets or sets the base path of the admin UI.</summary>
+    [Parameter, EditorRequired] public string BasePath { get; set; } = default!;
+
+    /// <summary>Gets or sets the applications (identifier and descriptor, without client secret).</summary>
+    [Parameter, EditorRequired] public IReadOnlyList<(string Id, OpenIddictApplicationDescriptor Descriptor)> Items { get; set; } = default!;
+
+    /// <summary>Gets or sets the search term, if any.</summary>
+    [Parameter] public string? Search { get; set; }
+
+    /// <summary>Gets or sets the current page number.</summary>
+    [Parameter] public int PageNumber { get; set; } = 1;
+
+    /// <summary>Gets or sets a value indicating whether a next page exists.</summary>
+    [Parameter] public bool HasNextPage { get; set; }
+
+    /// <summary>Gets or sets the notice code to display, if any.</summary>
+    [Parameter] public string? Notice { get; set; }
+
+    private string Url => BasePath + "/" + Paths.Applications;
+}

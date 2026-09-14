@@ -1,0 +1,48 @@
+@* Previous/next page links preserving the current filters. *@
+@using Microsoft.AspNetCore.WebUtilities
+
+@if (PageNumber > 1 || HasNextPage)
+{
+    <nav class="oi-pager" aria-label="Pagination">
+        @if (PageNumber > 1)
+        {
+            <a href="@GetUrl(PageNumber - 1)" rel="prev">Previous</a>
+        }
+        <span class="oi-muted">Page @PageNumber</span>
+        @if (HasNextPage)
+        {
+            <a href="@GetUrl(PageNumber + 1)" rel="next">Next</a>
+        }
+    </nav>
+}
+
+@code {
+    /// <summary>Gets or sets the URL of the list page.</summary>
+    [Parameter, EditorRequired] public string Url { get; set; } = default!;
+
+    /// <summary>Gets or sets the filters to preserve.</summary>
+    [Parameter] public IReadOnlyDictionary<string, string?>? Filters { get; set; }
+
+    /// <summary>Gets or sets the current page number.</summary>
+    [Parameter] public int PageNumber { get; set; } = 1;
+
+    /// <summary>Gets or sets a value indicating whether a next page exists.</summary>
+    [Parameter] public bool HasNextPage { get; set; }
+
+    private string GetUrl(int page)
+    {
+        List<KeyValuePair<string, string?>> parameters = [];
+
+        foreach (var filter in Filters ?? new Dictionary<string, string?>())
+        {
+            if (!string.IsNullOrEmpty(filter.Value))
+            {
+                parameters.Add(filter);
+            }
+        }
+
+        parameters.Add(new(QueryStringParameters.Page, page.ToString(CultureInfo.InvariantCulture)));
+
+        return QueryHelpers.AddQueryString(Url, parameters);
+    }
+}
