@@ -5,6 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\OpenIddict.Client\OpenIddict.Client.csproj" />
     <ProjectReference Include="..\..\src\OpenIddict.Server\OpenIddict.Server.csproj" />
     <ProjectReference Include="..\..\src\OpenIddict.Server.SystemNetHttp\OpenIddict.Server.SystemNetHttp.csproj" />
   </ItemGroup>

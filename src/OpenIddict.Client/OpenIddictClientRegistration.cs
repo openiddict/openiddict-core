@@ -56,6 +56,14 @@ public sealed class OpenIddictClientRegistration
     public bool UseSignedRequestObjects { get; set; }
 
     /// <summary>
+    /// Gets or sets a boolean indicating whether backchannel authentication requests (CIBA) should be sent as signed
+    /// authentication requests using the "request" parameter. When enabled, the authentication request parameters are
+    /// sent as a JWT signed using the first asymmetric signing key attached to the client registration, whose algorithm
+    /// must be listed in the "backchannel_authentication_request_signing_alg_values_supported" server metadata.
+    /// </summary>
+    public bool UseSignedBackchannelAuthenticationRequests { get; set; }
+
+    /// <summary>
     /// Gets or sets the URI of the redirection endpoint that will handle the callback.
     /// </summary>
     /// <remarks>

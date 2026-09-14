@@ -2006,6 +2006,10 @@ To send notifications using System.Net.Http, reference the 'OpenIddict.Server.Sy
   <data name="ID0608" xml:space="preserve">
     <value>The notification, the expected client notification token and the token delivery mode must be set. Backchannel notifications can only be processed for the 'ping' and 'push' token delivery modes.</value>
   </data>
+  <data name="ID0610" xml:space="preserve">
+    <value>A signed backchannel authentication request must be sent but the authorization server doesn't support signed backchannel authentication requests using the '{0}' algorithm.
+To send signed backchannel authentication requests, attach an asymmetric signing key using an algorithm listed in the 'backchannel_authentication_request_signing_alg_values_supported' server metadata.</value>
+  </data>
   <data name="ID0609" xml:space="preserve">
     <value>The push token delivery mode cannot be enabled when DPoP proofs are required for all token requests, as pushed tokens are not issued in response to a token request and thus cannot be bound to a DPoP proof key.</value>
   </data>

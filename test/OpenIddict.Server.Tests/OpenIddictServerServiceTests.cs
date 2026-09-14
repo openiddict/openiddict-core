@@ -314,6 +314,84 @@ public class OpenIddictServerServiceTests
             identity.GetPayloadValue<string>(Claims.RefreshTokenHash));
     }
 
+    [Fact]
+    public async Task ApproveBackchannelAuthenticationRequestAsync_PushedTokensAreAcceptedByOpenIddictClient()
+    {
+        // Arrange
+        var token = new object();
+        var notifications = new List<SendBackchannelNotificationContext>();
+
+        var (provider, manager) = await CreateProviderAsync(token, Statuses.Inactive, BackchannelTokenDeliveryModes.Push, notifications,
+            configuration: options => options.AllowRefreshTokenFlow(), scopes: [Scopes.OpenId, Scopes.OfflineAccess]);
+        var service = provider.GetRequiredService<OpenIddictServerService>();
+
+        manager.Setup(manager => manager.CreateAsync(It.IsAny<OpenIddictTokenDescriptor>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new object());
+
+        manager.Setup(manager => manager.GetIdAsync(It.Is<object>(value => value != token), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Guid.NewGuid().ToString());
+
+        manager.Setup(manager => manager.TryRedeemAsync(token, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+
+        Assert.True(await service.ApproveBackchannelAuthenticationRequestAsync(Identifier));
+        var notification = Assert.Single(notifications);
+
+        // Create an OpenIddict client configured to trust the signing keys of the server.
+        var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictServerOptions>>().CurrentValue;
+        var services = new ServiceCollection();
+
+        services.AddOpenIddict()
+            .AddClient(builder =>
+            {
+                builder.AllowClientInitiatedBackchannelAuthenticationFlow();
+
+                builder.AddEphemeralEncryptionKey()
+                       .AddEphemeralSigningKey();
+
+                var configuration = new OpenIddictConfiguration
+                {
+                    GrantTypesSupported = { GrantTypes.Ciba },
+                    Issuer = new Uri("https://www.contoso.com/", UriKind.Absolute)
+                };
+
+                foreach (var credentials in options.SigningCredentials)
+                {
+                    configuration.SigningKeys.Add(credentials.Key);
+                }
+
+                builder.AddRegistration(new OpenIddict.Client.OpenIddictClientRegistration
+                {
+                    ClientId = "Fabrikam",
+                    Configuration = configuration,
+                    Issuer = new Uri("https://www.contoso.com/", UriKind.Absolute)
+                });
+            });
+
+        using var client = services.BuildServiceProvider();
+
+        // Act: the client application receives the pushed notification using the bearer client notification token.
+        var result = await client.GetRequiredService<OpenIddict.Client.OpenIddictClientService>()
+            .AuthenticateWithBackchannelNotificationAsync(new()
+            {
+                AuthenticationRequestId = "F6B3B1E4-auth-req-id",
+                ClientNotificationToken = "8C3C7A6D-notification-token",
+                DisableUserInfo = true,
+                Notification = new()
+                {
+                    ClientNotificationToken = notification.ClientNotificationToken,
+                    Payload = notification.Notification
+                },
+                TokenDeliveryMode = BackchannelTokenDeliveryModes.Push
+            });
+
+        // Assert
+        Assert.Equal(notification.Notification.AccessToken, result.AccessToken);
+        Assert.Equal(notification.Notification.RefreshToken, result.RefreshToken);
+        Assert.Equal("Bob", result.IdentityTokenPrincipal?.GetClaim(Claims.Subject));
+        Assert.Equal("F6B3B1E4-auth-req-id", result.IdentityTokenPrincipal?.GetClaim(Claims.AuthReqId));
+    }
+
     [Theory]
     [InlineData(true)]
     [InlineData(false)]

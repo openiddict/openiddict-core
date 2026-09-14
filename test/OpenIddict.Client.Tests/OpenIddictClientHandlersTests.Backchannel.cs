@@ -5,6 +5,8 @@ using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.JsonWebTokens;
+using Microsoft.IdentityModel.Tokens;
 using Xunit;
 using static OpenIddict.Client.OpenIddictClientEvents;
 using static OpenIddict.Client.OpenIddictClientHandlers;
@@ -493,6 +495,258 @@ public class OpenIddictClientHandlersBackchannelTests
         Assert.Equal(expected, exception.Error);
     }
 
+    [Fact]
+    public async Task AuthenticateWithBackchannelNotificationAsync_PushedTokensAreValidated()
+    {
+        // Arrange
+        using var provider = CreateProvider();
+        var service = provider.GetRequiredService<OpenIddictClientService>();
+
+        // Act
+        var result = await service.AuthenticateWithBackchannelNotificationAsync(new()
+        {
+            AuthenticationRequestId = "F6B3B1E4",
+            ClientNotificationToken = "8C3C7A6D",
+            DisableUserInfo = true,
+            Notification = new()
+            {
+                ClientNotificationToken = "8C3C7A6D",
+                Payload = CreateTokenPayload("F6B3B1E4", refresh: true)
+            },
+            TokenDeliveryMode = BackchannelTokenDeliveryModes.Push
+        });
+
+        // Assert
+        Assert.Equal("access_token", result.AccessToken);
+        Assert.Equal("refresh_token", result.RefreshToken);
+        Assert.NotNull(result.IdentityToken);
+        Assert.Equal("Bob", result.IdentityTokenPrincipal?.GetClaim(Claims.Subject));
+        Assert.Equal("Bob", result.Principal.GetClaim(Claims.Subject));
+    }
+
+    [Fact]
+    public async Task AuthenticateWithBackchannelNotificationAsync_PushedTokensWithInvalidRefreshTokenHashAreRejected()
+    {
+        // Arrange
+        using var provider = CreateProvider();
+        var service = provider.GetRequiredService<OpenIddictClientService>();
+
+        var payload = CreateTokenPayload("F6B3B1E4", refresh: true);
+        payload.RefreshToken = "tampered_refresh_token";
+
+        // Act and assert
+        var exception = await Assert.ThrowsAsync<OpenIddictExceptions.ProtocolException>(async () =>
+            await service.AuthenticateWithBackchannelNotificationAsync(new()
+            {
+                AuthenticationRequestId = "F6B3B1E4",
+                ClientNotificationToken = "8C3C7A6D",
+                DisableUserInfo = true,
+                Notification = new()
+                {
+                    ClientNotificationToken = "8C3C7A6D",
+                    Payload = payload
+                },
+                TokenDeliveryMode = BackchannelTokenDeliveryModes.Push
+            }));
+
+        Assert.Equal(SR.FormatID2128(Claims.RefreshTokenHash), exception.ErrorDescription);
+    }
+
+    [Fact]
+    public async Task AuthenticateWithBackchannelNotificationAsync_PingNotificationIsRedeemedAtTokenEndpoint()
+    {
+        // Arrange
+        OpenIddictRequest? request = null;
+
+        using var provider = CreateProvider(options => options.AddEventHandler<ExtractTokenResponseContext>(builder =>
+            builder.UseInlineHandler(context =>
+            {
+                request = context.Request;
+
+                // Note: in ping mode, the token response doesn't contain the auth_req_id claim/parameter.
+                context.Response = CreateTokenPayload(identifier: null, refresh: false);
+
+                return ValueTask.CompletedTask;
+            })));
+
+        var service = provider.GetRequiredService<OpenIddictClientService>();
+
+        // Act
+        var result = await service.AuthenticateWithBackchannelNotificationAsync(new()
+        {
+            AuthenticationRequestId = "F6B3B1E4",
+            ClientNotificationToken = "8C3C7A6D",
+            DisableUserInfo = true,
+            Notification = new()
+            {
+                ClientNotificationToken = "8C3C7A6D",
+                Payload = new OpenIddictResponse { AuthReqId = "F6B3B1E4" }
+            },
+            TokenDeliveryMode = BackchannelTokenDeliveryModes.Ping
+        });
+
+        // Assert
+        Assert.NotNull(request);
+        Assert.Equal(GrantTypes.Ciba, request.GrantType);
+        Assert.Equal("F6B3B1E4", request.AuthReqId);
+        Assert.Equal("access_token", result.AccessToken);
+        Assert.Equal("Bob", result.IdentityTokenPrincipal?.GetClaim(Claims.Subject));
+    }
+
+    [Fact]
+    public async Task GenerateBackchannelAuthenticationRequestObject_ParametersAreReplacedBySignedRequest()
+    {
+        // Arrange
+        using var provider = CreateProvider();
+        var context = CreateSignedRequestChallengeContext(provider, SecurityAlgorithms.RsaSha256);
+
+        // Act
+        await new GenerateBackchannelAuthenticationRequestObject(
+            provider.GetRequiredService<IOpenIddictClientDispatcher>()).HandleAsync(context);
+
+        // Assert
+        Assert.False(context.IsRejected);
+
+        var parameter = Assert.Single(context.BackchannelAuthenticationRequest!.GetParameters());
+        Assert.Equal(Parameters.Request, parameter.Key);
+
+        var token = new JsonWebToken((string) parameter.Value!);
+        Assert.Equal(SecurityAlgorithms.RsaSha256, token.Alg);
+        Assert.Equal("Fabrikam", token.Issuer);
+        Assert.Equal("https://www.contoso.com/", Assert.Single(token.Audiences));
+        Assert.False(string.IsNullOrEmpty(token.Id));
+        Assert.True(token.TryGetPayloadValue<long>(Claims.ExpiresAt, out _));
+        Assert.True(token.TryGetPayloadValue<long>(Claims.IssuedAt, out _));
+        Assert.True(token.TryGetPayloadValue<long>(Claims.NotBefore, out _));
+        Assert.Equal("bob@fabrikam.com", token.GetPayloadValue<string>(Parameters.LoginHint));
+        Assert.Equal("W4SCT", token.GetPayloadValue<string>(Parameters.BindingMessage));
+        Assert.Equal(120, token.GetPayloadValue<long>(Parameters.RequestedExpiry));
+
+        // The signature must be verifiable using the public key of the client.
+        var result = await new JsonWebTokenHandler().ValidateTokenAsync(token, new TokenValidationParameters
+        {
+            IssuerSigningKey = ClientSigningKey,
+            ValidAudience = "https://www.contoso.com/",
+            ValidIssuer = "Fabrikam",
+            ValidTypes = [JsonWebTokenTypes.AuthorizationRequest]
+        });
+
+        Assert.True(result.IsValid, result.Exception?.Message);
+    }
+
+    [Fact]
+    public async Task GenerateBackchannelAuthenticationRequestObject_ThrowsAnExceptionForUnsupportedAlgorithm()
+    {
+        // Arrange
+        using var provider = CreateProvider();
+        var context = CreateSignedRequestChallengeContext(provider, SecurityAlgorithms.EcdsaSha256);
+
+        // Act and assert
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            await new GenerateBackchannelAuthenticationRequestObject(
+                provider.GetRequiredService<IOpenIddictClientDispatcher>()).HandleAsync(context));
+
+        Assert.Equal(SR.FormatID0610(SecurityAlgorithms.RsaSha256), exception.Message);
+    }
+
+    [Fact]
+    public async Task GenerateBackchannelAuthenticationRequestObject_RequestIsNotSignedByDefault()
+    {
+        // Arrange
+        using var provider = CreateProvider();
+        var context = CreateSignedRequestChallengeContext(provider, SecurityAlgorithms.RsaSha256);
+        context.Registration.UseSignedBackchannelAuthenticationRequests = false;
+
+        // Act
+        await new GenerateBackchannelAuthenticationRequestObject(
+            provider.GetRequiredService<IOpenIddictClientDispatcher>()).HandleAsync(context);
+
+        // Assert
+        Assert.Null(context.BackchannelAuthenticationRequest!.Request);
+        Assert.Equal("bob@fabrikam.com", context.BackchannelAuthenticationRequest.LoginHint);
+    }
+
+    private static readonly RsaSecurityKey ClientSigningKey = new(RSA.Create(keySizeInBits: 2048))
+    {
+        KeyId = "client_signing_key"
+    };
+
+    private static ProcessChallengeContext CreateSignedRequestChallengeContext(IServiceProvider provider, string algorithm)
+    {
+        var context = CreateChallengeContext(provider);
+        context.Configuration.BackchannelAuthenticationRequestSigningAlgValuesSupported.Add(algorithm);
+
+        context.Registration = new OpenIddictClientRegistration
+        {
+            ClientId = "Fabrikam",
+            Issuer = new Uri("https://www.contoso.com/", UriKind.Absolute),
+            SigningCredentials = { new SigningCredentials(ClientSigningKey, SecurityAlgorithms.RsaSha256) },
+            UseSignedBackchannelAuthenticationRequests = true
+        };
+
+        context.BackchannelAuthenticationRequest = new OpenIddictRequest
+        {
+            BindingMessage = "W4SCT",
+            LoginHint = "bob@fabrikam.com",
+            RequestedExpiry = 120,
+            Scope = Scopes.OpenId
+        };
+
+        return context;
+    }
+
+    private static OpenIddictResponse CreateTokenPayload(string? identifier, bool refresh)
+    {
+        var claims = new Dictionary<string, object>(StringComparer.Ordinal)
+        {
+            [Claims.AccessTokenHash] = ComputeHash("access_token"),
+            [Claims.Subject] = "Bob"
+        };
+
+        if (!string.IsNullOrEmpty(identifier))
+        {
+            claims[Claims.AuthReqId] = identifier;
+        }
+
+        if (refresh)
+        {
+            claims[Claims.RefreshTokenHash] = ComputeHash("refresh_token");
+        }
+
+        var token = new JsonWebTokenHandler().CreateToken(new SecurityTokenDescriptor
+        {
+            Audience = "Fabrikam",
+            Claims = claims,
+            Expires = DateTime.UtcNow.AddMinutes(5),
+            IssuedAt = DateTime.UtcNow,
+            Issuer = "https://www.contoso.com/",
+            SigningCredentials = new SigningCredentials(ServerSigningKey, SecurityAlgorithms.RsaSha256)
+        });
+
+        var response = new OpenIddictResponse
+        {
+            AccessToken = "access_token",
+            AuthReqId = identifier,
+            ExpiresIn = 3600,
+            IdToken = token,
+            TokenType = TokenTypes.Bearer
+        };
+
+        if (refresh)
+        {
+            response.RefreshToken = "refresh_token";
+        }
+
+        return response;
+
+        static string ComputeHash(string value)
+        {
+            using var algorithm = SHA256.Create();
+            var digest = algorithm.ComputeHash(Encoding.ASCII.GetBytes(value));
+            return Base64Url.EncodeToString(digest.AsSpan(0, digest.Length / 2));
+        }
+    }
+
     private static ProcessAuthenticationContext CreateAuthenticationContext(IServiceProvider provider)
     {
         var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictClientOptions>>().CurrentValue;
@@ -549,7 +803,12 @@ public class OpenIddictClientHandlersBackchannelTests
         }
     }
 
-    private static ServiceProvider CreateProvider()
+    private static readonly RsaSecurityKey ServerSigningKey = new(RSA.Create(keySizeInBits: 2048))
+    {
+        KeyId = "server_signing_key"
+    };
+
+    private static ServiceProvider CreateProvider(Action<OpenIddictClientBuilder>? configuration = null)
     {
         var services = new ServiceCollection();
 
@@ -566,10 +825,15 @@ public class OpenIddictClientHandlersBackchannelTests
                     ClientId = "Fabrikam",
                     Configuration = new OpenIddictConfiguration
                     {
-                        Issuer = new Uri("https://www.contoso.com/", UriKind.Absolute)
+                        Issuer = new Uri("https://www.contoso.com/", UriKind.Absolute),
+                        GrantTypesSupported = { GrantTypes.Ciba },
+                        SigningKeys = { ServerSigningKey },
+                        TokenEndpoint = new Uri("https://www.contoso.com/connect/token", UriKind.Absolute)
                     },
                     Issuer = new Uri("https://www.contoso.com/", UriKind.Absolute)
                 });
+
+                configuration?.Invoke(options);
             });
 
         return services.BuildServiceProvider();

@@ -149,6 +149,7 @@ public static partial class OpenIddictClientHandlers
         AttachBackchannelAuthenticationEndpointClientCertificate.Descriptor,
         ResolveBackchannelAuthenticationEndpoint.Descriptor,
         AttachBackchannelAuthenticationRequestParameters.Descriptor,
+        GenerateBackchannelAuthenticationRequestObject.Descriptor,
         AttachBackchannelAuthenticationRequestClientCredentials.Descriptor,
         SendBackchannelAuthenticationRequest.Descriptor,
 
@@ -7675,6 +7676,130 @@ public static partial class OpenIddictClientHandlers
             context.BackchannelAuthenticationRequest.ClientNotificationToken = context.ClientNotificationToken;
 
             return ValueTask.CompletedTask;
+        }
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for replacing the backchannel authentication request parameters
+    /// by a signed authentication request, if enabled in the client registration.
+    /// </summary>
+    public sealed class GenerateBackchannelAuthenticationRequestObject : IOpenIddictClientHandler<ProcessChallengeContext>
+    {
+        private readonly IOpenIddictClientDispatcher _dispatcher;
+
+        public GenerateBackchannelAuthenticationRequestObject(IOpenIddictClientDispatcher dispatcher)
+            => _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
+
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessChallengeContext>()
+                .AddFilter<RequireBackchannelAuthenticationRequest>()
+                .UseSingletonHandler<GenerateBackchannelAuthenticationRequestObject>()
+                .SetOrder(AttachBackchannelAuthenticationRequestParameters.Descriptor.Order + 250)
+                .Build();
+
+        /// <inheritdoc/>
+        public async ValueTask HandleAsync(ProcessChallengeContext context)
+        {
+            ArgumentNullException.ThrowIfNull(context);
+
+            Debug.Assert(context.BackchannelAuthenticationRequest is not null, SR.GetResourceString(SR.ID4008));
+
+            if (!context.Registration.UseSignedBackchannelAuthenticationRequests)
+            {
+                return;
+            }
+
+            Debug.Assert(context.Registration.Issuer is { IsAbsoluteUri: true }, SR.GetResourceString(SR.ID4013));
+
+            var credentials = context.Registration.SigningCredentials.Find(static credentials =>
+                credentials.Key is AsymmetricSecurityKey) ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0526));
+
+            // The signing algorithm MUST be one of the algorithms supported by the authorization server.
+            //
+            // See https://openid.net/specs/openid-client-initiated-backchannel-authentication-core-1_0.html#rfc.section.4.
+            if (!context.Configuration.BackchannelAuthenticationRequestSigningAlgValuesSupported.Contains(credentials.Algorithm))
+            {
+                throw new InvalidOperationException(SR.FormatID0610(credentials.Algorithm));
+            }
+
+            var principal = new ClaimsPrincipal(new ClaimsIdentity(
+                authenticationType: TokenValidationParameters.DefaultAuthenticationType,
+                nameType: Claims.Name,
+                roleType: Claims.Role));
+
+            // Attach all the authentication request parameters to the signed authentication request.
+            foreach (var parameter in context.BackchannelAuthenticationRequest.GetParameters())
+            {
+                switch (parameter.Value.GetRawValue())
+                {
+                    case null: break;
+
+                    case string value:
+                        principal.SetClaim(parameter.Key, value);
+                        break;
+
+                    case ImmutableArray<string?> values:
+                        principal.SetClaims(parameter.Key, [.. values.Where(static value => value is not null)!]);
+                        break;
+
+                    default:
+                        principal.SetClaim(parameter.Key, (JsonElement) parameter.Value);
+                        break;
+                }
+            }
+
+            // Signed authentication requests MUST contain the "aud", "iss", "exp", "iat", "nbf" and "jti" claims.
+            //
+            // See https://openid.net/specs/openid-client-initiated-backchannel-authentication-core-1_0.html#rfc.section.7.1.1.
+            principal.SetCreationDate(context.Options.TimeProvider.GetUtcNow());
+            principal.SetClaim(Claims.NotBefore, principal.GetCreationDate()?.ToUnixTimeSeconds());
+            principal.SetExpirationDate(principal.GetCreationDate() + (context.Options.RequestObjectLifetime ?? TimeSpan.FromMinutes(5)));
+            principal.SetAudiences(context.Registration.Issuer.OriginalString);
+            principal.SetClaim(Claims.Private.Issuer, context.ClientId);
+            principal.SetClaim(Claims.JwtId, Guid.NewGuid().ToString());
+
+            var notification = new GenerateTokenContext(context.Transaction)
+            {
+                CreateTokenEntry = false,
+                IsReferenceToken = false,
+                PersistTokenPayload = false,
+                Principal = principal,
+                TokenFormat = TokenFormats.Private.JsonWebToken,
+                TokenType = TokenTypeIdentifiers.Private.RequestObject
+            };
+
+            await _dispatcher.DispatchAsync(notification);
+
+            if (notification.IsRequestHandled)
+            {
+                context.HandleRequest();
+                return;
+            }
+
+            if (notification.IsRequestSkipped)
+            {
+                context.SkipRequest();
+                return;
+            }
+
+            if (notification.IsRejected)
+            {
+                context.Reject(
+                    error: notification.Error ?? Errors.InvalidRequest,
+                    description: notification.ErrorDescription,
+                    uri: notification.ErrorUri);
+                return;
+            }
+
+            // Replace all the authentication request parameters by the signed authentication request: only the
+            // client authentication parameters (attached later in the pipeline) are allowed outside of the JWT.
+            context.BackchannelAuthenticationRequest = new OpenIddictRequest
+            {
+                Request = notification.Token
+            };
         }
     }
 
