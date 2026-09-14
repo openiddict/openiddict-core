@@ -138,6 +138,20 @@ public static partial class OpenIddictServerAspNetCoreHandlers
                     return;
                 }
 
+                // Update requests MUST include the client identifier in the JSON payload.
+                //
+                // See https://datatracker.ietf.org/doc/html/rfc7592#section-2.2 for more information.
+                if (HttpMethods.IsPut(request.Method) && (!payload.TryGetProperty(Parameters.ClientId, out var identifier) ||
+                    identifier.ValueKind is not JsonValueKind.String || string.IsNullOrEmpty(identifier.GetString())))
+                {
+                    context.Reject(
+                        error: Errors.InvalidRequest,
+                        description: SR.FormatID2029(Parameters.ClientId),
+                        uri: SR.FormatID8000(SR.ID2029));
+
+                    return;
+                }
+
                 if (!TryMergeQueryParameters(new OpenIddictRequest(payload), query, out var result))
                 {
                     context.Reject(

@@ -702,6 +702,22 @@ public abstract partial class OpenIddictServerIntegrationTests
     }
 
     [Fact]
+    public async Task ExtractRegistrationRequest_MissingPayloadClientIdIsRejectedForUpdates()
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(ConfigureRegistration);
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.SendJsonAsync(HttpMethod.Put, RegistrationEndpoint + "?client_id=Fabrikam",
+            """{"grant_types":["client_credentials"]}""", "registration-token");
+
+        // Assert
+        Assert.Equal(Errors.InvalidRequest, response.Error);
+        Assert.Equal(SR.FormatID2029(Parameters.ClientId), response.ErrorDescription);
+    }
+
+    [Fact]
     public async Task HandleRegistrationRequest_ClientIsUpdatedWithFullReplaceSemantics()
     {
         // Arrange

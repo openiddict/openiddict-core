@@ -148,6 +148,19 @@ public static partial class OpenIddictServerOwinHandlers
 
                 var result = new OpenIddictRequest(payload);
 
+                // Update requests MUST include the client identifier in the JSON payload.
+                //
+                // See https://datatracker.ietf.org/doc/html/rfc7592#section-2.2 for more information.
+                if (string.Equals(request.Method, "PUT", StringComparison.OrdinalIgnoreCase) && string.IsNullOrEmpty(result.ClientId))
+                {
+                    context.Reject(
+                        error: Errors.InvalidRequest,
+                        description: SR.FormatID2029(Parameters.ClientId),
+                        uri: SR.FormatID8000(SR.ID2029));
+
+                    return;
+                }
+
                 foreach (var parameter in query.GetParameters())
                 {
                     if (!result.HasParameter(parameter.Key))
