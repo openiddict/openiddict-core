@@ -51,6 +51,46 @@ public static class OpenIddictClientAspNetCoreHandlerFilters
 
     /// <summary>
     /// Represents a filter that excludes the associated handlers if the
+    /// pass-through mode was not enabled for the back-channel logout endpoint.
+    /// </summary>
+    public sealed class RequireBackchannelLogoutEndpointPassthroughEnabled : IOpenIddictClientHandlerFilter<BaseContext>
+    {
+        private readonly IOptionsMonitor<OpenIddictClientAspNetCoreOptions> _options;
+
+        public RequireBackchannelLogoutEndpointPassthroughEnabled(IOptionsMonitor<OpenIddictClientAspNetCoreOptions> options)
+            => _options = options ?? throw new ArgumentNullException(nameof(options));
+
+        /// <inheritdoc/>
+        public ValueTask<bool> IsActiveAsync(BaseContext context)
+        {
+            ArgumentNullException.ThrowIfNull(context);
+
+            return new(_options.CurrentValue.EnableBackchannelLogoutEndpointPassthrough);
+        }
+    }
+
+    /// <summary>
+    /// Represents a filter that excludes the associated handlers if the
+    /// pass-through mode was not enabled for the front-channel logout endpoint.
+    /// </summary>
+    public sealed class RequireFrontchannelLogoutEndpointPassthroughEnabled : IOpenIddictClientHandlerFilter<BaseContext>
+    {
+        private readonly IOptionsMonitor<OpenIddictClientAspNetCoreOptions> _options;
+
+        public RequireFrontchannelLogoutEndpointPassthroughEnabled(IOptionsMonitor<OpenIddictClientAspNetCoreOptions> options)
+            => _options = options ?? throw new ArgumentNullException(nameof(options));
+
+        /// <inheritdoc/>
+        public ValueTask<bool> IsActiveAsync(BaseContext context)
+        {
+            ArgumentNullException.ThrowIfNull(context);
+
+            return new(_options.CurrentValue.EnableFrontchannelLogoutEndpointPassthrough);
+        }
+    }
+
+    /// <summary>
+    /// Represents a filter that excludes the associated handlers if the
     /// pass-through mode was not enabled for the post-logout redirection endpoint.
     /// </summary>
     public sealed class RequirePostLogoutRedirectionEndpointPassthroughEnabled : IOpenIddictClientHandlerFilter<BaseContext>

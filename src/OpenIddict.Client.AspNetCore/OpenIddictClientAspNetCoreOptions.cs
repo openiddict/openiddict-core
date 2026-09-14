@@ -46,6 +46,33 @@ public sealed class OpenIddictClientAspNetCoreOptions
     public bool EnablePostLogoutRedirectionEndpointPassthrough { get; set; }
 
     /// <summary>
+    /// Gets or sets a boolean indicating whether the pass-through mode is enabled for the back-channel logout endpoint.
+    /// When the pass-through mode is used, logout requests are initially validated by OpenIddict. Once validated,
+    /// the rest of the request processing pipeline is invoked, so that the sessions can be terminated at a later stage
+    /// (in a custom middleware or in a MVC controller, for instance) and the response returned by the application.
+    /// </summary>
+    public bool EnableBackchannelLogoutEndpointPassthrough { get; set; }
+
+    /// <summary>
+    /// Gets or sets a boolean indicating whether the pass-through mode is enabled for the front-channel logout endpoint.
+    /// When the pass-through mode is used, logout requests are initially validated by OpenIddict. Once validated,
+    /// the rest of the request processing pipeline is invoked, so that the session can be terminated at a later stage
+    /// (in a custom middleware or in a MVC controller, for instance) and the response returned by the application.
+    /// </summary>
+    public bool EnableFrontchannelLogoutEndpointPassthrough { get; set; }
+
+    /// <summary>
+    /// Gets or sets the authentication scheme (typically a cookie scheme) whose session is signed out when a validated
+    /// front-channel logout request targets it (i.e when its principal contains a matching "sid" claim).
+    /// If no value is set, only the registered <see cref="IOpenIddictClientSessionStore"/> implementations are invoked.
+    /// </summary>
+    /// <remarks>
+    /// Note: front-channel logout requests are sent from an iframe rendered by the authorization server: for the
+    /// authentication cookie to be sent by the user agent, it must be configured to use <c>SameSite=None</c>.
+    /// </remarks>
+    public string? FrontchannelLogoutSignOutScheme { get; set; }
+
+    /// <summary>
     /// Gets or sets a boolean indicating whether the pass-through mode is enabled for the redirection endpoint.
     /// When the pass-through mode is used, OpenID Connect requests are initially handled by OpenIddict.
     /// Once validated, the rest of the request processing pipeline is invoked, so that OpenID Connect requests

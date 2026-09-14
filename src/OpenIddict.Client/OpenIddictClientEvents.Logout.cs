@@ -221,6 +221,48 @@ public static partial class OpenIddictClientEvents
         /// Gets or sets the session identifier ("sid") specified by the authorization server.
         /// </summary>
         public string? SessionId { get; set; }
+
+        /// <summary>
+        /// Determines whether the specified principal (typically extracted from the local authentication
+        /// cookie) represents the session targeted by the front-channel logout request: the principal
+        /// must contain a "sid" claim matching <see cref="SessionId"/> and, when present, its registration
+        /// identifier and the issuer of its "sid" claim must match the resolved client registration.
+        /// </summary>
+        /// <param name="principal">The principal.</param>
+        /// <returns><see langword="true"/> if the principal matches the session, <see langword="false"/> otherwise.</returns>
+        public bool IsMatchingSession(ClaimsPrincipal principal)
+        {
+            ArgumentNullException.ThrowIfNull(principal);
+
+            if (string.IsNullOrEmpty(SessionId) || Transaction.Registration is not OpenIddictClientRegistration registration)
+            {
+                return false;
+            }
+
+            // Note: session identifiers are only unique per issuer.
+            //
+            // See https://openid.net/specs/openid-connect-frontchannel-1_0.html#ClaimsContents for more information.
+            var claim = principal.FindFirst(Claims.SessionId);
+            if (claim is null || !string.Equals(claim.Value, SessionId, StringComparison.Ordinal))
+            {
+                return false;
+            }
+
+            var identifier = principal.GetClaim(Claims.Private.RegistrationId);
+            if (!string.IsNullOrEmpty(identifier) && !string.Equals(identifier, registration.RegistrationId, StringComparison.Ordinal))
+            {
+                return false;
+            }
+
+            if (Uri.TryCreate(claim.Issuer, UriKind.Absolute, out Uri? issuer) && !OpenIddictHelpers.IsImplicitFileUri(issuer) &&
+                registration.Issuer is { IsAbsoluteUri: true } &&
+                !string.Equals(issuer.AbsoluteUri.TrimEnd('/'), registration.Issuer.AbsoluteUri.TrimEnd('/'), StringComparison.Ordinal))
+            {
+                return false;
+            }
+
+            return true;
+        }
     }
 
     /// <summary>

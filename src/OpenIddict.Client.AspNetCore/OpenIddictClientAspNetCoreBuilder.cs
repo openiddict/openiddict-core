@@ -98,6 +98,39 @@ public sealed class OpenIddictClientAspNetCoreBuilder
         => Configure(options => options.DisableTransportSecurityRequirement = true);
 
     /// <summary>
+    /// Enables the pass-through mode for the OpenID Connect back-channel logout endpoint.
+    /// When the pass-through mode is used, logout requests are initially validated by OpenIddict.
+    /// Once validated, the rest of the request processing pipeline is invoked, so that the sessions
+    /// can be terminated at a later stage (in a custom middleware or in a MVC controller, for instance).
+    /// </summary>
+    /// <returns>The <see cref="OpenIddictClientAspNetCoreBuilder"/> instance.</returns>
+    public OpenIddictClientAspNetCoreBuilder EnableBackchannelLogoutEndpointPassthrough()
+        => Configure(options => options.EnableBackchannelLogoutEndpointPassthrough = true);
+
+    /// <summary>
+    /// Enables the pass-through mode for the OpenID Connect front-channel logout endpoint.
+    /// When the pass-through mode is used, logout requests are initially validated by OpenIddict.
+    /// Once validated, the rest of the request processing pipeline is invoked, so that the session
+    /// can be terminated at a later stage (in a custom middleware or in a MVC controller, for instance).
+    /// </summary>
+    /// <returns>The <see cref="OpenIddictClientAspNetCoreBuilder"/> instance.</returns>
+    public OpenIddictClientAspNetCoreBuilder EnableFrontchannelLogoutEndpointPassthrough()
+        => Configure(options => options.EnableFrontchannelLogoutEndpointPassthrough = true);
+
+    /// <summary>
+    /// Sets the authentication scheme (typically a cookie scheme) whose session is signed
+    /// out when a validated front-channel logout request contains a matching "sid" value.
+    /// </summary>
+    /// <param name="scheme">The authentication scheme.</param>
+    /// <returns>The <see cref="OpenIddictClientAspNetCoreBuilder"/> instance.</returns>
+    public OpenIddictClientAspNetCoreBuilder SetFrontchannelLogoutSignOutScheme(string scheme)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(scheme);
+
+        return Configure(options => options.FrontchannelLogoutSignOutScheme = scheme);
+    }
+
+    /// <summary>
     /// Enables the pass-through mode for the OpenID Connect post-logout redirection endpoint.
     /// When the pass-through mode is used, OpenID Connect requests are initially handled by OpenIddict.
     /// Once validated, the rest of the request processing pipeline is invoked, so that OpenID Connect requests

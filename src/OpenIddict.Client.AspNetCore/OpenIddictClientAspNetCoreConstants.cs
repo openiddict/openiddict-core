@@ -27,12 +27,14 @@ public static class OpenIddictClientAspNetCoreConstants
         public const string IssuedTokenPrincipal = ".issued_token_principal";
         public const string Issuer = ".issuer";
         public const string LoginHint = ".login_hint";
+        public const string LogoutTokenPrincipal = ".logout_token_principal";
         public const string ProviderName = ".provider_name";
         public const string RefreshTokenPrincipal = ".refresh_token_principal";
         public const string RegistrationId = ".registration_id";
         public const string ResponseMode = ".response_mode";
         public const string ResponseType = ".response_type";
         public const string Scope = ".scope";
+        public const string SessionState = ".session_state";
         public const string StateTokenPrincipal = ".state_token_principal";
         public const string UserInfoTokenPrincipal = ".userinfo_token_principal";
     }

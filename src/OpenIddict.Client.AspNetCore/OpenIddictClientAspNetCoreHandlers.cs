@@ -73,6 +73,7 @@ public static partial class OpenIddictClientAspNetCoreHandlers
         ProcessLocalErrorResponse<ProcessErrorContext>.Descriptor,
 
         .. Authentication.DefaultHandlers,
+        .. Logout.DefaultHandlers,
         .. Session.DefaultHandlers
     ];
 

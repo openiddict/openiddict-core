@@ -35,6 +35,7 @@ public static class OpenIddictClientOwinConstants
         public const string ResponseMode = ".response_mode";
         public const string ResponseType = ".response_type";
         public const string Scope = ".scope";
+        public const string SessionState = ".session_state";
     }
 
     public static class PropertyTypes

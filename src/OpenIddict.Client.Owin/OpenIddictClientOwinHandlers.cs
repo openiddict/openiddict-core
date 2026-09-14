@@ -70,6 +70,7 @@ public static partial class OpenIddictClientOwinHandlers
         ProcessLocalErrorResponse<ProcessErrorContext>.Descriptor,
 
         .. Authentication.DefaultHandlers,
+        .. Logout.DefaultHandlers,
         .. Session.DefaultHandlers
     ];
 

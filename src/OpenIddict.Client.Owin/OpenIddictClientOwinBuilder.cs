@@ -101,6 +101,39 @@ public sealed class OpenIddictClientOwinBuilder
         => Configure(options => options.DisableTransportSecurityRequirement = true);
 
     /// <summary>
+    /// Enables the pass-through mode for the OpenID Connect back-channel logout endpoint.
+    /// When the pass-through mode is used, logout requests are initially validated by OpenIddict.
+    /// Once validated, the rest of the request processing pipeline is invoked, so that the sessions
+    /// can be terminated at a later stage (in a custom middleware or in a MVC controller, for instance).
+    /// </summary>
+    /// <returns>The <see cref="OpenIddictClientOwinBuilder"/> instance.</returns>
+    public OpenIddictClientOwinBuilder EnableBackchannelLogoutEndpointPassthrough()
+        => Configure(options => options.EnableBackchannelLogoutEndpointPassthrough = true);
+
+    /// <summary>
+    /// Enables the pass-through mode for the OpenID Connect front-channel logout endpoint.
+    /// When the pass-through mode is used, logout requests are initially validated by OpenIddict.
+    /// Once validated, the rest of the request processing pipeline is invoked, so that the session
+    /// can be terminated at a later stage (in a custom middleware or in a MVC controller, for instance).
+    /// </summary>
+    /// <returns>The <see cref="OpenIddictClientOwinBuilder"/> instance.</returns>
+    public OpenIddictClientOwinBuilder EnableFrontchannelLogoutEndpointPassthrough()
+        => Configure(options => options.EnableFrontchannelLogoutEndpointPassthrough = true);
+
+    /// <summary>
+    /// Sets the authentication type (typically a cookie authentication type) whose session
+    /// is signed out when a validated front-channel logout request contains a matching "sid" value.
+    /// </summary>
+    /// <param name="type">The authentication type.</param>
+    /// <returns>The <see cref="OpenIddictClientOwinBuilder"/> instance.</returns>
+    public OpenIddictClientOwinBuilder SetFrontchannelLogoutSignOutAuthenticationType(string type)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(type);
+
+        return Configure(options => options.FrontchannelLogoutSignOutAuthenticationType = type);
+    }
+
+    /// <summary>
     /// Enables the pass-through mode for the OpenID Connect post-logout redirection endpoint.
     /// When the pass-through mode is used, OpenID Connect requests are initially handled by OpenIddict.
     /// Once validated, the rest of the request processing pipeline is invoked, so that OpenID Connect requests

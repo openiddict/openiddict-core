@@ -38,7 +38,9 @@ public static class OpenIddictClientOwinExtensions
         builder.Services.TryAdd(OpenIddictClientOwinHandlers.DefaultHandlers.Select(descriptor => descriptor.ServiceDescriptor));
 
         // Register the built-in filters used by the default OpenIddict OWIN client event handlers.
+        builder.Services.TryAddSingleton<RequireBackchannelLogoutEndpointPassthroughEnabled>();
         builder.Services.TryAddSingleton<RequireErrorPassthroughEnabled>();
+        builder.Services.TryAddSingleton<RequireFrontchannelLogoutEndpointPassthroughEnabled>();
         builder.Services.TryAddSingleton<RequireOwinRequest>();
         builder.Services.TryAddSingleton<RequirePostLogoutRedirectionEndpointPassthroughEnabled>();
         builder.Services.TryAddSingleton<RequireRedirectionEndpointPassthroughEnabled>();

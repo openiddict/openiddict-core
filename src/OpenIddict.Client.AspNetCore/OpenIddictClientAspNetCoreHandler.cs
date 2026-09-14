@@ -180,6 +180,15 @@ public sealed class OpenIddictClientAspNetCoreHandler : AuthenticationHandler<Au
                 properties.Items[property.Key] = property.Value;
             }
 
+            // Attach the "session_state" value returned by the authorization server, if available,
+            // to allow the application to monitor the session using the check_session_iframe.
+            //
+            // See https://openid.net/specs/openid-connect-session-1_0.html#CreatingUpdatingSessions for more information.
+            if (!string.IsNullOrEmpty(context.SessionState))
+            {
+                properties.Items[Properties.SessionState] = context.SessionState;
+            }
+
             List<AuthenticationToken>? tokens = null;
 
             // Attach the tokens to allow any ASP.NET Core component (e.g a controller)
@@ -363,6 +372,11 @@ public sealed class OpenIddictClientAspNetCoreHandler : AuthenticationHandler<Au
             if (context.IssuedTokenPrincipal is not null)
             {
                 properties.SetParameter(Properties.IssuedTokenPrincipal, context.IssuedTokenPrincipal);
+            }
+
+            if (context.LogoutTokenPrincipal is not null)
+            {
+                properties.SetParameter(Properties.LogoutTokenPrincipal, context.LogoutTokenPrincipal);
             }
 
             if (context.RefreshTokenPrincipal is not null)

@@ -195,6 +195,15 @@ public sealed class OpenIddictClientOwinHandler : AuthenticationHandler<Authenti
                 properties.Dictionary[property.Key] = property.Value;
             }
 
+            // Attach the "session_state" value returned by the authorization server, if available,
+            // to allow the application to monitor the session using the check_session_iframe.
+            //
+            // See https://openid.net/specs/openid-connect-session-1_0.html#CreatingUpdatingSessions for more information.
+            if (!string.IsNullOrEmpty(context.SessionState))
+            {
+                properties.Dictionary[Properties.SessionState] = context.SessionState;
+            }
+
             // Attach the tokens to allow any OWIN component (e.g a controller)
             // to retrieve them (e.g to make an API request to another application).
             //

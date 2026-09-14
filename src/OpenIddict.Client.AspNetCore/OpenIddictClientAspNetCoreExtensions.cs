@@ -41,7 +41,9 @@ public static class OpenIddictClientAspNetCoreExtensions
         builder.Services.TryAdd(OpenIddictClientAspNetCoreHandlers.DefaultHandlers.Select(descriptor => descriptor.ServiceDescriptor));
 
         // Register the built-in filters used by the default OpenIddict ASP.NET Core client event handlers.
+        builder.Services.TryAddSingleton<RequireBackchannelLogoutEndpointPassthroughEnabled>();
         builder.Services.TryAddSingleton<RequireErrorPassthroughEnabled>();
+        builder.Services.TryAddSingleton<RequireFrontchannelLogoutEndpointPassthroughEnabled>();
         builder.Services.TryAddSingleton<RequireHttpRequest>();
         builder.Services.TryAddSingleton<RequirePostLogoutRedirectionEndpointPassthroughEnabled>();
         builder.Services.TryAddSingleton<RequireRedirectionEndpointPassthroughEnabled>();
