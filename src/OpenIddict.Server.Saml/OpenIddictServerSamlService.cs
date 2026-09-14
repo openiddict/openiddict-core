@@ -288,9 +288,10 @@ public sealed class OpenIddictServerSamlService
     }
 
     /// <summary>
-    /// Marks a validated request state as used. When request replay protection is enabled, this method must be called
-    /// before returning a response to the service provider: it returns <see langword="false"/> if the state was
-    /// already used (or doesn't have an identifier), in which case no response must be returned.
+    /// Marks a validated request state as used. When request replay protection is enabled (default), this method must be
+    /// called before returning a response to the service provider (ideally once the response was successfully created):
+    /// it returns <see langword="false"/> if the state was already used (or doesn't have an identifier), in which case
+    /// no response must be returned.
     /// </summary>
     /// <param name="state">The request state.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
@@ -441,7 +442,9 @@ public sealed class OpenIddictServerSamlService
             using var stream = new MemoryStream(data, writable: false);
             using var reader = new BinaryReader(stream, Encoding.UTF8);
 
-            // Note: states created by the previous version (without identifier and response binding) are still accepted.
+            // Note: states created by the previous version (without identifier and response binding) can still be
+            // deserialized but are rejected by ConsumeRequestStateAsync() when request replay protection is enabled.
+            // States created by this version are not understood by the previous version (rolling upgrades).
             var version = reader.ReadByte();
             if (version is not (RequestStateVersion or LegacyRequestStateVersion))
             {
@@ -582,6 +585,13 @@ public sealed class OpenIddictServerSamlService
         var url = root.HasAttribute("AssertionConsumerServiceURL") ? root.GetAttribute("AssertionConsumerServiceURL") : null;
         var index = root.HasAttribute("AssertionConsumerServiceIndex") ? root.GetAttribute("AssertionConsumerServiceIndex") : null;
         var protocolBinding = root.HasAttribute("ProtocolBinding") ? root.GetAttribute("ProtocolBinding") : null;
+
+        // Note: AssertionConsumerServiceIndex is mutually exclusive with the AssertionConsumerServiceURL
+        // and ProtocolBinding attributes (SAML core, 3.4.1): such requests are rejected as malformed.
+        if (index is not null && protocolBinding is not null)
+        {
+            return Reject(SR.ID2249, provider, relayState);
+        }
 
         int? position = (url, index) switch
         {
@@ -1184,9 +1194,15 @@ public sealed class OpenIddictServerSamlService
 
         ArtifactResolutionResult CreateEmptyResponse(string identifier, string description)
         {
-            _logger.LogInformation(6642, SR.GetResourceString(SR.ID6642), SR.GetResourceString(description));
+            var message = SR.GetResourceString(description);
 
-            return new ArtifactResolutionResult { Content = CreateArtifactResponse(_options.CurrentValue, identifier, message: null) };
+            _logger.LogInformation(6642, SR.GetResourceString(SR.ID6642), message);
+
+            return new ArtifactResolutionResult
+            {
+                Content = CreateArtifactResponse(_options.CurrentValue, identifier, message: null),
+                ErrorDescription = message
+            };
         }
 
         ArtifactResolutionResult CreateFault(string code, string description)
@@ -1212,7 +1228,7 @@ public sealed class OpenIddictServerSamlService
             faultString.AppendChild(document.CreateTextNode(message));
             fault.AppendChild(faultString);
 
-            return new ArtifactResolutionResult { Content = document.OuterXml, IsFault = true };
+            return new ArtifactResolutionResult { Content = document.OuterXml, ErrorDescription = message, IsFault = true };
         }
 
         static async ValueTask<byte[]?> ReadAsync(Stream body, int maximumSize, CancellationToken cancellationToken)

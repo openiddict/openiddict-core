@@ -267,13 +267,14 @@ public static class OpenIddictServerSamlTestHelpers
     /// Creates a SOAP envelope containing an ArtifactResolve message, signed if a certificate is specified.
     /// </summary>
     public static string CreateArtifactResolveEnvelope(string artifact, string issuer = ServiceProviderEntityId,
-        X509Certificate2? certificate = null, DateTimeOffset? issueInstant = null, string? header = null)
+        X509Certificate2? certificate = null, DateTimeOffset? issueInstant = null, string? header = null, string? destination = null)
     {
         var request = new StringBuilder()
             .Append("<samlp:ArtifactResolve xmlns:samlp=\"urn:oasis:names:tc:SAML:2.0:protocol\" xmlns:saml=\"urn:oasis:names:tc:SAML:2.0:assertion\"")
             .Append(" ID=\"_resolve_").Append(Guid.NewGuid().ToString("N")).Append('"')
             .Append(" Version=\"2.0\"")
-            .Append(" IssueInstant=\"").Append((issueInstant ?? DateTimeOffset.UtcNow).UtcDateTime.ToString("yyyy-MM-dd'T'HH:mm:ss'Z'", CultureInfo.InvariantCulture)).Append("\">")
+            .Append(" IssueInstant=\"").Append((issueInstant ?? DateTimeOffset.UtcNow).UtcDateTime.ToString("yyyy-MM-dd'T'HH:mm:ss'Z'", CultureInfo.InvariantCulture)).Append('"')
+            .Append(destination is null ? string.Empty : " Destination=\"" + destination + "\"").Append('>')
             .Append("<saml:Issuer>").Append(issuer).Append("</saml:Issuer>")
             .Append("<samlp:Artifact>").Append(artifact).Append("</samlp:Artifact>")
             .Append("</samlp:ArtifactResolve>")

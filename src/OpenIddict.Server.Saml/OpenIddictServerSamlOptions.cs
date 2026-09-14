@@ -87,9 +87,14 @@ public sealed class OpenIddictServerSamlOptions
     /// <summary>
     /// Gets or sets a boolean indicating whether replayed messages are rejected: authentication request identifiers
     /// can only be used once during their validity window and request states can only be used once to return a response.
-    /// Disabled by default.
+    /// Enabled by default.
     /// </summary>
-    public bool EnableRequestReplayProtection { get; set; }
+    /// <remarks>
+    /// The default replay cache uses the <see cref="Microsoft.Extensions.Caching.Distributed.IDistributedCache"/> registered
+    /// in the DI container (or a size-limited private in-memory cache): load-balanced deployments must register a shared
+    /// distributed cache (or a custom <see cref="IOpenIddictServerSamlReplayCache"/>) for replays to be detected across instances.
+    /// </remarks>
+    public bool EnableRequestReplayProtection { get; set; } = true;
 
     /// <summary>
     /// Gets or sets the value of the WantAuthnRequestsSigned metadata attribute. If <see langword="null"/>, <see langword="true"/>

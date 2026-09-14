@@ -4,7 +4,6 @@
  * the license and the contributors participating to this project.
  */
 
-using System.Text;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
@@ -20,9 +19,18 @@ namespace OpenIddict.Server.Saml;
 /// <see cref="IDistributedCache"/> doesn't offer an atomic "add if not exists" operation: concurrent calls are
 /// serialized in the current process but not across instances. Load-balanced deployments requiring strict
 /// replay detection should register an <see cref="IOpenIddictServerSamlReplayCache"/> backed by an atomic store.
+/// The private in-memory cache used when no distributed cache is registered is limited to 100,000 entries to prevent
+/// resource exhaustion: when the limit is reached, entries can be evicted before they expire.
 /// </remarks>
 public sealed class OpenIddictServerSamlReplayCache : IOpenIddictServerSamlReplayCache
 {
+    /// <summary>
+    /// The maximum number of entries stored in the private in-memory cache (each entry has a size of 1).
+    /// </summary>
+    private const long MemoryCacheSizeLimit = 100_000;
+
+    private static readonly byte[] Marker = [1];
+
     private readonly IDistributedCache _cache;
     private readonly SemaphoreSlim _lock = new(initialCount: 1, maxCount: 1);
     private readonly IOptionsMonitor<OpenIddictServerSamlOptions> _options;
@@ -36,8 +44,9 @@ public sealed class OpenIddictServerSamlReplayCache : IOpenIddictServerSamlRepla
     {
         ArgumentNullException.ThrowIfNull(provider);
 
+        // Note: MemoryDistributedCache uses the length of the stored values as the size of the cache entries.
         _cache = provider.GetService<IDistributedCache>() ??
-            new MemoryDistributedCache(Options.Create(new MemoryDistributedCacheOptions()));
+            new MemoryDistributedCache(Options.Create(new MemoryDistributedCacheOptions { SizeLimit = MemoryCacheSizeLimit }));
         _options = options ?? throw new ArgumentNullException(nameof(options));
     }
 
@@ -57,7 +66,7 @@ public sealed class OpenIddictServerSamlReplayCache : IOpenIddictServerSamlRepla
                 return false;
             }
 
-            await _cache.SetAsync(key, Encoding.UTF8.GetBytes("1"), new DistributedCacheEntryOptions
+            await _cache.SetAsync(key, Marker, new DistributedCacheEntryOptions
             {
                 AbsoluteExpirationRelativeToNow = OpenIddictServerSamlHelpers.GetCacheLifetime(
                     expirationDate, _options.CurrentValue.TimeProvider.GetUtcNow())

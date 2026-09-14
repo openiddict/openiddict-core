@@ -472,10 +472,10 @@ public class OpenIddictServerSamlAspNetCoreEndpointTests
     }
 
     [Fact]
-    public async Task SingleSignOn_ReplayProtection_RejectsReusedRequestAndState()
+    public async Task SingleSignOn_ReplayProtection_RejectsReusedRequestAndStateByDefault()
     {
         // Arrange
-        using var host = await CreateHostAsync(configuration: saml => saml.EnableRequestReplayProtection());
+        using var host = await CreateHostAsync();
         using var client = CreateClient(host);
 
         var query = CreateRedirectQueryString(CreateAuthenticationRequest(id: "_single_use"), certificate: ServiceProviderCertificate);
@@ -508,6 +508,100 @@ public class OpenIddictServerSamlAspNetCoreEndpointTests
 
         Assert.Equal(HttpStatusCode.BadRequest, requestReplay.StatusCode);
         Assert.Equal(SR.GetResourceString(SR.ID2420), await requestReplay.Content.ReadAsStringAsync());
+    }
+
+    [Fact]
+    public async Task SingleSignOn_ReplayProtection_CanBeDisabled()
+    {
+        // Arrange
+        using var host = await CreateHostAsync(configuration: saml => saml.DisableRequestReplayProtection());
+        using var client = CreateClient(host);
+
+        var cookie = await LoginAsync(client);
+        var query = CreateRedirectQueryString(CreateAuthenticationRequest(id: "_reusable"), certificate: ServiceProviderCertificate);
+
+        // Act
+        using var first = new HttpRequestMessage(HttpMethod.Get, "/saml/sso" + query);
+        first.Headers.Add("Cookie", cookie);
+        using var firstResponse = await client.SendAsync(first);
+
+        using var second = new HttpRequestMessage(HttpMethod.Get, "/saml/sso" + query);
+        second.Headers.Add("Cookie", cookie);
+        using var secondResponse = await client.SendAsync(second);
+
+        // Assert
+        AssertSuccessfulResponse(LoadResponse((await ParseFormAsync(firstResponse)).Response), "_reusable");
+        AssertSuccessfulResponse(LoadResponse((await ParseFormAsync(secondResponse)).Response), "_reusable");
+    }
+
+    [Fact]
+    public async Task SingleSignOn_RequestStateIsNotConsumedWhenResponseCreationFails()
+    {
+        // Arrange
+        using var host = await CreateHostAsync(configuration: saml => saml.SetAssertionProvider<FailingOnceAssertionProvider>(ServiceLifetime.Singleton));
+        using var client = CreateClient(host);
+
+        var query = CreateRedirectQueryString(CreateAuthenticationRequest(id: "_transient"), certificate: ServiceProviderCertificate);
+
+        using var challenge = await client.GetAsync("/saml/sso" + query);
+        var returnUrl = QueryValue(challenge.Headers.Location!, "ReturnUrl");
+
+        using var login = await client.GetAsync("/login?ReturnUrl=" + Uri.EscapeDataString(returnUrl));
+        var cookie = GetCookie(login);
+
+        // Act
+        using var failing = new HttpRequestMessage(HttpMethod.Get, returnUrl);
+        failing.Headers.Add("Cookie", cookie);
+
+        HttpResponseMessage? failed = null;
+        try
+        {
+            failed = await client.SendAsync(failing);
+        }
+
+        catch (InvalidOperationException)
+        {
+        }
+
+        using var retry = new HttpRequestMessage(HttpMethod.Get, returnUrl);
+        retry.Headers.Add("Cookie", cookie);
+        using var response = await client.SendAsync(retry);
+
+        // Assert
+        Assert.True(failed is null || failed.StatusCode is HttpStatusCode.InternalServerError);
+        failed?.Dispose();
+
+        AssertSuccessfulResponse(LoadResponse((await ParseFormAsync(response)).Response), "_transient");
+    }
+
+    [Fact]
+    public async Task SingleSignOn_ArtifactBinding_DeliversErrorResponses()
+    {
+        // Arrange
+        using var host = await CreateHostAsync(sp => sp.AssertionConsumerServiceBindings[0] = Bindings.HttpArtifact,
+            saml => saml.EnableArtifactBinding());
+        using var client = CreateClient(host);
+
+        var query = CreateRedirectQueryString(CreateAuthenticationRequest(id: "_passive_artifact", attributes: "IsPassive=\"true\""),
+            relayState: "passive-relay", certificate: ServiceProviderCertificate);
+
+        // Act
+        using var response = await client.GetAsync("/saml/sso" + query);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.SeeOther, response.StatusCode);
+        Assert.Equal("passive-relay", QueryValue(response.Headers.Location!, Parameters.RelayState));
+
+        using var resolution = await ResolveAsync(client, CreateArtifactResolveEnvelope(
+            QueryValue(response.Headers.Location!, Parameters.SamlArtifact), certificate: ServiceProviderCertificate));
+
+        var resolved = GetArtifactResponse(await resolution.Content.ReadAsStringAsync());
+        var manager = CreateNamespaceManager(resolved.OwnerDocument);
+
+        var embedded = (XmlElement) resolved.SelectSingleNode("samlp:Response", manager)!;
+        Assert.Equal("_passive_artifact", embedded.GetAttribute("InResponseTo"));
+        Assert.Equal(SamlStatusCodes.NoPassive, embedded.SelectSingleNode("samlp:Status/samlp:StatusCode/samlp:StatusCode/@Value", manager)!.Value);
+        Assert.Null(embedded.SelectSingleNode("saml:Assertion", manager));
     }
 
     [Fact]
@@ -680,6 +774,16 @@ public class OpenIddictServerSamlAspNetCoreEndpointTests
         await host.StartAsync();
 
         return host;
+    }
+
+    public sealed class FailingOnceAssertionProvider : IOpenIddictServerSamlAssertionProvider
+    {
+        private int _calls;
+
+        public ValueTask<OpenIddictServerSamlModels.AssertionDescriptor?> CreateAssertionAsync(OpenIddictServerSamlModels.AssertionContext context)
+            => Interlocked.Increment(ref _calls) is 1
+                ? throw new InvalidOperationException("Transient failure.")
+                : new(new OpenIddictServerSamlModels.AssertionDescriptor { NameId = "alice" });
     }
 
     public sealed class DenyingAssertionProvider : IOpenIddictServerSamlAssertionProvider

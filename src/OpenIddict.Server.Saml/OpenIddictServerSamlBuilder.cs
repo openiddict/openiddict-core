@@ -175,10 +175,19 @@ public sealed class OpenIddictServerSamlBuilder
 
     /// <summary>
     /// Enables request replay protection: authentication request identifiers and request states can only be used once.
+    /// Request replay protection is enabled by default.
     /// </summary>
     /// <returns>The <see cref="OpenIddictServerSamlBuilder"/> instance.</returns>
     public OpenIddictServerSamlBuilder EnableRequestReplayProtection()
         => Configure(options => options.EnableRequestReplayProtection = true);
+
+    /// <summary>
+    /// Disables request replay protection: authentication requests can then be replayed during their validity window and
+    /// request states can be used multiple times until they expire. Disabling replay protection is not recommended.
+    /// </summary>
+    /// <returns>The <see cref="OpenIddictServerSamlBuilder"/> instance.</returns>
+    public OpenIddictServerSamlBuilder DisableRequestReplayProtection()
+        => Configure(options => options.EnableRequestReplayProtection = false);
 
     /// <summary>
     /// Sets the default algorithms used to encrypt assertions for the service providers requiring encrypted assertions.

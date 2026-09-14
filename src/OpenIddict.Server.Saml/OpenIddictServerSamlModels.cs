@@ -339,6 +339,12 @@ public static class OpenIddictServerSamlModels
         public required string Content { get; init; }
 
         /// <summary>
+        /// Gets the reason why the artifact was not resolved or the SOAP fault was returned, if applicable.
+        /// Note: this value is not returned to the requester (empty responses don't include a reason).
+        /// </summary>
+        public string? ErrorDescription { get; init; }
+
+        /// <summary>
         /// Gets a boolean indicating whether the envelope contains a SOAP fault
         /// (in which case the HTTP status code must be 500, per SAML bindings, 3.2.3.3).
         /// </summary>

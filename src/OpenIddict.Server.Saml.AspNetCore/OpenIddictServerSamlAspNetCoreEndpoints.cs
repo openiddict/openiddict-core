@@ -146,11 +146,6 @@ internal static class OpenIddictServerSamlAspNetCoreEndpoints
         {
             if (result.Request?.IsPassive is true)
             {
-                if (!await ConsumeRequestStateAsync())
-                {
-                    return;
-                }
-
                 await WriteErrorResponseAsync(result, SamlStatusCodes.Responder, SamlStatusCodes.NoPassive, SR.GetResourceString(SR.ID2260));
                 return;
             }
@@ -164,11 +159,6 @@ internal static class OpenIddictServerSamlAspNetCoreEndpoints
             };
 
             await context.ChallengeAsync(options.AuthenticationScheme, properties);
-            return;
-        }
-
-        if (!await ConsumeRequestStateAsync())
-        {
             return;
         }
 
@@ -194,9 +184,11 @@ internal static class OpenIddictServerSamlAspNetCoreEndpoints
             AssertionConsumerServiceUrl = result.AssertionConsumerServiceUrl!,
             InResponseTo = result.RequestId,
             ServiceProvider = result.ServiceProvider!
-        }));
+        }), ConsumeRequestStateAsync);
 
         // Note: when request replay protection is enabled, a request state can only be used once to return a response.
+        // The state is only consumed once the response was successfully created (and stored, for the HTTP-Artifact
+        // binding) so that transient failures (e.g a distributed cache outage) don't prevent the user from retrying.
         async Task<bool> ConsumeRequestStateAsync()
         {
             if (state is null || await service.ConsumeRequestStateAsync(state, context.RequestAborted))
@@ -217,7 +209,7 @@ internal static class OpenIddictServerSamlAspNetCoreEndpoints
                 ServiceProvider = result.ServiceProvider!,
                 Status = status,
                 StatusMessage = description
-            }));
+            }), ConsumeRequestStateAsync);
     }
 
     /// <summary>
@@ -252,7 +244,7 @@ internal static class OpenIddictServerSamlAspNetCoreEndpoints
     }
 
     private static async Task WriteResponseAsync(HttpContext context, OpenIddictServerSamlService service,
-        AuthenticationRequestResult result, string response)
+        AuthenticationRequestResult result, string response, Func<Task<bool>> consumeRequestStateAsync)
     {
         var url = result.AssertionConsumerServiceUrl!;
 
@@ -262,11 +254,21 @@ internal static class OpenIddictServerSamlAspNetCoreEndpoints
         {
             var artifact = await service.CreateArtifactAsync(result.ServiceProvider!, response, context.RequestAborted);
 
+            if (!await consumeRequestStateAsync())
+            {
+                return;
+            }
+
             context.Response.StatusCode = StatusCodes.Status303SeeOther;
             context.Response.Headers.CacheControl = "no-cache, no-store";
             context.Response.Headers.Pragma = "no-cache";
             context.Response.Headers.Location = OpenIddictServerSamlService.CreateArtifactRedirectUrl(
                 url, artifact, result.RelayState).AbsoluteUri;
+            return;
+        }
+
+        if (!await consumeRequestStateAsync())
+        {
             return;
         }
 

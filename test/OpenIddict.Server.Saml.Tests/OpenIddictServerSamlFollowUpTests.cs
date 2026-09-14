@@ -166,6 +166,29 @@ public class OpenIddictServerSamlFollowUpTests
             result.AssertionConsumerServiceUrl);
     }
 
+    [Theory]
+    [InlineData(Bindings.HttpArtifact)]
+    [InlineData(Bindings.HttpPost)]
+    public async Task ValidatePostAuthenticationRequestAsync_RejectsIndexCombinedWithProtocolBinding(string binding)
+    {
+        // Arrange
+        using var provider = CreateProvider(options => options.EnableArtifactBinding = true,
+            sp => sp.AssertionConsumerServiceBindings[1] = Bindings.HttpArtifact);
+        var service = provider.GetRequiredService<OpenIddictServerSamlService>();
+
+        // Note: AssertionConsumerServiceIndex is mutually exclusive with ProtocolBinding (SAML core, 3.4.1).
+        var document = SignDocument(CreateAuthenticationRequest(
+            attributes: "AssertionConsumerServiceIndex=\"1\" ProtocolBinding=\"" + binding + "\""), ServiceProviderCertificate);
+
+        // Act
+        var result = await service.ValidatePostAuthenticationRequestAsync(EncodePost(document.OuterXml), null, Endpoint);
+
+        // Assert
+        Assert.False(result.Succeeded);
+        Assert.False(result.CanReturnErrorToServiceProvider);
+        Assert.Equal(SR.GetResourceString(SR.ID2249), result.ErrorDescription);
+    }
+
     [Fact]
     public async Task ValidatePostAuthenticationRequestAsync_RejectsProtocolBindingNotMatchingEndpoint()
     {
@@ -317,6 +340,8 @@ public class OpenIddictServerSamlFollowUpTests
 
         Assert.False(second.Resolved);
         Assert.False(second.IsFault);
+        Assert.Equal(SR.GetResourceString(SR.ID2425), second.ErrorDescription);
+        Assert.Null(first.ErrorDescription);
         var empty = GetArtifactResponse(second.Content);
         Assert.True(VerifySignature(empty, IdentityProviderCertificate));
         var emptyManager = CreateNamespaceManager(empty.OwnerDocument);
@@ -340,7 +365,9 @@ public class OpenIddictServerSamlFollowUpTests
 
         // Assert
         Assert.False(unsigned.Resolved);
+        Assert.Equal(SR.GetResourceString(SR.ID2423), unsigned.ErrorDescription);
         Assert.False(forged.Resolved);
+        Assert.Equal(SR.GetResourceString(SR.ID2423), forged.ErrorDescription);
 
         // Note: unauthenticated resolution attempts must not consume the artifact.
         Assert.True(legitimate.Resolved);
@@ -370,7 +397,9 @@ public class OpenIddictServerSamlFollowUpTests
 
         // Assert
         Assert.False(stolen.Resolved);
+        Assert.Equal(SR.GetResourceString(SR.ID2426), stolen.ErrorDescription);
         Assert.False(legitimate.Resolved);
+        Assert.Equal(SR.GetResourceString(SR.ID2425), legitimate.ErrorDescription);
     }
 
     [Fact]
@@ -396,6 +425,102 @@ public class OpenIddictServerSamlFollowUpTests
 
         // Assert
         Assert.False(result.Resolved);
+        Assert.Equal(SR.GetResourceString(SR.ID2425), result.ErrorDescription);
+    }
+
+    [Theory]
+    [InlineData(-10, null)]
+    [InlineData(5, null)]
+    [InlineData(0, "https://idp.example.com/other")]
+    public async Task ResolveArtifactAsync_RejectsStaleOrMisdirectedRequestsWithoutConsumingArtifact(int minutes, string? destination)
+    {
+        // Arrange
+        using var provider = CreateProvider(options => options.EnableArtifactBinding = true);
+        var service = provider.GetRequiredService<OpenIddictServerSamlService>();
+
+        var artifact = await service.CreateArtifactAsync(CreateServiceProvider(), "<samlp:Response xmlns:samlp=\"urn:oasis:names:tc:SAML:2.0:protocol\" />");
+
+        // Act
+        var rejected = await service.ResolveArtifactAsync(CreateBody(CreateArtifactResolveEnvelope(artifact,
+            certificate: ServiceProviderCertificate, issueInstant: DateTimeOffset.UtcNow.AddMinutes(minutes), destination: destination)), ArtifactEndpoint);
+        var legitimate = await service.ResolveArtifactAsync(CreateBody(CreateArtifactResolveEnvelope(artifact,
+            certificate: ServiceProviderCertificate, destination: ArtifactEndpoint.AbsoluteUri)), ArtifactEndpoint);
+
+        // Assert
+        Assert.False(rejected.Resolved);
+        Assert.False(rejected.IsFault);
+        Assert.Equal(SR.GetResourceString(SR.ID2424), rejected.ErrorDescription);
+        Assert.True(legitimate.Resolved, legitimate.ErrorDescription);
+    }
+
+    [Fact]
+    public async Task ArtifactStore_StoresEncryptedMessages()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        services.AddDistributedMemoryCache();
+        services.AddOpenIddict()
+            .AddServer(options => options.UseSaml(saml => saml
+                .SetEntityId(IdentityProviderEntityId)
+                .AddSigningCertificate(IdentityProviderCertificate)
+                .AddServiceProvider(CreateServiceProvider())
+                .EnableArtifactBinding()));
+
+        using var provider = services.BuildServiceProvider();
+        var store = provider.GetRequiredService<IOpenIddictServerSamlArtifactStore>();
+        var cache = provider.GetRequiredService<Microsoft.Extensions.Caching.Distributed.IDistributedCache>();
+
+        var handle = Convert.ToBase64String(System.Security.Cryptography.RandomNumberGenerator.GetBytes(20));
+        var key = "openiddict-saml-artifact:" + Convert.ToBase64String(System.Security.Cryptography.SHA256.Create().ComputeHash(Encoding.UTF8.GetBytes(handle))).TrimEnd('=').Replace('+', '-').Replace('/', '_');
+
+        // Act
+        await store.AddAsync(handle, new ArtifactMessage
+        {
+            ExpirationDate = DateTimeOffset.UtcNow.AddMinutes(1),
+            Message = "<secret>alice@example.com</secret>",
+            ServiceProvider = ServiceProviderEntityId
+        }, CancellationToken.None);
+
+        var stored = await cache.GetAsync(key);
+
+        // Assert
+        Assert.NotNull(stored);
+        var text = Encoding.UTF8.GetString(stored);
+        Assert.DoesNotContain("alice@example.com", text, StringComparison.Ordinal);
+        Assert.DoesNotContain(ServiceProviderEntityId, text, StringComparison.Ordinal);
+
+        // The payload cannot be decrypted without the handle: tampered payloads are ignored.
+        stored[stored.Length - 1] ^= 0xFF;
+        await cache.SetAsync(key, stored, new Microsoft.Extensions.Caching.Distributed.DistributedCacheEntryOptions());
+        Assert.Null(await store.RemoveAsync(handle, CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task ArtifactStore_RoundTripsMessagesUsingPrivateMemoryCache()
+    {
+        // Arrange
+        using var provider = CreateProvider(options => options.EnableArtifactBinding = true);
+        var store = provider.GetRequiredService<IOpenIddictServerSamlArtifactStore>();
+
+        var handle = Convert.ToBase64String(System.Security.Cryptography.RandomNumberGenerator.GetBytes(20));
+        var expiration = DateTimeOffset.UtcNow.AddMinutes(1);
+
+        // Act
+        await store.AddAsync(handle, new ArtifactMessage
+        {
+            ExpirationDate = expiration,
+            Message = "<message />",
+            ServiceProvider = ServiceProviderEntityId
+        }, CancellationToken.None);
+
+        var message = await store.RemoveAsync(handle, CancellationToken.None);
+
+        // Assert
+        Assert.NotNull(message);
+        Assert.Equal("<message />", message.Message);
+        Assert.Equal(ServiceProviderEntityId, message.ServiceProvider);
+        Assert.Equal(expiration.UtcTicks, message.ExpirationDate.UtcTicks);
+        Assert.Null(await store.RemoveAsync(handle, CancellationToken.None));
     }
 
     [Fact]
@@ -481,10 +606,10 @@ public class OpenIddictServerSamlFollowUpTests
     // Replay protection
 
     [Fact]
-    public async Task ValidatePostAuthenticationRequestAsync_RejectsReplayedRequestWhenEnabled()
+    public async Task ValidatePostAuthenticationRequestAsync_RejectsReplayedRequestByDefault()
     {
         // Arrange
-        using var provider = CreateProvider(options => options.EnableRequestReplayProtection = true);
+        using var provider = CreateProvider();
         var service = provider.GetRequiredService<OpenIddictServerSamlService>();
 
         var payload = EncodePost(SignDocument(CreateAuthenticationRequest(id: "_replayed"), ServiceProviderCertificate).OuterXml);
@@ -501,10 +626,10 @@ public class OpenIddictServerSamlFollowUpTests
     }
 
     [Fact]
-    public async Task ValidatePostAuthenticationRequestAsync_AcceptsReplayedRequestByDefault()
+    public async Task ValidatePostAuthenticationRequestAsync_AcceptsReplayedRequestWhenDisabled()
     {
         // Arrange
-        using var provider = CreateProvider();
+        using var provider = CreateProvider(options => options.EnableRequestReplayProtection = false);
         var service = provider.GetRequiredService<OpenIddictServerSamlService>();
 
         var payload = EncodePost(SignDocument(CreateAuthenticationRequest(id: "_replayed"), ServiceProviderCertificate).OuterXml);
@@ -535,11 +660,11 @@ public class OpenIddictServerSamlFollowUpTests
     }
 
     [Fact]
-    public async Task ConsumeRequestStateAsync_AllowsSingleUseWhenEnabled()
+    public async Task ConsumeRequestStateAsync_AllowsSingleUseByDefault()
     {
         // Arrange
-        using var enabled = CreateProvider(options => options.EnableRequestReplayProtection = true);
-        using var disabled = CreateProvider();
+        using var enabled = CreateProvider();
+        using var disabled = CreateProvider(options => options.EnableRequestReplayProtection = false);
 
         var service = enabled.GetRequiredService<OpenIddictServerSamlService>();
         var state = new RequestState
@@ -562,6 +687,57 @@ public class OpenIddictServerSamlFollowUpTests
         var other = disabled.GetRequiredService<OpenIddictServerSamlService>();
         Assert.True(await other.ConsumeRequestStateAsync(state));
         Assert.True(await other.ConsumeRequestStateAsync(state));
+    }
+
+    [Fact]
+    public async Task DeserializeRequestState_ReadsLegacyStatesThatCannotBeConsumedWhenReplayProtectionIsEnabled()
+    {
+        // Arrange: payload serialized using the previous format (version 2, without identifier and response binding).
+        var expiration = DateTimeOffset.UtcNow.AddMinutes(5);
+
+        using var stream = new MemoryStream();
+        using (var writer = new BinaryWriter(stream, Encoding.UTF8, leaveOpen: true))
+        {
+            writer.Write((byte) 2);
+            writer.Write(ServiceProviderEntityId);
+            writer.Write(AssertionConsumerServiceUrl.AbsoluteUri);
+            writer.Write(false);
+            writer.Write(DateTimeOffset.UtcNow.UtcTicks);
+            writer.Write(expiration.UtcTicks);
+            writer.Write(true);
+            writer.Write("_legacy");
+            writer.Write(ServiceProviderEntityId);
+            writer.Write(DateTimeOffset.UtcNow.UtcTicks);
+            writer.Write(Bindings.HttpPost);
+            writer.Write(false);
+            writer.Write(false);
+            writer.Write(false);
+            writer.Write(false);
+            writer.Write(true);
+        }
+
+        using var enabled = CreateProvider();
+        using var disabled = CreateProvider(options => options.EnableRequestReplayProtection = false);
+
+        // Act
+        var state = OpenIddictServerSamlService.DeserializeRequestState(stream.ToArray());
+
+        // Assert
+        Assert.NotNull(state);
+        Assert.Null(state.Id);
+        Assert.Null(state.ResponseBinding);
+        Assert.Equal("_legacy", state.Request!.Id);
+        Assert.True(state.Request.IsSigned);
+        Assert.Equal(expiration.UtcTicks, state.ExpirationDate.UtcTicks);
+
+        Assert.True((await enabled.GetRequiredService<OpenIddictServerSamlService>().ValidateRequestStateAsync(state)).Succeeded);
+        Assert.False(await enabled.GetRequiredService<OpenIddictServerSamlService>().ConsumeRequestStateAsync(state));
+        Assert.True(await disabled.GetRequiredService<OpenIddictServerSamlService>().ConsumeRequestStateAsync(state));
+
+        // Unknown versions are rejected.
+        var unknown = stream.ToArray();
+        unknown[0] = 1;
+        Assert.Null(OpenIddictServerSamlService.DeserializeRequestState(unknown));
     }
 
     [Fact]
@@ -590,7 +766,6 @@ public class OpenIddictServerSamlFollowUpTests
                 .AddSigningCertificate(IdentityProviderCertificate)
                 .AddServiceProvider(CreateServiceProvider())
                 .EnableArtifactBinding()
-                .EnableRequestReplayProtection()
                 .SetReplayCache<RejectingReplayCache>()
                 .SetArtifactStore<RecordingArtifactStore>()));
 

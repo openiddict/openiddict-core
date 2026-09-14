@@ -215,11 +215,6 @@ public sealed class OpenIddictServerSamlOwinMiddleware : OwinMiddleware
         {
             if (result.Request?.IsPassive is true)
             {
-                if (!await ConsumeRequestStateAsync())
-                {
-                    return;
-                }
-
                 await WriteErrorResponseAsync(result, SamlStatusCodes.Responder, SamlStatusCodes.NoPassive, SR.GetResourceString(SR.ID2260));
                 return;
             }
@@ -240,11 +235,6 @@ public sealed class OpenIddictServerSamlOwinMiddleware : OwinMiddleware
 
             context.Response.StatusCode = 401;
             context.Authentication.Challenge(new AuthenticationProperties(), options.AuthenticationType);
-            return;
-        }
-
-        if (!await ConsumeRequestStateAsync())
-        {
             return;
         }
 
@@ -270,9 +260,11 @@ public sealed class OpenIddictServerSamlOwinMiddleware : OwinMiddleware
             AssertionConsumerServiceUrl = result.AssertionConsumerServiceUrl!,
             InResponseTo = result.RequestId,
             ServiceProvider = result.ServiceProvider!
-        }));
+        }), ConsumeRequestStateAsync);
 
         // Note: when request replay protection is enabled, a request state can only be used once to return a response.
+        // The state is only consumed once the response was successfully created (and stored, for the HTTP-Artifact
+        // binding) so that transient failures (e.g a distributed cache outage) don't prevent the user from retrying.
         async Task<bool> ConsumeRequestStateAsync()
         {
             if (state is null || await service.ConsumeRequestStateAsync(state, cancellationToken))
@@ -293,11 +285,11 @@ public sealed class OpenIddictServerSamlOwinMiddleware : OwinMiddleware
                 ServiceProvider = result.ServiceProvider!,
                 Status = status,
                 StatusMessage = description
-            }));
+            }), ConsumeRequestStateAsync);
     }
 
     private static async Task WriteResponseAsync(IOwinContext context, OpenIddictServerSamlService service,
-        AuthenticationRequestResult result, string response)
+        AuthenticationRequestResult result, string response, Func<Task<bool>> consumeRequestStateAsync)
     {
         var url = result.AssertionConsumerServiceUrl!;
 
@@ -307,11 +299,21 @@ public sealed class OpenIddictServerSamlOwinMiddleware : OwinMiddleware
         {
             var artifact = await service.CreateArtifactAsync(result.ServiceProvider!, response, context.Request.CallCancelled);
 
+            if (!await consumeRequestStateAsync())
+            {
+                return;
+            }
+
             context.Response.StatusCode = 303;
             context.Response.Headers.Set("Cache-Control", "no-cache, no-store");
             context.Response.Headers.Set("Pragma", "no-cache");
             context.Response.Headers.Set("Location", OpenIddictServerSamlService.CreateArtifactRedirectUrl(
                 url, artifact, result.RelayState).AbsoluteUri);
+            return;
+        }
+
+        if (!await consumeRequestStateAsync())
+        {
             return;
         }
 
