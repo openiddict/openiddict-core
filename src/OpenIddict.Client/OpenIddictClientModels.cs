@@ -1742,4 +1742,167 @@ public static partial class OpenIddictClientModels
         /// </summary>
         public required OpenIddictResponse RevocationResponse { get; init; }
     }
+
+    /// <summary>
+    /// Represents a dynamic client registration request (RFC 7591).
+    /// </summary>
+    public sealed record class ClientRegistrationRequest
+    {
+        /// <summary>
+        /// Gets or sets the cancellation token that will be
+        /// used to determine if the operation was aborted.
+        /// </summary>
+        public CancellationToken CancellationToken { get; init; }
+
+        /// <summary>
+        /// Gets or sets the initial access token attached to the registration request, if applicable.
+        /// </summary>
+        public string? InitialAccessToken { get; init; }
+
+        /// <summary>
+        /// Gets or sets the issuer used to resolve the client registration.
+        /// </summary>
+        /// <remarks>
+        /// Note: if multiple client registrations point to the same issuer,
+        /// the <see cref="RegistrationId"/> property must be explicitly set.
+        /// </remarks>
+        public Uri? Issuer { get; init; }
+
+        /// <summary>
+        /// Gets or sets the client metadata sent to the authorization server (e.g "redirect_uris" or "grant_types").
+        /// </summary>
+        public Dictionary<string, OpenIddictParameter>? Metadata { get; init; }
+
+        /// <summary>
+        /// Gets or sets the application-specific properties that will be added to the context.
+        /// </summary>
+        public Dictionary<string, string?>? Properties { get; init; }
+
+        /// <summary>
+        /// Gets or sets the provider name used to resolve the client registration.
+        /// </summary>
+        /// <remarks>
+        /// Note: if multiple client registrations use the same provider name.
+        /// the <see cref="RegistrationId"/> property must be explicitly set.
+        /// </remarks>
+        public string? ProviderName { get; init; }
+
+        /// <summary>
+        /// Gets or sets the URI of the registration endpoint. If this property is not set, the
+        /// URI is resolved from the "registration_endpoint" node of the server configuration.
+        /// </summary>
+        public Uri? RegistrationEndpoint { get; init; }
+
+        /// <summary>
+        /// Gets or sets the unique identifier of the client registration that will be used.
+        /// </summary>
+        public string? RegistrationId { get; init; }
+    }
+
+    /// <summary>
+    /// Represents a request sent to the client configuration endpoint to read,
+    /// update or delete the registration of a client application (RFC 7592).
+    /// </summary>
+    public sealed record class ClientConfigurationRequest
+    {
+        /// <summary>
+        /// Gets or sets the cancellation token that will be
+        /// used to determine if the operation was aborted.
+        /// </summary>
+        public CancellationToken CancellationToken { get; init; }
+
+        /// <summary>
+        /// Gets or sets the client identifier. If this property is not set, the client
+        /// identifier is resolved from the query string of <see cref="RegistrationClientUri"/>.
+        /// </summary>
+        public string? ClientId { get; init; }
+
+        /// <summary>
+        /// Gets or sets the issuer used to resolve the client registration.
+        /// </summary>
+        public Uri? Issuer { get; init; }
+
+        /// <summary>
+        /// Gets or sets the client metadata sent to the authorization server when updating a client registration.
+        /// </summary>
+        /// <remarks>
+        /// Note: update requests use full replace semantics: metadata that are not included are removed or reset.
+        /// </remarks>
+        public Dictionary<string, OpenIddictParameter>? Metadata { get; init; }
+
+        /// <summary>
+        /// Gets or sets the application-specific properties that will be added to the context.
+        /// </summary>
+        public Dictionary<string, string?>? Properties { get; init; }
+
+        /// <summary>
+        /// Gets or sets the provider name used to resolve the client registration.
+        /// </summary>
+        public string? ProviderName { get; init; }
+
+        /// <summary>
+        /// Gets or sets the registration access token returned by the authorization server.
+        /// </summary>
+        public required string RegistrationAccessToken { get; init; }
+
+        /// <summary>
+        /// Gets or sets the client configuration endpoint URI returned by the authorization server.
+        /// </summary>
+        public required Uri RegistrationClientUri { get; init; }
+
+        /// <summary>
+        /// Gets or sets the unique identifier of the client registration that will be used.
+        /// </summary>
+        public string? RegistrationId { get; init; }
+    }
+
+    /// <summary>
+    /// Represents a dynamic client registration result (RFC 7591 and RFC 7592).
+    /// </summary>
+    public sealed record class ClientRegistrationResult
+    {
+        /// <summary>
+        /// Gets the client identifier issued by the authorization server, if available.
+        /// </summary>
+        public string? ClientId => (string?) RegistrationResponse[ClientMetadata.ClientId];
+
+        /// <summary>
+        /// Gets the date at which the client identifier was issued, if available.
+        /// </summary>
+        public DateTimeOffset? ClientIdIssuedAt => (long?) RegistrationResponse[ClientMetadata.ClientIdIssuedAt]
+            is long value ? DateTimeOffset.FromUnixTimeSeconds(value) : null;
+
+        /// <summary>
+        /// Gets the client secret issued by the authorization server, if available.
+        /// </summary>
+        public string? ClientSecret => (string?) RegistrationResponse[ClientMetadata.ClientSecret];
+
+        /// <summary>
+        /// Gets the date at which the client secret will expire, or <see langword="null"/>
+        /// if no expiration date was returned or if the client secret never expires.
+        /// </summary>
+        public DateTimeOffset? ClientSecretExpiresAt => (long?) RegistrationResponse[ClientMetadata.ClientSecretExpiresAt]
+            is long value and > 0 ? DateTimeOffset.FromUnixTimeSeconds(value) : null;
+
+        /// <summary>
+        /// Gets or sets the application-specific properties that were present in the context.
+        /// </summary>
+        public required Dictionary<string, string?> Properties { get; init; }
+
+        /// <summary>
+        /// Gets the registration access token returned by the authorization server, if available.
+        /// </summary>
+        public string? RegistrationAccessToken => (string?) RegistrationResponse[ClientMetadata.RegistrationAccessToken];
+
+        /// <summary>
+        /// Gets the client configuration endpoint URI returned by the authorization server, if available.
+        /// </summary>
+        public Uri? RegistrationClientUri => Uri.TryCreate((string?) RegistrationResponse[ClientMetadata.RegistrationClientUri],
+            UriKind.Absolute, out Uri? uri) ? uri : null;
+
+        /// <summary>
+        /// Gets or sets the registration response (that is empty for delete operations).
+        /// </summary>
+        public required OpenIddictResponse RegistrationResponse { get; init; }
+    }
 }

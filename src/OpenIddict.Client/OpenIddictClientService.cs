@@ -1592,6 +1592,282 @@ public partial class OpenIddictClientService
     }
 
     /// <summary>
+    /// Registers a client application using OAuth 2.0 Dynamic Client Registration (RFC 7591).
+    /// </summary>
+    /// <param name="request">The registration request.</param>
+    /// <returns>The registration result, that contains the client information response.</returns>
+    /// <exception cref="ProtocolException">The registration request was rejected by the authorization server.</exception>
+    public virtual async ValueTask<ClientRegistrationResult> RegisterAsync(ClientRegistrationRequest request)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+
+        request.CancellationToken.ThrowIfCancellationRequested();
+
+        var registration = await ResolveClientRegistrationAsync(
+            request.RegistrationId, request.ProviderName, request.Issuer, request.CancellationToken);
+
+        var configuration = new OpenIddictConfiguration();
+        var uri = request.RegistrationEndpoint;
+
+        if (uri is null)
+        {
+            if (registration.ConfigurationManager is null)
+            {
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0422));
+            }
+
+            configuration = await registration.ConfigurationManager
+                .GetConfigurationAsync(request.CancellationToken)
+                .WaitAsync(request.CancellationToken)
+                ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0140));
+
+            uri = configuration.RegistrationEndpoint ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0809));
+        }
+
+        var response = await SendRegistrationRequestAsync(registration, configuration,
+            new OpenIddictRequest(request.Metadata ?? []), uri, "POST",
+            request.InitialAccessToken, request.CancellationToken);
+
+        return new()
+        {
+            Properties = request.Properties is not null ? new(request.Properties, StringComparer.Ordinal) : new(StringComparer.Ordinal),
+            RegistrationResponse = response
+        };
+    }
+
+    /// <summary>
+    /// Retrieves the registration of a client application using OAuth 2.0 Dynamic Client Registration Management (RFC 7592).
+    /// </summary>
+    /// <param name="request">The client configuration request.</param>
+    /// <returns>The registration result, that contains the client information response.</returns>
+    /// <remarks>
+    /// Note: the authorization server may issue a new registration access token that must be used for subsequent operations.
+    /// </remarks>
+    /// <exception cref="ProtocolException">The request was rejected by the authorization server.</exception>
+    public virtual ValueTask<ClientRegistrationResult> GetRegistrationAsync(ClientConfigurationRequest request)
+        => SendClientConfigurationRequestAsync(request, "GET");
+
+    /// <summary>
+    /// Updates the registration of a client application using OAuth 2.0 Dynamic Client Registration Management (RFC 7592).
+    /// </summary>
+    /// <param name="request">The client configuration request, that contains the updated client metadata.</param>
+    /// <returns>The registration result, that contains the client information response.</returns>
+    /// <remarks>
+    /// Note: the authorization server may issue a new registration access token that must be used for subsequent operations.
+    /// </remarks>
+    /// <exception cref="ProtocolException">The request was rejected by the authorization server.</exception>
+    public virtual ValueTask<ClientRegistrationResult> UpdateRegistrationAsync(ClientConfigurationRequest request)
+        => SendClientConfigurationRequestAsync(request, "PUT");
+
+    /// <summary>
+    /// Deletes the registration of a client application using OAuth 2.0 Dynamic Client Registration Management (RFC 7592).
+    /// </summary>
+    /// <param name="request">The client configuration request.</param>
+    /// <returns>The registration result, whose response is empty.</returns>
+    /// <exception cref="ProtocolException">The request was rejected by the authorization server.</exception>
+    public virtual ValueTask<ClientRegistrationResult> DeleteRegistrationAsync(ClientConfigurationRequest request)
+        => SendClientConfigurationRequestAsync(request, "DELETE");
+
+    private async ValueTask<ClientRegistrationResult> SendClientConfigurationRequestAsync(ClientConfigurationRequest request, string method)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+
+        if (string.IsNullOrEmpty(request.RegistrationAccessToken))
+        {
+            throw new ArgumentException(SR.FormatID0366(nameof(request.RegistrationAccessToken)), nameof(request));
+        }
+
+        if (request.RegistrationClientUri is not { IsAbsoluteUri: true } || OpenIddictHelpers.IsImplicitFileUri(request.RegistrationClientUri))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0144), nameof(request));
+        }
+
+        request.CancellationToken.ThrowIfCancellationRequested();
+
+        var registration = await ResolveClientRegistrationAsync(
+            request.RegistrationId, request.ProviderName, request.Issuer, request.CancellationToken);
+
+        var parameters = new OpenIddictRequest();
+
+        // Update requests MUST include the client metadata and the client identifier in the JSON payload.
+        //
+        // See https://datatracker.ietf.org/doc/html/rfc7592#section-2.2 for more information.
+        if (method is "PUT")
+        {
+            parameters = new OpenIddictRequest(request.Metadata ?? []);
+            parameters.ClientId = request.ClientId ?? parameters.ClientId ??
+                (OpenIddictHelpers.ParseQuery(request.RegistrationClientUri.Query).TryGetValue(Parameters.ClientId, out var values)
+                    ? (string?) values : null);
+        }
+
+        var response = await SendRegistrationRequestAsync(registration, new OpenIddictConfiguration(), parameters,
+            request.RegistrationClientUri, method, request.RegistrationAccessToken, request.CancellationToken);
+
+        return new()
+        {
+            Properties = request.Properties is not null ? new(request.Properties, StringComparer.Ordinal) : new(StringComparer.Ordinal),
+            RegistrationResponse = response
+        };
+    }
+
+    private async ValueTask<OpenIddictClientRegistration> ResolveClientRegistrationAsync(
+        string? identifier, string? name, Uri? issuer, CancellationToken cancellationToken)
+    {
+        if (!string.IsNullOrEmpty(identifier))
+        {
+            return await GetClientRegistrationByIdAsync(identifier, cancellationToken);
+        }
+
+        if (!string.IsNullOrEmpty(name))
+        {
+            return await GetClientRegistrationByProviderNameAsync(name, cancellationToken);
+        }
+
+        if (issuer is not null)
+        {
+            return await GetClientRegistrationByIssuerAsync(issuer, cancellationToken);
+        }
+
+        return await GetClientRegistrationsAsync(cancellationToken) is [OpenIddictClientRegistration registration]
+            ? registration
+            : throw new InvalidOperationException(SR.GetResourceString(SR.ID0808));
+    }
+
+    /// <summary>
+    /// Sends the registration request and retrieves the corresponding response.
+    /// </summary>
+    /// <param name="registration">The client registration.</param>
+    /// <param name="configuration">The server configuration.</param>
+    /// <param name="request">The registration request.</param>
+    /// <param name="uri">The uri of the remote registration or client configuration endpoint.</param>
+    /// <param name="method">The HTTP method used to send the request.</param>
+    /// <param name="token">The bearer token attached to the request, if applicable.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns>The response extracted from the registration response.</returns>
+    internal async ValueTask<OpenIddictResponse> SendRegistrationRequestAsync(
+        OpenIddictClientRegistration registration, OpenIddictConfiguration configuration,
+        OpenIddictRequest request, Uri uri, string method, string? token, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(registration);
+        ArgumentNullException.ThrowIfNull(configuration);
+        ArgumentNullException.ThrowIfNull(request);
+        ArgumentNullException.ThrowIfNull(uri);
+
+        if (!uri.IsAbsoluteUri || OpenIddictHelpers.IsImplicitFileUri(uri))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0144), nameof(uri));
+        }
+
+        cancellationToken.ThrowIfCancellationRequested();
+
+        await using var scope = _provider.CreateAsyncScope();
+
+        var dispatcher = scope.ServiceProvider.GetRequiredService<IOpenIddictClientDispatcher>();
+        var options = scope.ServiceProvider.GetRequiredService<IOptionsMonitor<OpenIddictClientOptions>>();
+
+        var transaction = new OpenIddictClientTransaction
+        {
+            CancellationToken = cancellationToken,
+            Options = options.CurrentValue,
+            ServiceProvider = scope.ServiceProvider
+        };
+
+        request = await PrepareRegistrationRequestAsync();
+        request = await ApplyRegistrationRequestAsync();
+
+        var response = await ExtractRegistrationResponseAsync();
+
+        return await HandleRegistrationResponseAsync();
+
+        void Populate(BaseRegistrationContext context)
+        {
+            context.AccessToken = token;
+            context.Configuration = configuration;
+            context.Registration = registration;
+            context.RemoteUri = uri;
+            context.Request = request;
+            context.RequestMethod = method;
+        }
+
+        async ValueTask<OpenIddictRequest> PrepareRegistrationRequestAsync()
+        {
+            var context = new PrepareRegistrationRequestContext(transaction);
+            Populate(context);
+
+            await dispatcher.DispatchAsync(context);
+
+            if (context.IsRejected)
+            {
+                throw new ProtocolException(
+                    SR.FormatID0810(context.Error, context.ErrorDescription, context.ErrorUri),
+                    context.Error, context.ErrorDescription, context.ErrorUri);
+            }
+
+            (token, method) = (context.AccessToken, context.RequestMethod);
+
+            return context.Request;
+        }
+
+        async ValueTask<OpenIddictRequest> ApplyRegistrationRequestAsync()
+        {
+            var context = new ApplyRegistrationRequestContext(transaction);
+            Populate(context);
+
+            await dispatcher.DispatchAsync(context);
+
+            if (context.IsRejected)
+            {
+                throw new ProtocolException(
+                    SR.FormatID0811(context.Error, context.ErrorDescription, context.ErrorUri),
+                    context.Error, context.ErrorDescription, context.ErrorUri);
+            }
+
+            context.Logger.LogInformation(6610, SR.GetResourceString(SR.ID6610), context.RemoteUri, context.Request);
+
+            return context.Request;
+        }
+
+        async ValueTask<OpenIddictResponse> ExtractRegistrationResponseAsync()
+        {
+            var context = new ExtractRegistrationResponseContext(transaction);
+            Populate(context);
+
+            await dispatcher.DispatchAsync(context);
+
+            if (context.IsRejected)
+            {
+                throw new ProtocolException(
+                    SR.FormatID0812(context.Error, context.ErrorDescription, context.ErrorUri),
+                    context.Error, context.ErrorDescription, context.ErrorUri);
+            }
+
+            Debug.Assert(context.Response is not null, SR.GetResourceString(SR.ID4007));
+
+            context.Logger.LogInformation(6611, SR.GetResourceString(SR.ID6611), context.RemoteUri, context.Response);
+
+            return context.Response;
+        }
+
+        async ValueTask<OpenIddictResponse> HandleRegistrationResponseAsync()
+        {
+            var context = new HandleRegistrationResponseContext(transaction);
+            Populate(context);
+            context.Response = response;
+
+            await dispatcher.DispatchAsync(context);
+
+            if (context.IsRejected)
+            {
+                throw new ProtocolException(
+                    SR.FormatID0813(context.Error, context.ErrorDescription, context.ErrorUri),
+                    context.Error, context.ErrorDescription, context.ErrorUri);
+            }
+
+            return context.Response;
+        }
+    }
+
+    /// <summary>
     /// Retrieves the OpenID Connect server configuration from the specified uri.
     /// </summary>
     /// <param name="registration">The client registration.</param>

@@ -30,6 +30,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
         .. Discovery.DefaultHandlers,
         .. Exchange.DefaultHandlers,
         .. Introspection.DefaultHandlers,
+        .. Registration.DefaultHandlers,
         .. Revocation.DefaultHandlers,
         .. UserInfo.DefaultHandlers
     ];

@@ -2065,6 +2065,37 @@ To apply registration responses, create a class implementing 'IOpenIddictServerH
   <data name="ID0807" xml:space="preserve">
     <value>The registration operation cannot be processed because the client application couldn't be resolved.</value>
   </data>
+  <data name="ID0808" xml:space="preserve">
+    <value>The client registration used to communicate with the authorization server couldn't be resolved.
+To resolve it, specify the registration identifier, the provider name or the issuer of the client registration.</value>
+  </data>
+  <data name="ID0809" xml:space="preserve">
+    <value>The authorization server doesn't expose a dynamic client registration endpoint.</value>
+  </data>
+  <data name="ID0810" xml:space="preserve">
+    <value>An error occurred while preparing the registration request.
+Error: {0}
+Error description: {1}
+Error URI: {2}</value>
+  </data>
+  <data name="ID0811" xml:space="preserve">
+    <value>An error occurred while sending the registration request.
+Error: {0}
+Error description: {1}
+Error URI: {2}</value>
+  </data>
+  <data name="ID0812" xml:space="preserve">
+    <value>An error occurred while extracting the registration response.
+Error: {0}
+Error description: {1}
+Error URI: {2}</value>
+  </data>
+  <data name="ID0813" xml:space="preserve">
+    <value>An error occurred while handling the registration response.
+Error: {0}
+Error description: {1}
+Error URI: {2}</value>
+  </data>
   <data name="ID2000" xml:space="preserve">
     <value>The security token is missing.</value>
   </data>
@@ -2962,7 +2993,7 @@ To apply registration responses, create a class implementing 'IOpenIddictServerH
     <value>The client application is not allowed to manage its registration.</value>
   </data>
   <data name="ID2415" xml:space="preserve">
-    <value>The specified client secret doesn't match the client secret of the client application.</value>
+    <value>An error occurred while processing the dynamic client registration request.</value>
   </data>
   <data name="ID2416" xml:space="preserve">
     <value>The client metadata was rejected by the application manager.</value>
@@ -4043,6 +4074,15 @@ This may indicate that the hashed entry is corrupted or malformed.</value>
   </data>
   <data name="ID6609" xml:space="preserve">
     <value>The response was successfully returned as an empty 204 response.</value>
+  </data>
+  <data name="ID6610" xml:space="preserve">
+    <value>The registration request was successfully sent to {Uri}: {Request}.</value>
+  </data>
+  <data name="ID6611" xml:space="preserve">
+    <value>The registration response returned by {Uri} was successfully extracted: {Response}.</value>
+  </data>
+  <data name="ID6612" xml:space="preserve">
+    <value>The registration request was rejected by the remote authorization server: {Response}.</value>
   </data>
   <data name="ID8000" xml:space="preserve">
     <value>https://documentation.openiddict.com/errors/{0}</value>

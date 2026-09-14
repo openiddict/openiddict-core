@@ -36,6 +36,7 @@ public static partial class OpenIddictClientHandlers
             ExtractMtlsTokenEndpoint.Descriptor,
             ExtractMtlsUserInfoEndpoint.Descriptor,
             ExtractPushedAuthorizationEndpoint.Descriptor,
+            ExtractRegistrationEndpoint.Descriptor,
             ExtractRevocationEndpoint.Descriptor,
             ExtractTokenEndpoint.Descriptor,
             ExtractUserInfoEndpoint.Descriptor,
@@ -119,6 +120,7 @@ public static partial class OpenIddictClientHandlers
                     Metadata.Issuer                             or
                     Metadata.JwksUri                            or
                     Metadata.PushedAuthorizationRequestEndpoint or
+                    Metadata.RegistrationEndpoint               or
                     Metadata.TokenEndpoint                      or
                     Metadata.UserInfoEndpoint
                         => ((JsonElement) value).ValueKind is JsonValueKind.String,
@@ -761,6 +763,47 @@ public static partial class OpenIddictClientHandlers
                     }
 
                     context.Configuration.PushedAuthorizationEndpoint = uri;
+                }
+
+                return ValueTask.CompletedTask;
+            }
+        }
+
+        /// <summary>
+        /// Contains the logic responsible for extracting the dynamic client registration endpoint URI from the discovery document.
+        /// </summary>
+        public sealed class ExtractRegistrationEndpoint : IOpenIddictClientHandler<HandleConfigurationResponseContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+                = OpenIddictClientHandlerDescriptor.CreateBuilder<HandleConfigurationResponseContext>()
+                    .UseSingletonHandler<ExtractRegistrationEndpoint>()
+                    .SetOrder(ExtractPushedAuthorizationEndpoint.Descriptor.Order + 500)
+                    .SetType(OpenIddictClientHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(HandleConfigurationResponseContext context)
+            {
+                ArgumentNullException.ThrowIfNull(context);
+
+                // See https://datatracker.ietf.org/doc/html/rfc8414#section-2 for more information.
+                var endpoint = (string?) context.Response[Metadata.RegistrationEndpoint];
+                if (!string.IsNullOrEmpty(endpoint))
+                {
+                    if (!Uri.TryCreate(endpoint, UriKind.Absolute, out Uri? uri) || OpenIddictHelpers.IsImplicitFileUri(uri))
+                    {
+                        context.Reject(
+                            error: Errors.ServerError,
+                            description: SR.FormatID2100(Metadata.RegistrationEndpoint),
+                            uri: SR.FormatID8000(SR.ID2100));
+
+                        return ValueTask.CompletedTask;
+                    }
+
+                    context.Configuration.RegistrationEndpoint = uri;
                 }
 
                 return ValueTask.CompletedTask;

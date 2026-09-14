@@ -244,6 +244,7 @@ public static partial class OpenIddictClientHandlers
         .. Introspection.DefaultHandlers,
         .. Logout.DefaultHandlers,
         .. Protection.DefaultHandlers,
+        .. Registration.DefaultHandlers,
         .. Revocation.DefaultHandlers,
         .. Session.DefaultHandlers,
         .. UserInfo.DefaultHandlers
