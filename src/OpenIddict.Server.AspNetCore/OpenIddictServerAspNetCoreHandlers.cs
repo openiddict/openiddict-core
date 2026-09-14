@@ -58,6 +58,7 @@ public static partial class OpenIddictServerAspNetCoreHandlers
         .. Exchange.DefaultHandlers,
         .. Introspection.DefaultHandlers,
         .. Logout.DefaultHandlers,
+        .. Registration.DefaultHandlers,
         .. Revocation.DefaultHandlers,
         .. Session.DefaultHandlers,
         .. UserInfo.DefaultHandlers
@@ -1011,6 +1012,16 @@ public static partial class OpenIddictServerAspNetCoreHandlers
                 // See https://datatracker.ietf.org/doc/html/rfc9126#section-2.2 for more information.
                 (OpenIddictServerEndpointType.PushedAuthorization, null or { Length: 0 }) => 201,
 
+                // Note: successful client registration responses MUST use the 201 status code and successful
+                // client deletion responses MUST use the 204 status code.
+                //
+                // See https://datatracker.ietf.org/doc/html/rfc7591#section-3.2.1
+                // and https://datatracker.ietf.org/doc/html/rfc7592#section-2.3 for more information.
+                (OpenIddictServerEndpointType.Registration, null or { Length: 0 }) when string.Equals(
+                    context.Transaction.RequestMethod, "POST", StringComparison.OrdinalIgnoreCase) => 201,
+                (OpenIddictServerEndpointType.Registration, null or { Length: 0 }) when string.Equals(
+                    context.Transaction.RequestMethod, "DELETE", StringComparison.OrdinalIgnoreCase) => 204,
+
                 // Note: the default code may be replaced by another handler (e.g when doing redirects).
                 (_, null or { Length: 0 }) => 200,
 
@@ -1021,6 +1032,11 @@ public static partial class OpenIddictServerAspNetCoreHandlers
                 (OpenIddictServerEndpointType.UserInfo, Errors.InvalidToken       or Errors.MissingToken)      => 401,
                 (OpenIddictServerEndpointType.UserInfo, Errors.InvalidDPoPProof   or Errors.UseDPoPNonce)      => 401,
                 (OpenIddictServerEndpointType.UserInfo, Errors.InsufficientAccess or Errors.InsufficientScope) => 403,
+
+                // Errors caused by missing or invalid initial access tokens or registration access tokens are
+                // returned as bearer token errors (RFC 7591, section 3 and RFC 7592, section 2).
+                (OpenIddictServerEndpointType.Registration, Errors.InvalidToken       or Errors.MissingToken)      => 401,
+                (OpenIddictServerEndpointType.Registration, Errors.InsufficientAccess or Errors.InsufficientScope) => 403,
 
                 // When client authentication is made using basic authentication, the authorization server
                 // MUST return a 401 response with a valid WWW-Authenticate header containing the HTTP Basic
@@ -1128,6 +1144,11 @@ public static partial class OpenIddictServerAspNetCoreHandlers
                 (OpenIddictServerEndpointType.UserInfo, _) when string.Equals(
                     context.Transaction.AccessTokenScheme, Schemes.DPoP, StringComparison.OrdinalIgnoreCase) => Schemes.DPoP,
                 (OpenIddictServerEndpointType.UserInfo, _) => Schemes.Bearer,
+
+                // Errors caused by missing or invalid initial access tokens or registration
+                // access tokens are returned as part of the WWW-Authenticate header.
+                (OpenIddictServerEndpointType.Registration, Errors.InvalidToken       or Errors.MissingToken or
+                                                            Errors.InsufficientAccess or Errors.InsufficientScope) => Schemes.Bearer,
 
                 // When client authentication is made using basic authentication, the authorization server
                 // MUST return a 401 response with a valid WWW-Authenticate header containing the HTTP Basic

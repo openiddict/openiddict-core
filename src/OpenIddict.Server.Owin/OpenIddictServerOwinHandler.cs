@@ -195,7 +195,8 @@ public sealed class OpenIddictServerOwinHandler : AuthenticationHandler<Authenti
                 OpenIddictServerEndpointType.Token when context.Request.IsTokenExchangeGrantType()
                     => context.SubjectTokenPrincipal,
 
-                OpenIddictServerEndpointType.UserInfo => context.AccessTokenPrincipal,
+                OpenIddictServerEndpointType.UserInfo or OpenIddictServerEndpointType.Registration
+                    => context.AccessTokenPrincipal,
 
                 _ => null
             };

@@ -229,6 +229,7 @@ public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenId
             .Concat(options.IntrospectionEndpointUris.Distinct())
             .Concat(options.EndSessionEndpointUris.Distinct())
             .Concat(options.PushedAuthorizationEndpointUris.Distinct())
+            .Concat(options.RegistrationEndpointUris.Distinct())
             .Concat(options.RevocationEndpointUris.Distinct())
             .Concat(options.TokenEndpointUris.Distinct())
             .Concat(options.UserInfoEndpointUris.Distinct())
@@ -297,6 +298,40 @@ public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenId
             (options.EnableDegradedMode || options.DisableTokenStorage || options.Issuer is null))
         {
             builder.AddError(SR.GetResourceString(SR.ID0529));
+        }
+
+        // Ensure the registration endpoint and dynamic client registration are always enabled together.
+        if (options.EnableDynamicClientRegistration && options.RegistrationEndpointUris.Count is 0)
+        {
+            builder.AddError(SR.GetResourceString(SR.ID0800));
+        }
+
+        if (!options.EnableDynamicClientRegistration && options.RegistrationEndpointUris.Count is > 0)
+        {
+            builder.AddError(SR.GetResourceString(SR.ID0801));
+        }
+
+        if (options.EnableDynamicClientRegistration)
+        {
+            // Registered clients are persisted using the application manager and registration
+            // access tokens are stored as token entries: the degraded mode and disabling token
+            // storage are not supported.
+            if (options.EnableDegradedMode || options.DisableTokenStorage)
+            {
+                builder.AddError(SR.GetResourceString(SR.ID0802));
+            }
+
+            // Unless open registration is explicitly allowed, initial access tokens must contain a dedicated scope
+            // to prevent regular access tokens issued to any client from being usable to register new clients.
+            if (!options.AllowAnonymousClientRegistration && options.InitialAccessTokenScopes.Count is 0)
+            {
+                builder.AddError(SR.GetResourceString(SR.ID0803));
+            }
+
+            if (options.RequireSoftwareStatement && options.SoftwareStatementSigningKeys.Count is 0)
+            {
+                builder.AddError(SR.GetResourceString(SR.ID0804));
+            }
         }
 
         // Ensure the grant types/response types configuration is consistent.

@@ -77,6 +77,12 @@ public enum OpenIddictServerEndpointType
     BackchannelAuthentication = 12,
 
     /// <summary>
+    /// Dynamic client registration endpoint (RFC 7591), also used as the
+    /// client configuration endpoint (RFC 7592) when a client_id is specified.
+    /// </summary>
+    Registration = 13,
+
+    /// <summary>
     /// Check session iframe endpoint (OpenID Connect Session Management 1.0).
     /// </summary>
     CheckSessionIframe = 14

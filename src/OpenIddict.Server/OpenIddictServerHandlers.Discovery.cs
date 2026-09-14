@@ -238,6 +238,7 @@ public static partial class OpenIddictServerHandlers
                     [Metadata.UserInfoEndpoint] = notification.UserInfoEndpoint?.AbsoluteUri,
                     [Metadata.DeviceAuthorizationEndpoint] = notification.DeviceAuthorizationEndpoint?.AbsoluteUri,
                     [Metadata.PushedAuthorizationRequestEndpoint] = notification.PushedAuthorizationEndpoint?.AbsoluteUri,
+                    [Metadata.RegistrationEndpoint] = notification.RegistrationEndpoint?.AbsoluteUri,
                     [Metadata.BackchannelAuthenticationEndpoint] = notification.BackchannelAuthenticationEndpoint?.AbsoluteUri,
                     [Metadata.BackchannelTokenDeliveryModesSupported] = notification.BackchannelTokenDeliveryModes.ToImmutableArray<string?>(),
                     [Metadata.BackchannelUserCodeParameterSupported] = notification.BackchannelAuthenticationEndpoint is not null ? false : null,
@@ -451,6 +452,10 @@ public static partial class OpenIddictServerHandlers
 
                 context.PushedAuthorizationEndpoint ??= OpenIddictHelpers.CreateAbsoluteUri(
                     context.BaseUri, context.Options.PushedAuthorizationEndpointUris.FirstOrDefault());
+
+                // See https://datatracker.ietf.org/doc/html/rfc8414#section-2 for more information.
+                context.RegistrationEndpoint ??= OpenIddictHelpers.CreateAbsoluteUri(
+                    context.BaseUri, context.Options.RegistrationEndpointUris.FirstOrDefault());
 
                 context.RevocationEndpoint ??= OpenIddictHelpers.CreateAbsoluteUri(
                     context.BaseUri, context.Options.RevocationEndpointUris.FirstOrDefault());

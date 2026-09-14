@@ -198,6 +198,11 @@ public sealed class OpenIddictConfiguration
     public HashSet<string> ResponseTypesSupported { get; } = new(StringComparer.Ordinal);
 
     /// <summary>
+    /// Gets or sets the URI of the dynamic client registration endpoint (RFC 7591).
+    /// </summary>
+    public Uri? RegistrationEndpoint { get; set; }
+
+    /// <summary>
     /// Gets or sets the URI of the revocation endpoint.
     /// </summary>
     public Uri? RevocationEndpoint { get; set; }

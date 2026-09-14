@@ -2035,6 +2035,36 @@ To apply front-channel logout responses, create a class implementing 'IOpenIddic
 To terminate the local session attached to the user agent, set the sign-out scheme using 'services.AddOpenIddict().AddClient().UseAspNetCore().SetFrontchannelLogoutSignOutScheme()' (or 'UseOwin().SetFrontchannelLogoutSignOutAuthenticationType()').
 Alternatively, enable the pass-through mode using 'EnableFrontchannelLogoutEndpointPassthrough()', handle 'HandleFrontchannelLogoutRequestContext' using a custom event handler or register an 'IOpenIddictClientSessionStore' implementation and disable session verification using 'services.AddOpenIddict().AddClient().DisableFrontchannelLogoutSessionVerification()'.</value>
   </data>
+  <data name="ID0800" xml:space="preserve">
+    <value>The registration endpoint must be enabled when dynamic client registration is enabled.
+To enable it, use 'services.AddOpenIddict().AddServer().SetRegistrationEndpointUris()'.</value>
+  </data>
+  <data name="ID0801" xml:space="preserve">
+    <value>Dynamic client registration must be enabled when the registration endpoint is enabled.
+To enable it, use 'services.AddOpenIddict().AddServer().EnableDynamicClientRegistration()'.</value>
+  </data>
+  <data name="ID0802" xml:space="preserve">
+    <value>Dynamic client registration cannot be used when the degraded mode is enabled or when token storage is disabled.</value>
+  </data>
+  <data name="ID0803" xml:space="preserve">
+    <value>At least one initial access token scope must be configured when anonymous client registration is not allowed.
+To configure it, use 'services.AddOpenIddict().AddServer().SetInitialAccessTokenScopes()' or allow open registration using 'AllowAnonymousClientRegistration()'.</value>
+  </data>
+  <data name="ID0804" xml:space="preserve">
+    <value>At least one software statement signing key must be registered when software statements are required.
+To register one, use 'services.AddOpenIddict().AddServer().AddSoftwareStatementSigningKey()'.</value>
+  </data>
+  <data name="ID0805" xml:space="preserve">
+    <value>The registration request was not correctly extracted.
+To extract registration requests, create a class implementing 'IOpenIddictServerHandler&lt;ExtractRegistrationRequestContext&gt;' and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.</value>
+  </data>
+  <data name="ID0806" xml:space="preserve">
+    <value>The registration response was not correctly applied.
+To apply registration responses, create a class implementing 'IOpenIddictServerHandler&lt;ApplyRegistrationResponseContext&gt;' and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.</value>
+  </data>
+  <data name="ID0807" xml:space="preserve">
+    <value>The registration operation cannot be processed because the client application couldn't be resolved.</value>
+  </data>
   <data name="ID2000" xml:space="preserve">
     <value>The security token is missing.</value>
   </data>
@@ -2885,6 +2915,66 @@ Alternatively, enable the pass-through mode using 'EnableFrontchannelLogoutEndpo
   </data>
   <data name="ID2391" xml:space="preserve">
     <value>The sessions targeted by the logout request couldn't be terminated.</value>
+  </data>
+  <data name="ID2400" xml:space="preserve">
+    <value>The specified registration access token is invalid.</value>
+  </data>
+  <data name="ID2401" xml:space="preserve">
+    <value>An initial access token is required to register a client application.</value>
+  </data>
+  <data name="ID2402" xml:space="preserve">
+    <value>The specified initial access token doesn't contain a scope allowing the registration of client applications.</value>
+  </data>
+  <data name="ID2403" xml:space="preserve">
+    <value>The '{0}' client metadata is invalid.</value>
+  </data>
+  <data name="ID2404" xml:space="preserve">
+    <value>The '{0}' client metadata value '{1}' is not supported by this authorization server.</value>
+  </data>
+  <data name="ID2405" xml:space="preserve">
+    <value>The '{0}' client metadata must only contain absolute URIs that don't include a fragment.</value>
+  </data>
+  <data name="ID2406" xml:space="preserve">
+    <value>The '{0}' client metadata is required when using the '{1}' grant type.</value>
+  </data>
+  <data name="ID2407" xml:space="preserve">
+    <value>The '{0}' response type cannot be used without the '{1}' grant type.</value>
+  </data>
+  <data name="ID2408" xml:space="preserve">
+    <value>The '{0}' and '{1}' client metadata cannot be used together.</value>
+  </data>
+  <data name="ID2409" xml:space="preserve">
+    <value>The specified software statement is invalid.</value>
+  </data>
+  <data name="ID2410" xml:space="preserve">
+    <value>The specified software statement was not issued or signed by a trusted party.</value>
+  </data>
+  <data name="ID2411" xml:space="preserve">
+    <value>A software statement is required to register a client application.</value>
+  </data>
+  <data name="ID2412" xml:space="preserve">
+    <value>The '{0}' client metadata cannot be specified when updating a client registration.</value>
+  </data>
+  <data name="ID2413" xml:space="preserve">
+    <value>The '{0}' client metadata doesn't match the client identifier of the client configuration endpoint.</value>
+  </data>
+  <data name="ID2414" xml:space="preserve">
+    <value>The client application is not allowed to manage its registration.</value>
+  </data>
+  <data name="ID2415" xml:space="preserve">
+    <value>The specified client secret doesn't match the client secret of the client application.</value>
+  </data>
+  <data name="ID2416" xml:space="preserve">
+    <value>The client metadata was rejected by the application manager.</value>
+  </data>
+  <data name="ID2417" xml:space="preserve">
+    <value>The '{0}' client metadata is required when using the '{1}' client authentication method.</value>
+  </data>
+  <data name="ID2418" xml:space="preserve">
+    <value>The JSON Web Key Set must only contain public asymmetric keys.</value>
+  </data>
+  <data name="ID2419" xml:space="preserve">
+    <value>The request payload must be a valid JSON object.</value>
   </data>
   <data name="ID4000" xml:space="preserve">
     <value>The '{0}' parameter shouldn't be null or empty at this point.</value>
@@ -3923,6 +4013,36 @@ This may indicate that the hashed entry is corrupted or malformed.</value>
   </data>
   <data name="ID6570" xml:space="preserve">
     <value>The front-channel logout request was rejected because it didn't include the 'iss' and 'sid' parameters and no unique client registration allows omitting them. Ensure the 'frontchannel_logout_session_required' metadata registered at the authorization server matches the 'FrontchannelLogoutSessionRequired' property of the client registration.</value>
+  </data>
+  <data name="ID6600" xml:space="preserve">
+    <value>The registration request was successfully extracted: {Request}.</value>
+  </data>
+  <data name="ID6601" xml:space="preserve">
+    <value>The registration request was successfully validated.</value>
+  </data>
+  <data name="ID6602" xml:space="preserve">
+    <value>The registration request was rejected because the '{Metadata}' client metadata was invalid.</value>
+  </data>
+  <data name="ID6603" xml:space="preserve">
+    <value>The registration request was rejected because the registration access token was invalid.</value>
+  </data>
+  <data name="ID6604" xml:space="preserve">
+    <value>The client application '{ClientId}' was successfully registered.</value>
+  </data>
+  <data name="ID6605" xml:space="preserve">
+    <value>The client application '{ClientId}' was successfully updated.</value>
+  </data>
+  <data name="ID6606" xml:space="preserve">
+    <value>The client application '{ClientId}' was successfully deleted.</value>
+  </data>
+  <data name="ID6607" xml:space="preserve">
+    <value>The registration request was rejected because the software statement couldn't be validated.</value>
+  </data>
+  <data name="ID6608" xml:space="preserve">
+    <value>The registration request was rejected by the application manager.</value>
+  </data>
+  <data name="ID6609" xml:space="preserve">
+    <value>The response was successfully returned as an empty 204 response.</value>
   </data>
   <data name="ID8000" xml:space="preserve">
     <value>https://documentation.openiddict.com/errors/{0}</value>

@@ -192,10 +192,69 @@ public class OpenIddictServerIntegrationTestClient : IAsyncDisposable
         }
 
         ResponseMediaType = response.Content.Headers.ContentType?.MediaType;
+        ResponseStatusCode = response.StatusCode;
         ResponseToken = null;
 
         return await GetResponseAsync(response);
     }
+
+    /// <summary>
+    /// Sends a request whose payload is represented as a JSON object (e.g a dynamic client registration request)
+    /// and converts the returned response to an OpenID Connect response.
+    /// </summary>
+    /// <param name="method">The HTTP method used to send the request.</param>
+    /// <param name="uri">The endpoint to which the request is sent.</param>
+    /// <param name="payload">The JSON payload, if applicable.</param>
+    /// <param name="token">The bearer token attached to the Authorization header, if applicable.</param>
+    /// <returns>The OpenID Connect response returned by the server.</returns>
+    public virtual async Task<OpenIddictResponse> SendJsonAsync(HttpMethod method, string uri, string? payload, string? token = null)
+    {
+        ArgumentNullException.ThrowIfNull(method);
+        ArgumentException.ThrowIfNullOrEmpty(uri);
+
+        var address = new Uri(uri, UriKind.RelativeOrAbsolute);
+        if (!address.IsAbsoluteUri)
+        {
+            address = new Uri(HttpClient.BaseAddress!, address);
+        }
+
+        using var message = new HttpRequestMessage(method, address);
+
+        if (payload is not null)
+        {
+            message.Content = new StringContent(payload, Encoding.UTF8, "application/json");
+        }
+
+        if (!string.IsNullOrEmpty(token))
+        {
+            message.Headers.TryAddWithoutValidation("Authorization", "Bearer " + token);
+        }
+
+        foreach (var header in RequestHeaders)
+        {
+            message.Headers.TryAddWithoutValidation(header.Key, header.Value);
+        }
+
+        using var response = await HttpClient.SendAsync(message);
+
+        ResponseHeaders.Clear();
+
+        foreach (var header in response.Headers)
+        {
+            ResponseHeaders[header.Key] = [.. header.Value];
+        }
+
+        ResponseMediaType = response.Content.Headers.ContentType?.MediaType;
+        ResponseStatusCode = response.StatusCode;
+        ResponseToken = null;
+
+        return await GetResponseAsync(response);
+    }
+
+    /// <summary>
+    /// Gets the HTTP status code of the last response received by this client, if available.
+    /// </summary>
+    public System.Net.HttpStatusCode? ResponseStatusCode { get; private set; }
 
     /// <summary>
     /// Gets the additional headers attached to all the requests sent by this client.

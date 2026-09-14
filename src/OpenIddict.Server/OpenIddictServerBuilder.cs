@@ -1365,6 +1365,49 @@ public sealed class OpenIddictServerBuilder
     }
 
     /// <summary>
+    /// Sets the relative or absolute URIs associated to the dynamic client registration endpoint.
+    /// If an empty array is specified, the endpoint will be considered disabled.
+    /// Note: only the first URI will be returned as part of the discovery document.
+    /// </summary>
+    /// <param name="uris">The URIs associated to the endpoint.</param>
+    /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
+    public OpenIddictServerBuilder SetRegistrationEndpointUris(
+        [StringSyntax(StringSyntaxAttribute.Uri)] params string[] uris)
+    {
+        ArgumentNullException.ThrowIfNull(uris);
+
+        return SetRegistrationEndpointUris([.. uris.Select(uri => new Uri(uri, UriKind.RelativeOrAbsolute))]);
+    }
+
+    /// <summary>
+    /// Sets the relative or absolute URIs associated to the dynamic client registration endpoint.
+    /// If an empty array is specified, the endpoint will be considered disabled.
+    /// Note: only the first URI will be returned as part of the discovery document.
+    /// </summary>
+    /// <param name="uris">The URIs associated to the endpoint.</param>
+    /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
+    public OpenIddictServerBuilder SetRegistrationEndpointUris(params Uri[] uris)
+    {
+        ArgumentNullException.ThrowIfNull(uris);
+
+        if (Array.Exists(uris, OpenIddictHelpers.IsImplicitFileUri))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0072), nameof(uris));
+        }
+
+        if (Array.Exists(uris, static uri => uri.OriginalString.StartsWith("~", StringComparison.OrdinalIgnoreCase)))
+        {
+            throw new ArgumentException(SR.FormatID0081("~"), nameof(uris));
+        }
+
+        return Configure(options =>
+        {
+            options.RegistrationEndpointUris.Clear();
+            options.RegistrationEndpointUris.AddRange(uris);
+        });
+    }
+
+    /// <summary>
     /// Sets the relative or absolute URIs associated to the revocation endpoint.
     /// If an empty array is specified, the endpoint will be considered disabled.
     /// Note: only the first URI will be returned as part of the discovery document.
@@ -2023,6 +2066,87 @@ public sealed class OpenIddictServerBuilder
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
     public OpenIddictServerBuilder SetSessionLifetime(TimeSpan? lifetime)
         => Configure(options => options.SessionLifetime = lifetime);
+
+    /// <summary>
+    /// Enables OAuth 2.0 Dynamic Client Registration (RFC 7591) and Dynamic Client Registration Management
+    /// (RFC 7592). By default, registration requests must include an initial access token issued by this
+    /// server and containing one of the scopes configured using <see cref="SetInitialAccessTokenScopes(string[])"/>.
+    /// </summary>
+    /// <remarks>
+    /// Note: the registration endpoint URI must be set using <see cref="SetRegistrationEndpointUris(string[])"/>.
+    /// </remarks>
+    /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
+    public OpenIddictServerBuilder EnableDynamicClientRegistration()
+        => Configure(options => options.EnableDynamicClientRegistration = true);
+
+    /// <summary>
+    /// Allows client registration requests that don't include an initial access token (open registration).
+    /// </summary>
+    /// <remarks>
+    /// Enabling open registration is NOT recommended unless custom handlers are used to approve registrations.
+    /// </remarks>
+    /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
+    public OpenIddictServerBuilder AllowAnonymousClientRegistration()
+        => Configure(options => options.AllowAnonymousClientRegistration = true);
+
+    /// <summary>
+    /// Sets the scopes initial access tokens must contain (at least one of them) to be accepted by the registration endpoint.
+    /// </summary>
+    /// <param name="scopes">The scopes.</param>
+    /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
+    public OpenIddictServerBuilder SetInitialAccessTokenScopes(params string[] scopes)
+    {
+        ArgumentNullException.ThrowIfNull(scopes);
+
+        if (Array.Exists(scopes, string.IsNullOrEmpty))
+        {
+            throw new ArgumentException(SR.FormatID0457(nameof(scopes)), nameof(scopes));
+        }
+
+        return Configure(options =>
+        {
+            options.InitialAccessTokenScopes.Clear();
+            options.InitialAccessTokenScopes.UnionWith(scopes);
+        });
+    }
+
+    /// <summary>
+    /// Sets the registration access token lifetime. By default, registration access tokens never expire.
+    /// </summary>
+    /// <param name="lifetime">The registration access token lifetime.</param>
+    /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
+    public OpenIddictServerBuilder SetRegistrationAccessTokenLifetime(TimeSpan? lifetime)
+        => Configure(options => options.RegistrationAccessTokenLifetime = lifetime);
+
+    /// <summary>
+    /// Configures OpenIddict to require a software statement in client registration requests.
+    /// </summary>
+    /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
+    public OpenIddictServerBuilder RequireSoftwareStatement()
+        => Configure(options => options.RequireSoftwareStatement = true);
+
+    /// <summary>
+    /// Adds a key trusted to sign the software statements sent to the registration endpoint.
+    /// </summary>
+    /// <param name="key">The security key.</param>
+    /// <param name="issuers">The issuers allowed to issue software statements, if applicable.</param>
+    /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
+    public OpenIddictServerBuilder AddSoftwareStatementSigningKey(SecurityKey key, params string[] issuers)
+    {
+        ArgumentNullException.ThrowIfNull(key);
+        ArgumentNullException.ThrowIfNull(issuers);
+
+        if (Array.Exists(issuers, string.IsNullOrEmpty))
+        {
+            throw new ArgumentException(SR.FormatID0457(nameof(issuers)), nameof(issuers));
+        }
+
+        return Configure(options =>
+        {
+            options.SoftwareStatementSigningKeys.Add(key);
+            options.SoftwareStatementIssuers.UnionWith(issuers);
+        });
+    }
 
     /// <summary>
     /// Configures OpenIddict to require a valid DPoP proof for all token requests.

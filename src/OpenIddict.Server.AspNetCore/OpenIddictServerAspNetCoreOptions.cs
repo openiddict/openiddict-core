@@ -36,6 +36,14 @@ public sealed class OpenIddictServerAspNetCoreOptions
     public bool EnableBackchannelAuthenticationEndpointPassthrough { get; set; }
 
     /// <summary>
+    /// Gets or sets a boolean indicating whether the pass-through mode is enabled for the registration endpoint.
+    /// When the pass-through mode is used, registration requests are initially validated by OpenIddict.
+    /// Once validated, the rest of the request processing pipeline is invoked, so that registration requests
+    /// can be approved or rejected at a later stage (in a custom middleware or in a MVC controller, for instance).
+    /// </summary>
+    public bool EnableRegistrationEndpointPassthrough { get; set; }
+
+    /// <summary>
     /// Gets or sets a boolean indicating whether the pass-through mode is enabled for the end session endpoint.
     /// When the pass-through mode is used, OpenID Connect requests are initially handled by OpenIddict.
     /// Once validated, the rest of the request processing pipeline is invoked, so that OpenID Connect requests

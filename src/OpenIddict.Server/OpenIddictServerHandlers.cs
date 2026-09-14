@@ -141,6 +141,7 @@ public static partial class OpenIddictServerHandlers
         .. Introspection.DefaultHandlers,
         .. Logout.DefaultHandlers,
         .. Protection.DefaultHandlers,
+        .. Registration.DefaultHandlers,
         .. Revocation.DefaultHandlers,
         .. Session.DefaultHandlers,
         .. UserInfo.DefaultHandlers
@@ -182,6 +183,7 @@ public static partial class OpenIddictServerHandlers
                 Matches(context.Options.IntrospectionEndpointUris)       ? OpenIddictServerEndpointType.Introspection       :
                 Matches(context.Options.JsonWebKeySetEndpointUris)       ? OpenIddictServerEndpointType.JsonWebKeySet       :
                 Matches(context.Options.PushedAuthorizationEndpointUris) ? OpenIddictServerEndpointType.PushedAuthorization :
+                Matches(context.Options.RegistrationEndpointUris)        ? OpenIddictServerEndpointType.Registration        :
                 Matches(context.Options.RevocationEndpointUris)          ? OpenIddictServerEndpointType.Revocation          :
                 Matches(context.Options.TokenEndpointUris)               ? OpenIddictServerEndpointType.Token               :
                 Matches(context.Options.UserInfoEndpointUris)            ? OpenIddictServerEndpointType.UserInfo            :
@@ -265,7 +267,8 @@ public static partial class OpenIddictServerHandlers
                 OpenIddictServerEndpointType.EndSession    or OpenIddictServerEndpointType.EndUserVerification or
                 OpenIddictServerEndpointType.Introspection or OpenIddictServerEndpointType.PushedAuthorization or
                 OpenIddictServerEndpointType.Revocation    or OpenIddictServerEndpointType.Token               or
-                OpenIddictServerEndpointType.UserInfo      or OpenIddictServerEndpointType.BackchannelAuthentication
+                OpenIddictServerEndpointType.UserInfo      or OpenIddictServerEndpointType.BackchannelAuthentication or
+                OpenIddictServerEndpointType.Registration
                     => default,
 
                 _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0002)),
@@ -300,6 +303,12 @@ public static partial class OpenIddictServerHandlers
             {
                 // The userinfo endpoint requires sending a valid access token.
                 OpenIddictServerEndpointType.UserInfo => (true, true, true, true),
+
+                // Client registration requests (RFC 7591) can include an initial access token. When present, it
+                // is always validated but whether it is required is determined by the registration endpoint itself.
+                OpenIddictServerEndpointType.Registration when string.Equals(
+                    context.Transaction.RequestMethod, "POST", StringComparison.OrdinalIgnoreCase)
+                    => (true, false, true, true),
 
                 _ => (false, false, false, false)
             };
@@ -477,7 +486,8 @@ public static partial class OpenIddictServerHandlers
 
             context.AccessToken = context.EndpointType switch
             {
-                OpenIddictServerEndpointType.UserInfo when context.ExtractAccessToken
+                OpenIddictServerEndpointType.UserInfo or
+                OpenIddictServerEndpointType.Registration when context.ExtractAccessToken
                     => context.Request.AccessToken,
 
                 _ => null
@@ -971,6 +981,7 @@ public static partial class OpenIddictServerHandlers
 
             // Don't validate the client identifier on endpoints that don't support client identification.
             if (context.EndpointType is OpenIddictServerEndpointType.EndUserVerification or
+                                        OpenIddictServerEndpointType.Registration        or
                                         OpenIddictServerEndpointType.UserInfo)
             {
                 return;
@@ -1087,6 +1098,7 @@ public static partial class OpenIddictServerHandlers
             if (context.EndpointType is OpenIddictServerEndpointType.Authorization       or
                                         OpenIddictServerEndpointType.EndSession          or
                                         OpenIddictServerEndpointType.EndUserVerification or
+                                        OpenIddictServerEndpointType.Registration        or
                                         OpenIddictServerEndpointType.UserInfo)
             {
                 return;
@@ -1194,6 +1206,7 @@ public static partial class OpenIddictServerHandlers
             if (context.EndpointType is OpenIddictServerEndpointType.Authorization       or
                                         OpenIddictServerEndpointType.EndSession          or
                                         OpenIddictServerEndpointType.EndUserVerification or
+                                        OpenIddictServerEndpointType.Registration        or
                                         OpenIddictServerEndpointType.UserInfo)
             {
                 return;
@@ -1253,6 +1266,7 @@ public static partial class OpenIddictServerHandlers
             if (context.EndpointType is OpenIddictServerEndpointType.Authorization       or
                                         OpenIddictServerEndpointType.EndSession          or
                                         OpenIddictServerEndpointType.EndUserVerification or
+                                        OpenIddictServerEndpointType.Registration        or
                                         OpenIddictServerEndpointType.UserInfo)
             {
                 return;
@@ -1800,8 +1814,11 @@ public static partial class OpenIddictServerHandlers
             {
                 // Audience validation is deliberately disabled for the userinfo endpoint to allow any access token to
                 // be used even if the authorization server isn't explicitly listed as a valid audience in the token.
-                DisableAudienceValidation = context.EndpointType is OpenIddictServerEndpointType.UserInfo,
-                DisablePresenterValidation = context.EndpointType is OpenIddictServerEndpointType.UserInfo,
+                // Similarly, initial access tokens sent to the registration endpoint are not bound to a specific audience.
+                DisableAudienceValidation = context.EndpointType is OpenIddictServerEndpointType.UserInfo or
+                                                                    OpenIddictServerEndpointType.Registration,
+                DisablePresenterValidation = context.EndpointType is OpenIddictServerEndpointType.UserInfo or
+                                                                     OpenIddictServerEndpointType.Registration,
                 Token = context.AccessToken,
                 ValidTokenTypes = { TokenTypeIdentifiers.AccessToken }
             };
@@ -2766,6 +2783,7 @@ public static partial class OpenIddictServerHandlers
             if (context.EndpointType is not (OpenIddictServerEndpointType.Authorization       or
                                              OpenIddictServerEndpointType.EndUserVerification or
                                              OpenIddictServerEndpointType.PushedAuthorization or
+                                             OpenIddictServerEndpointType.Registration        or
                                              OpenIddictServerEndpointType.Token               or
                                              OpenIddictServerEndpointType.UserInfo))
             {
@@ -2801,7 +2819,8 @@ public static partial class OpenIddictServerHandlers
                 OpenIddictServerEndpointType.Authorization             or
                 OpenIddictServerEndpointType.BackchannelAuthentication or
                 OpenIddictServerEndpointType.EndUserVerification       or
-                OpenIddictServerEndpointType.PushedAuthorization
+                OpenIddictServerEndpointType.PushedAuthorization       or
+                OpenIddictServerEndpointType.Registration
                     => Errors.AccessDenied,
 
                 OpenIddictServerEndpointType.Token    => Errors.InvalidGrant,
@@ -2815,7 +2834,8 @@ public static partial class OpenIddictServerHandlers
                 OpenIddictServerEndpointType.Authorization             or
                 OpenIddictServerEndpointType.BackchannelAuthentication or
                 OpenIddictServerEndpointType.EndUserVerification       or
-                OpenIddictServerEndpointType.PushedAuthorization
+                OpenIddictServerEndpointType.PushedAuthorization       or
+                OpenIddictServerEndpointType.Registration
                     => SR.GetResourceString(SR.ID2015),
 
                 OpenIddictServerEndpointType.Token    => SR.GetResourceString(SR.ID2024),
@@ -2829,7 +2849,8 @@ public static partial class OpenIddictServerHandlers
                 OpenIddictServerEndpointType.Authorization             or
                 OpenIddictServerEndpointType.BackchannelAuthentication or
                 OpenIddictServerEndpointType.EndUserVerification       or
-                OpenIddictServerEndpointType.PushedAuthorization
+                OpenIddictServerEndpointType.PushedAuthorization       or
+                OpenIddictServerEndpointType.Registration
                     => SR.FormatID8000(SR.ID2015),
 
                 OpenIddictServerEndpointType.Token    => SR.FormatID8000(SR.ID2024),

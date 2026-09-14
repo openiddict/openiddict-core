@@ -292,6 +292,20 @@ public static class OpenIddictServerHandlerFilters
     }
 
     /// <summary>
+    /// Represents a filter that excludes the associated handlers if the request is not a registration request.
+    /// </summary>
+    public sealed class RequireRegistrationRequest : IOpenIddictServerHandlerFilter<BaseContext>
+    {
+        /// <inheritdoc/>
+        public ValueTask<bool> IsActiveAsync(BaseContext context)
+        {
+            ArgumentNullException.ThrowIfNull(context);
+
+            return new(context.EndpointType is OpenIddictServerEndpointType.Registration);
+        }
+    }
+
+    /// <summary>
     /// Represents a filter that excludes the associated handlers if the request is not a device request.
     /// </summary>
     public sealed class RequireDeviceAuthorizationRequest : IOpenIddictServerHandlerFilter<BaseContext>

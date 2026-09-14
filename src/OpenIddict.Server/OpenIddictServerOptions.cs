@@ -106,6 +106,11 @@ public sealed class OpenIddictServerOptions
     public List<Uri> PushedAuthorizationEndpointUris { get; } = [];
 
     /// <summary>
+    /// Gets the absolute and relative URIs associated to the dynamic client registration endpoint.
+    /// </summary>
+    public List<Uri> RegistrationEndpointUris { get; } = [];
+
+    /// <summary>
     /// Gets the absolute and relative URIs associated to the revocation endpoint.
     /// </summary>
     public List<Uri> RevocationEndpointUris { get; } = [];
@@ -735,6 +740,53 @@ public sealed class OpenIddictServerOptions
     /// Note: this option requires enabling DPoP support using <see cref="EnableDPoPSupport"/>.
     /// </remarks>
     public bool RequireDPoPNonces { get; set; }
+
+    /// <summary>
+    /// Gets or sets a boolean indicating whether OAuth 2.0 Dynamic Client Registration (RFC 7591) and
+    /// Dynamic Client Registration Management (RFC 7592) are enabled. When enabled, the registration
+    /// endpoint creates, reads, updates and deletes client applications using the application manager.
+    /// </summary>
+    /// <remarks>
+    /// Note: this option requires setting at least one registration endpoint URI.
+    /// </remarks>
+    public bool EnableDynamicClientRegistration { get; set; }
+
+    /// <summary>
+    /// Gets or sets a boolean indicating whether client registration requests that don't include an initial
+    /// access token are accepted. Setting this property to <see langword="true"/> enables open registration
+    /// and is NOT recommended unless additional policy handlers are registered to approve registrations.
+    /// </summary>
+    public bool AllowAnonymousClientRegistration { get; set; }
+
+    /// <summary>
+    /// Gets the scopes that initial access tokens must contain (at least one of them) to be accepted
+    /// by the registration endpoint. Initial access tokens are access tokens issued by this server.
+    /// </summary>
+    public HashSet<string> InitialAccessTokenScopes { get; } = new(StringComparer.Ordinal);
+
+    /// <summary>
+    /// Gets or sets the period of time registration access tokens (RFC 7592) remain valid after being issued.
+    /// By default, registration access tokens don't expire and remain valid until the client is deleted.
+    /// </summary>
+    public TimeSpan? RegistrationAccessTokenLifetime { get; set; }
+
+    /// <summary>
+    /// Gets or sets a boolean indicating whether client registration requests must include a software statement.
+    /// </summary>
+    public bool RequireSoftwareStatement { get; set; }
+
+    /// <summary>
+    /// Gets the issuers whose software statements are accepted by the registration endpoint.
+    /// If no issuer is added, any issuer is accepted, as long as the software statement
+    /// is signed by one of the keys listed in <see cref="SoftwareStatementSigningKeys"/>.
+    /// </summary>
+    public HashSet<string> SoftwareStatementIssuers { get; } = new(StringComparer.Ordinal);
+
+    /// <summary>
+    /// Gets the keys trusted to sign the software statements sent to the registration endpoint.
+    /// If no key is added, software statements are always rejected as unapproved.
+    /// </summary>
+    public List<SecurityKey> SoftwareStatementSigningKeys { get; } = [];
 
     /// <summary>
     /// Gets or sets the maximum difference allowed between the issuance date of a DPoP proof and the current date.

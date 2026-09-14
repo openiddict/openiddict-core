@@ -58,6 +58,26 @@ public static class OpenIddictServerAspNetCoreHandlerFilters
 
     /// <summary>
     /// Represents a filter that excludes the associated handlers if the
+    /// pass-through mode was not enabled for the registration endpoint.
+    /// </summary>
+    public sealed class RequireRegistrationEndpointPassthroughEnabled : IOpenIddictServerHandlerFilter<BaseContext>
+    {
+        private readonly IOptionsMonitor<OpenIddictServerAspNetCoreOptions> _options;
+
+        public RequireRegistrationEndpointPassthroughEnabled(IOptionsMonitor<OpenIddictServerAspNetCoreOptions> options)
+            => _options = options ?? throw new ArgumentNullException(nameof(options));
+
+        /// <inheritdoc/>
+        public ValueTask<bool> IsActiveAsync(BaseContext context)
+        {
+            ArgumentNullException.ThrowIfNull(context);
+
+            return new(_options.CurrentValue.EnableRegistrationEndpointPassthrough);
+        }
+    }
+
+    /// <summary>
+    /// Represents a filter that excludes the associated handlers if the
     /// pass-through mode was not enabled for the end session endpoint.
     /// </summary>
     public sealed class RequireEndSessionEndpointPassthroughEnabled : IOpenIddictServerHandlerFilter<BaseContext>

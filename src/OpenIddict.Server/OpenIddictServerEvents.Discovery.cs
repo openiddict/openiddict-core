@@ -132,6 +132,11 @@ public static partial class OpenIddictServerEvents
         public Uri? PushedAuthorizationEndpoint { get; set; }
 
         /// <summary>
+        /// Gets or sets the dynamic client registration endpoint URI.
+        /// </summary>
+        public Uri? RegistrationEndpoint { get; set; }
+
+        /// <summary>
         /// Gets or sets the revocation endpoint URI.
         /// </summary>
         public Uri? RevocationEndpoint { get; set; }
