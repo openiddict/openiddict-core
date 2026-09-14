@@ -20,8 +20,8 @@ namespace OpenIddict.Server.Saml;
 /// </summary>
 /// <remarks>
 /// <para>
-/// <see cref="IDistributedCache"/> doesn't offer an atomic "get and remove" operation: concurrent resolutions are
-/// serialized in the current process but not across instances. Load-balanced deployments requiring strict
+/// <see cref="IDistributedCache"/> doesn't offer an atomic "get and remove" operation: concurrent resolutions of the same
+/// artifact are serialized in the current process but not across instances. Load-balanced deployments requiring strict
 /// single use should register an <see cref="IOpenIddictServerSamlArtifactStore"/> backed by an atomic store.
 /// </para>
 /// <para>
@@ -44,7 +44,7 @@ public sealed class OpenIddictServerSamlArtifactStore : IOpenIddictServerSamlArt
     private static readonly byte[] KeyDerivationLabel = Encoding.ASCII.GetBytes("OpenIddict.Server.Saml.ArtifactStore.v2");
 
     private readonly IDistributedCache _cache;
-    private readonly SemaphoreSlim _lock = new(initialCount: 1, maxCount: 1);
+    private readonly OpenIddictServerSamlKeyedLock _locks = new();
     private readonly IOptionsMonitor<OpenIddictServerSamlOptions> _options;
 
     /// <summary>
@@ -99,7 +99,9 @@ public sealed class OpenIddictServerSamlArtifactStore : IOpenIddictServerSamlArt
 
         byte[]? data;
 
-        await _lock.WaitAsync(cancellationToken);
+        var semaphore = _locks.GetSemaphore(key);
+
+        await semaphore.WaitAsync(cancellationToken);
 
         try
         {
@@ -114,7 +116,7 @@ public sealed class OpenIddictServerSamlArtifactStore : IOpenIddictServerSamlArt
 
         finally
         {
-            _lock.Release();
+            semaphore.Release();
         }
 
         if (Unprotect(handle, key, data) is not byte[] plaintext)

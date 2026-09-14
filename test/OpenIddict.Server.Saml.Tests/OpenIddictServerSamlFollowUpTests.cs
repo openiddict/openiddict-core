@@ -1,5 +1,9 @@
+using System.Collections.Concurrent;
+using System.Globalization;
+using System.Reflection;
 using System.Text;
 using System.Xml;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Xunit;
@@ -167,16 +171,17 @@ public class OpenIddictServerSamlFollowUpTests
     }
 
     [Theory]
-    [InlineData(Bindings.HttpArtifact)]
-    [InlineData(Bindings.HttpPost)]
-    public async Task ValidatePostAuthenticationRequestAsync_RejectsIndexCombinedWithProtocolBinding(string binding)
+    [InlineData(Bindings.HttpArtifact, true)]
+    [InlineData(Bindings.HttpPost, false)]
+    public async Task ValidatePostAuthenticationRequestAsync_AcceptsIndexCombinedWithMatchingProtocolBinding(string binding, bool succeeded)
     {
         // Arrange
         using var provider = CreateProvider(options => options.EnableArtifactBinding = true,
             sp => sp.AssertionConsumerServiceBindings[1] = Bindings.HttpArtifact);
         var service = provider.GetRequiredService<OpenIddictServerSamlService>();
 
-        // Note: AssertionConsumerServiceIndex is mutually exclusive with ProtocolBinding (SAML core, 3.4.1).
+        // Note: AssertionConsumerServiceIndex is mutually exclusive with ProtocolBinding (SAML core, 3.4.1),
+        // but the combination is tolerated when the binding matches the binding of the indexed endpoint.
         var document = SignDocument(CreateAuthenticationRequest(
             attributes: "AssertionConsumerServiceIndex=\"1\" ProtocolBinding=\"" + binding + "\""), ServiceProviderCertificate);
 
@@ -184,9 +189,14 @@ public class OpenIddictServerSamlFollowUpTests
         var result = await service.ValidatePostAuthenticationRequestAsync(EncodePost(document.OuterXml), null, Endpoint);
 
         // Assert
-        Assert.False(result.Succeeded);
-        Assert.False(result.CanReturnErrorToServiceProvider);
-        Assert.Equal(SR.GetResourceString(SR.ID2249), result.ErrorDescription);
+        Assert.Equal(succeeded, result.Succeeded);
+        Assert.Equal(Bindings.HttpArtifact, result.ResponseBinding);
+
+        if (!succeeded)
+        {
+            Assert.True(result.CanReturnErrorToServiceProvider);
+            Assert.Equal(StatusCodes.UnsupportedBinding, result.SecondLevelStatus);
+        }
     }
 
     [Fact]
@@ -681,7 +691,8 @@ public class OpenIddictServerSamlFollowUpTests
         Assert.False(await service.ConsumeRequestStateAsync(state));
         Assert.True(await service.ConsumeRequestStateAsync(state with { Id = "other" }));
 
-        // States without identifier (e.g created by a previous version) cannot be bound to a single use.
+        // States without identifier (created by a previous version) are also bound to a single use.
+        Assert.True(await service.ConsumeRequestStateAsync(state with { Id = null }));
         Assert.False(await service.ConsumeRequestStateAsync(state with { Id = null }));
 
         var other = disabled.GetRequiredService<OpenIddictServerSamlService>();
@@ -690,7 +701,7 @@ public class OpenIddictServerSamlFollowUpTests
     }
 
     [Fact]
-    public async Task DeserializeRequestState_ReadsLegacyStatesThatCannotBeConsumedWhenReplayProtectionIsEnabled()
+    public async Task DeserializeRequestState_ReadsLegacyStatesThatCanBeConsumedOnce()
     {
         // Arrange: payload serialized using the previous format (version 2, without identifier and response binding).
         var expiration = DateTimeOffset.UtcNow.AddMinutes(5);
@@ -731,6 +742,7 @@ public class OpenIddictServerSamlFollowUpTests
         Assert.Equal(expiration.UtcTicks, state.ExpirationDate.UtcTicks);
 
         Assert.True((await enabled.GetRequiredService<OpenIddictServerSamlService>().ValidateRequestStateAsync(state)).Succeeded);
+        Assert.True(await enabled.GetRequiredService<OpenIddictServerSamlService>().ConsumeRequestStateAsync(state));
         Assert.False(await enabled.GetRequiredService<OpenIddictServerSamlService>().ConsumeRequestStateAsync(state));
         Assert.True(await disabled.GetRequiredService<OpenIddictServerSamlService>().ConsumeRequestStateAsync(state));
 
@@ -752,6 +764,66 @@ public class OpenIddictServerSamlFollowUpTests
         // Act and assert
         Assert.True(await cache.TryAddAsync("identifier", clock.Now.AddMinutes(5), CancellationToken.None));
         Assert.False(await cache.TryAddAsync("identifier", clock.Now.AddMinutes(5), CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task ReplayCache_FailsClosedWhenPrivateMemoryCacheIsFull()
+    {
+        // Arrange
+        using var provider = CreateProvider();
+        var cache = (OpenIddictServerSamlReplayCache) Activator.CreateInstance(typeof(OpenIddictServerSamlReplayCache),
+            BindingFlags.Instance | BindingFlags.NonPublic, binder: null,
+            args: [provider, provider.GetRequiredService<IOptionsMonitor<OpenIddictServerSamlOptions>>(), 2L], culture: null)!;
+
+        var expiration = DateTimeOffset.UtcNow.AddMinutes(5);
+
+        // Act and assert
+        Assert.True(await cache.TryAddAsync("first", expiration, CancellationToken.None));
+        Assert.True(await cache.TryAddAsync("second", expiration, CancellationToken.None));
+
+        // New identifiers can no longer be remembered: they are rejected and existing entries are not evicted.
+        Assert.False(await cache.TryAddAsync("third", expiration, CancellationToken.None));
+        await Task.Delay(100);
+        Assert.False(await cache.TryAddAsync("first", expiration, CancellationToken.None));
+        Assert.False(await cache.TryAddAsync("second", expiration, CancellationToken.None));
+        Assert.False(await cache.TryAddAsync("fourth", expiration, CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task ReplayCache_FailsClosedWhenDistributedCacheDiscardsEntries()
+    {
+        // Arrange
+        using var provider = CreateProviderWithDistributedCache(new DiscardingDistributedCache());
+        var cache = provider.GetRequiredService<IOpenIddictServerSamlReplayCache>();
+
+        // Act and assert
+        Assert.False(await cache.TryAddAsync("identifier", DateTimeOffset.UtcNow.AddMinutes(5), CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task ReplayCache_DoesNotSerializeUnrelatedIdentifiers()
+    {
+        // Arrange
+        var distributed = new BlockingDistributedCache();
+        using var provider = CreateProviderWithDistributedCache(distributed);
+        var cache = provider.GetRequiredService<IOpenIddictServerSamlReplayCache>();
+
+        var expiration = DateTimeOffset.UtcNow.AddMinutes(5);
+        var blocked = cache.TryAddAsync("blocked", expiration, CancellationToken.None).AsTask();
+        await distributed.Entered.Task;
+
+        // Act: at least one of these identifiers uses a different lock stripe than the blocked one.
+        var others = Enumerable.Range(0, 8)
+            .Select(index => cache.TryAddAsync("other-" + index.ToString(CultureInfo.InvariantCulture), expiration, CancellationToken.None).AsTask())
+            .ToList();
+
+        await Task.WhenAny(Task.WhenAny(others), Task.Delay(10_000));
+        var completed = others.Any(task => task.IsCompleted);
+        distributed.Release.SetResult(true);
+
+        // Assert
+        Assert.True(completed);
+        Assert.True(await blocked);
     }
 
     [Fact]
@@ -877,6 +949,71 @@ public class OpenIddictServerSamlFollowUpTests
     {
         public ValueTask<OpenIddictServerSamlServiceProvider?> FindByEntityIdAsync(string entityId, CancellationToken cancellationToken)
             => new(result: null);
+    }
+
+    private static ServiceProvider CreateProviderWithDistributedCache(IDistributedCache cache)
+    {
+        var services = new ServiceCollection();
+        services.AddSingleton(cache);
+        services.AddOpenIddict()
+            .AddServer(options => options.UseSaml(saml => saml
+                .SetEntityId(IdentityProviderEntityId)
+                .AddSigningCertificate(IdentityProviderCertificate)
+                .AddServiceProvider(CreateServiceProvider())));
+
+        return services.BuildServiceProvider();
+    }
+
+    public sealed class DiscardingDistributedCache : IDistributedCache
+    {
+        public byte[]? Get(string key) => null;
+        public Task<byte[]?> GetAsync(string key, CancellationToken token = default) => Task.FromResult<byte[]?>(null);
+        public void Refresh(string key) { }
+        public Task RefreshAsync(string key, CancellationToken token = default) => Task.CompletedTask;
+        public void Remove(string key) { }
+        public Task RemoveAsync(string key, CancellationToken token = default) => Task.CompletedTask;
+        public void Set(string key, byte[] value, DistributedCacheEntryOptions options) { }
+        public Task SetAsync(string key, byte[] value, DistributedCacheEntryOptions options, CancellationToken token = default)
+            => Task.CompletedTask;
+    }
+
+    // Stores entries in memory and blocks the first read until released.
+    public sealed class BlockingDistributedCache : IDistributedCache
+    {
+        private readonly ConcurrentDictionary<string, byte[]> _entries = new(StringComparer.Ordinal);
+        private int _calls;
+
+        public TaskCompletionSource<bool> Entered { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        public TaskCompletionSource<bool> Release { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public byte[]? Get(string key) => _entries.TryGetValue(key, out var value) ? value : null;
+
+        public async Task<byte[]?> GetAsync(string key, CancellationToken token = default)
+        {
+            if (Interlocked.Increment(ref _calls) is 1)
+            {
+                Entered.SetResult(true);
+                await Release.Task;
+            }
+
+            return Get(key);
+        }
+
+        public void Refresh(string key) { }
+        public Task RefreshAsync(string key, CancellationToken token = default) => Task.CompletedTask;
+        public void Remove(string key) => _entries.TryRemove(key, out _);
+        public Task RemoveAsync(string key, CancellationToken token = default)
+        {
+            Remove(key);
+            return Task.CompletedTask;
+        }
+
+        public void Set(string key, byte[] value, DistributedCacheEntryOptions options) => _entries[key] = value;
+        public Task SetAsync(string key, byte[] value, DistributedCacheEntryOptions options, CancellationToken token = default)
+        {
+            Set(key, value, options);
+            return Task.CompletedTask;
+        }
     }
 
     public sealed class RejectingReplayCache : IOpenIddictServerSamlReplayCache

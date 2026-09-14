@@ -290,7 +290,7 @@ public sealed class OpenIddictServerSamlService
     /// <summary>
     /// Marks a validated request state as used. When request replay protection is enabled (default), this method must be
     /// called before returning a response to the service provider (ideally once the response was successfully created):
-    /// it returns <see langword="false"/> if the state was already used (or doesn't have an identifier), in which case
+    /// it returns <see langword="false"/> if the state was already used (or the replay cache couldn't store it), in which case
     /// no response must be returned.
     /// </summary>
     /// <param name="state">The request state.</param>
@@ -309,8 +309,7 @@ public sealed class OpenIddictServerSamlService
 
         async ValueTask<bool> ExecuteAsync(RequestState state, CancellationToken cancellationToken)
         {
-            if (string.IsNullOrEmpty(state.Id) || !await _replayCache.TryAddAsync(
-                "request-state:" + state.Id, state.ExpirationDate, cancellationToken))
+            if (!await _replayCache.TryAddAsync(GetRequestStateReplayIdentifier(state), state.ExpirationDate, cancellationToken))
             {
                 _logger.LogInformation(6643, SR.GetResourceString(SR.ID6643), SR.GetResourceString(SR.ID2263));
                 return false;
@@ -319,6 +318,17 @@ public sealed class OpenIddictServerSamlService
             return true;
         }
     }
+
+    // Note: states created by the previous version don't have an identifier: to avoid breaking the logins that are in
+    // progress during an upgrade, they are bound to a single use using the values identifying the original request
+    // (these states are short-lived and can no longer be created, so this fallback only applies during their lifetime).
+    private static string GetRequestStateReplayIdentifier(RequestState state)
+        => !string.IsNullOrEmpty(state.Id) ? "request-state:" + state.Id : string.Join("\n",
+            "legacy-request-state:" + state.ServiceProvider,
+            state.AssertionConsumerServiceUrl.AbsoluteUri,
+            state.CreationDate.UtcTicks.ToString(CultureInfo.InvariantCulture),
+            state.ExpirationDate.UtcTicks.ToString(CultureInfo.InvariantCulture),
+            state.Request?.Id);
 
     /// <summary>
     /// Validates a request state restored by the host after the user was authenticated. The service provider is resolved
@@ -443,7 +453,7 @@ public sealed class OpenIddictServerSamlService
             using var reader = new BinaryReader(stream, Encoding.UTF8);
 
             // Note: states created by the previous version (without identifier and response binding) can still be
-            // deserialized but are rejected by ConsumeRequestStateAsync() when request replay protection is enabled.
+            // deserialized and consumed once by ConsumeRequestStateAsync() (see GetRequestStateReplayIdentifier()).
             // States created by this version are not understood by the previous version (rolling upgrades).
             var version = reader.ReadByte();
             if (version is not (RequestStateVersion or LegacyRequestStateVersion))
@@ -586,13 +596,10 @@ public sealed class OpenIddictServerSamlService
         var index = root.HasAttribute("AssertionConsumerServiceIndex") ? root.GetAttribute("AssertionConsumerServiceIndex") : null;
         var protocolBinding = root.HasAttribute("ProtocolBinding") ? root.GetAttribute("ProtocolBinding") : null;
 
-        // Note: AssertionConsumerServiceIndex is mutually exclusive with the AssertionConsumerServiceURL
-        // and ProtocolBinding attributes (SAML core, 3.4.1): such requests are rejected as malformed.
-        if (index is not null && protocolBinding is not null)
-        {
-            return Reject(SR.ID2249, provider, relayState);
-        }
-
+        // Note: AssertionConsumerServiceIndex is mutually exclusive with the AssertionConsumerServiceURL and ProtocolBinding
+        // attributes (SAML core, 3.4.1). For compatibility with service providers sending both, requests combining the index
+        // with ProtocolBinding are accepted when the binding matches the binding of the indexed endpoint: otherwise, an
+        // UnsupportedBinding error is returned to the service provider (see below). Index + URL requests are rejected.
         int? position = (url, index) switch
         {
             (not null, not null) => null,

@@ -93,6 +93,8 @@ public sealed class OpenIddictServerSamlOptions
     /// The default replay cache uses the <see cref="Microsoft.Extensions.Caching.Distributed.IDistributedCache"/> registered
     /// in the DI container (or a size-limited private in-memory cache): load-balanced deployments must register a shared
     /// distributed cache (or a custom <see cref="IOpenIddictServerSamlReplayCache"/>) for replays to be detected across instances.
+    /// When enabled, reloading (or navigating back to) a single sign-on URL returns an error instead of a new response.
+    /// Can be disabled using <see cref="Microsoft.Extensions.DependencyInjection.OpenIddictServerSamlBuilder.DisableRequestReplayProtection()"/>.
     /// </remarks>
     public bool EnableRequestReplayProtection { get; set; } = true;
 
