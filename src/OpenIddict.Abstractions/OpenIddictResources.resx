@@ -1977,6 +1977,30 @@ To register them, use 'services.AddOpenIddict().AddServer().UseSaml().UseOwin()'
   <data name="ID0579" xml:space="preserve">
     <value>The authentication type used by the OpenIddict SAML identity provider OWIN integration must be set. To set it, use 'services.AddOpenIddict().AddServer().UseSaml().UseOwin().SetAuthenticationType()'.</value>
   </data>
+  <data name="ID0760" xml:space="preserve">
+    <value>The back-channel logout request cannot be handled because no session store was registered.
+To remove the sessions matching back-channel logout requests, register an 'IOpenIddictClientSessionStore' implementation using 'services.AddOpenIddict().AddClient().AddSessionStore()'.
+Alternatively, enable the pass-through mode using 'services.AddOpenIddict().AddClient().UseAspNetCore().EnableBackchannelLogoutEndpointPassthrough()' or handle 'HandleBackchannelLogoutRequestContext' using a custom event handler.</value>
+  </data>
+  <data name="ID0761" xml:space="preserve">
+    <value>The back-channel logout request was not correctly extracted.
+To extract back-channel logout requests, create a class implementing 'IOpenIddictClientHandler&lt;ExtractBackchannelLogoutRequestContext&gt;' and register it using 'services.AddOpenIddict().AddClient().AddEventHandler()'.</value>
+  </data>
+  <data name="ID0762" xml:space="preserve">
+    <value>The back-channel logout response was not correctly applied.
+To apply back-channel logout responses, create a class implementing 'IOpenIddictClientHandler&lt;ApplyBackchannelLogoutResponseContext&gt;' and register it using 'services.AddOpenIddict().AddClient().AddEventHandler()'.</value>
+  </data>
+  <data name="ID0763" xml:space="preserve">
+    <value>The front-channel logout request was not correctly extracted.
+To extract front-channel logout requests, create a class implementing 'IOpenIddictClientHandler&lt;ExtractFrontchannelLogoutRequestContext&gt;' and register it using 'services.AddOpenIddict().AddClient().AddEventHandler()'.</value>
+  </data>
+  <data name="ID0764" xml:space="preserve">
+    <value>The front-channel logout response was not correctly applied.
+To apply front-channel logout responses, create a class implementing 'IOpenIddictClientHandler&lt;ApplyFrontchannelLogoutResponseContext&gt;' and register it using 'services.AddOpenIddict().AddClient().AddEventHandler()'.</value>
+  </data>
+  <data name="ID0765" xml:space="preserve">
+    <value>The logout token maximum age cannot be negative.</value>
+  </data>
   <data name="ID0532" xml:space="preserve">
     <value>The backchannel authentication request was not correctly extracted.
 To extract backchannel authentication requests, create a class implementing 'IOpenIddictServerHandler&lt;ExtractBackchannelAuthenticationRequestContext&gt;' and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.</value>
@@ -2820,6 +2844,33 @@ To apply backchannel authentication responses, create a class implementing 'IOpe
   </data>
   <data name="ID2364" xml:space="preserve">
     <value>The scheme, host and port of the '{0}' setting must match those of a registered redirect URI.</value>
+  </data>
+  <data name="ID2380" xml:space="preserve">
+    <value>The logout token is malformed or doesn't contain a valid issuer.</value>
+  </data>
+  <data name="ID2381" xml:space="preserve">
+    <value>No unique client registration matches the issuer and the audiences of the logout token.</value>
+  </data>
+  <data name="ID2382" xml:space="preserve">
+    <value>The '{0}' claim is missing or invalid in the logout token.</value>
+  </data>
+  <data name="ID2383" xml:space="preserve">
+    <value>The logout token must not contain a 'nonce' claim.</value>
+  </data>
+  <data name="ID2384" xml:space="preserve">
+    <value>The logout token cannot be used by this client application.</value>
+  </data>
+  <data name="ID2385" xml:space="preserve">
+    <value>The logout token has expired or was issued outside of the accepted time window.</value>
+  </data>
+  <data name="ID2386" xml:space="preserve">
+    <value>The logout token has already been used.</value>
+  </data>
+  <data name="ID2387" xml:space="preserve">
+    <value>The mandatory 'iss' and 'sid' parameters are missing or invalid.</value>
+  </data>
+  <data name="ID2388" xml:space="preserve">
+    <value>No unique client registration matches the specified issuer.</value>
   </data>
   <data name="ID4000" xml:space="preserve">
     <value>The '{0}' parameter shouldn't be null or empty at this point.</value>
@@ -3825,6 +3876,30 @@ This may indicate that the hashed entry is corrupted or malformed.</value>
   </data>
   <data name="ID6537" xml:space="preserve">
     <value>The session '{Identifier}' was already terminated: no logout notification was sent.</value>
+  </data>
+  <data name="ID6560" xml:space="preserve">
+    <value>The back-channel logout request was successfully extracted: {Request}.</value>
+  </data>
+  <data name="ID6561" xml:space="preserve">
+    <value>The back-channel logout request was successfully validated.</value>
+  </data>
+  <data name="ID6562" xml:space="preserve">
+    <value>The front-channel logout request was successfully extracted: {Request}.</value>
+  </data>
+  <data name="ID6563" xml:space="preserve">
+    <value>The front-channel logout request was successfully validated.</value>
+  </data>
+  <data name="ID6564" xml:space="preserve">
+    <value>The logout token was rejected: {Reason}</value>
+  </data>
+  <data name="ID6565" xml:space="preserve">
+    <value>{Count} session(s) were removed by {Store} for the registration '{Registration}', the subject '{Subject}' and the session '{SessionId}'.</value>
+  </data>
+  <data name="ID6566" xml:space="preserve">
+    <value>The current user session was signed out using the '{Scheme}' scheme after a front-channel logout request for the session '{SessionId}'.</value>
+  </data>
+  <data name="ID6567" xml:space="preserve">
+    <value>The current user session was not signed out because it doesn't match the front-channel logout request.</value>
   </data>
   <data name="ID8000" xml:space="preserve">
     <value>https://documentation.openiddict.com/errors/{0}</value>

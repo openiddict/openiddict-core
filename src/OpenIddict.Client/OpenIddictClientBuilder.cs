@@ -1170,6 +1170,131 @@ public sealed class OpenIddictClientBuilder
     }
 
     /// <summary>
+    /// Sets the relative or absolute URIs associated to the back-channel logout endpoint
+    /// (OpenID Connect Back-Channel Logout 1.0). If an empty array is specified, the endpoint will be considered disabled.
+    /// </summary>
+    /// <param name="uris">The URIs associated to the endpoint.</param>
+    /// <returns>The <see cref="OpenIddictClientBuilder"/> instance.</returns>
+    public OpenIddictClientBuilder SetBackchannelLogoutEndpointUris(
+        [StringSyntax(StringSyntaxAttribute.Uri)] params string[] uris)
+    {
+        ArgumentNullException.ThrowIfNull(uris);
+
+        return SetBackchannelLogoutEndpointUris([.. uris.Select(uri => new Uri(uri, UriKind.RelativeOrAbsolute))]);
+    }
+
+    /// <summary>
+    /// Sets the relative or absolute URIs associated to the back-channel logout endpoint
+    /// (OpenID Connect Back-Channel Logout 1.0). If an empty array is specified, the endpoint will be considered disabled.
+    /// </summary>
+    /// <param name="uris">The URIs associated to the endpoint.</param>
+    /// <returns>The <see cref="OpenIddictClientBuilder"/> instance.</returns>
+    public OpenIddictClientBuilder SetBackchannelLogoutEndpointUris(params Uri[] uris)
+    {
+        ArgumentNullException.ThrowIfNull(uris);
+
+        if (Array.Exists(uris, OpenIddictHelpers.IsImplicitFileUri))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0072), nameof(uris));
+        }
+
+        if (Array.Exists(uris, static uri => uri.OriginalString.StartsWith("~", StringComparison.OrdinalIgnoreCase)))
+        {
+            throw new ArgumentException(SR.FormatID0081("~"), nameof(uris));
+        }
+
+        return Configure(options =>
+        {
+            options.BackchannelLogoutEndpointUris.Clear();
+            options.BackchannelLogoutEndpointUris.AddRange(uris);
+        });
+    }
+
+    /// <summary>
+    /// Sets the relative or absolute URIs associated to the front-channel logout endpoint
+    /// (OpenID Connect Front-Channel Logout 1.0). If an empty array is specified, the endpoint will be considered disabled.
+    /// </summary>
+    /// <param name="uris">The URIs associated to the endpoint.</param>
+    /// <returns>The <see cref="OpenIddictClientBuilder"/> instance.</returns>
+    public OpenIddictClientBuilder SetFrontchannelLogoutEndpointUris(
+        [StringSyntax(StringSyntaxAttribute.Uri)] params string[] uris)
+    {
+        ArgumentNullException.ThrowIfNull(uris);
+
+        return SetFrontchannelLogoutEndpointUris([.. uris.Select(uri => new Uri(uri, UriKind.RelativeOrAbsolute))]);
+    }
+
+    /// <summary>
+    /// Sets the relative or absolute URIs associated to the front-channel logout endpoint
+    /// (OpenID Connect Front-Channel Logout 1.0). If an empty array is specified, the endpoint will be considered disabled.
+    /// </summary>
+    /// <param name="uris">The URIs associated to the endpoint.</param>
+    /// <returns>The <see cref="OpenIddictClientBuilder"/> instance.</returns>
+    public OpenIddictClientBuilder SetFrontchannelLogoutEndpointUris(params Uri[] uris)
+    {
+        ArgumentNullException.ThrowIfNull(uris);
+
+        if (Array.Exists(uris, OpenIddictHelpers.IsImplicitFileUri))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0072), nameof(uris));
+        }
+
+        if (Array.Exists(uris, static uri => uri.OriginalString.StartsWith("~", StringComparison.OrdinalIgnoreCase)))
+        {
+            throw new ArgumentException(SR.FormatID0081("~"), nameof(uris));
+        }
+
+        return Configure(options =>
+        {
+            options.FrontchannelLogoutEndpointUris.Clear();
+            options.FrontchannelLogoutEndpointUris.AddRange(uris);
+        });
+    }
+
+    /// <summary>
+    /// Sets the maximum age of the logout tokens that don't include an "exp" claim, which is also
+    /// the minimum period during which logout token identifiers are kept to prevent replay attacks.
+    /// </summary>
+    /// <param name="age">The maximum age.</param>
+    /// <returns>The <see cref="OpenIddictClientBuilder"/> instance.</returns>
+    public OpenIddictClientBuilder SetLogoutTokenMaximumAge(TimeSpan age)
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThan(age, TimeSpan.Zero);
+
+        return Configure(options => options.LogoutTokenMaximumAge = age);
+    }
+
+    /// <summary>
+    /// Registers a session store used to remove the sessions targeted by
+    /// back-channel and front-channel logout requests (scoped lifetime).
+    /// </summary>
+    /// <typeparam name="TStore">The type of the session store.</typeparam>
+    /// <returns>The <see cref="OpenIddictClientBuilder"/> instance.</returns>
+    public OpenIddictClientBuilder AddSessionStore<
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TStore>()
+        where TStore : class, IOpenIddictClientSessionStore
+    {
+        Services.TryAddEnumerable(ServiceDescriptor.Scoped<IOpenIddictClientSessionStore, TStore>());
+
+        return this;
+    }
+
+    /// <summary>
+    /// Registers a session store instance used to remove the sessions
+    /// targeted by back-channel and front-channel logout requests.
+    /// </summary>
+    /// <param name="store">The session store.</param>
+    /// <returns>The <see cref="OpenIddictClientBuilder"/> instance.</returns>
+    public OpenIddictClientBuilder AddSessionStore(IOpenIddictClientSessionStore store)
+    {
+        ArgumentNullException.ThrowIfNull(store);
+
+        Services.AddSingleton(store);
+
+        return this;
+    }
+
+    /// <summary>
     /// Enables DPoP (RFC 9449) token binding, which allows the client to send DPoP proofs to the token,
     /// pushed authorization and userinfo endpoints of authorization servers that advertise DPoP support.
     /// DPoP proofs are signed using <see cref="OpenIddictClientRegistration.DPoPSigningCredentials"/>

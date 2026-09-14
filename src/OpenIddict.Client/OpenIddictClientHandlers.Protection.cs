@@ -199,6 +199,29 @@ public static partial class OpenIddictClientHandlers
                         parameters.TokenDecryptionKeys = context.Options.TokenValidationParameters.TokenDecryptionKeys;
                     }
 
+                    // Logout tokens are RECOMMENDED to be explicitly typed using "logout+jwt" but tokens sent by
+                    // implementations that predate the final specification may use the generic "JWT" type or no
+                    // "typ" header at all. To prevent cross-JWT confusion, any other explicit type is rejected:
+                    // identity tokens sent as logout tokens are additionally rejected due to the lack of "events"
+                    // claim and the presence of a "nonce" claim.
+                    //
+                    // See https://openid.net/specs/openid-connect-backchannel-1_0.html#LogoutToken
+                    // and https://openid.net/specs/openid-connect-backchannel-1_0.html#Validation.
+                    else if (context.ValidTokenTypes.Count is 1 &&
+                        context.ValidTokenTypes.Contains(TokenTypeIdentifiers.Private.LogoutToken))
+                    {
+                        parameters.TypeValidator = static (type, token, parameters) => type switch
+                        {
+                            null or { Length: 0 } => string.Empty,
+
+                            _ when string.Equals(type, JsonWebTokenTypes.LogoutToken, StringComparison.OrdinalIgnoreCase) ||
+                                   string.Equals(type, JsonWebTokenTypes.Prefixes.Application + JsonWebTokenTypes.LogoutToken, StringComparison.OrdinalIgnoreCase) ||
+                                   string.Equals(type, JsonWebTokenTypes.GenericJsonWebToken, StringComparison.OrdinalIgnoreCase) => type,
+
+                            _ => throw new SecurityTokenInvalidTypeException(SR.GetResourceString(SR.ID2089)) { InvalidType = type }
+                        };
+                    }
+
                     return parameters;
                 }
             }

@@ -83,6 +83,12 @@ public static class OpenIddictClientExtensions
         builder.Services.TryAddSingleton<RequireUserInfoValidationEnabled>();
         builder.Services.TryAddSingleton<RequireWebServicesFederationClaimMappingEnabled>();
 
+        // Register the filters used by the RP-initiated back-channel and front-channel logout handlers.
+        builder.Services.TryAddSingleton<RequireBackchannelLogoutRequest>();
+        builder.Services.TryAddSingleton<RequireFrontchannelLogoutRequest>();
+        builder.Services.TryAddSingleton<RequireLogoutTokenPrincipal>();
+        builder.Services.TryAddSingleton<RequireLogoutTokenValidated>();
+
         // Register the built-in client event handlers used by the OpenIddict client components.
         // Note: the order used here is not important, as the actual order is set in the options.
         builder.Services.TryAdd(DefaultHandlers.Select(descriptor => descriptor.ServiceDescriptor));

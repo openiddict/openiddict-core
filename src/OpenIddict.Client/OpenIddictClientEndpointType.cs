@@ -24,5 +24,15 @@ public enum OpenIddictClientEndpointType
     /// <summary>
     /// Post-logout redirection endpoint.
     /// </summary>
-    PostLogoutRedirection = 2
+    PostLogoutRedirection = 2,
+
+    /// <summary>
+    /// Back-channel logout endpoint (OpenID Connect Back-Channel Logout 1.0).
+    /// </summary>
+    BackchannelLogout = 3,
+
+    /// <summary>
+    /// Front-channel logout endpoint (OpenID Connect Front-Channel Logout 1.0).
+    /// </summary>
+    FrontchannelLogout = 4
 }

@@ -13,7 +13,7 @@ namespace OpenIddict.Client;
 /// <summary>
 /// Exposes various records used to represent client requests and responses.
 /// </summary>
-public static class OpenIddictClientModels
+public static partial class OpenIddictClientModels
 {
     /// <summary>
     /// Represents an interactive authentication request.

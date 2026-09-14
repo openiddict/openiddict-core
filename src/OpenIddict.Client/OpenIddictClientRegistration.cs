@@ -74,6 +74,44 @@ public sealed class OpenIddictClientRegistration
     public Uri? PostLogoutRedirectUri { get; set; }
 
     /// <summary>
+    /// Gets or sets the URI of the back-channel logout endpoint registered for this client at the authorization server
+    /// ("backchannel_logout_uri" client metadata, OpenID Connect Back-Channel Logout 1.0, section 2.2).
+    /// </summary>
+    /// <remarks>
+    /// Note: this value is automatically added to <see cref="OpenIddictClientOptions.BackchannelLogoutEndpointUris"/>
+    /// for static registrations.
+    /// </remarks>
+    public Uri? BackchannelLogoutUri { get; set; }
+
+    /// <summary>
+    /// Gets or sets a boolean indicating whether the logout tokens sent by the authorization server must include
+    /// a "sid" claim ("backchannel_logout_session_required" client metadata, OpenID Connect Back-Channel Logout 1.0,
+    /// section 2.2). When enabled, logout tokens that don't include a "sid" claim are rejected.
+    /// </summary>
+    public bool BackchannelLogoutSessionRequired { get; set; }
+
+    /// <summary>
+    /// Gets or sets the URI of the front-channel logout endpoint registered for this client at the authorization server
+    /// ("frontchannel_logout_uri" client metadata, OpenID Connect Front-Channel Logout 1.0, section 2).
+    /// </summary>
+    /// <remarks>
+    /// Note: this value is automatically added to <see cref="OpenIddictClientOptions.FrontchannelLogoutEndpointUris"/>
+    /// for static registrations.
+    /// </remarks>
+    public Uri? FrontchannelLogoutUri { get; set; }
+
+    /// <summary>
+    /// Gets or sets a boolean indicating whether the authorization server must send the "iss" and "sid" parameters to
+    /// the front-channel logout endpoint ("frontchannel_logout_session_required" client metadata, OpenID Connect
+    /// Front-Channel Logout 1.0, section 2).
+    /// </summary>
+    /// <remarks>
+    /// Note: the OpenIddict client always requires these parameters, as they are needed to identify the
+    /// client registration and the session to terminate (and to mitigate logout CSRF attacks).
+    /// </remarks>
+    public bool FrontchannelLogoutSessionRequired { get; set; } = true;
+
+    /// <summary>
     /// Gets the list of encryption credentials used to create tokens for this client.
     /// Multiple credentials can be added to support key rollover, but if X.509 keys
     /// are used, at least one of them must have a valid creation/expiration date.

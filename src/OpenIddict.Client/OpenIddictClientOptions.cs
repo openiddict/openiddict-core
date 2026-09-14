@@ -102,6 +102,30 @@ public sealed class OpenIddictClientOptions
     public List<Uri> RedirectionEndpointUris { get; } = [];
 
     /// <summary>
+    /// Gets the absolute and relative URIs associated to the back-channel logout endpoint,
+    /// as defined by <see href="https://openid.net/specs/openid-connect-backchannel-1_0.html">OpenID Connect Back-Channel Logout 1.0</see>.
+    /// </summary>
+    public List<Uri> BackchannelLogoutEndpointUris { get; } = [];
+
+    /// <summary>
+    /// Gets the absolute and relative URIs associated to the front-channel logout endpoint,
+    /// as defined by <see href="https://openid.net/specs/openid-connect-frontchannel-1_0.html">OpenID Connect Front-Channel Logout 1.0</see>.
+    /// </summary>
+    public List<Uri> FrontchannelLogoutEndpointUris { get; } = [];
+
+    /// <summary>
+    /// Gets or sets the maximum age of the logout tokens that don't include an "exp" claim and the maximum
+    /// difference allowed between the current date and the "iat" claim of logout tokens issued in the future.
+    /// Logout token identifiers are kept in the replay cache for at least this period. The default value is 5 minutes.
+    /// </summary>
+    /// <remarks>
+    /// Note: when an <see cref="Microsoft.Extensions.Caching.Distributed.IDistributedCache"/> implementation
+    /// is registered in the dependency injection container, it is used to store the logout token identifiers.
+    /// Otherwise, the identifiers are stored in memory, which is not suitable for applications deployed on multiple instances.
+    /// </remarks>
+    public TimeSpan LogoutTokenMaximumAge { get; set; } = TimeSpan.FromMinutes(5);
+
+    /// <summary>
     /// Gets the static client registrations used by the OpenIddict client services.
     /// </summary>
     /// <remarks>

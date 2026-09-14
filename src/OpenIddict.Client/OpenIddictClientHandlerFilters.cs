@@ -323,6 +323,62 @@ public static class OpenIddictClientHandlerFilters
     }
 
     /// <summary>
+    /// Represents a filter that excludes the associated handlers if the request is not a back-channel logout request.
+    /// </summary>
+    public sealed class RequireBackchannelLogoutRequest : IOpenIddictClientHandlerFilter<BaseContext>
+    {
+        /// <inheritdoc/>
+        public ValueTask<bool> IsActiveAsync(BaseContext context)
+        {
+            ArgumentNullException.ThrowIfNull(context);
+
+            return new(context.EndpointType is OpenIddictClientEndpointType.BackchannelLogout);
+        }
+    }
+
+    /// <summary>
+    /// Represents a filter that excludes the associated handlers if the request is not a front-channel logout request.
+    /// </summary>
+    public sealed class RequireFrontchannelLogoutRequest : IOpenIddictClientHandlerFilter<BaseContext>
+    {
+        /// <inheritdoc/>
+        public ValueTask<bool> IsActiveAsync(BaseContext context)
+        {
+            ArgumentNullException.ThrowIfNull(context);
+
+            return new(context.EndpointType is OpenIddictClientEndpointType.FrontchannelLogout);
+        }
+    }
+
+    /// <summary>
+    /// Represents a filter that excludes the associated handlers if no logout token principal is available.
+    /// </summary>
+    public sealed class RequireLogoutTokenPrincipal : IOpenIddictClientHandlerFilter<ProcessAuthenticationContext>
+    {
+        /// <inheritdoc/>
+        public ValueTask<bool> IsActiveAsync(ProcessAuthenticationContext context)
+        {
+            ArgumentNullException.ThrowIfNull(context);
+
+            return new(context.LogoutTokenPrincipal is not null);
+        }
+    }
+
+    /// <summary>
+    /// Represents a filter that excludes the associated handlers if the logout token is not validated.
+    /// </summary>
+    public sealed class RequireLogoutTokenValidated : IOpenIddictClientHandlerFilter<ProcessAuthenticationContext>
+    {
+        /// <inheritdoc/>
+        public ValueTask<bool> IsActiveAsync(ProcessAuthenticationContext context)
+        {
+            ArgumentNullException.ThrowIfNull(context);
+
+            return new(context.ValidateLogoutToken);
+        }
+    }
+
+    /// <summary>
     /// Represents a filter that excludes the associated handlers if the request is not a post-logout redirection request.
     /// </summary>
     public sealed class RequirePostLogoutRedirectionRequest : IOpenIddictClientHandlerFilter<BaseContext>

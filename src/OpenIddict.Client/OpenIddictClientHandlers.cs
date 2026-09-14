@@ -242,6 +242,7 @@ public static partial class OpenIddictClientHandlers
         .. Discovery.DefaultHandlers,
         .. Exchange.DefaultHandlers,
         .. Introspection.DefaultHandlers,
+        .. Logout.DefaultHandlers,
         .. Protection.DefaultHandlers,
         .. Revocation.DefaultHandlers,
         .. Session.DefaultHandlers,
@@ -277,6 +278,8 @@ public static partial class OpenIddictClientHandlers
             context.EndpointType =
                 Matches(context.Options.RedirectionEndpointUris)           ? OpenIddictClientEndpointType.Redirection           :
                 Matches(context.Options.PostLogoutRedirectionEndpointUris) ? OpenIddictClientEndpointType.PostLogoutRedirection :
+                Matches(context.Options.BackchannelLogoutEndpointUris)     ? OpenIddictClientEndpointType.BackchannelLogout     :
+                Matches(context.Options.FrontchannelLogoutEndpointUris)    ? OpenIddictClientEndpointType.FrontchannelLogout    :
                                                                              OpenIddictClientEndpointType.Unknown;
 
             return ValueTask.CompletedTask;
@@ -365,6 +368,12 @@ public static partial class OpenIddictClientHandlers
                         throw new InvalidOperationException(SR.GetResourceString(SR.ID0358));
                     }
 
+                    break;
+
+                // Note: logout requests sent by the authorization server don't use state tokens
+                // and don't require any signing or encryption credential to be validated.
+                case OpenIddictClientEndpointType.BackchannelLogout:
+                case OpenIddictClientEndpointType.FrontchannelLogout:
                     break;
 
                 case OpenIddictClientEndpointType.Unknown when !string.IsNullOrEmpty(context.Nonce):
@@ -468,7 +477,9 @@ public static partial class OpenIddictClientHandlers
             // Client registrations/configurations that need to be resolved as part of authentication demands
             // triggered from the redirection or post-logout redirection requests are handled elsewhere.
             if (context.EndpointType is OpenIddictClientEndpointType.PostLogoutRedirection or
-                                        OpenIddictClientEndpointType.Redirection)
+                                        OpenIddictClientEndpointType.Redirection            or
+                                        OpenIddictClientEndpointType.BackchannelLogout     or
+                                        OpenIddictClientEndpointType.FrontchannelLogout)
             {
                 return;
             }
@@ -4726,7 +4737,8 @@ public static partial class OpenIddictClientHandlers
             context.MergedPrincipal = CreateMergedPrincipal(
                 context.FrontchannelIdentityTokenPrincipal,
                 context.BackchannelIdentityTokenPrincipal,
-                context.UserInfoTokenPrincipal);
+                context.UserInfoTokenPrincipal,
+                context.LogoutTokenPrincipal);
 
             // Attach the registration identifier and identity of the authorization server to the returned principal to allow
             // resolving it even if no other claim was added (e.g if no id_token was returned/no userinfo endpoint is available).

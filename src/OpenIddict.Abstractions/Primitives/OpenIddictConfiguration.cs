@@ -37,6 +37,24 @@ public sealed class OpenIddictConfiguration
     public HashSet<string> BackchannelTokenDeliveryModesSupported { get; } = new(StringComparer.Ordinal);
 
     /// <summary>
+    /// Gets or sets a boolean indicating whether the server includes the "sid" claim in the logout tokens
+    /// sent to relying parties (OpenID Connect Back-Channel Logout 1.0, section 2.1).
+    /// </summary>
+    public bool? BackchannelLogoutSessionSupported { get; set; }
+
+    /// <summary>
+    /// Gets or sets a boolean indicating whether back-channel logout is supported by the server
+    /// (OpenID Connect Back-Channel Logout 1.0, section 2.1).
+    /// </summary>
+    public bool? BackchannelLogoutSupported { get; set; }
+
+    /// <summary>
+    /// Gets or sets the URI of the check session iframe exposed by the server
+    /// (OpenID Connect Session Management 1.0, section 3.3).
+    /// </summary>
+    public Uri? CheckSessionIframe { get; set; }
+
+    /// <summary>
     /// Gets or sets a boolean indicating whether the "user_code" parameter
     /// is supported by the backchannel authentication endpoint.
     /// </summary>
@@ -66,6 +84,18 @@ public sealed class OpenIddictConfiguration
     /// Gets or sets the URI of the end session endpoint.
     /// </summary>
     public Uri? EndSessionEndpoint { get; set; }
+
+    /// <summary>
+    /// Gets or sets a boolean indicating whether the server sends the "iss" and "sid" parameters to the front-channel
+    /// logout URIs of relying parties (OpenID Connect Front-Channel Logout 1.0, section 3).
+    /// </summary>
+    public bool? FrontchannelLogoutSessionSupported { get; set; }
+
+    /// <summary>
+    /// Gets or sets a boolean indicating whether front-channel logout is supported by the server
+    /// (OpenID Connect Front-Channel Logout 1.0, section 3).
+    /// </summary>
+    public bool? FrontchannelLogoutSupported { get; set; }
 
     /// <summary>
     /// Gets the grant types supported by the server.

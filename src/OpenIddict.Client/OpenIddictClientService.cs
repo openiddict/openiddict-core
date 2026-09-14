@@ -23,7 +23,7 @@ namespace OpenIddict.Client;
 /// <summary>
 /// Provides high-level APIs for performing various authentication operations.
 /// </summary>
-public class OpenIddictClientService
+public partial class OpenIddictClientService
 {
     private readonly ConcurrentDictionary<string, string> _nonces = new(StringComparer.OrdinalIgnoreCase);
     private readonly ConcurrentDictionary<string, (OpenIddictClientRegistration Registration, DateTimeOffset ExpirationDate)> _registrations

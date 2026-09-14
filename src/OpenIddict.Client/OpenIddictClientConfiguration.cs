@@ -63,6 +63,22 @@ public sealed class OpenIddictClientConfiguration : IPostConfigureOptions<OpenId
             .Distinct()
             .ToList());
 
+        // Implicitly add the back-channel and front-channel logout URIs attached to the
+        // client registrations to the list of logout endpoints URIs if they haven't been added.
+        options.BackchannelLogoutEndpointUris.AddRange(options.Registrations
+            .Where(static registration => registration.BackchannelLogoutUri is not null)
+            .Select(static registration => registration.BackchannelLogoutUri!)
+            .Where(uri => !options.BackchannelLogoutEndpointUris.Contains(uri))
+            .Distinct()
+            .ToList());
+
+        options.FrontchannelLogoutEndpointUris.AddRange(options.Registrations
+            .Where(static registration => registration.FrontchannelLogoutUri is not null)
+            .Select(static registration => registration.FrontchannelLogoutUri!)
+            .Where(uri => !options.FrontchannelLogoutEndpointUris.Contains(uri))
+            .Distinct()
+            .ToList());
+
         // Sort the handlers collection using the order associated with each handler.
         options.Handlers.Sort((left, right) => left.Order.CompareTo(right.Order));
 
@@ -197,6 +213,11 @@ public sealed class OpenIddictClientConfiguration : IPostConfigureOptions<OpenId
             builder.AddError(SR.GetResourceString(SR.ID0285));
         }
 
+        if (options.LogoutTokenMaximumAge < TimeSpan.Zero)
+        {
+            builder.AddError(SR.GetResourceString(SR.ID0765));
+        }
+
         // Ensure the redirection endpoint has been enabled when the authorization code or implicit grants are supported.
         if (options.RedirectionEndpointUris.Count is 0 && (options.GrantTypes.Contains(GrantTypes.AuthorizationCode) ||
                                                            options.GrantTypes.Contains(GrantTypes.Implicit)))
@@ -256,6 +277,8 @@ public sealed class OpenIddictClientConfiguration : IPostConfigureOptions<OpenId
         {
             var uris = options.RedirectionEndpointUris.Distinct()
                 .Concat(options.PostLogoutRedirectionEndpointUris.Distinct())
+                .Concat(options.BackchannelLogoutEndpointUris.Distinct())
+                .Concat(options.FrontchannelLogoutEndpointUris.Distinct())
                 .ToList();
 
             return uris.Count == uris.Distinct().Count();

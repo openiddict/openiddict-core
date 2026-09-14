@@ -1041,6 +1041,67 @@ public static partial class OpenIddictClientEvents
         /// Note: overriding the value of this property is generally not recommended.
         /// </remarks>
         public bool DisableUserInfoValidation { get; set; }
+
+        /// <summary>
+        /// Gets or sets a boolean indicating whether a logout token should be extracted from the current context.
+        /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
+        public bool ExtractLogoutToken { get; set; }
+
+        /// <summary>
+        /// Gets or sets a boolean indicating whether a logout token
+        /// must be resolved for the authentication to be considered valid.
+        /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
+        public bool RequireLogoutToken { get; set; }
+
+        /// <summary>
+        /// Gets or sets a boolean indicating whether the logout token extracted from the current context should be validated.
+        /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
+        public bool ValidateLogoutToken { get; set; }
+
+        /// <summary>
+        /// Gets or sets a boolean indicating whether an invalid logout token
+        /// will cause the authentication demand to be rejected or will be ignored.
+        /// </summary>
+        /// <remarks>
+        /// Note: overriding the value of this property is generally not recommended.
+        /// </remarks>
+        public bool RejectLogoutToken { get; set; }
+
+        /// <summary>
+        /// Gets or sets the logout token sent to the back-channel logout endpoint, if applicable.
+        /// </summary>
+        public string? LogoutToken { get; set; }
+
+        /// <summary>
+        /// Gets or sets the principal extracted from the logout token, if applicable.
+        /// </summary>
+        public ClaimsPrincipal? LogoutTokenPrincipal { get; set; }
+
+        /// <summary>
+        /// Gets or sets the session identifier ("sid") resolved from the logout
+        /// token or from the front-channel logout request, if applicable.
+        /// </summary>
+        public string? SessionId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the subject ("sub") resolved from the logout token, if applicable.
+        /// </summary>
+        public string? Subject { get; set; }
+
+        /// <summary>
+        /// Gets or sets the "session_state" parameter returned by the authorization server as part of the
+        /// authorization response (OpenID Connect Session Management 1.0, section 3), if applicable.
+        /// </summary>
+        public string? SessionState { get; set; }
     }
 
     /// <summary>
