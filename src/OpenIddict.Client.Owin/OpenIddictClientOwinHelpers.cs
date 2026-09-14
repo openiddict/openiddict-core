@@ -42,6 +42,32 @@ public static class OpenIddictClientOwinHelpers
     }
 
     /// <summary>
+    /// Reads the CIBA ping or push notification sent by the authorization server to the client notification endpoint.
+    /// The returned notification is expected to be passed to
+    /// <see cref="OpenIddictClientService.AuthenticateWithBackchannelNotificationAsync"/>, that validates it.
+    /// </summary>
+    /// <param name="request">The OWIN request.</param>
+    /// <returns>The notification or <see langword="null"/> if the request is not a valid JSON POST notification.</returns>
+    /// <remarks>
+    /// Note: per the CIBA specification, the client notification endpoint SHOULD respond with a 204 status code.
+    /// </remarks>
+    public static async Task<OpenIddictClientModels.BackchannelNotification?> ReadBackchannelNotificationAsync(this IOwinRequest request)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+
+        if (!string.Equals(request.Method, "POST", StringComparison.OrdinalIgnoreCase))
+        {
+            return null;
+        }
+
+        return await OpenIddictClientHelpers.CreateBackchannelNotificationAsync(
+            authorization: request.Headers.Get("Authorization"),
+            type: request.ContentType,
+            body: request.Body,
+            cancellationToken: request.CallCancelled);
+    }
+
+    /// <summary>
     /// Retrieves the <see cref="OpenIddictClientEndpointType"/> instance stored in <see cref="BaseContext"/>.
     /// </summary>
     /// <param name="context">The context instance.</param>

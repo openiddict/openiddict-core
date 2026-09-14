@@ -126,6 +126,7 @@ public static partial class OpenIddictClientHandlers
                         => ((JsonElement) value).ValueKind is JsonValueKind.String,
 
                     // The following parameters MUST be formatted as arrays of strings:
+                    Metadata.BackchannelAuthenticationRequestSigningAlgValuesSupported or
                     Metadata.BackchannelTokenDeliveryModesSupported                 or
                     Metadata.CodeChallengeMethodsSupported                          or
                     Metadata.DPoPSigningAlgValuesSupported                          or
@@ -442,6 +443,14 @@ public static partial class OpenIddictClientHandlers
                     if (!string.IsNullOrEmpty(mode))
                     {
                         context.Configuration.BackchannelTokenDeliveryModesSupported.Add(mode);
+                    }
+                }
+
+                foreach (var algorithm in (ImmutableArray<string?>?) context.Response[Metadata.BackchannelAuthenticationRequestSigningAlgValuesSupported] ?? [])
+                {
+                    if (!string.IsNullOrEmpty(algorithm))
+                    {
+                        context.Configuration.BackchannelAuthenticationRequestSigningAlgValuesSupported.Add(algorithm);
                     }
                 }
 

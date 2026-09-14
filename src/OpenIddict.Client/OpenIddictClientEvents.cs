@@ -821,6 +821,13 @@ public static partial class OpenIddictClientEvents
         public string? AuthenticationRequestId { get; set; }
 
         /// <summary>
+        /// Gets or sets the CIBA token delivery mode (poll, ping or push) used with the CIBA grant, if applicable.
+        /// When set to "push", the <see cref="TokenResponse"/> must be set to the payload sent by the authorization
+        /// server to the client notification endpoint and no token request is sent.
+        /// </summary>
+        public string? BackchannelTokenDeliveryMode { get; set; }
+
+        /// <summary>
         /// Gets or sets the device code to validate, if applicable.
         /// </summary>
         public string? DeviceCode { get; set; }
@@ -1288,6 +1295,23 @@ public static partial class OpenIddictClientEvents
         /// the backchannel authentication endpoint, if applicable.
         /// </summary>
         public TimeSpan? RequestedExpiry { get; set; }
+
+        /// <summary>
+        /// Gets or sets the bearer token the authorization server will use to authenticate the ping
+        /// or push notifications sent to the client notification endpoint, if applicable.
+        /// </summary>
+        public string? ClientNotificationToken { get; set; }
+
+        /// <summary>
+        /// Gets or sets the CIBA token delivery mode (poll, ping or push) the client is registered with, if applicable.
+        /// </summary>
+        public string? BackchannelTokenDeliveryMode { get; set; }
+
+        /// <summary>
+        /// Gets or sets the optional user code that will be sent to
+        /// the backchannel authentication endpoint, if applicable.
+        /// </summary>
+        public string? BackchannelUserCode { get; set; }
 
         /// <summary>
         /// Gets or sets the URI of the backchannel authentication endpoint, if applicable.

@@ -631,6 +631,23 @@ public static class OpenIddictClientHandlerFilters
     }
 
     /// <summary>
+    /// Represents a filter that excludes the associated handlers if no token response is expected to be
+    /// processed (i.e if no token request was sent and no token response was pushed by the server using
+    /// the CIBA push token delivery mode).
+    /// </summary>
+    public sealed class RequireTokenResponse : IOpenIddictClientHandlerFilter<ProcessAuthenticationContext>
+    {
+        /// <inheritdoc/>
+        public ValueTask<bool> IsActiveAsync(ProcessAuthenticationContext context)
+        {
+            ArgumentNullException.ThrowIfNull(context);
+
+            return new(context.SendTokenRequest || (context.TokenResponse is not null &&
+                context.BackchannelTokenDeliveryMode is BackchannelTokenDeliveryModes.Push));
+        }
+    }
+
+    /// <summary>
     /// Represents a filter that excludes the associated handlers if token storage was not enabled.
     /// </summary>
     public sealed class RequireTokenStorageEnabled : IOpenIddictClientHandlerFilter<BaseContext>

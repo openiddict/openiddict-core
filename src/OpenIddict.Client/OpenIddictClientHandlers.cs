@@ -94,6 +94,7 @@ public static partial class OpenIddictClientHandlers
         ValidateBackchannelIdentityTokenPresenter.Descriptor,
         ValidateBackchannelIdentityTokenNonce.Descriptor,
         ValidateBackchannelTokenDigests.Descriptor,
+        ValidateBackchannelPushedTokens.Descriptor,
 
         ValidateBackchannelAccessToken.Descriptor,
         ValidateIssuedToken.Descriptor,
@@ -2300,6 +2301,12 @@ public static partial class OpenIddictClientHandlers
                 // standard grant type associated), never send a token request.
                 null when context.ResponseType is ResponseTypes.None => false,
 
+                // When the CIBA push token delivery mode is used, the tokens are sent by the authorization server
+                // to the client notification endpoint: in this case, the token endpoint MUST NOT be called.
+                //
+                // See https://openid.net/specs/openid-client-initiated-backchannel-authentication-core-1_0.html#rfc.section.10.3.
+                GrantTypes.Ciba when context.BackchannelTokenDeliveryMode is BackchannelTokenDeliveryModes.Push => false,
+
                 // For the non-interactive grant types, always send a token request.
                 GrantTypes.Ciba              or
                 GrantTypes.ClientCredentials or GrantTypes.DeviceCode   or
@@ -3277,7 +3284,7 @@ public static partial class OpenIddictClientHandlers
         /// </summary>
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
-                .AddFilter<RequireTokenRequest>()
+                .AddFilter<RequireTokenResponse>()
                 .UseSingletonHandler<ResolveValidatedBackchannelTokens>()
                 .SetOrder(EvaluateValidatedBackchannelTokens.Descriptor.Order + 1_000)
                 .Build();
@@ -3334,7 +3341,7 @@ public static partial class OpenIddictClientHandlers
         /// </summary>
         public static OpenIddictClientHandlerDescriptor Descriptor { get; }
             = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
-                .AddFilter<RequireTokenRequest>()
+                .AddFilter<RequireTokenResponse>()
                 .UseSingletonHandler<ValidateRequiredBackchannelTokens>()
                 // Note: this handler is registered with a high gap to allow handlers
                 // that do token extraction to be executed before this handler runs.
@@ -3798,57 +3805,172 @@ public static partial class OpenIddictClientHandlers
             // Note: unlike frontchannel identity tokens, backchannel identity tokens are not expected to include
             // an authorization code hash as no authorization code is normally returned from the token endpoint.
 
-            static ReadOnlySpan<char> ComputeTokenHash(string algorithm, string token)
+            return ValueTask.CompletedTask;
+        }
+
+        private static ReadOnlySpan<char> ComputeTokenHash(string algorithm, string token)
+        {
+            // Resolve the hash algorithm associated with the signing algorithm and compute the token
+            // hash. If an instance of the BCL hash algorithm cannot be resolved, throw an exception.
+            var hash = algorithm switch
             {
-                // Resolve the hash algorithm associated with the signing algorithm and compute the token
-                // hash. If an instance of the BCL hash algorithm cannot be resolved, throw an exception.
-                var hash = algorithm switch
-                {
-                    SecurityAlgorithms.EcdsaSha256 or SecurityAlgorithms.HmacSha256 or
-                    SecurityAlgorithms.RsaSha256   or SecurityAlgorithms.RsaSsaPssSha256
-                        => SHA256.HashData(Encoding.ASCII.GetBytes(token)),
+                SecurityAlgorithms.EcdsaSha256 or SecurityAlgorithms.HmacSha256 or
+                SecurityAlgorithms.RsaSha256   or SecurityAlgorithms.RsaSsaPssSha256
+                    => SHA256.HashData(Encoding.ASCII.GetBytes(token)),
 
-                    SecurityAlgorithms.EcdsaSha384 or SecurityAlgorithms.HmacSha384 or
-                    SecurityAlgorithms.RsaSha384   or SecurityAlgorithms.RsaSsaPssSha384
-                        => SHA384.HashData(Encoding.ASCII.GetBytes(token)),
+                SecurityAlgorithms.EcdsaSha384 or SecurityAlgorithms.HmacSha384 or
+                SecurityAlgorithms.RsaSha384   or SecurityAlgorithms.RsaSsaPssSha384
+                    => SHA384.HashData(Encoding.ASCII.GetBytes(token)),
 
-                    SecurityAlgorithms.EcdsaSha512 or SecurityAlgorithms.HmacSha384 or
-                    SecurityAlgorithms.RsaSha512   or SecurityAlgorithms.RsaSsaPssSha512
-                        => SHA512.HashData(Encoding.ASCII.GetBytes(token)),
+                SecurityAlgorithms.EcdsaSha512 or SecurityAlgorithms.HmacSha384 or
+                SecurityAlgorithms.RsaSha512   or SecurityAlgorithms.RsaSsaPssSha512
+                    => SHA512.HashData(Encoding.ASCII.GetBytes(token)),
 
-                    // Note: while not officially adopted yet, the OpenID Connect Working Group has proposed to use SHAKE256
-                    // for ML-DSA-based algorithms. See https://bitbucket.org/openid/connect/issues/1125 for more information.
-                    SecurityAlgorithms.MlDsa44 or SecurityAlgorithms.MlDsa65 or SecurityAlgorithms.MlDsa87
-                        => GetShake256Digest(Encoding.ASCII.GetBytes(token), length: 64),
+                // Note: while not officially adopted yet, the OpenID Connect Working Group has proposed to use SHAKE256
+                // for ML-DSA-based algorithms. See https://bitbucket.org/openid/connect/issues/1125 for more information.
+                SecurityAlgorithms.MlDsa44 or SecurityAlgorithms.MlDsa65 or SecurityAlgorithms.MlDsa87
+                    => GetShake256Digest(Encoding.ASCII.GetBytes(token), length: 64),
 
-                    _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0295))
-                };
+                _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0295))
+            };
 
-                // Warning: only the left-most half of the access token and authorization code digest is used.
-                // See http://openid.net/specs/openid-connect-core-1_0.html#CodeIDToken for more information.
-                return Base64Url.EncodeToString(hash.AsSpan(0, hash.Length / 2)).AsSpan();
-            }
+            // Warning: only the left-most half of the access token and authorization code digest is used.
+            // See http://openid.net/specs/openid-connect-core-1_0.html#CodeIDToken for more information.
+            return Base64Url.EncodeToString(hash.AsSpan(0, hash.Length / 2)).AsSpan();
+        }
 
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            static byte[] GetShake256Digest(byte[] data, int length)
-            {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static byte[] GetShake256Digest(byte[] data, int length)
+        {
 #if NET
-                return Shake256.HashData(data, length);
+            return Shake256.HashData(data, length);
 #else
-                var digest = new ShakeDigest(256);
-                digest.BlockUpdate(data, 0, data.Length);
+            var digest = new ShakeDigest(256);
+            digest.BlockUpdate(data, 0, data.Length);
 
-                var hash = new byte[length];
-                digest.DoFinal(hash, 0);
+            var hash = new byte[length];
+            digest.DoFinal(hash, 0);
 
-                return hash;
+            return hash;
 #endif
+        }
+
+        internal static bool ValidateTokenHash(string algorithm, string token, string hash) =>
+            CryptographicOperations.FixedTimeEquals(
+                left:  MemoryMarshal.AsBytes(hash.AsSpan()),
+                right: MemoryMarshal.AsBytes(ComputeTokenHash(algorithm, token)));
+    }
+
+    /// <summary>
+    /// Contains the logic responsible for validating the tokens pushed by the authorization server
+    /// to the client notification endpoint when using the CIBA push token delivery mode.
+    /// </summary>
+    /// <remarks>
+    /// See https://openid.net/specs/openid-client-initiated-backchannel-authentication-core-1_0.html#rfc.section.10.3.1.
+    /// </remarks>
+    public sealed class ValidateBackchannelPushedTokens : IOpenIddictClientHandler<ProcessAuthenticationContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+            = OpenIddictClientHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
+                .AddFilter<RequireBackchannelIdentityTokenPrincipal>()
+                .UseSingletonHandler<ValidateBackchannelPushedTokens>()
+                .SetOrder(ValidateBackchannelTokenDigests.Descriptor.Order + 500)
+                .SetType(OpenIddictClientHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessAuthenticationContext context)
+        {
+            ArgumentNullException.ThrowIfNull(context);
+
+            if (context.GrantType is not GrantTypes.Ciba ||
+                context.BackchannelTokenDeliveryMode is not BackchannelTokenDeliveryModes.Push)
+            {
+                return ValueTask.CompletedTask;
             }
 
-            static bool ValidateTokenHash(string algorithm, string token, string hash) =>
-                CryptographicOperations.FixedTimeEquals(
-                    left:  MemoryMarshal.AsBytes(hash.AsSpan()),
-                    right: MemoryMarshal.AsBytes(ComputeTokenHash(algorithm, token)));
+            Debug.Assert(context.BackchannelIdentityTokenPrincipal is { Identity: ClaimsIdentity }, SR.GetResourceString(SR.ID4006));
+            Debug.Assert(!string.IsNullOrEmpty(context.BackchannelAccessToken), SR.GetResourceString(SR.ID4010));
+
+            var algorithm = context.BackchannelIdentityTokenPrincipal.GetClaim(Claims.Private.SigningAlgorithm);
+            if (string.IsNullOrEmpty(algorithm))
+            {
+                throw new InvalidOperationException(SR.GetResourceString(SR.ID0295));
+            }
+
+            // The identity token MUST contain the authentication request identifier the notification relates to.
+            var identifier = context.BackchannelIdentityTokenPrincipal.GetClaim(Claims.AuthReqId);
+            if (string.IsNullOrEmpty(identifier))
+            {
+                context.Reject(
+                    error: Errors.InvalidRequest,
+                    description: SR.FormatID2126(Claims.AuthReqId),
+                    uri: SR.FormatID8000(SR.ID2126));
+
+                return ValueTask.CompletedTask;
+            }
+
+            if (!string.Equals(identifier, context.AuthenticationRequestId, StringComparison.Ordinal))
+            {
+                context.Logger.LogWarning(6414, SR.GetResourceString(SR.ID6414));
+
+                context.Reject(
+                    error: Errors.InvalidRequest,
+                    description: SR.FormatID2128(Claims.AuthReqId),
+                    uri: SR.FormatID8000(SR.ID2128));
+
+                return ValueTask.CompletedTask;
+            }
+
+            // The at_hash claim is REQUIRED for pushed identity tokens.
+            var hash = context.BackchannelIdentityTokenPrincipal.GetClaim(Claims.AccessTokenHash);
+            if (string.IsNullOrEmpty(hash))
+            {
+                context.Reject(
+                    error: Errors.InvalidRequest,
+                    description: SR.FormatID2126(Claims.AccessTokenHash),
+                    uri: SR.FormatID8000(SR.ID2126));
+
+                return ValueTask.CompletedTask;
+            }
+
+            if (!ValidateBackchannelTokenDigests.ValidateTokenHash(algorithm, context.BackchannelAccessToken, hash))
+            {
+                context.Reject(
+                    error: Errors.InvalidRequest,
+                    description: SR.FormatID2128(Claims.AccessTokenHash),
+                    uri: SR.FormatID8000(SR.ID2128));
+
+                return ValueTask.CompletedTask;
+            }
+
+            // The rt_hash claim is REQUIRED when a refresh token is pushed.
+            if (!string.IsNullOrEmpty(context.RefreshToken))
+            {
+                hash = context.BackchannelIdentityTokenPrincipal.GetClaim(Claims.RefreshTokenHash);
+                if (string.IsNullOrEmpty(hash))
+                {
+                    context.Reject(
+                        error: Errors.InvalidRequest,
+                        description: SR.FormatID2126(Claims.RefreshTokenHash),
+                        uri: SR.FormatID8000(SR.ID2126));
+
+                    return ValueTask.CompletedTask;
+                }
+
+                if (!ValidateBackchannelTokenDigests.ValidateTokenHash(algorithm, context.RefreshToken, hash))
+                {
+                    context.Reject(
+                        error: Errors.InvalidRequest,
+                        description: SR.FormatID2128(Claims.RefreshTokenHash),
+                        uri: SR.FormatID8000(SR.ID2128));
+
+                    return ValueTask.CompletedTask;
+                }
+            }
 
             return ValueTask.CompletedTask;
         }
@@ -7298,6 +7420,25 @@ public static partial class OpenIddictClientHandlers
                 {
                     throw new InvalidOperationException(SR.GetResourceString(SR.ID0541));
                 }
+
+                // Only the standard poll, ping and push token delivery modes are supported.
+                //
+                // See https://openid.net/specs/openid-client-initiated-backchannel-authentication-core-1_0.html#rfc.section.5.
+                if (!string.IsNullOrEmpty(context.BackchannelTokenDeliveryMode) &&
+                    context.BackchannelTokenDeliveryMode is not (BackchannelTokenDeliveryModes.Ping or
+                                                                 BackchannelTokenDeliveryModes.Poll or
+                                                                 BackchannelTokenDeliveryModes.Push))
+                {
+                    throw new InvalidOperationException(SR.FormatID0605(context.BackchannelTokenDeliveryMode));
+                }
+
+                // The client_notification_token MUST NOT exceed 1024 characters.
+                //
+                // See https://openid.net/specs/openid-client-initiated-backchannel-authentication-core-1_0.html#rfc.section.7.1.
+                if (context.ClientNotificationToken is { Length: > 1024 })
+                {
+                    throw new InvalidOperationException(SR.GetResourceString(SR.ID0607));
+                }
             }
 
             return ValueTask.CompletedTask;
@@ -7508,11 +7649,30 @@ public static partial class OpenIddictClientHandlers
             context.BackchannelAuthenticationRequest.LoginHint = context.LoginHint;
             context.BackchannelAuthenticationRequest.LoginHintToken = context.LoginHintToken;
             context.BackchannelAuthenticationRequest.BindingMessage = context.BindingMessage;
+            context.BackchannelAuthenticationRequest.UserCode = context.BackchannelUserCode;
 
             if (context.RequestedExpiry is TimeSpan expiry)
             {
                 context.BackchannelAuthenticationRequest.RequestedExpiry = (long) Math.Ceiling(expiry.TotalSeconds);
             }
+
+            if (context.BackchannelTokenDeliveryMode is BackchannelTokenDeliveryModes.Ping or BackchannelTokenDeliveryModes.Push)
+            {
+                // If the authorization server advertises the token delivery modes it supports, ensure the mode is supported.
+                if (context.Configuration.BackchannelTokenDeliveryModesSupported.Count is > 0 &&
+                   !context.Configuration.BackchannelTokenDeliveryModesSupported.Contains(context.BackchannelTokenDeliveryMode))
+                {
+                    throw new InvalidOperationException(SR.FormatID0606(context.BackchannelTokenDeliveryMode));
+                }
+
+                // The client_notification_token parameter is REQUIRED for the ping and push modes: if no token was
+                // explicitly set, generate a high-entropy bearer token (256 bits), as recommended by the specification.
+                //
+                // See https://openid.net/specs/openid-client-initiated-backchannel-authentication-core-1_0.html#rfc.section.7.1.
+                context.ClientNotificationToken ??= Base64Url.EncodeToString(RandomNumberGenerator.GetBytes(count: 256 / 8));
+            }
+
+            context.BackchannelAuthenticationRequest.ClientNotificationToken = context.ClientNotificationToken;
 
             return ValueTask.CompletedTask;
         }

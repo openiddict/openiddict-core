@@ -841,6 +841,24 @@ public static partial class OpenIddictClientModels
         /// Gets the scopes that will be sent to the authorization server.
         /// </summary>
         public List<string>? Scopes { get; init; }
+
+        /// <summary>
+        /// Gets or sets the bearer token the authorization server will use to authenticate the notifications
+        /// sent to the client notification endpoint (ping and push modes only). If not set, a random
+        /// high-entropy token is automatically generated when the ping or push mode is used.
+        /// </summary>
+        public string? ClientNotificationToken { get; init; }
+
+        /// <summary>
+        /// Gets or sets the token delivery mode (poll, ping or push) the client is registered with.
+        /// If not set, the poll mode is assumed and no client notification token is sent.
+        /// </summary>
+        public string? TokenDeliveryMode { get; init; }
+
+        /// <summary>
+        /// Gets or sets the user code used to authorize the authentication request, if applicable.
+        /// </summary>
+        public string? UserCode { get; init; }
     }
 
     /// <summary>
@@ -859,6 +877,13 @@ public static partial class OpenIddictClientModels
         public required OpenIddictResponse BackchannelAuthenticationResponse { get; init; }
 
         /// <summary>
+        /// Gets or sets the client notification token sent to the authorization server, if applicable.
+        /// Applications using the ping or push modes are expected to store it (e.g alongside the authentication
+        /// request identifier) to be able to validate the notifications sent by the authorization server.
+        /// </summary>
+        public string? ClientNotificationToken { get; init; }
+
+        /// <summary>
         /// Gets or sets the remaining lifetime of the authentication request identifier.
         /// </summary>
         public required TimeSpan ExpiresIn { get; init; }
@@ -872,6 +897,105 @@ public static partial class OpenIddictClientModels
         /// Gets or sets the application-specific properties that were present in the context.
         /// </summary>
         public required Dictionary<string, string?> Properties { get; init; }
+
+        /// <summary>
+        /// Gets or sets the token delivery mode used for this authentication request, if applicable.
+        /// </summary>
+        public string? TokenDeliveryMode { get; init; }
+    }
+
+    /// <summary>
+    /// Represents a notification sent by the authorization server to the client notification
+    /// endpoint when using the CIBA ping or push token delivery modes.
+    /// </summary>
+    public sealed record class BackchannelNotification
+    {
+        /// <summary>
+        /// Gets the authentication request identifier contained in the notification, if available.
+        /// </summary>
+        public string? AuthenticationRequestId => Payload.AuthReqId;
+
+        /// <summary>
+        /// Gets or sets the bearer token extracted from the "Authorization" header, if available.
+        /// </summary>
+        public required string? ClientNotificationToken { get; init; }
+
+        /// <summary>
+        /// Gets or sets the JSON payload of the notification (the auth_req_id only
+        /// for the ping mode, the token response or an error for the push mode).
+        /// </summary>
+        public required OpenIddictResponse Payload { get; init; }
+    }
+
+    /// <summary>
+    /// Represents a backchannel notification authentication request (CIBA ping and push modes).
+    /// </summary>
+    public sealed record class BackchannelNotificationAuthenticationRequest
+    {
+        /// <summary>
+        /// Gets or sets the parameters that will be added to the token request (ping mode only).
+        /// </summary>
+        public Dictionary<string, OpenIddictParameter>? AdditionalTokenRequestParameters { get; init; }
+
+        /// <summary>
+        /// Gets or sets the expected authentication request identifier, if applicable. When set,
+        /// notifications that relate to a different authentication request are rejected.
+        /// </summary>
+        public string? AuthenticationRequestId { get; init; }
+
+        /// <summary>
+        /// Gets or sets the cancellation token that will be
+        /// used to determine if the operation was aborted.
+        /// </summary>
+        public CancellationToken CancellationToken { get; init; }
+
+        /// <summary>
+        /// Gets or sets the client notification token sent to the authorization server
+        /// during the challenge phase, used to authenticate the notification.
+        /// </summary>
+        public required string ClientNotificationToken { get; init; }
+
+        /// <summary>
+        /// Gets or sets a boolean indicating whether userinfo should be disabled.
+        /// </summary>
+        public bool DisableUserInfo { get; init; }
+
+        /// <summary>
+        /// Gets or sets the issuer used to resolve the client registration.
+        /// </summary>
+        public Uri? Issuer { get; init; }
+
+        /// <summary>
+        /// Gets or sets the notification received by the client notification endpoint.
+        /// </summary>
+        public required BackchannelNotification Notification { get; init; }
+
+        /// <summary>
+        /// Gets or sets the application-specific properties that will be added to the context.
+        /// </summary>
+        public Dictionary<string, string?>? Properties { get; init; }
+
+        /// <summary>
+        /// Gets or sets the provider name used to resolve the client registration.
+        /// </summary>
+        public string? ProviderName { get; init; }
+
+        /// <summary>
+        /// Gets or sets the unique identifier of the client registration that will be used.
+        /// </summary>
+        public string? RegistrationId { get; init; }
+
+        /// <summary>
+        /// Gets or sets the X.509 client certificate used to bind the access and/or
+        /// refresh tokens issued by the authorization server, if applicable (ping mode only).
+        /// </summary>
+        [EditorBrowsable(EditorBrowsableState.Advanced)]
+        public X509Certificate2? TokenBindingCertificate { get; init; }
+
+        /// <summary>
+        /// Gets or sets the token delivery mode (ping or push) used for the authentication request.
+        /// </summary>
+        public required string TokenDeliveryMode { get; init; }
     }
 
     /// <summary>

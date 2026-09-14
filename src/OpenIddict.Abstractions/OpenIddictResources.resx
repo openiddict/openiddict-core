@@ -1994,6 +1994,18 @@ To send notifications using System.Net.Http, reference the 'OpenIddict.Server.Sy
   <data name="ID0604" xml:space="preserve">
     <value>The HTTP client used to send backchannel notifications cannot be resolved.</value>
   </data>
+  <data name="ID0605" xml:space="preserve">
+    <value>The '{0}' backchannel token delivery mode is not supported. Only the 'poll', 'ping' and 'push' modes can be used.</value>
+  </data>
+  <data name="ID0606" xml:space="preserve">
+    <value>The '{0}' backchannel token delivery mode is not supported by the authorization server.</value>
+  </data>
+  <data name="ID0607" xml:space="preserve">
+    <value>The client notification token cannot exceed 1024 characters.</value>
+  </data>
+  <data name="ID0608" xml:space="preserve">
+    <value>The notification, the expected client notification token and the token delivery mode must be set. Backchannel notifications can only be processed for the 'ping' and 'push' token delivery modes.</value>
+  </data>
   <data name="ID0532" xml:space="preserve">
     <value>The backchannel authentication request was not correctly extracted.
 To extract backchannel authentication requests, create a class implementing 'IOpenIddictServerHandler&lt;ExtractBackchannelAuthenticationRequestContext&gt;' and register it using 'services.AddOpenIddict().AddServer().AddEventHandler()'.</value>
@@ -2941,6 +2953,15 @@ Error URI: {2}</value>
   </data>
   <data name="ID2308" xml:space="preserve">
     <value>The client notification endpoint could not be reached.</value>
+  </data>
+  <data name="ID2309" xml:space="preserve">
+    <value>The client notification token attached to the backchannel notification is missing or invalid.</value>
+  </data>
+  <data name="ID2310" xml:space="preserve">
+    <value>The mandatory 'auth_req_id' parameter is missing from the backchannel notification.</value>
+  </data>
+  <data name="ID2311" xml:space="preserve">
+    <value>The 'auth_req_id' parameter of the backchannel notification doesn't match the expected authentication request identifier.</value>
   </data>
   <data name="ID2360" xml:space="preserve">
     <value>The '{0}' setting must be an absolute HTTP or HTTPS URI that doesn't contain a fragment.</value>
@@ -4045,6 +4066,12 @@ This may indicate that the hashed entry is corrupted or malformed.</value>
   </data>
   <data name="ID6413" xml:space="preserve">
     <value>The client notification endpoint {Endpoint} could not be reached.</value>
+  </data>
+  <data name="ID6414" xml:space="preserve">
+    <value>The authentication request identifier of the pushed identity token doesn't match the expected value.</value>
+  </data>
+  <data name="ID6415" xml:space="preserve">
+    <value>The backchannel notification was rejected because the client notification token is missing or invalid.</value>
   </data>
   <data name="ID6520" xml:space="preserve">
     <value>A concurrency exception occurred while trying to extend the session '{Identifier}'.</value>

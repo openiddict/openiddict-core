@@ -9,6 +9,7 @@ using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.InteropServices;
 using System.Security.Claims;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.Extensions.DependencyInjection;
@@ -952,7 +953,9 @@ public partial class OpenIddictClientService
         {
             BackchannelAuthenticationRequest = request.AdditionalBackchannelAuthenticationRequestParameters
                 is Dictionary<string, OpenIddictParameter> parameters ? new(parameters) : new(),
+            BackchannelTokenDeliveryMode = request.TokenDeliveryMode,
             BindingMessage = request.BindingMessage,
+            ClientNotificationToken = request.ClientNotificationToken,
             GrantType = GrantTypes.Ciba,
             IdentityTokenHint = request.IdentityTokenHint,
             Issuer = request.Issuer,
@@ -962,7 +965,8 @@ public partial class OpenIddictClientService
             ProviderName = request.ProviderName,
             RegistrationId = request.RegistrationId,
             Request = new(),
-            RequestedExpiry = request.RequestedExpiry
+            RequestedExpiry = request.RequestedExpiry,
+            BackchannelUserCode = request.UserCode
         };
 
         if (request.Scopes is { Count: > 0 })
@@ -991,9 +995,138 @@ public partial class OpenIddictClientService
         {
             AuthenticationRequestId = context.AuthenticationRequestId!,
             BackchannelAuthenticationResponse = context.BackchannelAuthenticationResponse ?? new(),
+            ClientNotificationToken = context.ClientNotificationToken,
             ExpiresIn = TimeSpan.FromSeconds((double) context.BackchannelAuthenticationResponse?.ExpiresIn!),
             Interval = TimeSpan.FromSeconds((long?) context.BackchannelAuthenticationResponse?[Parameters.Interval] ?? 5),
-            Properties = context.Properties
+            Properties = context.Properties,
+            TokenDeliveryMode = context.BackchannelTokenDeliveryMode
+        };
+    }
+
+    /// <summary>
+    /// Authenticates using a notification sent by the authorization server to the client notification
+    /// endpoint (CIBA ping and push modes). The notification is first authenticated by comparing the bearer
+    /// token it contains with the client notification token sent during the challenge phase. For the ping
+    /// mode, the authentication request identifier is then redeemed at the token endpoint. For the push
+    /// mode, the pushed tokens are validated (including the auth_req_id, at_hash and rt_hash claims).
+    /// </summary>
+    /// <param name="request">The backchannel notification authentication request.</param>
+    /// <returns>The backchannel authentication result.</returns>
+    /// <exception cref="ProtocolException">The notification is invalid or contains an error.</exception>
+    public async ValueTask<BackchannelAuthenticationResult> AuthenticateWithBackchannelNotificationAsync(
+        BackchannelNotificationAuthenticationRequest request)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+
+        if (request.Notification is null || string.IsNullOrEmpty(request.ClientNotificationToken) ||
+            request.TokenDeliveryMode is not (BackchannelTokenDeliveryModes.Ping or BackchannelTokenDeliveryModes.Push))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID0608), nameof(request));
+        }
+
+        request.CancellationToken.ThrowIfCancellationRequested();
+
+        // The notification MUST be authenticated using the client notification token as a bearer token.
+        //
+        // See https://openid.net/specs/openid-client-initiated-backchannel-authentication-core-1_0.html#rfc.section.10.2.
+        if (string.IsNullOrEmpty(request.Notification.ClientNotificationToken) ||
+            !System.Security.Cryptography.CryptographicOperations.FixedTimeEquals(
+                left:  MemoryMarshal.AsBytes(request.Notification.ClientNotificationToken.AsSpan()),
+                right: MemoryMarshal.AsBytes(request.ClientNotificationToken.AsSpan())))
+        {
+            _provider.GetService<ILogger<OpenIddictClientService>>()?.LogWarning(6415, SR.GetResourceString(SR.ID6415));
+
+            throw new ProtocolException(SR.FormatID0374(Errors.InvalidToken, SR.GetResourceString(SR.ID2309), SR.FormatID8000(SR.ID2309)),
+                Errors.InvalidToken, SR.GetResourceString(SR.ID2309), SR.FormatID8000(SR.ID2309));
+        }
+
+        var identifier = request.Notification.AuthenticationRequestId;
+        if (string.IsNullOrEmpty(identifier))
+        {
+            throw new ProtocolException(SR.FormatID0374(Errors.InvalidRequest, SR.GetResourceString(SR.ID2310), SR.FormatID8000(SR.ID2310)),
+                Errors.InvalidRequest, SR.GetResourceString(SR.ID2310), SR.FormatID8000(SR.ID2310));
+        }
+
+        if (!string.IsNullOrEmpty(request.AuthenticationRequestId) &&
+            !string.Equals(identifier, request.AuthenticationRequestId, StringComparison.Ordinal))
+        {
+            throw new ProtocolException(SR.FormatID0374(Errors.InvalidRequest, SR.GetResourceString(SR.ID2311), SR.FormatID8000(SR.ID2311)),
+                Errors.InvalidRequest, SR.GetResourceString(SR.ID2311), SR.FormatID8000(SR.ID2311));
+        }
+
+        // In push mode, errors (e.g access_denied or expired_token) are directly sent to the client notification endpoint.
+        //
+        // See https://openid.net/specs/openid-client-initiated-backchannel-authentication-core-1_0.html#rfc.section.12.
+        if (request.TokenDeliveryMode is BackchannelTokenDeliveryModes.Push && !string.IsNullOrEmpty(request.Notification.Payload.Error))
+        {
+            var payload = request.Notification.Payload;
+
+            throw new ProtocolException(SR.FormatID0374(payload.Error, payload.ErrorDescription, payload.ErrorUri),
+                payload.Error, payload.ErrorDescription, payload.ErrorUri);
+        }
+
+        await using var scope = _provider.CreateAsyncScope();
+
+        var dispatcher = scope.ServiceProvider.GetRequiredService<IOpenIddictClientDispatcher>();
+        var options = scope.ServiceProvider.GetRequiredService<IOptionsMonitor<OpenIddictClientOptions>>();
+
+        var transaction = new OpenIddictClientTransaction
+        {
+            CancellationToken = request.CancellationToken,
+            Options = options.CurrentValue,
+            ServiceProvider = scope.ServiceProvider
+        };
+
+        var context = new ProcessAuthenticationContext(transaction)
+        {
+            AuthenticationRequestId = identifier,
+            BackchannelTokenDeliveryMode = request.TokenDeliveryMode,
+            DisableUserInfoRetrieval = request.DisableUserInfo,
+            DisableUserInfoValidation = request.DisableUserInfo,
+            GrantType = GrantTypes.Ciba,
+            Issuer = request.Issuer,
+            ProviderName = request.ProviderName,
+            RegistrationId = request.RegistrationId,
+            Request = new(),
+            TokenEndpointClientCertificate = request.TokenBindingCertificate,
+            TokenRequest = request.AdditionalTokenRequestParameters
+                is Dictionary<string, OpenIddictParameter> parameters ? new(parameters) : new(),
+
+            // Note: in push mode, the notification payload is the token response.
+            TokenResponse = request.TokenDeliveryMode is BackchannelTokenDeliveryModes.Push
+                ? request.Notification.Payload
+                : null
+        };
+
+        if (request.Properties is { Count: > 0 })
+        {
+            foreach (var property in request.Properties)
+            {
+                context.Properties[property.Key] = property.Value;
+            }
+        }
+
+        await dispatcher.DispatchAsync(context);
+
+        if (context.IsRejected)
+        {
+            throw new ProtocolException(
+                SR.FormatID0374(context.Error, context.ErrorDescription, context.ErrorUri),
+                context.Error, context.ErrorDescription, context.ErrorUri);
+        }
+
+        return new()
+        {
+            AccessToken = context.BackchannelAccessToken!,
+            AccessTokenExpirationDate = context.BackchannelAccessTokenExpirationDate,
+            IdentityToken = context.BackchannelIdentityToken,
+            IdentityTokenPrincipal = context.BackchannelIdentityTokenPrincipal,
+            Principal = context.MergedPrincipal,
+            Properties = context.Properties,
+            RefreshToken = context.RefreshToken,
+            TokenResponse = context.TokenResponse ?? new(),
+            UserInfoToken = context.UserInfoToken,
+            UserInfoTokenPrincipal = context.UserInfoTokenPrincipal
         };
     }
 
