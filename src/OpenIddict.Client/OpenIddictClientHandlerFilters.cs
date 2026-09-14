@@ -435,6 +435,22 @@ public static class OpenIddictClientHandlerFilters
     }
 
     /// <summary>
+    /// Represents a filter that excludes the associated handlers if no client registration was
+    /// resolved or if the FAPI 2.0 security profile is not enforced for the resolved registration.
+    /// </summary>
+    public sealed class RequireFapi2SecurityProfileEnabled : IOpenIddictClientHandlerFilter<BaseContext>
+    {
+        /// <inheritdoc/>
+        public ValueTask<bool> IsActiveAsync(BaseContext context)
+        {
+            ArgumentNullException.ThrowIfNull(context);
+
+            return new(context.Transaction.Registration is { EnableFapi2SecurityProfile: true } or
+                                                          { EnableFapi2MessageSigningProfile: true });
+        }
+    }
+
+    /// <summary>
     /// Represents a filter that excludes the associated handlers if the request is not a redirection request.
     /// </summary>
     public sealed class RequireRedirectionRequest : IOpenIddictClientHandlerFilter<BaseContext>

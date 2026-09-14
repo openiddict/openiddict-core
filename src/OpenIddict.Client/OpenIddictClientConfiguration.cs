@@ -313,6 +313,19 @@ public sealed class OpenIddictClientConfiguration : IPostConfigureOptions<OpenId
                 : ClientTypes.Public;
         }
 
+        // The FAPI 2.0 message signing profile includes the FAPI 2.0 security profile.
+        if (registration.EnableFapi2MessageSigningProfile)
+        {
+            registration.EnableFapi2SecurityProfile = true;
+            registration.UseSignedRequestObjects = true;
+            registration.RequireJsonWebTokenIntrospectionResponses = true;
+        }
+
+        if (registration.EnableFapi2SecurityProfile)
+        {
+            ConfigureFapi2SecurityProfile(options, registration);
+        }
+
         // If DPoP token binding was enabled and no DPoP key was attached to the registration, generate an ephemeral key.
         if (options.TokenBindingMethods.Contains(TokenBindingMethods.Private.DPoP) && registration.DPoPSigningCredentials is null &&
            (registration.TokenBindingMethods.Count is 0 || registration.TokenBindingMethods.Contains(TokenBindingMethods.Private.DPoP)))
@@ -343,6 +356,134 @@ public sealed class OpenIddictClientConfiguration : IPostConfigureOptions<OpenId
                     RefreshInterval = ConfigurationManager<OpenIddictConfiguration>.DefaultRefreshInterval
                 };
             }
+        }
+    }
+
+    /// <summary>
+    /// Populates the settings of a client registration enforcing the FAPI 2.0 security profile
+    /// with the values allowed by the profile, when they were not explicitly set.
+    /// </summary>
+    /// <param name="options">The client options.</param>
+    /// <param name="registration">The client registration.</param>
+    private static void ConfigureFapi2SecurityProfile(OpenIddictClientOptions options, OpenIddictClientRegistration registration)
+    {
+        // See https://openid.net/specs/fapi-security-profile-2_0-final.html#section-5.3.2.1 (item 6).
+        if (registration.ClientAuthenticationMethods.Count is 0)
+        {
+            registration.ClientAuthenticationMethods.UnionWith(OpenIddictClientFapi2Profile.ClientAuthenticationMethods);
+        }
+
+        // See https://openid.net/specs/fapi-security-profile-2_0-final.html#section-5.3.3.1 (item 1).
+        if (registration.CodeChallengeMethods.Count is 0)
+        {
+            registration.CodeChallengeMethods.Add(CodeChallengeMethods.Sha256);
+        }
+
+        // The implicit and password grants are not allowed by the profile (section 5.3.2.2, item 1 and section 5.3.2.1).
+        if (registration.GrantTypes.Count is 0)
+        {
+            registration.GrantTypes.UnionWith(options.GrantTypes.Where(static type =>
+                type is not (GrantTypes.Implicit or GrantTypes.Password)));
+        }
+
+        // Only response_type=code is allowed by the profile (section 5.3.2.2, item 1).
+        if (registration.ResponseTypes.Count is 0)
+        {
+            registration.ResponseTypes.Add(ResponseTypes.Code);
+        }
+
+        // Access tokens must be sender-constrained using DPoP or mTLS (section 5.3.3.1, item 2).
+        if (registration.TokenBindingMethods.Count is 0)
+        {
+            registration.TokenBindingMethods.Add(TokenBindingMethods.Private.DPoP);
+            registration.TokenBindingMethods.Add(TokenBindingMethods.Private.TlsClientCertificate);
+        }
+
+        // See https://openid.net/specs/fapi-security-profile-2_0-final.html#section-5.4.1.
+        if (registration.IntrospectionResponseSigningAlgorithms.Count is 0)
+        {
+            registration.IntrospectionResponseSigningAlgorithms.UnionWith(OpenIddictClientFapi2Profile.SigningAlgorithms);
+        }
+
+        registration.TokenValidationParameters.ValidAlgorithms ??= [.. OpenIddictClientFapi2Profile.SigningAlgorithms];
+
+        // RSASSA-PKCS1-v1_5 is not allowed by the profile but the same RSA keys can be used with RSASSA-PSS:
+        // to support the credentials registered using the default RS256 algorithm, PS256 is used instead.
+        for (var index = 0; index < registration.SigningCredentials.Count; index++)
+        {
+            var credentials = registration.SigningCredentials[index];
+            if (credentials.Key is not SymmetricSecurityKey && credentials.Algorithm is
+                SecurityAlgorithms.RsaSha256 or SecurityAlgorithms.RsaSha256Signature or
+                SecurityAlgorithms.RsaSha384 or SecurityAlgorithms.RsaSha384Signature or
+                SecurityAlgorithms.RsaSha512 or SecurityAlgorithms.RsaSha512Signature)
+            {
+                registration.SigningCredentials[index] = new SigningCredentials(credentials.Key, SecurityAlgorithms.RsaSsaPssSha256);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Validates the settings of a client registration enforcing the FAPI 2.0 security profile.
+    /// </summary>
+    /// <param name="options">The client options.</param>
+    /// <param name="registration">The client registration.</param>
+    /// <param name="builder">The builder used to collect the validation errors.</param>
+    private static void ValidateFapi2SecurityProfile(OpenIddictClientOptions options,
+        OpenIddictClientRegistration registration, ValidateOptionsResultBuilder builder)
+    {
+        // Only confidential clients are allowed (section 5.3.2.1, item 3).
+        if (registration.ClientType is not ClientTypes.Confidential)
+        {
+            builder.AddError(SR.FormatID0973(registration.RegistrationId));
+        }
+
+        // Pushed authorization requests are required (section 5.3.2.2, item 5).
+        if (registration.DisablePushedAuthorizationRequests)
+        {
+            builder.AddError(SR.FormatID0974(registration.RegistrationId));
+        }
+
+        // Only S256 is allowed (section 5.3.2.2, item 5).
+        if (registration.CodeChallengeMethods.Any(static method => method is not CodeChallengeMethods.Sha256))
+        {
+            builder.AddError(SR.FormatID0975(registration.RegistrationId));
+        }
+
+        if (registration.ClientAuthenticationMethods.Any(static method =>
+            !OpenIddictClientFapi2Profile.ClientAuthenticationMethods.Contains(method, StringComparer.Ordinal)))
+        {
+            builder.AddError(SR.FormatID0976(registration.RegistrationId));
+        }
+
+        if (registration.GrantTypes.Contains(GrantTypes.Implicit) || registration.GrantTypes.Contains(GrantTypes.Password) ||
+            registration.ResponseTypes.Any(static type => type is not ResponseTypes.Code))
+        {
+            builder.AddError(SR.FormatID0977(registration.RegistrationId));
+        }
+
+        // Ensure at least one sender-constraining mechanism is enabled both globally and for the registration.
+        if (!registration.TokenBindingMethods.Any(method =>
+            OpenIddictClientFapi2Profile.TokenBindingMethods.Contains(method, StringComparer.Ordinal) &&
+            options.TokenBindingMethods.Contains(method)))
+        {
+            builder.AddError(SR.FormatID0978(registration.RegistrationId));
+        }
+
+        // Ensure the asymmetric keys used to sign client assertions, request objects
+        // and DPoP proofs use an algorithm allowed by the profile (section 5.4.1).
+        if (registration.SigningCredentials.Exists(static credentials => credentials.Key is AsymmetricSecurityKey &&
+                !OpenIddictClientFapi2Profile.IsSigningAlgorithmAllowed(credentials.Algorithm)) ||
+            (registration.DPoPSigningCredentials is SigningCredentials dpop &&
+                !OpenIddictClientFapi2Profile.IsSigningAlgorithmAllowed(dpop.Algorithm)))
+        {
+            builder.AddError(SR.FormatID0979(registration.RegistrationId));
+        }
+
+        // Client secrets cannot be used with the profile: at least one asymmetric
+        // key (or X.509 certificate) is required to authenticate the client.
+        if (!registration.SigningCredentials.Exists(static credentials => credentials.Key is AsymmetricSecurityKey))
+        {
+            builder.AddError(SR.FormatID0980(registration.RegistrationId));
         }
     }
 
@@ -401,6 +542,11 @@ public sealed class OpenIddictClientConfiguration : IPostConfigureOptions<OpenId
                  !options.Handlers.Exists(static descriptor => descriptor.ContextType == typeof(ApplyJsonWebKeySetRequestContext))))
         {
             builder.AddError(SR.GetResourceString(SR.ID0313));
+        }
+
+        if (registration.EnableFapi2SecurityProfile)
+        {
+            ValidateFapi2SecurityProfile(options, registration, builder);
         }
     }
 

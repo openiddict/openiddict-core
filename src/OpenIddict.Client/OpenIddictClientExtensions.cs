@@ -46,6 +46,7 @@ public static class OpenIddictClientExtensions
         builder.Services.TryAddSingleton<RequireClientAssertionGenerated>();
         builder.Services.TryAddSingleton<RequireDeviceAuthorizationGrantType>();
         builder.Services.TryAddSingleton<RequireDeviceAuthorizationRequest>();
+        builder.Services.TryAddSingleton<RequireFapi2SecurityProfileEnabled>();
         builder.Services.TryAddSingleton<RequireFrontchannelAccessTokenValidated>();
         builder.Services.TryAddSingleton<RequireFrontchannelIdentityTokenNonceValidationEnabled>();
         builder.Services.TryAddSingleton<RequireFrontchannelIdentityTokenValidated>();

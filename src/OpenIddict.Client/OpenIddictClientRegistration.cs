@@ -64,6 +64,39 @@ public sealed class OpenIddictClientRegistration
     public bool UseSignedBackchannelAuthenticationRequests { get; set; }
 
     /// <summary>
+    /// Gets or sets a boolean indicating whether the FAPI 2.0 security profile
+    /// (https://openid.net/specs/fapi-security-profile-2_0-final.html) is enforced for this registration.
+    /// When enabled, the following requirements are applied:
+    /// <list type="bullet">
+    ///   <item><description>the client must be confidential and authenticate using private_key_jwt or mTLS;</description></item>
+    ///   <item><description>pushed authorization requests and PKCE (S256 only) are required;</description></item>
+    ///   <item><description>only the authorization code flow is used for interactive flows (the implicit, hybrid
+    ///   and password flows are rejected);</description></item>
+    ///   <item><description>access tokens must be sender-constrained using DPoP or mTLS;</description></item>
+    ///   <item><description>authorization responses must include the "iss" parameter (RFC 9207);</description></item>
+    ///   <item><description>JWTs must be signed using PS256, ES256 or EdDSA.</description></item>
+    /// </list>
+    /// </summary>
+    /// <remarks>
+    /// Note: when the <see cref="ClientAuthenticationMethods"/>, <see cref="CodeChallengeMethods"/>,
+    /// <see cref="GrantTypes"/>, <see cref="ResponseTypes"/>, <see cref="TokenBindingMethods"/> or
+    /// <see cref="IntrospectionResponseSigningAlgorithms"/> sets are empty, they are automatically
+    /// populated with the values allowed by the profile. Values that conflict with the profile
+    /// are reported when the client options are validated.
+    /// </remarks>
+    public bool EnableFapi2SecurityProfile { get; set; }
+
+    /// <summary>
+    /// Gets or sets a boolean indicating whether the FAPI 2.0 message signing profile
+    /// (https://openid.net/specs/fapi-message-signing-2_0.html) is enforced for this registration.
+    /// When enabled, the FAPI 2.0 security profile is also enforced (see <see cref="EnableFapi2SecurityProfile"/>),
+    /// authorization requests are sent as signed request objects and introspection responses must be
+    /// returned as signed JSON Web Tokens. Handlers validating signed authorization responses
+    /// can use this property to determine whether they must be enforced.
+    /// </summary>
+    public bool EnableFapi2MessageSigningProfile { get; set; }
+
+    /// <summary>
     /// Gets or sets the URI of the redirection endpoint that will handle the callback.
     /// </summary>
     /// <remarks>
