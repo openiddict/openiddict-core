@@ -55,6 +55,7 @@ public static class OpenIddictServerAspNetCoreAdminUIConstants
 
     public static class QueryStringParameters
     {
+        public const string Authorization = "authorization";
         public const string Client = "client";
         public const string Notice = "notice";
         public const string Page = "page";

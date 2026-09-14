@@ -1,4 +1,4 @@
-@* Lists the tokens (payloads are never rendered), optionally filtered by subject, client, status and type. *@
+@* Lists the tokens (payloads are never rendered), optionally filtered by subject, client, status, type and authorization. *@
 @using static OpenIddict.Server.AspNetCore.AdminUI.OpenIddictServerAspNetCoreAdminUIFormatting
 
 <AdminLayout BasePath="@BasePath" Title="Tokens" Section="@Paths.Tokens" Notice="@Notice">
@@ -25,6 +25,13 @@
             <label for="type">Type</label>
             <input id="type" type="search" name="@QueryStringParameters.Type" value="@Type" />
         </div>
+        @if (Authorization is not null)
+        {
+            <div>
+                <label for="authorization">Authorization</label>
+                <input id="authorization" type="search" name="@QueryStringParameters.Authorization" value="@Authorization" />
+            </div>
+        }
         <button type="submit" class="oi-secondary">Filter</button>
     </form>
 
@@ -80,7 +87,8 @@
         [QueryStringParameters.Subject] = Subject,
         [QueryStringParameters.Client] = Client,
         [QueryStringParameters.Status] = Status,
-        [QueryStringParameters.Type] = Type
+        [QueryStringParameters.Type] = Type,
+        [QueryStringParameters.Authorization] = Authorization
     })" />
 </AdminLayout>
 
@@ -105,6 +113,9 @@
 
     /// <summary>Gets or sets the type filter, if any.</summary>
     [Parameter] public string? Type { get; set; }
+
+    /// <summary>Gets or sets the authorization filter, if any.</summary>
+    [Parameter] public string? Authorization { get; set; }
 
     /// <summary>Gets or sets the current page number.</summary>
     [Parameter] public int PageNumber { get; set; } = 1;

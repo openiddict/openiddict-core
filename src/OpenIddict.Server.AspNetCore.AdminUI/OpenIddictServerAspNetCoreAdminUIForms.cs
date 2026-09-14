@@ -87,9 +87,9 @@ internal static class OpenIddictServerAspNetCoreAdminUIForms
 
         descriptor.ClientId        = GetString(form, FormFields.ClientId);
         descriptor.DisplayName     = GetString(form, FormFields.DisplayName);
-        descriptor.ApplicationType = GetChoice(form, FormFields.ApplicationType, KnownApplicationTypes, errors);
-        descriptor.ClientType      = GetChoice(form, FormFields.ClientType, KnownClientTypes, errors);
-        descriptor.ConsentType     = GetChoice(form, FormFields.ConsentType, KnownConsentTypes, errors);
+        descriptor.ApplicationType = GetChoice(form, FormFields.ApplicationType, KnownApplicationTypes, descriptor.ApplicationType, errors);
+        descriptor.ClientType      = GetChoice(form, FormFields.ClientType, KnownClientTypes, descriptor.ClientType, errors);
+        descriptor.ConsentType     = GetChoice(form, FormFields.ConsentType, KnownConsentTypes, descriptor.ConsentType, errors);
 
         ReadValues(form, FormFields.Permissions, FormFields.AdditionalPermissions, descriptor.Permissions);
         ReadValues(form, FormFields.Requirements, FormFields.AdditionalRequirements, descriptor.Requirements);
@@ -154,10 +154,15 @@ internal static class OpenIddictServerAspNetCoreAdminUIForms
     public static string[] SplitLines(string? value)
         => value?.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries) ?? [];
 
-    private static string? GetChoice(IFormCollection form, string name, ImmutableArray<string> choices, List<string> errors)
+    private static string? GetChoice(IFormCollection form, string name,
+        ImmutableArray<string> choices, string? current, List<string> errors)
     {
+        // Note: custom values (e.g application or consent types not known by the admin UI) can't be
+        // selected by the user, but are rendered as an additional option when they are already stored
+        // so that saving the form doesn't silently erase them: such values are always accepted as-is.
         var value = GetString(form, name);
-        if (value is not null && !choices.Contains(value, StringComparer.Ordinal))
+        if (value is not null && !choices.Contains(value, StringComparer.Ordinal) &&
+            !string.Equals(value, current, StringComparison.Ordinal))
         {
             errors.Add(SR.FormatID2341(name));
             return null;

@@ -1150,8 +1150,160 @@ public partial class OpenIddictServerAspNetCoreAdminUITests
 
         // Assert
         Assert.Contains("only the first 2 tokens are displayed", html, StringComparison.Ordinal);
-        Assert.Contains("href=\"/openiddict/admin/tokens?subject=alice\"", html, StringComparison.Ordinal);
+        Assert.Contains("href=\"/openiddict/admin/tokens?authorization=authz-1\"", html, StringComparison.Ordinal);
         Assert.Equal(2, Regex.Matches(html, "<code>token</code>", RegexOptions.None, TimeSpan.FromSeconds(1)).Count);
+    }
+
+    [Fact]
+    public async Task UpdateApplication_PreservesUnchangedRedirectUrisAndCustomTypesVerbatim()
+    {
+        // Arrange
+        var application = new object();
+        OpenIddictApplicationDescriptor? updated = null;
+
+        var manager = new Mock<IOpenIddictApplicationManager>();
+        manager.Setup(mock => mock.FindByIdAsync("1", It.IsAny<CancellationToken>())).ReturnsAsync(application);
+        manager.Setup(mock => mock.GetIdAsync(application, It.IsAny<CancellationToken>())).ReturnsAsync("1");
+        manager.Setup(mock => mock.PopulateAsync(It.IsAny<OpenIddictApplicationDescriptor>(), application, It.IsAny<CancellationToken>()))
+            .Callback((OpenIddictApplicationDescriptor descriptor, object _, CancellationToken _) =>
+            {
+                descriptor.ClientId = "fabrikam";
+                descriptor.ApplicationType = "custom_application_type";
+                descriptor.ConsentType = "custom_consent_type";
+                descriptor.RedirectUris.Add(new Uri("http://localhost:3000"));
+                descriptor.RedirectUris.Add(new Uri("https://Client.Example/cb?a=%7e"));
+                descriptor.PostLogoutRedirectUris.Add(new Uri("https://Client.Example"));
+            })
+            .Returns(ValueTask.CompletedTask);
+        manager.Setup(mock => mock.UpdateAsync(application, It.IsAny<OpenIddictApplicationDescriptor>(), It.IsAny<CancellationToken>()))
+            .Callback((object _, OpenIddictApplicationDescriptor descriptor, CancellationToken _) => updated = descriptor)
+            .Returns(ValueTask.CompletedTask);
+
+        using var host = await CreateHostAsync(services => services.AddSingleton(manager.Object));
+        using var client = CreateClient(host, role: "admin");
+
+        var html = await client.GetStringAsync("/openiddict/admin/applications/1");
+        var antiforgery = await GetAntiforgeryAsync(client, "/openiddict/admin/applications/1");
+
+        // Act: post the rendered values back unchanged, as a browser would.
+        var response = await PostAsync(client, antiforgery, "/openiddict/admin/applications/1",
+        [
+            new("client_id", "fabrikam"),
+            new("display_name", "Fabrikam (renamed)"),
+            new("application_type", GetSelectedOption(html, "application_type")),
+            new("client_type", GetSelectedOption(html, "client_type")),
+            new("consent_type", GetSelectedOption(html, "consent_type")),
+            new("redirect_uris", GetTextArea(html, "redirect_uris")),
+            new("post_logout_redirect_uris", GetTextArea(html, "post_logout_redirect_uris"))
+        ]);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+        Assert.NotNull(updated);
+        Assert.Equal("Fabrikam (renamed)", updated.DisplayName);
+        Assert.Equal("custom_application_type", updated.ApplicationType);
+        Assert.Equal("custom_consent_type", updated.ConsentType);
+        Assert.Null(updated.ClientType);
+        Assert.Equal(["http://localhost:3000", "https://Client.Example/cb?a=%7e"],
+            updated.RedirectUris.Select(static uri => uri.OriginalString).Order(StringComparer.Ordinal),
+            StringComparer.Ordinal);
+        Assert.Equal("https://Client.Example", Assert.Single(updated.PostLogoutRedirectUris).OriginalString);
+
+        static string GetTextArea(string html, string id)
+        {
+            var match = Regex.Match(html, $"<textarea id=\"{id}\"[^>]*>(?<value>[^<]*)</textarea>",
+                RegexOptions.None, TimeSpan.FromSeconds(1));
+            Assert.True(match.Success);
+            return WebUtility.HtmlDecode(match.Groups["value"].Value);
+        }
+
+        static string GetSelectedOption(string html, string id)
+        {
+            var select = Regex.Match(html, $"<select id=\"{id}\"[^>]*>(?<options>.*?)</select>",
+                RegexOptions.Singleline, TimeSpan.FromSeconds(1));
+            Assert.True(select.Success);
+            var option = Regex.Match(select.Groups["options"].Value, "<option value(?:=\"(?<value>[^\"]*)\")?[^>]*\\bselected",
+                RegexOptions.None, TimeSpan.FromSeconds(1));
+            Assert.True(option.Success, select.Value);
+            return WebUtility.HtmlDecode(option.Groups["value"].Value);
+        }
+    }
+
+    [Fact]
+    public async Task UpdateApplication_RejectsUnknownTypesThatAreNotStored()
+    {
+        // Arrange
+        var application = new object();
+
+        var manager = new Mock<IOpenIddictApplicationManager>();
+        manager.Setup(mock => mock.FindByIdAsync("1", It.IsAny<CancellationToken>())).ReturnsAsync(application);
+        manager.Setup(mock => mock.GetIdAsync(application, It.IsAny<CancellationToken>())).ReturnsAsync("1");
+        manager.Setup(mock => mock.PopulateAsync(It.IsAny<OpenIddictApplicationDescriptor>(), application, It.IsAny<CancellationToken>()))
+            .Callback((OpenIddictApplicationDescriptor descriptor, object _, CancellationToken _) =>
+            {
+                descriptor.ClientId = "fabrikam";
+                descriptor.ApplicationType = "custom_application_type";
+            })
+            .Returns(ValueTask.CompletedTask);
+
+        using var host = await CreateHostAsync(services => services.AddSingleton(manager.Object));
+        using var client = CreateClient(host, role: "admin");
+
+        var antiforgery = await GetAntiforgeryAsync(client, "/openiddict/admin/applications/1");
+
+        // Act
+        var response = await PostAsync(client, antiforgery, "/openiddict/admin/applications/1",
+        [
+            new("client_id", "fabrikam"),
+            new("application_type", "another_application_type")
+        ]);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        manager.Verify(mock => mock.UpdateAsync(It.IsAny<object>(),
+            It.IsAny<OpenIddictApplicationDescriptor>(), It.IsAny<CancellationToken>()), Times.Never());
+    }
+
+    [Fact]
+    public async Task ListTokens_FiltersByAuthorization()
+    {
+        // Arrange
+        var (first, second, third) = (new object(), new object(), new object());
+
+        var applications = new Mock<IOpenIddictApplicationManager>();
+
+        var manager = new Mock<IOpenIddictTokenManager>();
+        manager.Setup(mock => mock.FindByAuthorizationIdAsync("authz-1", It.IsAny<CancellationToken>()))
+            .Returns(() => EnumerateAsync(first, second, third));
+        manager.Setup(mock => mock.GetIdAsync(first, It.IsAny<CancellationToken>())).ReturnsAsync("token-1");
+        manager.Setup(mock => mock.GetIdAsync(second, It.IsAny<CancellationToken>())).ReturnsAsync("token-2");
+        manager.Setup(mock => mock.GetIdAsync(third, It.IsAny<CancellationToken>())).ReturnsAsync("token-3");
+        manager.Setup(mock => mock.PopulateAsync(It.IsAny<OpenIddictTokenDescriptor>(), It.IsAny<object>(), It.IsAny<CancellationToken>()))
+            .Callback((OpenIddictTokenDescriptor descriptor, object token, CancellationToken _) =>
+            {
+                descriptor.Subject = "alice";
+                descriptor.Status = ReferenceEquals(token, second) ? Statuses.Revoked : Statuses.Valid;
+            })
+            .Returns(ValueTask.CompletedTask);
+
+        using var host = await CreateHostAsync(services => services
+            .AddSingleton(applications.Object)
+            .AddSingleton(manager.Object), configuration: options => options.PageSize = 1);
+        using var client = CreateClient(host, role: "admin");
+
+        // Act
+        var page1 = await client.GetStringAsync("/openiddict/admin/tokens?authorization=authz-1&status=valid");
+        var page2 = await client.GetStringAsync("/openiddict/admin/tokens?authorization=authz-1&status=valid&page=2");
+
+        // Assert
+        Assert.Contains("<code>token-1</code>", page1, StringComparison.Ordinal);
+        Assert.DoesNotContain("<code>token-2</code>", page1, StringComparison.Ordinal);
+        Assert.Contains("value=\"authz-1\"", page1, StringComparison.Ordinal);
+        Assert.Contains("authorization=authz-1&amp;page=2", page1, StringComparison.Ordinal);
+        Assert.Contains("<code>token-3</code>", page2, StringComparison.Ordinal);
+        Assert.DoesNotContain("<code>token-1</code>", page2, StringComparison.Ordinal);
+        manager.Verify(mock => mock.FindAsync(It.IsAny<(string?, string?, string?, string?)>(), It.IsAny<CancellationToken>()), Times.Never());
+        manager.Verify(mock => mock.ListAsync(It.IsAny<int?>(), It.IsAny<int?>(), It.IsAny<CancellationToken>()), Times.Never());
     }
 
     [Fact]

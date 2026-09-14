@@ -612,12 +612,13 @@ internal sealed class OpenIddictServerAspNetCoreAdminUIEndpoints
         var client = GetQuery(context, QueryStringParameters.Client);
         var status = GetQuery(context, QueryStringParameters.Status);
         var type = GetQuery(context, QueryStringParameters.Type);
+        var authorization = GetQuery(context, QueryStringParameters.Authorization);
 
         List<(string Id, OpenIddictTokenDescriptor Descriptor)> items = [];
         var next = false;
 
         var (found, application) = await ResolveApplicationIdAsync(applications, client, context.RequestAborted);
-        if (found)
+        if (found && authorization is null)
         {
             await foreach (var token in Operations.ListTokensAsync(manager,
                 subject, application, status, type, size + 1, offset, context.RequestAborted))
@@ -632,6 +633,39 @@ internal sealed class OpenIddictServerAspNetCoreAdminUIEndpoints
             }
         }
 
+        // Note: the token stores can't combine the authorization filter with the other filters:
+        // when an authorization identifier is specified, the tokens attached to the authorization
+        // are retrieved and the other filters (and the pagination) are applied in memory.
+        else if (found)
+        {
+            var skipped = 0;
+
+            await foreach (var token in manager.FindByAuthorizationIdAsync(authorization!, context.RequestAborted))
+            {
+                var item = await DescribeTokenAsync(manager, token, context.RequestAborted);
+                if ((subject is not null && !string.Equals(item.Descriptor.Subject, subject, StringComparison.Ordinal)) ||
+                    (application is not null && !string.Equals(item.Descriptor.ApplicationId, application, StringComparison.Ordinal)) ||
+                    (status is not null && !string.Equals(item.Descriptor.Status, status, StringComparison.Ordinal)) ||
+                    (type is not null && !string.Equals(item.Descriptor.Type, type, StringComparison.Ordinal)))
+                {
+                    continue;
+                }
+
+                if (skipped++ < offset)
+                {
+                    continue;
+                }
+
+                if (items.Count == size)
+                {
+                    next = true;
+                    break;
+                }
+
+                items.Add(item);
+            }
+        }
+
         return Page<TokenListPage>(context, new()
         {
             [nameof(TokenListPage.Items)] = items,
@@ -641,6 +675,7 @@ internal sealed class OpenIddictServerAspNetCoreAdminUIEndpoints
             [nameof(TokenListPage.Client)] = client,
             [nameof(TokenListPage.Status)] = status,
             [nameof(TokenListPage.Type)] = type,
+            [nameof(TokenListPage.Authorization)] = authorization,
             [nameof(TokenListPage.PageNumber)] = page,
             [nameof(TokenListPage.HasNextPage)] = next,
             [nameof(TokenListPage.Notice)] = GetQuery(context, QueryStringParameters.Notice)

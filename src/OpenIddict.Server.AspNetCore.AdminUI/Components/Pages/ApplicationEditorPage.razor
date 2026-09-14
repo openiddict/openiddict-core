@@ -26,6 +26,10 @@
             <label for="client_type">Client type</label>
             <select id="client_type" name="@FormFields.ClientType">
                 <option value="" selected="@(Descriptor.ClientType is null)">(not specified)</option>
+                @if (Descriptor.ClientType is { Length: > 0 } customClientType && !OpenIddictServerAspNetCoreAdminUIForms.KnownClientTypes.Contains(customClientType))
+                {
+                    <option value="@customClientType" selected>@customClientType</option>
+                }
                 @foreach (var value in OpenIddictServerAspNetCoreAdminUIForms.KnownClientTypes)
                 {
                     <option value="@value" selected="@(Descriptor.ClientType == value)">@value</option>
@@ -35,6 +39,10 @@
             <label for="application_type">Application type</label>
             <select id="application_type" name="@FormFields.ApplicationType">
                 <option value="" selected="@(Descriptor.ApplicationType is null)">(not specified)</option>
+                @if (Descriptor.ApplicationType is { Length: > 0 } customApplicationType && !OpenIddictServerAspNetCoreAdminUIForms.KnownApplicationTypes.Contains(customApplicationType))
+                {
+                    <option value="@customApplicationType" selected>@customApplicationType</option>
+                }
                 @foreach (var value in OpenIddictServerAspNetCoreAdminUIForms.KnownApplicationTypes)
                 {
                     <option value="@value" selected="@(Descriptor.ApplicationType == value)">@value</option>
@@ -44,6 +52,10 @@
             <label for="consent_type">Consent type</label>
             <select id="consent_type" name="@FormFields.ConsentType">
                 <option value="" selected="@(Descriptor.ConsentType is null)">(not specified)</option>
+                @if (Descriptor.ConsentType is { Length: > 0 } customConsentType && !OpenIddictServerAspNetCoreAdminUIForms.KnownConsentTypes.Contains(customConsentType))
+                {
+                    <option value="@customConsentType" selected>@customConsentType</option>
+                }
                 @foreach (var value in OpenIddictServerAspNetCoreAdminUIForms.KnownConsentTypes)
                 {
                     <option value="@value" selected="@(Descriptor.ConsentType == value)">@value</option>
@@ -66,10 +78,10 @@
             <legend>Redirect URIs</legend>
 
             <label for="redirect_uris">Redirect URIs (one per line)</label>
-            <textarea id="redirect_uris" name="@FormFields.RedirectUris" value="@Lines(Descriptor.RedirectUris.Select(static uri => uri.AbsoluteUri))"></textarea>
+            <textarea id="redirect_uris" name="@FormFields.RedirectUris" value="@Lines(Descriptor.RedirectUris.Select(static uri => uri.OriginalString))"></textarea>
 
             <label for="post_logout_redirect_uris">Post-logout redirect URIs (one per line)</label>
-            <textarea id="post_logout_redirect_uris" name="@FormFields.PostLogoutRedirectUris" value="@Lines(Descriptor.PostLogoutRedirectUris.Select(static uri => uri.AbsoluteUri))"></textarea>
+            <textarea id="post_logout_redirect_uris" name="@FormFields.PostLogoutRedirectUris" value="@Lines(Descriptor.PostLogoutRedirectUris.Select(static uri => uri.OriginalString))"></textarea>
         </fieldset>
 
         <fieldset>

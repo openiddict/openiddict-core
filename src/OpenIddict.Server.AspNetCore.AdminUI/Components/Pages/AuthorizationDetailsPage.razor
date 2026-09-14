@@ -58,7 +58,7 @@
     {
         <p class="oi-muted" role="note">
             More tokens are attached to this authorization: only the first @Tokens.Count tokens are displayed.
-            <a href="@TokensUrl">Show the tokens of this subject and client</a>
+            <a href="@TokensUrl">Show all the tokens of this authorization</a>
         </p>
     }
 
@@ -91,11 +91,7 @@
     [Parameter] public string? Notice { get; set; }
 
     private string TokensUrl => Microsoft.AspNetCore.WebUtilities.QueryHelpers.AddQueryString(BasePath + "/" + Paths.Tokens,
-        new Dictionary<string, string?>
-        {
-            [QueryStringParameters.Subject] = Descriptor.Subject,
-            [QueryStringParameters.Client] = Descriptor.ApplicationId is { Length: > 0 } id && ClientIds.TryGetValue(id, out var client) ? client : Descriptor.ApplicationId
-        }.Where(static pair => !string.IsNullOrEmpty(pair.Value)));
+        QueryStringParameters.Authorization, Id);
 
     private string ItemUrl => BasePath + "/" + Paths.Authorizations + "/" + Uri.EscapeDataString(Id);
 }
