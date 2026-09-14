@@ -511,9 +511,22 @@ internal static class OpenIddictServerAspNetCoreAdminApiEndpoints
         var service = context.RequestServices.GetService<OpenIddictServerService>() ??
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0564));
 
+        OpenIddictServerSessionTerminationResult? result;
+
         // Note: terminating a session revokes it (alongside the valid sessions sharing its login identifier and
         // their tokens) and sends back-channel logout requests to the client applications, if enabled.
-        if (await service.TerminateSessionAsync(GetIdentifier(context), context.RequestAborted) is not { } result)
+        try
+        {
+            result = await service.TerminateSessionAsync(GetIdentifier(context), context.RequestAborted);
+        }
+
+        // Configuration errors (e.g missing issuer or signing key) are returned as a structured server error.
+        catch (InvalidOperationException exception)
+        {
+            throw new AdminApiException(StatusCodes.Status500InternalServerError, exception.Message);
+        }
+
+        if (result is null)
         {
             context.Response.StatusCode = StatusCodes.Status404NotFound;
             return;

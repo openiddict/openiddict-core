@@ -35,6 +35,7 @@
     <PackageVersion Include="Microsoft.Extensions.Caching.Memory"                   Version="10.0.11"         />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.11"         />
     <PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions"             Version="10.0.11"         />
+    <PackageVersion Include="Microsoft.Extensions.Http"                             Version="10.0.11"         />
     <PackageVersion Include="Microsoft.Extensions.Http.Polly"                       Version="10.0.11"         />
     <PackageVersion Include="Microsoft.Extensions.Logging"                          Version="10.0.11"         />
     <PackageVersion Include="Microsoft.Extensions.Options"                          Version="10.0.11"         />
@@ -119,6 +120,7 @@
     <PackageVersion Include="Microsoft.Extensions.Caching.Memory"                   Version="10.0.11"         />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.11"         />
     <PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions"             Version="10.0.11"         />
+    <PackageVersion Include="Microsoft.Extensions.Http"                             Version="10.0.11"         />
     <PackageVersion Include="Microsoft.Extensions.Http.Polly"                       Version="10.0.11"         />
     <PackageVersion Include="Microsoft.Extensions.Http.Resilience"                  Version="10.9.0"          />
     <PackageVersion Include="Microsoft.IdentityModel.JsonWebTokens"                 Version="8.22.0"          />

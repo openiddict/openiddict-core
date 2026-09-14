@@ -1366,6 +1366,32 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
                 }
             }
 
+            // Front-Channel Logout 1.0, section 2: "The domain, port, and scheme of this URL MUST be the
+            // same as that of a registered Redirection URI value", which prevents the OP from loading
+            // arbitrary third-party origins (with the "iss" and "sid" parameters) in the user agent.
+            if (settings.TryGetValue(Settings.Logout.FrontchannelLogoutUri, out string? frontchannel) &&
+                Uri.TryCreate(frontchannel, UriKind.Absolute, out Uri? origin) && origin.Scheme is ("http" or "https"))
+            {
+                var matched = false;
+
+                foreach (var candidate in await Store.GetRedirectUrisAsync(application, cancellationToken))
+                {
+                    if (Uri.TryCreate(candidate, UriKind.Absolute, out Uri? uri) &&
+                        string.Equals(uri.Scheme, origin.Scheme, StringComparison.OrdinalIgnoreCase) &&
+                        string.Equals(uri.Host, origin.Host, StringComparison.OrdinalIgnoreCase) &&
+                        uri.Port == origin.Port)
+                    {
+                        matched = true;
+                        break;
+                    }
+                }
+
+                if (!matched)
+                {
+                    yield return new ValidationResult(SR.FormatID2364(Settings.Logout.FrontchannelLogoutUri));
+                }
+            }
+
             foreach (var name in (string[]) [Settings.Logout.BackchannelLogoutSessionRequired, Settings.Logout.FrontchannelLogoutSessionRequired])
             {
                 if (settings.TryGetValue(name, out string? flag) && !bool.TryParse(flag, out _))

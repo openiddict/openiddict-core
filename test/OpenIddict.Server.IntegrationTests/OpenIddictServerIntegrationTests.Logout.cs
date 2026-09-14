@@ -119,7 +119,7 @@ public abstract partial class OpenIddictServerIntegrationTests
     }
 
     [Fact]
-    public async Task ProcessSignOut_SessionIsResolvedFromIdentityTokenHint()
+    public async Task ProcessSignOut_SessionIsResolvedFromIdentityTokenHintWhenEnabled()
     {
         // Arrange
         var session = new OpenIddictSession();
@@ -129,6 +129,7 @@ public abstract partial class OpenIddictServerIntegrationTests
         {
             options.Services.AddSingleton(sessions);
             options.EnableSessionRevocationOnSignOut();
+            options.EnableIdentityTokenHintSessionResolution();
 
             options.AddEventHandler<ValidateTokenContext>(builder =>
             {
@@ -277,6 +278,8 @@ public abstract partial class OpenIddictServerIntegrationTests
             [Settings.Logout.BackchannelLogoutUri] = "https://www.fabrikam.com/logout/backchannel"
         });
 
+        ProcessSessionTerminationContext? termination = null;
+
         await using var server = await CreateServerAsync(options =>
         {
             options.Services.AddSingleton(sessions);
@@ -285,6 +288,15 @@ public abstract partial class OpenIddictServerIntegrationTests
 
             options.AddEventHandler<SendBackchannelLogoutRequestContext>(builder =>
                 builder.UseInlineHandler(context => throw new HttpRequestException("The request timed out.")));
+
+            options.AddEventHandler<ApplyEndSessionResponseContext>(builder =>
+                builder.UseInlineHandler(context =>
+                {
+                    termination = context.Transaction.GetProperty<ProcessSessionTerminationContext>(
+                        typeof(ProcessSessionTerminationContext).FullName!);
+
+                    return ValueTask.CompletedTask;
+                }));
 
             ConfigureSignOut(options, LogoutSessionId);
         });
@@ -296,7 +308,473 @@ public abstract partial class OpenIddictServerIntegrationTests
 
         // Assert
         Assert.Null(response.Error);
+        Assert.NotNull(termination);
+        Assert.Equal("Fabrikam", Assert.Single(termination.FailedParticipants).ClientId);
+        Assert.Empty(termination.NotifiedParticipants);
     }
+
+    [Fact]
+    public async Task ProcessSignOut_SessionIsNotResolvedFromIdentityTokenHintByDefault()
+    {
+        // Arrange
+        var session = new OpenIddictSession();
+        var sessions = CreateLogoutSessionManager(session, login: null);
+
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.Services.AddSingleton(sessions);
+            options.EnableSessionRevocationOnSignOut();
+
+            options.AddEventHandler<ValidateTokenContext>(builder =>
+            {
+                builder.UseInlineHandler(context =>
+                {
+                    context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                        .SetTokenType(TokenTypeIdentifiers.IdentityToken)
+                        .SetClaim(Claims.Subject, "Bob le Bricoleur")
+                        .SetClaim(Claims.SessionId, LogoutSessionId);
+
+                    return ValueTask.CompletedTask;
+                });
+
+                builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
+            });
+
+            ConfigureSignOut(options);
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.GetAsync("/connect/endsession", new OpenIddictRequest
+        {
+            IdTokenHint = "id_token"
+        });
+
+        // Assert
+        Assert.Null(response.Error);
+        Mock.Get(sessions).Verify(manager => manager.FindByIdAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never());
+        Mock.Get(sessions).Verify(manager => manager.TryRevokeAsync(It.IsAny<OpenIddictSession>(), It.IsAny<CancellationToken>()), Times.Never());
+    }
+
+    [Fact]
+    public async Task ProcessSignOut_ExpiredSessionIsTerminatedUsingSignedIdentityTokenHint()
+    {
+        // Arrange
+        var session = new OpenIddictSession();
+        var token = new OpenIddictToken();
+
+        var sessions = CreateLogoutSessionManager(session, login: null, mock =>
+        {
+            // The session has expired: the identity token hint must still be accepted (RP-Initiated Logout 1.0, section 2).
+            mock.Setup(manager => manager.HasExpiredAsync(session, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(true);
+        });
+
+        var tokens = CreateTokenManager(mock =>
+        {
+            mock.Setup(manager => manager.CreateAsync(It.IsAny<OpenIddictTokenDescriptor>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(token);
+            mock.Setup(manager => manager.GetIdAsync(token, It.IsAny<CancellationToken>()))
+                .ReturnsAsync("3E228451-1555-46F7-A471-951EFBA23A58");
+            mock.Setup(manager => manager.FindByIdAsync("3E228451-1555-46F7-A471-951EFBA23A58", It.IsAny<CancellationToken>()))
+                .ReturnsAsync(token);
+            mock.Setup(manager => manager.GetTypeAsync(token, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(TokenTypeIdentifiers.IdentityToken);
+            mock.Setup(manager => manager.HasStatusAsync(token, Statuses.Valid, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(true);
+            mock.Setup(manager => manager.GetSessionIdAsync(token, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(LogoutSessionId);
+        });
+
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.Services.AddSingleton(sessions);
+            options.Services.AddSingleton(tokens);
+            options.DisableAuthorizationStorage();
+            options.EnableSessionRevocationOnSignOut();
+            options.EnableIdentityTokenHintSessionResolution();
+
+            options.AddEventHandler<HandleTokenRequestContext>(builder =>
+                builder.UseInlineHandler(context =>
+                {
+                    context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                        .SetClaim(Claims.Subject, "Bob le Bricoleur")
+                        .SetScopes(Scopes.OpenId)
+                        .SetSessionId(LogoutSessionId);
+
+                    return ValueTask.CompletedTask;
+                }));
+
+            ConfigureSignOut(options);
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        var response = await client.PostAsync("/connect/token", new OpenIddictRequest
+        {
+            GrantType = GrantTypes.Password,
+            Username = "johndoe",
+            Password = "A3ddj3w",
+            Scope = Scopes.OpenId
+        });
+
+        Assert.Null(response.Error);
+        Assert.NotNull(response.IdToken);
+        Assert.Equal(LogoutSessionId, new JsonWebToken(response.IdToken).GetPayloadValue<string>(Claims.SessionId));
+
+        // Act
+        response = await client.GetAsync("/connect/endsession", new OpenIddictRequest
+        {
+            IdTokenHint = response.IdToken
+        });
+
+        // Assert
+        Assert.Null(response.Error);
+        Mock.Get(tokens).Verify(manager => manager.GetSessionIdAsync(token, It.IsAny<CancellationToken>()), Times.AtLeastOnce());
+        Mock.Get(sessions).Verify(manager => manager.HasExpiredAsync(session, It.IsAny<CancellationToken>()), Times.Never());
+        Mock.Get(sessions).Verify(manager => manager.TryRevokeAsync(session, It.IsAny<CancellationToken>()), Times.Once());
+    }
+
+    [Fact]
+    public async Task ProcessSignOut_AuthorizationIsRevokedWhenEnabled()
+    {
+        // Arrange
+        var session = new OpenIddictSession();
+        var authorization = new OpenIddictAuthorization();
+
+        var sessions = CreateLogoutSessionManager(session, login: null, mock =>
+        {
+            mock.Setup(manager => manager.GetAuthorizationIdAsync(session, It.IsAny<CancellationToken>()))
+                .ReturnsAsync("3E228451-1555-46F7-A471-951EFBA23A59");
+        });
+
+        var authorizations = CreateAuthorizationManager(mock =>
+        {
+            mock.Setup(manager => manager.FindByIdAsync("3E228451-1555-46F7-A471-951EFBA23A59", It.IsAny<CancellationToken>()))
+                .ReturnsAsync(authorization);
+            mock.Setup(manager => manager.TryRevokeAsync(authorization, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(true);
+        });
+
+        var tokens = CreateTokenManager();
+
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.Services.AddSingleton(sessions);
+            options.Services.AddSingleton(authorizations);
+            options.Services.AddSingleton(tokens);
+            options.EnableSessionRevocationOnSignOut();
+            options.RevokeAuthorizationsOnSessionTermination();
+            ConfigureSignOut(options, LogoutSessionId);
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.GetAsync("/connect/endsession");
+
+        // Assert
+        Assert.Null(response.Error);
+        Mock.Get(authorizations).Verify(manager => manager.TryRevokeAsync(authorization, It.IsAny<CancellationToken>()), Times.Once());
+        Mock.Get(tokens).Verify(manager => manager.RevokeByAuthorizationIdAsync("3E228451-1555-46F7-A471-951EFBA23A59", It.IsAny<CancellationToken>()), Times.Once());
+    }
+
+    [Fact]
+    public async Task ProcessSignOut_AlreadyRevokedSessionIsNotNotifiedAgain()
+    {
+        // Arrange
+        var session = new OpenIddictSession();
+        var sessions = CreateLogoutSessionManager(session, login: null, mock =>
+        {
+            mock.Setup(manager => manager.HasStatusAsync(session, Statuses.Valid, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(false);
+        });
+
+        var applications = CreateLogoutApplicationManager(new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            [Settings.Logout.BackchannelLogoutUri] = "https://www.fabrikam.com/logout/backchannel"
+        });
+
+        var notified = false;
+
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.Services.AddSingleton(sessions);
+            options.Services.AddSingleton(applications);
+            options.EnableBackchannelLogout();
+
+            options.AddEventHandler<SendBackchannelLogoutRequestContext>(builder =>
+                builder.UseInlineHandler(context =>
+                {
+                    notified = true;
+                    context.IsSent = true;
+
+                    return ValueTask.CompletedTask;
+                }));
+
+            ConfigureSignOut(options, LogoutSessionId);
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.GetAsync("/connect/endsession");
+
+        // Assert
+        Assert.Null(response.Error);
+        Assert.False(notified);
+    }
+
+    [Fact]
+    public async Task ApplyAuthorizationResponse_BrowserStateCookiesAreAttachedAndRemovedOnSignOut()
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.EnableDegradedMode();
+            options.EnableSessionManagement()
+                   .SetCheckSessionIframeEndpointUris("/connect/checksession");
+
+            options.AddEventHandler<HandleAuthorizationRequestContext>(builder =>
+                builder.UseInlineHandler(context =>
+                {
+                    context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                        .SetClaim(Claims.Subject, "Bob le Magnifique");
+
+                    return ValueTask.CompletedTask;
+                }));
+
+            ConfigureSignOut(options);
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        using var authorization = await client.HttpClient.PostAsync("/connect/authorize", new FormUrlEncodedContent(new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            [Parameters.ClientId] = "Fabrikam",
+            [Parameters.Nonce] = "n-0S6_WzA2Mj",
+            [Parameters.RedirectUri] = "http://www.fabrikam.com/path",
+            [Parameters.ResponseType] = ResponseTypes.Code,
+            [Parameters.Scope] = Scopes.OpenId
+        }));
+
+        var cookies = authorization.Headers.TryGetValues("Set-Cookie", out var values) ? values.ToList() : [];
+
+        // Assert
+        var state = Assert.Single(cookies, static cookie => cookie.StartsWith("openiddict.browser_state=", StringComparison.Ordinal));
+        var binding = Assert.Single(cookies, static cookie => cookie.StartsWith("openiddict.browser_state.binding=", StringComparison.Ordinal));
+
+        Assert.DoesNotContain("httponly", state, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("httponly", binding, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("path=/", state, StringComparison.OrdinalIgnoreCase);
+
+        // Act
+        using var request = new HttpRequestMessage(HttpMethod.Get, "/connect/endsession");
+        request.Headers.Add("Cookie", string.Join("; ", state.Split(';')[0], binding.Split(';')[0]));
+
+        using var signout = await client.HttpClient.SendAsync(request);
+        cookies = signout.Headers.TryGetValues("Set-Cookie", out values) ? values.ToList() : [];
+
+        // Assert
+        Assert.Contains(cookies, static cookie => cookie.StartsWith("openiddict.browser_state=;", StringComparison.Ordinal));
+        Assert.Contains(cookies, static cookie => cookie.StartsWith("openiddict.browser_state.binding=;", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task ApplyAuthorizationResponse_SessionStateIsNotReturnedWithoutOpenIdScope()
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.EnableDegradedMode();
+            options.EnableSessionManagement()
+                   .SetCheckSessionIframeEndpointUris("/connect/checksession");
+
+            options.AddEventHandler<HandleAuthorizationRequestContext>(builder =>
+                builder.UseInlineHandler(context =>
+                {
+                    context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                        .SetClaim(Claims.Subject, "Bob le Magnifique");
+
+                    return ValueTask.CompletedTask;
+                }));
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
+        {
+            ClientId = "Fabrikam",
+            RedirectUri = "http://www.fabrikam.com/path",
+            ResponseType = ResponseTypes.Code
+        });
+
+        // Assert
+        Assert.Null(response.Error);
+        Assert.NotNull(response.Code);
+        Assert.Null((string?) response[Parameters.SessionState]);
+    }
+
+    [Fact]
+    public async Task ProcessSignIn_ExpiredSessionIsRejectedAndNotExtended()
+    {
+        // Arrange
+        var session = new OpenIddictSession();
+        var sessions = CreateSessionManager(mock =>
+        {
+            mock.Setup(manager => manager.FindByIdAsync(LogoutSessionId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(session);
+            mock.Setup(manager => manager.HasStatusAsync(session, Statuses.Valid, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(true);
+            mock.Setup(manager => manager.HasExpiredAsync(session, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(true);
+        });
+
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.Services.AddSingleton(sessions);
+            options.SetDeviceAuthorizationEndpointUris(Array.Empty<Uri>());
+            options.SetRevocationEndpointUris(Array.Empty<Uri>());
+            options.Configure(options => options.GrantTypes.Remove(GrantTypes.DeviceCode));
+            options.DisableTokenStorage();
+            options.DisableAuthorizationStorage();
+            options.DisableSlidingRefreshTokenExpiration();
+            options.SetSessionIdleTimeout(TimeSpan.FromMinutes(30));
+
+            options.AddEventHandler<HandleTokenRequestContext>(builder =>
+                builder.UseInlineHandler(context =>
+                {
+                    context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                        .SetClaim(Claims.Subject, "Bob le Magnifique")
+                        .SetSessionId(LogoutSessionId);
+
+                    return ValueTask.CompletedTask;
+                }));
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/connect/token", new OpenIddictRequest
+        {
+            GrantType = GrantTypes.Password,
+            Username = "johndoe",
+            Password = "A3ddj3w"
+        });
+
+        // Assert
+        Assert.Equal(Errors.InvalidGrant, response.Error);
+        Assert.Equal(SR.GetResourceString(SR.ID2363), response.ErrorDescription);
+        Assert.Null(response.AccessToken);
+        Mock.Get(sessions).Verify(manager => manager.TryExtendAsync(It.IsAny<OpenIddictSession>(), It.IsAny<DateTimeOffset>(),
+            It.IsAny<DateTimeOffset?>(), It.IsAny<CancellationToken>()), Times.Never());
+    }
+
+    [Fact]
+    public async Task ProcessSignIn_SessionIsAutomaticallyCreatedWhenEnabled()
+    {
+        // Arrange
+        var session = new OpenIddictSession();
+        string? identifier = null;
+
+        var sessions = CreateSessionManager(mock =>
+        {
+            mock.Setup(manager => manager.FindAsync(It.IsAny<(string?, string?, string?, string?, string?)>(), It.IsAny<CancellationToken>()))
+                .Returns(AsyncEnumerable.Empty<OpenIddictSession>());
+            mock.Setup(manager => manager.CreateAsync(It.IsAny<OpenIddictSessionDescriptor>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(session);
+            mock.Setup(manager => manager.GetIdAsync(session, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(LogoutSessionId);
+        });
+
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.Services.AddSingleton(sessions);
+            options.Services.AddSingleton(CreateApplicationManager(mock =>
+            {
+                var application = new OpenIddictApplication();
+
+                mock.Setup(manager => manager.FindByClientIdAsync("Fabrikam", It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(application);
+                mock.Setup(manager => manager.GetIdAsync(application, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync("3E228451-1555-46F7-A471-951EFBA23A57");
+                mock.Setup(manager => manager.ValidateRedirectUriAsync(application, "http://www.fabrikam.com/path", It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(true);
+                mock.Setup(manager => manager.HasClientTypeAsync(application, ClientTypes.Public, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(true);
+                mock.Setup(manager => manager.GetSettingsAsync(application, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(ImmutableDictionary.Create<string, string>(StringComparer.Ordinal));
+            }));
+
+            options.SetDeviceAuthorizationEndpointUris(Array.Empty<Uri>());
+            options.SetRevocationEndpointUris(Array.Empty<Uri>());
+            options.Configure(options => options.GrantTypes.Remove(GrantTypes.DeviceCode));
+            options.DisableTokenStorage();
+            options.DisableAuthorizationStorage();
+            options.DisableSlidingRefreshTokenExpiration();
+            options.EnableAutomaticSessionCreation();
+
+            options.AddEventHandler<HandleAuthorizationRequestContext>(builder =>
+                builder.UseInlineHandler(context =>
+                {
+                    context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                        .SetClaim(Claims.Subject, "Bob le Magnifique")
+                        .SetScopes(Scopes.OpenId);
+
+                    return ValueTask.CompletedTask;
+                }));
+
+            options.AddEventHandler<ProcessSignInContext>(builder =>
+            {
+                builder.UseInlineHandler(context =>
+                {
+                    context.Properties[Properties.LoginId] = "login";
+
+                    return ValueTask.CompletedTask;
+                });
+
+                builder.SetOrder(Logout.CreateSessionEntry.Descriptor.Order - 1);
+            });
+
+            options.AddEventHandler<ProcessSignInContext>(builder =>
+            {
+                builder.UseInlineHandler(context =>
+                {
+                    identifier = context.Principal?.GetSessionId();
+
+                    return ValueTask.CompletedTask;
+                });
+
+                builder.SetOrder(Logout.CreateSessionEntry.Descriptor.Order + 1);
+            });
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/connect/authorize", new OpenIddictRequest
+        {
+            ClientId = "Fabrikam",
+            Nonce = "n-0S6_WzA2Mj",
+            RedirectUri = "http://www.fabrikam.com/path",
+            ResponseType = ResponseTypes.Code,
+            Scope = Scopes.OpenId
+        });
+
+        // Assert
+        Assert.Null(response.Error);
+        Assert.Equal(LogoutSessionId, identifier);
+
+        Mock.Get(sessions).Verify(manager => manager.CreateAsync(It.Is<OpenIddictSessionDescriptor>(descriptor =>
+            descriptor.ApplicationId == "3E228451-1555-46F7-A471-951EFBA23A57" &&
+            descriptor.LoginId == "login" &&
+            descriptor.Status == Statuses.Valid &&
+            descriptor.Subject == "Bob le Magnifique"), It.IsAny<CancellationToken>()), Times.Once());
+    }
+
 
     [Fact]
     public async Task ProcessSignOut_FrontchannelLogoutIframesAreRendered()
@@ -504,7 +982,7 @@ public abstract partial class OpenIddictServerIntegrationTests
         // Assert
         Assert.Null(response.Error);
         Assert.NotNull(state);
-        Assert.True(OpenIddictServerHelpers.ValidateBrowserState(state, "Bob le Magnifique"));
+        Assert.Equal(32, state.Length);
 
         var value = (string?) response[Parameters.SessionState];
         Assert.NotNull(value);

@@ -667,6 +667,26 @@ public sealed class OpenIddictServerOptions
     public bool IncludeSessionIdInAccessTokens { get; set; }
 
     /// <summary>
+    /// Gets or sets a boolean indicating whether a server-side session entry should be automatically created
+    /// (or reused) for sign-in demands processed by the authorization endpoint that don't already specify a session.
+    /// The login identifier used to correlate the sessions of the same end-user authentication across client applications
+    /// can be specified by the host using the <see cref="OpenIddictConstants.Properties.LoginId"/> sign-in property.
+    /// </summary>
+    public bool EnableAutomaticSessionCreation { get; set; }
+
+    /// <summary>
+    /// Gets or sets a boolean indicating whether the session terminated by the end session endpoint can be resolved
+    /// from the "sid" claim of the identity token hint when the host doesn't specify it using the
+    /// <see cref="OpenIddictConstants.Properties.SessionId"/> sign-out property.
+    /// </summary>
+    /// <remarks>
+    /// Caution: an identity token hint doesn't prove that the session belongs to the user currently authenticated
+    /// at the authorization server: any party holding an identity token (e.g the client application it was issued to)
+    /// can use it to terminate the session and log the user out of all the client applications that participated in it.
+    /// </remarks>
+    public bool EnableIdentityTokenHintSessionResolution { get; set; }
+
+    /// <summary>
     /// Gets or sets a boolean indicating whether the authorization attached to a
     /// terminated session should also be revoked when the session is terminated.
     /// </summary>

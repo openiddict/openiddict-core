@@ -2815,6 +2815,12 @@ To apply backchannel authentication responses, create a class implementing 'IOpe
   <data name="ID2362" xml:space="preserve">
     <value>The session '{0}' cannot be found.</value>
   </data>
+  <data name="ID2363" xml:space="preserve">
+    <value>The session attached to the sign-in demand is no longer valid.</value>
+  </data>
+  <data name="ID2364" xml:space="preserve">
+    <value>The scheme, host and port of the '{0}' setting must match those of a registered redirect URI.</value>
+  </data>
   <data name="ID4000" xml:space="preserve">
     <value>The '{0}' parameter shouldn't be null or empty at this point.</value>
   </data>
@@ -3810,6 +3816,15 @@ This may indicate that the hashed entry is corrupted or malformed.</value>
   </data>
   <data name="ID6534" xml:space="preserve">
     <value>The back-channel logout request sent to '{Uri}' returned an unsuccessful status code: {StatusCode}.</value>
+  </data>
+  <data name="ID6535" xml:space="preserve">
+    <value>The session '{Identifier}' was automatically created for the client application '{ClientId}'.</value>
+  </data>
+  <data name="ID6536" xml:space="preserve">
+    <value>The sign-in demand was rejected because the session '{Identifier}' was revoked, has expired or cannot be found.</value>
+  </data>
+  <data name="ID6537" xml:space="preserve">
+    <value>The session '{Identifier}' was already terminated: no logout notification was sent.</value>
   </data>
   <data name="ID8000" xml:space="preserve">
     <value>https://documentation.openiddict.com/errors/{0}</value>

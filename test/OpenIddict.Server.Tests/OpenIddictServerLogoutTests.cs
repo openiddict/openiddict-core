@@ -34,6 +34,8 @@ public class OpenIddictServerLogoutTests
                .EnableSessionRevocationOnSignOut()
                .RevokeAuthorizationsOnSessionTermination()
                .IncludeSessionIdInAccessTokens()
+               .EnableAutomaticSessionCreation()
+               .EnableIdentityTokenHintSessionResolution()
                .SetCheckSessionIframeEndpointUris("/connect/checksession")
                .SetBackchannelLogoutTimeout(TimeSpan.FromSeconds(3))
                .SetLogoutTokenLifetime(TimeSpan.FromMinutes(1))
@@ -50,6 +52,8 @@ public class OpenIddictServerLogoutTests
         Assert.True(options.EnableSessionRevocationOnSignOut);
         Assert.True(options.RevokeAuthorizationsOnSessionTermination);
         Assert.True(options.IncludeSessionIdInAccessTokens);
+        Assert.True(options.EnableAutomaticSessionCreation);
+        Assert.True(options.EnableIdentityTokenHintSessionResolution);
         Assert.Equal(new Uri("/connect/checksession", UriKind.Relative), Assert.Single(options.CheckSessionIframeEndpointUris));
         Assert.Equal(TimeSpan.FromSeconds(3), options.BackchannelLogoutTimeout);
         Assert.Equal(TimeSpan.FromMinutes(1), options.LogoutTokenLifetime);
@@ -70,6 +74,8 @@ public class OpenIddictServerLogoutTests
         Assert.False(options.EnableSessionManagement);
         Assert.False(options.EnableSessionRevocationOnSignOut);
         Assert.False(options.RevokeAuthorizationsOnSessionTermination);
+        Assert.False(options.EnableAutomaticSessionCreation);
+        Assert.False(options.EnableIdentityTokenHintSessionResolution);
         Assert.Null(options.SessionIdleTimeout);
         Assert.Null(options.SessionLifetime);
     }
@@ -175,17 +181,35 @@ public class OpenIddictServerLogoutTests
     }
 
     [Fact]
-    public void BrowserState_IsBoundToSubject()
+    public void BrowserState_IsRandomAndBoundToSubjectThroughSeparateBinding()
     {
         // Arrange
-        var state = OpenIddictServerHelpers.CreateBrowserState("Bob");
+        var state = OpenIddictServerHelpers.CreateBrowserState();
+        var binding = OpenIddictServerHelpers.ComputeBrowserStateBinding(state, "Bob");
 
         // Act and assert
-        Assert.True(OpenIddictServerHelpers.ValidateBrowserState(state, "Bob"));
-        Assert.False(OpenIddictServerHelpers.ValidateBrowserState(state, "Alice"));
-        Assert.False(OpenIddictServerHelpers.ValidateBrowserState(null, "Bob"));
-        Assert.False(OpenIddictServerHelpers.ValidateBrowserState("invalid", "Bob"));
-        Assert.False(string.Equals(state, OpenIddictServerHelpers.CreateBrowserState("Bob"), StringComparison.Ordinal));
+        Assert.Equal(32, state.Length);
+        Assert.True(OpenIddictServerHelpers.ValidateBrowserState(state, binding, "Bob"));
+        Assert.False(OpenIddictServerHelpers.ValidateBrowserState(state, binding, "Alice"));
+        Assert.False(OpenIddictServerHelpers.ValidateBrowserState(state, null, "Bob"));
+        Assert.False(OpenIddictServerHelpers.ValidateBrowserState(null, binding, "Bob"));
+        Assert.False(OpenIddictServerHelpers.ValidateBrowserState(OpenIddictServerHelpers.CreateBrowserState(), binding, "Bob"));
+        Assert.False(string.Equals(state, OpenIddictServerHelpers.CreateBrowserState(), StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void CreateCheckSessionIframePage_EnforcesParentOriginAndParsesMessagesAsSpecified()
+    {
+        // Act
+        var page = OpenIddictServerHelpers.CreateCheckSessionIframePage("cookie", "nonce");
+
+        // Assert
+        Assert.Contains("ancestorOrigins", page, StringComparison.Ordinal);
+        Assert.Contains("e.origin !== parentOrigin", page, StringComparison.Ordinal);
+        Assert.Contains("e.data.lastIndexOf(\" \")", page, StringComparison.Ordinal);
+        Assert.Contains("clientId + \" \" + e.origin + \" \" + browserState + \" \" + salt", page, StringComparison.Ordinal);
+        Assert.Contains("if (!browserState) { e.source.postMessage(\"changed\", e.origin); return; }", page, StringComparison.Ordinal);
+        Assert.DoesNotContain("split(\" \")", page, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -272,6 +296,7 @@ public class OpenIddictServerLogoutTests
         var sessions = new Mock<IOpenIddictSessionManager>();
         sessions.Setup(manager => manager.FindByIdAsync("s1", It.IsAny<CancellationToken>())).ReturnsAsync(session);
         sessions.Setup(manager => manager.GetIdAsync(session, It.IsAny<CancellationToken>())).ReturnsAsync("s1");
+        sessions.Setup(manager => manager.HasStatusAsync(session, Statuses.Valid, It.IsAny<CancellationToken>())).ReturnsAsync(true);
         sessions.Setup(manager => manager.GetSubjectAsync(session, It.IsAny<CancellationToken>())).ReturnsAsync("Bob");
         sessions.Setup(manager => manager.GetApplicationIdAsync(session, It.IsAny<CancellationToken>())).ReturnsAsync("a1");
         sessions.Setup(manager => manager.GetAuthorizationIdAsync(session, It.IsAny<CancellationToken>())).ReturnsAsync("z1");
@@ -370,18 +395,33 @@ public class OpenIddictServerLogoutTests
         Assert.Null(await service.TerminateSessionAsync("unknown"));
     }
 
-    [Fact]
-    public async Task TerminateSessionAsync_ThrowsAnExceptionWhenIssuerIsNotSet()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task TerminateSessionAsync_IssuerIsOnlyRequiredWhenLogoutNotificationsAreProduced(bool logout)
     {
         // Arrange
+        var (sessions, applications) = CreateTerminationManagers(new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            [Settings.Logout.BackchannelLogoutUri] = "https://rp.example.com/logout"
+        });
+
         var services = new ServiceCollection();
         services.AddLogging();
+        services.AddSingleton(sessions.Object);
+        services.AddSingleton(applications.Object);
+        services.AddSingleton(Mock.Of<IOpenIddictTokenManager>());
 
         services.AddOpenIddict()
             .AddServer(options =>
             {
                 options.SetTokenEndpointUris("connect/token")
                        .AllowClientCredentialsFlow();
+
+                if (logout)
+                {
+                    options.EnableBackchannelLogout();
+                }
 
                 options.AddEphemeralEncryptionKey()
                        .AddEphemeralSigningKey();
@@ -391,8 +431,212 @@ public class OpenIddictServerLogoutTests
         var service = provider.GetRequiredService<OpenIddictServerService>();
 
         // Act and assert
-        var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () => await service.TerminateSessionAsync("s1"));
-        Assert.Equal(SR.GetResourceString(SR.ID0726), exception.Message);
+        if (logout)
+        {
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () => await service.TerminateSessionAsync("s1"));
+            Assert.Equal(SR.GetResourceString(SR.ID0726), exception.Message);
+        }
+
+        else
+        {
+            var result = await service.TerminateSessionAsync("s1");
+            Assert.NotNull(result);
+            Assert.Equal("s1", Assert.Single(result.SessionIds));
+            sessions.Verify(mock => mock.TryRevokeAsync(It.IsAny<object>(), It.IsAny<CancellationToken>()), Times.Once());
+        }
+    }
+
+    [Fact]
+    public async Task TerminateSessionAsync_AlreadyRevokedSessionIsNotNotifiedAgain()
+    {
+        // Arrange
+        var (sessions, applications) = CreateTerminationManagers(new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            [Settings.Logout.BackchannelLogoutUri] = "https://rp.example.com/logout"
+        }, valid: false);
+
+        var notified = false;
+
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddSingleton(sessions.Object);
+        services.AddSingleton(applications.Object);
+        services.AddSingleton(Mock.Of<IOpenIddictTokenManager>());
+
+        services.AddOpenIddict()
+            .AddServer(options =>
+            {
+                options.SetTokenEndpointUris("connect/token")
+                       .AllowClientCredentialsFlow()
+                       .SetIssuer(new Uri("https://www.contoso.com/", UriKind.Absolute))
+                       .EnableBackchannelLogout();
+
+                options.AddEphemeralEncryptionKey()
+                       .AddEphemeralSigningKey();
+
+                options.AddEventHandler<SendBackchannelLogoutRequestContext>(builder =>
+                    builder.UseInlineHandler(context =>
+                    {
+                        notified = true;
+                        context.IsSent = true;
+
+                        return ValueTask.CompletedTask;
+                    }));
+            });
+
+        await using var provider = services.BuildServiceProvider();
+        var service = provider.GetRequiredService<OpenIddictServerService>();
+
+        // Act
+        var result = await service.TerminateSessionAsync("s1");
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Empty(result.SessionIds);
+        Assert.Empty(result.Participants);
+        Assert.False(notified);
+        sessions.Verify(mock => mock.TryRevokeAsync(It.IsAny<object>(), It.IsAny<CancellationToken>()), Times.Never());
+    }
+
+    [Fact]
+    public async Task TerminateSessionAsync_RevokesAuthorizationsWhenEnabled()
+    {
+        // Arrange
+        var (sessions, applications) = CreateTerminationManagers(new Dictionary<string, string>(StringComparer.Ordinal));
+        var authorization = new object();
+
+        var authorizations = new Mock<IOpenIddictAuthorizationManager>();
+        authorizations.Setup(manager => manager.FindByIdAsync("z1", It.IsAny<CancellationToken>())).ReturnsAsync(authorization);
+        authorizations.Setup(manager => manager.TryRevokeAsync(authorization, It.IsAny<CancellationToken>())).ReturnsAsync(true);
+
+        var tokens = new Mock<IOpenIddictTokenManager>();
+
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddSingleton(sessions.Object);
+        services.AddSingleton(applications.Object);
+        services.AddSingleton(authorizations.Object);
+        services.AddSingleton(tokens.Object);
+
+        services.AddOpenIddict()
+            .AddServer(options =>
+            {
+                options.SetTokenEndpointUris("connect/token")
+                       .AllowClientCredentialsFlow()
+                       .RevokeAuthorizationsOnSessionTermination();
+
+                options.AddEphemeralEncryptionKey()
+                       .AddEphemeralSigningKey();
+            });
+
+        await using var provider = services.BuildServiceProvider();
+        var service = provider.GetRequiredService<OpenIddictServerService>();
+
+        // Act
+        var result = await service.TerminateSessionAsync("s1");
+
+        // Assert
+        Assert.NotNull(result);
+        authorizations.Verify(mock => mock.TryRevokeAsync(authorization, It.IsAny<CancellationToken>()), Times.Once());
+        tokens.Verify(mock => mock.RevokeBySessionIdAsync("s1", It.IsAny<CancellationToken>()), Times.Once());
+        tokens.Verify(mock => mock.RevokeByAuthorizationIdAsync("z1", It.IsAny<CancellationToken>()), Times.Once());
+    }
+
+    [Fact]
+    public async Task TerminateSessionAsync_SystemNetHttpSendsVerifiableLogoutTokenEndToEnd()
+    {
+        // Arrange
+        var (sessions, applications) = CreateTerminationManagers(new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            [Settings.Logout.BackchannelLogoutUri] = "https://rp.example.com/logout"
+        });
+
+        var bodies = new List<string>();
+        var handler = new CallbackHttpMessageHandler(async message =>
+        {
+            Assert.Equal(HttpMethod.Post, message.Method);
+            Assert.Equal("https://rp.example.com/logout", message.RequestUri!.AbsoluteUri);
+            Assert.Equal("application/x-www-form-urlencoded", message.Content!.Headers.ContentType?.MediaType);
+
+            var content = await message.Content.ReadAsStringAsync();
+
+            lock (bodies)
+            {
+                bodies.Add(content);
+            }
+
+            return new HttpResponseMessage(HttpStatusCode.OK);
+        });
+
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddSingleton(sessions.Object);
+        services.AddSingleton(applications.Object);
+        services.AddSingleton(Mock.Of<IOpenIddictTokenManager>());
+
+        services.AddOpenIddict()
+            .AddServer(options =>
+            {
+                options.SetTokenEndpointUris("connect/token")
+                       .AllowClientCredentialsFlow()
+                       .SetIssuer(new Uri("https://www.contoso.com/", UriKind.Absolute))
+                       .EnableBackchannelLogout();
+
+                options.AddEphemeralEncryptionKey()
+                       .AddEphemeralSigningKey();
+
+                options.UseSystemNetHttp()
+                       .ConfigurePrimaryHttpMessageHandler(() => handler);
+            });
+
+        await using var provider = services.BuildServiceProvider();
+        var service = provider.GetRequiredService<OpenIddictServerService>();
+        var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictServerOptions>>().CurrentValue;
+
+        // Act
+        var result = await service.TerminateSessionAsync("s1");
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal("Fabrikam", Assert.Single(result.NotifiedParticipants).ClientId);
+
+        var body = Assert.Single(bodies);
+        Assert.StartsWith("logout_token=", body, StringComparison.Ordinal);
+
+        var token = Uri.UnescapeDataString(body.Substring("logout_token=".Length));
+        var validation = await options.JsonWebTokenHandler.ValidateTokenAsync(token, new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+        {
+            IssuerSigningKeys = options.SigningCredentials.Select(static credentials => credentials.Key),
+            ValidAudience = "Fabrikam",
+            ValidIssuer = "https://www.contoso.com/",
+            ValidTypes = [JsonWebTokenTypes.LogoutToken]
+        });
+
+        Assert.True(validation.IsValid, validation.Exception?.Message);
+    }
+
+    private static (Mock<IOpenIddictSessionManager> Sessions, Mock<IOpenIddictApplicationManager> Applications) CreateTerminationManagers(
+        Dictionary<string, string> settings, bool valid = true)
+    {
+        var session = new object();
+        var application = new object();
+
+        var sessions = new Mock<IOpenIddictSessionManager>();
+        sessions.Setup(manager => manager.FindByIdAsync("s1", It.IsAny<CancellationToken>())).ReturnsAsync(session);
+        sessions.Setup(manager => manager.GetIdAsync(session, It.IsAny<CancellationToken>())).ReturnsAsync("s1");
+        sessions.Setup(manager => manager.HasStatusAsync(session, Statuses.Valid, It.IsAny<CancellationToken>())).ReturnsAsync(valid);
+        sessions.Setup(manager => manager.GetSubjectAsync(session, It.IsAny<CancellationToken>())).ReturnsAsync("Bob");
+        sessions.Setup(manager => manager.GetApplicationIdAsync(session, It.IsAny<CancellationToken>())).ReturnsAsync("a1");
+        sessions.Setup(manager => manager.GetAuthorizationIdAsync(session, It.IsAny<CancellationToken>())).ReturnsAsync("z1");
+        sessions.Setup(manager => manager.TryRevokeAsync(session, It.IsAny<CancellationToken>())).ReturnsAsync(true);
+
+        var applications = new Mock<IOpenIddictApplicationManager>();
+        applications.Setup(manager => manager.FindByIdAsync("a1", It.IsAny<CancellationToken>())).ReturnsAsync(application);
+        applications.Setup(manager => manager.GetClientIdAsync(application, It.IsAny<CancellationToken>())).ReturnsAsync("Fabrikam");
+        applications.Setup(manager => manager.GetSettingsAsync(application, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(settings.ToImmutableDictionary(StringComparer.Ordinal));
+
+        return (sessions, applications);
     }
 
     private static SendBackchannelLogoutRequestContext CreateSendContext(HttpMessageHandler handler)

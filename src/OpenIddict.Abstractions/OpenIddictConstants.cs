@@ -542,6 +542,7 @@ public static class OpenIddictConstants
     {
         public const string Destinations = ".destinations";
         public const string LastPollingDate = ".last_polling_date";
+        public const string LoginId = ".login_id";
         public const string SessionId = ".session_id";
     }
 

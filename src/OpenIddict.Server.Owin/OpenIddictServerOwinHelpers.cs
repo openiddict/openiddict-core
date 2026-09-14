@@ -124,24 +124,35 @@ public static class OpenIddictServerOwinHelpers
     {
         if (!string.IsNullOrEmpty(context.Request.Cookies[options.BrowserStateCookieName]))
         {
-            context.Response.Cookies.Delete(options.BrowserStateCookieName, CreateBrowserStateCookieOptions(context));
+            context.Response.Cookies.Delete(options.BrowserStateCookieName, CreateBrowserStateCookieOptions(context, httpOnly: false));
+        }
+
+        if (!string.IsNullOrEmpty(context.Request.Cookies[GetBindingCookieName(options)]))
+        {
+            context.Response.Cookies.Delete(GetBindingCookieName(options), CreateBrowserStateCookieOptions(context, httpOnly: true));
         }
     }
 
     internal static string EnsureBrowserState(IOwinContext context, OpenIddictServerOptions options, string? subject)
     {
         var state = context.Request.Cookies[options.BrowserStateCookieName];
-        if (OpenIddictServerHelpers.ValidateBrowserState(state, subject))
+        if (OpenIddictServerHelpers.ValidateBrowserState(state, context.Request.Cookies[GetBindingCookieName(options)], subject))
         {
             return state!;
         }
 
-        state = OpenIddictServerHelpers.CreateBrowserState(subject);
+        state = OpenIddictServerHelpers.CreateBrowserState();
 
-        context.Response.Cookies.Append(options.BrowserStateCookieName, state, CreateBrowserStateCookieOptions(context));
+        // Note: the browser state is purely random and readable by scripts, while the binding to the subject
+        // (only used to renew the browser state when a different user signs in) is stored in an HttpOnly cookie.
+        context.Response.Cookies.Append(options.BrowserStateCookieName, state, CreateBrowserStateCookieOptions(context, httpOnly: false));
+        context.Response.Cookies.Append(GetBindingCookieName(options), OpenIddictServerHelpers.ComputeBrowserStateBinding(state, subject),
+            CreateBrowserStateCookieOptions(context, httpOnly: true));
 
         return state;
     }
+
+    private static string GetBindingCookieName(OpenIddictServerOptions options) => options.BrowserStateCookieName + ".binding";
 
     private static OpenIddictServerOptions GetOptions(IOwinContext context)
     {
@@ -157,11 +168,11 @@ public static class OpenIddictServerOwinHelpers
             typeof(Microsoft.Extensions.Options.IOptionsMonitor<OpenIddictServerOptions>))!).CurrentValue;
     }
 
-    private static CookieOptions CreateBrowserStateCookieOptions(IOwinContext context) => new()
+    private static CookieOptions CreateBrowserStateCookieOptions(IOwinContext context, bool httpOnly) => new()
     {
         // Note: the cookie MUST be readable by the check session iframe script and is sent in a third-party
         // context (the iframe is embedded by the client applications), which requires SameSite=None and Secure.
-        HttpOnly = false,
+        HttpOnly = httpOnly,
         Path = "/",
         SameSite = context.Request.IsSecure ? SameSiteMode.None : SameSiteMode.Lax,
         Secure = context.Request.IsSecure

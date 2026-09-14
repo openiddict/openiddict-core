@@ -1587,8 +1587,11 @@ public static partial class OpenIddictServerHandlers
                     ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
 
                 var session = await manager.FindByIdAsync(context.SessionId, context.CancellationToken);
+                // Note: the expiration date of the session is not enforced when the lifetime of the token is not validated
+                // (e.g for identity token hints), as RP-Initiated Logout 1.0, section 2 requires accepting hints
+                // for sessions that were recently active at the OP, even when they have expired.
                 if (session is null || !await manager.HasStatusAsync(session, Statuses.Valid, context.CancellationToken) ||
-                    await manager.HasExpiredAsync(session, context.CancellationToken))
+                    (!context.DisableLifetimeValidation && await manager.HasExpiredAsync(session, context.CancellationToken)))
                 {
                     context.Logger.LogInformation(6297, SR.GetResourceString(SR.ID6297), context.SessionId);
 

@@ -122,38 +122,42 @@ public static class OpenIddictServerHelpers
     }
 
     /// <summary>
-    /// Creates a new opaque OP browser state bound to the specified subject.
+    /// Creates a new opaque and purely random OP browser state. Since the browser state is readable by scripts
+    /// (it is used by the check session iframe), it deliberately doesn't contain or derive from any user data.
     /// </summary>
-    /// <param name="subject">The subject of the authenticated user, if available.</param>
     /// <returns>The browser state.</returns>
-    public static string CreateBrowserState(string? subject)
-    {
-        var value = CreateRandomHexString(16);
-
-        return string.Concat(value, ".", ComputeBrowserStateBinding(value, subject));
-    }
+    public static string CreateBrowserState() => CreateRandomHexString(16);
 
     /// <summary>
-    /// Determines whether the specified OP browser state was created for the specified subject.
+    /// Computes the binding between an OP browser state and a subject, used to renew the browser state when a different
+    /// user signs in. The binding is not a secret but reveals information about the subject: it MUST NOT be exposed to
+    /// scripts (e.g it must be stored in an HttpOnly cookie, separately from the browser state).
     /// </summary>
     /// <param name="state">The browser state.</param>
     /// <param name="subject">The subject of the authenticated user, if available.</param>
-    /// <returns><see langword="true"/> if the browser state is bound to the subject, <see langword="false"/> otherwise.</returns>
-    public static bool ValidateBrowserState(string? state, string? subject)
+    /// <returns>The binding.</returns>
+    public static string ComputeBrowserStateBinding(string state, string? subject)
     {
-        if (string.IsNullOrEmpty(state))
+        ArgumentException.ThrowIfNullOrEmpty(state);
+
+        return ComputeSha256HexString(string.Concat(state, " ", subject));
+    }
+
+    /// <summary>
+    /// Determines whether the specified OP browser state is bound to the specified subject.
+    /// </summary>
+    /// <param name="state">The browser state.</param>
+    /// <param name="binding">The binding computed using <see cref="ComputeBrowserStateBinding(string, string?)"/>.</param>
+    /// <param name="subject">The subject of the authenticated user, if available.</param>
+    /// <returns><see langword="true"/> if the browser state is bound to the subject, <see langword="false"/> otherwise.</returns>
+    public static bool ValidateBrowserState(string? state, string? binding, string? subject)
+    {
+        if (string.IsNullOrEmpty(state) || string.IsNullOrEmpty(binding))
         {
             return false;
         }
 
-        var index = state.IndexOf('.');
-        if (index <= 0 || index == state.Length - 1)
-        {
-            return false;
-        }
-
-        return string.Equals(state.Substring(index + 1),
-            ComputeBrowserStateBinding(state.Substring(0, index), subject), StringComparison.Ordinal);
+        return string.Equals(binding, ComputeBrowserStateBinding(state, subject), StringComparison.Ordinal);
     }
 
     /// <summary>
@@ -170,6 +174,12 @@ public static class OpenIddictServerHelpers
 
         // Note: the message posted by the RP iframe is "client_id session_state" and the response is "changed",
         // "unchanged" or "error". The OP browser state is read from a cookie accessible to scripts.
+        //
+        // Session Management 1.0, section 4.2: "The OP iframe MUST enforce that the caller has the same origin as its
+        // parent frame. It MUST reject postMessage requests from any other source origin." The parent origin is resolved
+        // from location.ancestorOrigins or, when not supported, from the referrer; if it can't be determined, messages
+        // are ignored. When no browser state is present, "changed" is always returned without hashing, so that the
+        // response doesn't reveal whether the user is logged in to a caller that doesn't know the browser state.
         var builder = new StringBuilder();
         builder.AppendLine("<!DOCTYPE html>");
         builder.AppendLine("<html>");
@@ -191,14 +201,24 @@ public static class OpenIddictServerHelpers
         builder.AppendLine("    for (var i = 0; i < bytes.length; i++) { result += (bytes[i] < 16 ? \"0\" : \"\") + bytes[i].toString(16); }");
         builder.AppendLine("    return result;");
         builder.AppendLine("  }");
+        builder.AppendLine("  function getParentOrigin() {");
+        builder.AppendLine("    if (window.parent === window) { return null; }");
+        builder.AppendLine("    if (window.location.ancestorOrigins && window.location.ancestorOrigins.length) { return window.location.ancestorOrigins[0]; }");
+        builder.AppendLine("    try { return document.referrer ? new URL(document.referrer).origin : null; } catch (x) { return null; }");
+        builder.AppendLine("  }");
+        builder.AppendLine("  var parentOrigin = getParentOrigin();");
         builder.AppendLine("  window.addEventListener(\"message\", function (e) {");
-        builder.AppendLine("    if (!e.source || typeof e.data !== \"string\") { return; }");
-        builder.AppendLine("    var parts = e.data.split(\" \"), index = parts.length === 2 ? parts[1].lastIndexOf(\".\") : -1;");
-        builder.AppendLine("    if (index < 0 || !window.crypto || !window.crypto.subtle || !window.TextEncoder) { e.source.postMessage(\"error\", e.origin); return; }");
-        builder.AppendLine("    var salt = parts[1].substring(index + 1);");
-        builder.AppendLine("    var data = new TextEncoder().encode(parts[0] + \" \" + e.origin + \" \" + getBrowserState() + \" \" + salt);");
+        builder.AppendLine("    if (!e.source || !parentOrigin || e.origin !== parentOrigin || typeof e.data !== \"string\") { return; }");
+        builder.AppendLine("    var separator = e.data.lastIndexOf(\" \");");
+        builder.AppendLine("    var clientId = separator > 0 ? e.data.substring(0, separator) : \"\", sessionState = separator > 0 ? e.data.substring(separator + 1) : \"\";");
+        builder.AppendLine("    var index = sessionState.lastIndexOf(\".\");");
+        builder.AppendLine("    if (!clientId || index < 0 || !window.crypto || !window.crypto.subtle || !window.TextEncoder) { e.source.postMessage(\"error\", e.origin); return; }");
+        builder.AppendLine("    var browserState = getBrowserState();");
+        builder.AppendLine("    if (!browserState) { e.source.postMessage(\"changed\", e.origin); return; }");
+        builder.AppendLine("    var salt = sessionState.substring(index + 1);");
+        builder.AppendLine("    var data = new TextEncoder().encode(clientId + \" \" + e.origin + \" \" + browserState + \" \" + salt);");
         builder.AppendLine("    window.crypto.subtle.digest(\"SHA-256\", data).then(function (hash) {");
-        builder.AppendLine("      e.source.postMessage(toHex(hash) + \".\" + salt === parts[1] ? \"unchanged\" : \"changed\", e.origin);");
+        builder.AppendLine("      e.source.postMessage(toHex(hash) + \".\" + salt === sessionState ? \"unchanged\" : \"changed\", e.origin);");
         builder.AppendLine("    }, function () { e.source.postMessage(\"error\", e.origin); });");
         builder.AppendLine("  }, false);");
         builder.AppendLine("})();");
@@ -287,9 +307,6 @@ public static class OpenIddictServerHelpers
     /// </summary>
     /// <returns>The nonce.</returns>
     public static string CreateContentSecurityPolicyNonce() => CreateRandomHexString(16);
-
-    private static string ComputeBrowserStateBinding(string value, string? subject)
-        => ComputeSha256HexString(string.Concat(value, " ", subject)).Substring(0, 32);
 
     private static string ComputeSha256HexString(string value)
     {

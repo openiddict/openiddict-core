@@ -1911,6 +1911,48 @@ public class OpenIddictApplicationManagerTests
             SR.FormatID2361(Settings.Logout.BackchannelLogoutSessionRequired), StringComparison.Ordinal));
     }
 
+    [Theory]
+    [InlineData("https://fabrikam.com/logout", true)]
+    [InlineData("https://fabrikam.com:443/other/logout?x=1", true)]
+    [InlineData("https://contoso.com/logout", false)]
+    [InlineData("http://fabrikam.com/logout", false)]
+    [InlineData("https://fabrikam.com:8443/logout", false)]
+    public async Task ValidateAsync_FrontchannelLogoutUriMustShareOriginWithRedirectUri(string uri, bool valid)
+    {
+        // Arrange
+        var application = new CustomApplication();
+        var cache = Mock.Of<IOpenIddictApplicationCache<CustomApplication>>();
+        var logger = Mock.Of<ILogger<OpenIddictApplicationManager<CustomApplication>>>();
+        var options = Mock.Of<IOptionsMonitor<OpenIddictCoreOptions>>(
+            mock => mock.CurrentValue == new OpenIddictCoreOptions());
+        var store = new Mock<IOpenIddictApplicationStore<CustomApplication>>();
+
+        store.Setup(store => store.GetClientIdAsync(application, It.IsAny<CancellationToken>()))
+             .ReturnsAsync("client-id");
+
+        store.Setup(store => store.GetClientTypeAsync(application, It.IsAny<CancellationToken>()))
+             .ReturnsAsync(ClientTypes.Public);
+
+        store.Setup(store => store.GetPostLogoutRedirectUrisAsync(application, It.IsAny<CancellationToken>()))
+             .ReturnsAsync([]);
+
+        store.Setup(store => store.GetRedirectUrisAsync(application, It.IsAny<CancellationToken>()))
+             .ReturnsAsync(["https://fabrikam.com/signin-oidc"]);
+
+        store.Setup(store => store.GetSettingsAsync(application, It.IsAny<CancellationToken>()))
+             .ReturnsAsync(ImmutableDictionary.CreateRange(StringComparer.Ordinal, [
+                 KeyValuePair.Create(Settings.Logout.FrontchannelLogoutUri, uri)]));
+
+        var manager = new OpenIddictApplicationManager<CustomApplication>(cache, logger, options, store.Object);
+
+        // Act
+        var results = await manager.ValidateAsync(application).ToListAsync();
+
+        // Assert
+        Assert.Equal(!valid, results.Any(result => string.Equals(result.ErrorMessage,
+            SR.FormatID2364(Settings.Logout.FrontchannelLogoutUri), StringComparison.Ordinal)));
+    }
+
     [Fact]
     public async Task ValidateAsync_ReturnsErrorWhenPublicApplicationHasClientSecret()
     {

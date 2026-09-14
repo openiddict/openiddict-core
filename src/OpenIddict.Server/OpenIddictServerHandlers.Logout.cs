@@ -32,8 +32,9 @@ public static partial class OpenIddictServerHandlers
             /*
              * Sign-in processing:
              */
-            AttachAccessTokenSessionId.Descriptor,
+            CreateSessionEntry.Descriptor,
             ExtendSessionEntry.Descriptor,
+            AttachAccessTokenSessionId.Descriptor,
 
             /*
              * Sign-out processing:
@@ -149,8 +150,107 @@ public static partial class OpenIddictServerHandlers
         }
 
         /// <summary>
-        /// Contains the logic responsible for extending the lifetime of the session attached to a sign-in demand
-        /// (sliding and absolute expiration), when a session idle timeout or lifetime is configured.
+        /// Contains the logic responsible for creating (or reusing) a server-side session entry for sign-in demands
+        /// processed by the authorization endpoint, when automatic session creation is enabled. The session is bound
+        /// to the subject, the client application, the authorization and the login identifier specified by the host
+        /// using the <see cref="Properties.LoginId"/> property, and its identifier is attached to the principal so that
+        /// it flows to the derived tokens (and to the standard "sid" claim of identity tokens).
+        /// Note: this handler is not used when the degraded mode is enabled.
+        /// </summary>
+        public sealed class CreateSessionEntry : IOpenIddictServerHandler<ProcessSignInContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+                = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
+                    .AddFilter<RequireDegradedModeDisabled>()
+                    .UseSingletonHandler<CreateSessionEntry>()
+                    .SetOrder(AttachAuthorization.Descriptor.Order + 500)
+                    .SetType(OpenIddictServerHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public async ValueTask HandleAsync(ProcessSignInContext context)
+            {
+                ArgumentNullException.ThrowIfNull(context);
+
+                if (!context.Options.EnableAutomaticSessionCreation ||
+                    context.EndpointType is not OpenIddictServerEndpointType.Authorization ||
+                    context.Principal is not { Identity: ClaimsIdentity } principal ||
+                    !string.IsNullOrEmpty(principal.GetSessionId()) ||
+                    principal.GetClaim(Claims.Subject) is not { Length: > 0 } subject)
+                {
+                    return;
+                }
+
+                var sessions = context.ServiceProvider.GetService<IOpenIddictSessionManager>()
+                    ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
+
+                string? application = null;
+
+                if (!string.IsNullOrEmpty(context.Request.ClientId))
+                {
+                    var applications = context.ServiceProvider.GetService<IOpenIddictApplicationManager>()
+                        ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
+
+                    var entry = await applications.FindByClientIdAsync(context.Request.ClientId, context.CancellationToken)
+                        ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0017));
+
+                    application = await applications.GetIdAsync(entry, context.CancellationToken);
+                }
+
+                var authorization = principal.GetAuthorizationId();
+                var login = context.Properties.TryGetValue(Properties.LoginId, out string? value) && !string.IsNullOrEmpty(value) ? value : null;
+
+                // When a login identifier is available (i.e when the host identifies the end-user authentication),
+                // reuse the valid session already created for the same authentication, client and authorization.
+                // Without a login identifier, sessions can't be safely correlated and a new entry is always created.
+                if (!string.IsNullOrEmpty(login))
+                {
+                    await foreach (var candidate in sessions.FindAsync(
+                        (subject, login, application, authorization, Statuses.Valid), context.CancellationToken))
+                    {
+                        if ((application is null && !string.IsNullOrEmpty(await sessions.GetApplicationIdAsync(candidate, context.CancellationToken))) ||
+                            (authorization is null && !string.IsNullOrEmpty(await sessions.GetAuthorizationIdAsync(candidate, context.CancellationToken))) ||
+                            await sessions.HasExpiredAsync(candidate, context.CancellationToken))
+                        {
+                            continue;
+                        }
+
+                        principal.SetSessionId(await sessions.GetIdAsync(candidate, context.CancellationToken));
+
+                        return;
+                    }
+                }
+
+                var date = context.Options.TimeProvider.GetUtcNow();
+
+                var session = await sessions.CreateAsync(new OpenIddictSessionDescriptor
+                {
+                    ApplicationId = application,
+                    AuthorizationId = authorization,
+                    CreationDate = date,
+                    ExpirationDate = OpenIddictServerHelpers.ComputeSessionExpirationDate(context.Options, date, date),
+                    LastActivityDate = date,
+                    LoginId = login,
+                    Status = Statuses.Valid,
+                    Subject = subject
+                }, context.CancellationToken);
+
+                var identifier = await sessions.GetIdAsync(session, context.CancellationToken);
+
+                context.Logger.LogInformation(6535, SR.GetResourceString(SR.ID6535), identifier, context.Request.ClientId);
+
+                principal.SetSessionId(identifier);
+            }
+        }
+
+        /// <summary>
+        /// Contains the logic responsible for validating and extending the lifetime of the session attached to a sign-in
+        /// demand (sliding and absolute expiration), when a session idle timeout or lifetime is configured. Sign-in demands
+        /// referencing a session that was revoked or that has expired are rejected, as the tokens derived from them would
+        /// be unusable and extending an expired session would otherwise silently revive it.
         /// Note: this handler is not used when the degraded mode is enabled.
         /// </summary>
         public sealed class ExtendSessionEntry : IOpenIddictServerHandler<ProcessSignInContext>
@@ -162,7 +262,7 @@ public static partial class OpenIddictServerHandlers
                 = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessSignInContext>()
                     .AddFilter<RequireDegradedModeDisabled>()
                     .UseSingletonHandler<ExtendSessionEntry>()
-                    .SetOrder(BeautifyGeneratedTokens.Descriptor.Order + 500)
+                    .SetOrder(CreateSessionEntry.Descriptor.Order + 100)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
@@ -181,8 +281,16 @@ public static partial class OpenIddictServerHandlers
                     ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0016));
 
                 var session = await manager.FindByIdAsync(identifier, context.CancellationToken);
-                if (session is null || !await manager.HasStatusAsync(session, Statuses.Valid, context.CancellationToken))
+                if (session is null || !await manager.HasStatusAsync(session, Statuses.Valid, context.CancellationToken) ||
+                    await manager.HasExpiredAsync(session, context.CancellationToken))
                 {
+                    context.Logger.LogInformation(6536, SR.GetResourceString(SR.ID6536), identifier);
+
+                    context.Reject(
+                        error: context.EndpointType is OpenIddictServerEndpointType.Authorization ? Errors.LoginRequired : Errors.InvalidGrant,
+                        description: SR.GetResourceString(SR.ID2363),
+                        uri: SR.FormatID8000(SR.ID2363));
+
                     return;
                 }
 
@@ -207,7 +315,8 @@ public static partial class OpenIddictServerHandlers
         /// <summary>
         /// Contains the logic responsible for terminating the session attached to a sign-out demand processed by
         /// the end session endpoint, when session revocation, back-channel logout or front-channel logout are enabled.
-        /// The session is resolved from the <see cref="Properties.SessionId"/> host property or from the "sid" claim
+        /// The session is resolved from the <see cref="Properties.SessionId"/> host property or, only when
+        /// <see cref="OpenIddictServerOptions.EnableIdentityTokenHintSessionResolution"/> is enabled, from the "sid" claim
         /// of the identity token hint. Note: this handler is not used when the degraded mode is enabled.
         /// </summary>
         public sealed class TerminateSignOutSession : IOpenIddictServerHandler<ProcessSignOutContext>
@@ -241,9 +350,18 @@ public static partial class OpenIddictServerHandlers
                 }
 
                 var identifier = context.Properties.TryGetValue(Properties.SessionId, out string? value) && !string.IsNullOrEmpty(value)
-                    ? value
-                    : context.Transaction.GetProperty<ProcessAuthenticationContext>(typeof(ProcessAuthenticationContext).FullName!)
+                    ? value : null;
+
+                // Note: an identity token hint only proves that the RP was issued a token for the session, not that the
+                // session belongs to the user currently authenticated at the OP (RP-Initiated Logout 1.0, section 2 requires
+                // treating mismatched requests as suspect). As such, the "sid" claim of the hint is only used as a fallback
+                // when explicitly allowed. Hints whose session expired are still accepted (the lifetime of hints is not
+                // validated), which allows notifying the RPs that had a recent session at the OP.
+                if (string.IsNullOrEmpty(identifier) && context.Options.EnableIdentityTokenHintSessionResolution)
+                {
+                    identifier = context.Transaction.GetProperty<ProcessAuthenticationContext>(typeof(ProcessAuthenticationContext).FullName!)
                         ?.IdentityTokenPrincipal?.GetClaim(Claims.SessionId);
+                }
 
                 if (string.IsNullOrEmpty(identifier))
                 {
@@ -310,6 +428,14 @@ public static partial class OpenIddictServerHandlers
                         error: Errors.InvalidRequest,
                         description: SR.FormatID2362(context.SessionId),
                         uri: SR.FormatID8000(SR.ID2362));
+
+                    return;
+                }
+
+                // Don't notify the client applications again when the session was already terminated.
+                if (!await manager.HasStatusAsync(session, Statuses.Valid, context.CancellationToken))
+                {
+                    context.Logger.LogInformation(6537, SR.GetResourceString(SR.ID6537), context.SessionId);
 
                     return;
                 }
@@ -523,7 +649,7 @@ public static partial class OpenIddictServerHandlers
                     return;
                 }
 
-                var issuer = GetIssuer(context);
+                string? issuer = null;
 
                 // Note: logout tokens are generated sequentially (as token generation may rely on scoped
                 // services like the key store) but the requests are sent in parallel to reduce latency.
@@ -542,7 +668,7 @@ public static partial class OpenIddictServerHandlers
                     var principal = new ClaimsPrincipal(new ClaimsIdentity(TokenValidationParameters.DefaultAuthenticationType))
                         .SetCreationDate(date)
                         .SetExpirationDate(date + context.Options.LogoutTokenLifetime)
-                        .SetClaim(Claims.Private.Issuer, issuer)
+                        .SetClaim(Claims.Private.Issuer, issuer ??= GetIssuer(context))
                         .SetClaim(Claims.Audience, participant.ClientId)
                         .SetClaim(Claims.JwtId, Guid.NewGuid().ToString())
                         .SetClaim(Claims.Subject, participant.Subject)
@@ -602,13 +728,17 @@ public static partial class OpenIddictServerHandlers
                     using var source = CancellationTokenSource.CreateLinkedTokenSource(context.CancellationToken);
                     source.CancelAfter(context.Options.BackchannelLogoutTimeout);
 
+                    // Note: the requests are sent concurrently: to avoid sharing non-thread-safe scoped services
+                    // (e.g a DbContext) between the transport handlers, a child scope is created for each request.
+                    using var scope = context.ServiceProvider.GetService<IServiceScopeFactory>()?.CreateScope();
+
                     var transaction = new OpenIddictServerTransaction
                     {
                         BaseUri = context.BaseUri,
                         CancellationToken = source.Token,
                         Options = context.Options,
                         RequestUri = context.RequestUri,
-                        ServiceProvider = context.ServiceProvider
+                        ServiceProvider = scope?.ServiceProvider ?? context.ServiceProvider
                     };
 
                     var notification = new SendBackchannelLogoutRequestContext(transaction)
@@ -679,7 +809,7 @@ public static partial class OpenIddictServerHandlers
                     return ValueTask.CompletedTask;
                 }
 
-                var issuer = GetIssuer(context);
+                string? issuer = null;
 
                 foreach (var participant in context.Participants)
                 {
@@ -694,7 +824,7 @@ public static partial class OpenIddictServerHandlers
                     var uri = OpenIddictHelpers.AddQueryStringParameters(participant.FrontchannelLogoutUri,
                         new Dictionary<string, StringValues>(StringComparer.Ordinal)
                         {
-                            [Parameters.Iss] = issuer,
+                            [Parameters.Iss] = issuer ??= GetIssuer(context),
                             [Parameters.Sid] = participant.SessionId
                         });
 
@@ -880,6 +1010,10 @@ public static partial class OpenIddictServerHandlers
         private static string GetIssuer(BaseContext context) => (context.Options.Issuer ?? context.BaseUri) switch
         {
             { IsAbsoluteUri: true } uri => uri.AbsoluteUri,
+
+            // When no request is being processed (e.g when a session is terminated using OpenIddictServerService),
+            // the issuer can't be inferred from the base URI and must be explicitly configured.
+            null => throw new InvalidOperationException(SR.GetResourceString(SR.ID0726)),
 
             // Throw an exception if the issuer cannot be retrieved or is not valid.
             _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0496))

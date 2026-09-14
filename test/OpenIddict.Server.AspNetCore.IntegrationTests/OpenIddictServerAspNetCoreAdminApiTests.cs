@@ -4,6 +4,7 @@
  * the license and the contributors participating to this project.
  */
 
+using System.Collections.Immutable;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Security.Claims;
@@ -743,6 +744,77 @@ public class OpenIddictServerAspNetCoreAdminApiTests
         Assert.Equal("Fabrikam", Assert.Single(document.RootElement.GetProperty("notified_clients").EnumerateArray()).GetString());
 
         service.Verify(mock => mock.TerminateSessionAsync("s1", It.IsAny<CancellationToken>()), Times.Once());
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task TerminateSession_UsesTheServerServiceAndReportsConfigurationErrors(bool issuer)
+    {
+        // Arrange
+        var session = new object();
+        var application = new object();
+
+        var sessions = new Mock<IOpenIddictSessionManager>();
+        sessions.Setup(mock => mock.FindByIdAsync("s1", It.IsAny<CancellationToken>())).ReturnsAsync(session);
+        sessions.Setup(mock => mock.GetIdAsync(session, It.IsAny<CancellationToken>())).ReturnsAsync("s1");
+        sessions.Setup(mock => mock.HasStatusAsync(session, Statuses.Valid, It.IsAny<CancellationToken>())).ReturnsAsync(true);
+        sessions.Setup(mock => mock.GetSubjectAsync(session, It.IsAny<CancellationToken>())).ReturnsAsync("Bob");
+        sessions.Setup(mock => mock.GetApplicationIdAsync(session, It.IsAny<CancellationToken>())).ReturnsAsync("a1");
+        sessions.Setup(mock => mock.TryRevokeAsync(session, It.IsAny<CancellationToken>())).ReturnsAsync(true);
+
+        var applications = new Mock<IOpenIddictApplicationManager>();
+        applications.Setup(mock => mock.FindByIdAsync("a1", It.IsAny<CancellationToken>())).ReturnsAsync(application);
+        applications.Setup(mock => mock.GetClientIdAsync(application, It.IsAny<CancellationToken>())).ReturnsAsync("Fabrikam");
+        applications.Setup(mock => mock.GetSettingsAsync(application, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(ImmutableDictionary.CreateRange(StringComparer.Ordinal, [
+                KeyValuePair.Create(Settings.Logout.FrontchannelLogoutUri, "https://fabrikam.com/logout")]));
+
+        using var host = await CreateHostAsync(services =>
+        {
+            services.AddSingleton(sessions.Object);
+            services.AddSingleton(applications.Object);
+            services.AddSingleton(Mock.Of<IOpenIddictTokenManager>());
+
+            services.AddOpenIddict()
+                .AddServer(options =>
+                {
+                    options.SetTokenEndpointUris("connect/token")
+                           .AllowClientCredentialsFlow()
+                           .EnableFrontchannelLogout();
+
+                    if (issuer)
+                    {
+                        options.SetIssuer(new Uri("https://www.contoso.com/", UriKind.Absolute));
+                    }
+
+                    options.AddEphemeralEncryptionKey()
+                           .AddEphemeralSigningKey();
+                });
+        });
+
+        using var client = CreateClient(host, role: "admin");
+
+        // Act
+        var response = await client.PostAsync("/openiddict/admin/sessions/s1/terminate", JsonContent(string.Empty));
+        var content = await response.Content.ReadAsStringAsync();
+
+        // Assert
+        if (issuer)
+        {
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            using var document = JsonDocument.Parse(content);
+            Assert.Equal("s1", Assert.Single(document.RootElement.GetProperty("session_ids").EnumerateArray()).GetString());
+            Assert.StartsWith("https://fabrikam.com/logout?", Assert.Single(
+                document.RootElement.GetProperty("frontchannel_logout_uris").EnumerateArray()).GetString(), StringComparison.Ordinal);
+        }
+
+        else
+        {
+            Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+            Assert.Contains("SetIssuer", content, StringComparison.Ordinal);
+        }
     }
 
     private static StringContent JsonContent(string payload)

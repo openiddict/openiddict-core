@@ -361,6 +361,7 @@ public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenId
         // Ensure the sessions/logout configuration is consistent.
         if (options.EnableDegradedMode && (options.EnableBackchannelLogout || options.EnableFrontchannelLogout ||
                                            options.EnableSessionRevocationOnSignOut ||
+                                           options.EnableAutomaticSessionCreation ||
                                            options.SessionIdleTimeout is not null || options.SessionLifetime is not null))
         {
             builder.AddError(SR.GetResourceString(SR.ID0721));

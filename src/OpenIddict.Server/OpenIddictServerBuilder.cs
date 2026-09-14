@@ -1937,8 +1937,8 @@ public sealed class OpenIddictServerBuilder
 
     /// <summary>
     /// Configures OpenIddict to revoke the session attached to a sign-out demand processed by
-    /// the end session endpoint (resolved from the <see cref="Properties.SessionId"/> property
-    /// or from the identity token hint), all the sessions sharing its login identifier and their tokens.
+    /// the end session endpoint (resolved from the <see cref="Properties.SessionId"/> property or, if enabled,
+    /// from the identity token hint), all the sessions sharing its login identifier and their tokens.
     /// </summary>
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
     public OpenIddictServerBuilder EnableSessionRevocationOnSignOut()
@@ -1951,6 +1951,25 @@ public sealed class OpenIddictServerBuilder
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
     public OpenIddictServerBuilder IncludeSessionIdInAccessTokens()
         => Configure(options => options.IncludeSessionIdInAccessTokens = true);
+
+    /// <summary>
+    /// Configures OpenIddict to automatically create (or reuse) a server-side session entry for sign-in demands
+    /// processed by the authorization endpoint that don't already specify a session. The login identifier used to
+    /// correlate the sessions of the same end-user authentication can be specified using the
+    /// <see cref="OpenIddictConstants.Properties.LoginId"/> sign-in property.
+    /// </summary>
+    /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
+    public OpenIddictServerBuilder EnableAutomaticSessionCreation()
+        => Configure(options => options.EnableAutomaticSessionCreation = true);
+
+    /// <summary>
+    /// Configures OpenIddict to resolve the session terminated by the end session endpoint from the "sid" claim of
+    /// the identity token hint when the host doesn't specify it using the <see cref="OpenIddictConstants.Properties.SessionId"/>
+    /// sign-out property. Caution: any party holding an identity token of the user can then terminate the session.
+    /// </summary>
+    /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
+    public OpenIddictServerBuilder EnableIdentityTokenHintSessionResolution()
+        => Configure(options => options.EnableIdentityTokenHintSessionResolution = true);
 
     /// <summary>
     /// Configures OpenIddict to also revoke the authorization attached to a session when the session is terminated.

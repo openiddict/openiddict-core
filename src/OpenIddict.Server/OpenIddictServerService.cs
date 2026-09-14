@@ -271,11 +271,6 @@ public class OpenIddictServerService
             throw new InvalidOperationException(SR.GetResourceString(SR.ID0721));
         }
 
-        if (options.Issuer is null)
-        {
-            throw new InvalidOperationException(SR.GetResourceString(SR.ID0726));
-        }
-
         var transaction = new OpenIddictServerTransaction
         {
             CancellationToken = cancellationToken,
