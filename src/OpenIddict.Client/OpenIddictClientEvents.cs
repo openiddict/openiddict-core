@@ -888,6 +888,17 @@ public static partial class OpenIddictClientEvents
         public string? StateToken { get; set; }
 
         /// <summary>
+        /// Gets or sets the JWT authorization response (JARM) extracted from the
+        /// "response" parameter of the authorization response, if applicable.
+        /// </summary>
+        public string? AuthorizationResponseToken { get; set; }
+
+        /// <summary>
+        /// Gets or sets the principal extracted from the JWT authorization response (JARM), if applicable.
+        /// </summary>
+        public ClaimsPrincipal? AuthorizationResponseTokenPrincipal { get; set; }
+
+        /// <summary>
         /// Gets or sets the subject token to send to the server, if applicable.
         /// </summary>
         public string? SubjectToken { get; set; }

@@ -45,6 +45,7 @@ public static partial class OpenIddictClientHandlers
         ResolveClientRegistrationFromAuthenticationContext.Descriptor,
         EvaluateValidatedUpfrontTokens.Descriptor,
         ResolveValidatedStateToken.Descriptor,
+        ResolveAuthorizationResponseToken.Descriptor,
         ValidateRequiredStateToken.Descriptor,
         ValidateStateToken.Descriptor,
         ResolveHostAuthenticationPropertiesFromStateToken.Descriptor,
@@ -54,6 +55,7 @@ public static partial class OpenIddictClientHandlers
         ValidateRequestForgeryProtection.Descriptor,
         ValidateEndpointUri.Descriptor,
         ResolveClientRegistrationFromStateToken.Descriptor,
+        ValidateAuthorizationResponseToken.Descriptor,
         ValidateIssuerParameter.Descriptor,
         HandleFrontchannelErrorResponse.Descriptor,
         ResolveGrantTypeAndResponseTypeFromStateToken.Descriptor,
@@ -131,6 +133,7 @@ public static partial class OpenIddictClientHandlers
         AttachNonce.Descriptor,
         AttachCodeChallengeParameters.Descriptor,
         AttachResponseMode.Descriptor,
+        AttachJwtResponseMode.Descriptor,
         PrepareLoginStateTokenPrincipal.Descriptor,
         GenerateLoginStateToken.Descriptor,
         AttachChallengeParameters.Descriptor,
@@ -6021,6 +6024,10 @@ public static partial class OpenIddictClientHandlers
             // to ensure the returned set of tokens matches the specified response type and
             // help mitigate downgrade attacks (e.g authorization code flow -> implicit flow).
             principal.SetClaim(Claims.Private.ResponseType, context.ResponseType);
+
+            // Attach the response mode to the state token to allow the redirection endpoint to reject
+            // plain authorization responses when a JWT response mode (JARM) was requested.
+            principal.SetClaim(Claims.Private.ResponseMode, context.ResponseMode);
 
             // Store the type of endpoint allowed to receive the generated state token.
             principal.SetClaim(Claims.Private.EndpointType, Enum.GetName(

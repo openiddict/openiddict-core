@@ -167,6 +167,7 @@ public static class OpenIddictConstants
             public const string RequestTokenLifetime = "oi_reqt_lft";
             public const string RequestTokenType = "oi_reqt_typ";
             public const string Resource = "oi_rsrc";
+            public const string ResponseMode = "oi_rsp_mode";
             public const string ResponseType = "oi_rsp_typ";
             public const string SessionId = "oi_ses_id";
             public const string SigningAlgorithm = "oi_sign_alg";

@@ -42,6 +42,7 @@ public static partial class OpenIddictClientHandlers
             ExtractUserInfoEndpoint.Descriptor,
             ExtractGrantTypes.Descriptor,
             ExtractResponseModes.Descriptor,
+            ExtractAuthorizationResponseAlgorithms.Descriptor,
             ExtractResponseTypes.Descriptor,
             ExtractCodeChallengeMethods.Descriptor,
             ExtractDPoPSigningAlgorithms.Descriptor,
@@ -126,6 +127,9 @@ public static partial class OpenIddictClientHandlers
                         => ((JsonElement) value).ValueKind is JsonValueKind.String,
 
                     // The following parameters MUST be formatted as arrays of strings:
+                    Metadata.AuthorizationEncryptionAlgValuesSupported              or
+                    Metadata.AuthorizationEncryptionEncValuesSupported              or
+                    Metadata.AuthorizationSigningAlgValuesSupported                 or
                     Metadata.BackchannelAuthenticationRequestSigningAlgValuesSupported or
                     Metadata.BackchannelTokenDeliveryModesSupported                 or
                     Metadata.CodeChallengeMethodsSupported                          or
@@ -1002,6 +1006,47 @@ public static partial class OpenIddictClientHandlers
                 }
 
                 return ValueTask.CompletedTask;
+            }
+        }
+
+        /// <summary>
+        /// Contains the logic responsible for extracting the algorithms supported by the server to sign
+        /// and encrypt JWT authorization responses (JARM) from the discovery document.
+        /// </summary>
+        public sealed class ExtractAuthorizationResponseAlgorithms : IOpenIddictClientHandler<HandleConfigurationResponseContext>
+        {
+            /// <summary>
+            /// Gets the default descriptor definition assigned to this handler.
+            /// </summary>
+            public static OpenIddictClientHandlerDescriptor Descriptor { get; }
+                = OpenIddictClientHandlerDescriptor.CreateBuilder<HandleConfigurationResponseContext>()
+                    .UseSingletonHandler<ExtractAuthorizationResponseAlgorithms>()
+                    .SetOrder(ExtractResponseModes.Descriptor.Order + 250)
+                    .SetType(OpenIddictClientHandlerType.BuiltIn)
+                    .Build();
+
+            /// <inheritdoc/>
+            public ValueTask HandleAsync(HandleConfigurationResponseContext context)
+            {
+                ArgumentNullException.ThrowIfNull(context);
+
+                // See https://openid.net/specs/oauth-v2-jarm.html#section-3 for more information.
+                Extract(Metadata.AuthorizationSigningAlgValuesSupported, context.Configuration.AuthorizationSigningAlgValuesSupported);
+                Extract(Metadata.AuthorizationEncryptionAlgValuesSupported, context.Configuration.AuthorizationEncryptionAlgValuesSupported);
+                Extract(Metadata.AuthorizationEncryptionEncValuesSupported, context.Configuration.AuthorizationEncryptionEncValuesSupported);
+
+                return ValueTask.CompletedTask;
+
+                void Extract(string name, HashSet<string> set)
+                {
+                    foreach (var algorithm in (ImmutableArray<string?>?) context.Response[name] ?? [])
+                    {
+                        if (!string.IsNullOrEmpty(algorithm))
+                        {
+                            set.Add(algorithm);
+                        }
+                    }
+                }
             }
         }
 

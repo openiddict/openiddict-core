@@ -226,6 +226,16 @@ public static partial class OpenIddictClientHandlers
                         parameters.TokenDecryptionKeys = context.Options.TokenValidationParameters.TokenDecryptionKeys;
                     }
 
+                    // JWT authorization responses (JARM) don't have a specific "typ" value but can be encrypted by
+                    // the authorization server using the public encryption keys registered for the client.
+                    //
+                    // See https://openid.net/specs/oauth-v2-jarm.html#section-2.2 for more information.
+                    else if (context.ValidTokenTypes.Count is 1 &&
+                        context.ValidTokenTypes.Contains(TokenTypeIdentifiers.Private.AuthorizationResponse))
+                    {
+                        parameters.TokenDecryptionKeys = context.Options.TokenValidationParameters.TokenDecryptionKeys;
+                    }
+
                     return parameters;
                 }
             }

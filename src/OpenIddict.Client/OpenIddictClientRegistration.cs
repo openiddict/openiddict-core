@@ -169,6 +169,17 @@ public sealed class OpenIddictClientRegistration
     public bool RequireJsonWebTokenIntrospectionResponses { get; set; }
 
     /// <summary>
+    /// Gets or sets a boolean indicating whether authorization responses must be returned as JWTs using
+    /// one of the JWT Secured Authorization Response Modes (JARM). When enabled, the negotiated response
+    /// mode is replaced by its JWT variant ("query.jwt", "fragment.jwt" or "form_post.jwt") and
+    /// authorization responses that are not returned as signed JWTs are rejected.
+    /// </summary>
+    /// <remarks>
+    /// Note: encrypted responses are decrypted using the encryption credentials registered in the client options.
+    /// </remarks>
+    public bool RequireJwtSecuredAuthorizationResponses { get; set; }
+
+    /// <summary>
     /// Gets the client authentication methods allowed by the client instance.
     /// If no value is explicitly set, all the methods enabled in the client options can be used.
     /// </summary>
