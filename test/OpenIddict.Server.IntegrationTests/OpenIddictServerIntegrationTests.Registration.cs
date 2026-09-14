@@ -166,6 +166,15 @@ public abstract partial class OpenIddictServerIntegrationTests
     [Theory]
     [InlineData("""{"redirect_uris":["/relative"]}""", Errors.InvalidRedirectUri, SR.ID2405)]
     [InlineData("""{"redirect_uris":["https://fabrikam.com/#fragment"]}""", Errors.InvalidRedirectUri, SR.ID2405)]
+    [InlineData("""{"redirect_uris":["javascript:alert(document.cookie)"]}""", Errors.InvalidRedirectUri, SR.ID2405)]
+    [InlineData("""{"redirect_uris":["data:text/html,<script>alert(1)</script>"]}""", Errors.InvalidRedirectUri, SR.ID2405)]
+    [InlineData("""{"redirect_uris":["vbscript:msgbox(1)"]}""", Errors.InvalidRedirectUri, SR.ID2405)]
+    [InlineData("""{"redirect_uris":["file:///etc/passwd"]}""", Errors.InvalidRedirectUri, SR.ID2405)]
+    [InlineData("""{"grant_types":["client_credentials"],"post_logout_redirect_uris":["javascript:alert(1)"]}""", Errors.InvalidClientMetadata, SR.ID2405)]
+    [InlineData("""{"redirect_uris":["http://fabrikam.com/callback"],"grant_types":["implicit"],"response_types":["id_token"]}""", Errors.InvalidRedirectUri, SR.ID2404)]
+    [InlineData("""{"redirect_uris":["https://localhost/callback"],"grant_types":["implicit"],"response_types":["id_token"],"application_type":"web"}""", Errors.InvalidRedirectUri, SR.ID2404)]
+    [InlineData("""{"grant_types":["password"]}""", Errors.InvalidClientMetadata, SR.ID2404)]
+    [InlineData("""{"grant_types":["urn:ietf:params:oauth:grant-type:token-exchange"]}""", Errors.InvalidClientMetadata, SR.ID2404)]
     [InlineData("""{"grant_types":["authorization_code"]}""", Errors.InvalidRedirectUri, SR.ID2406)]
     [InlineData("""{"grant_types":["urn:custom"]}""", Errors.InvalidClientMetadata, SR.ID2404)]
     [InlineData("""{"grant_types":["client_credentials"],"response_types":["code"]}""", Errors.InvalidClientMetadata, SR.ID2407)]
@@ -558,7 +567,7 @@ public abstract partial class OpenIddictServerIntegrationTests
         Assert.NotNull(descriptor);
         Assert.Equal("Contoso", descriptor.DisplayName);
         Assert.Equal("contoso-app", (string?) response[ClientMetadata.SoftwareId]);
-        Assert.Null(response[ClientMetadata.SoftwareStatement]);
+        Assert.Equal(statement, (string?) response[ClientMetadata.SoftwareStatement]);
     }
 
     [Fact]
@@ -778,10 +787,11 @@ public abstract partial class OpenIddictServerIntegrationTests
         await using var client = await server.CreateClientAsync();
 
         // Act
-        await client.SendJsonAsync(HttpMethod.Delete, RegistrationEndpoint + "?client_id=Fabrikam", payload: null, "registration-token");
+        var response = await client.SendJsonAsync(HttpMethod.Delete, RegistrationEndpoint + "?client_id=Fabrikam", payload: null, "registration-token");
 
         // Assert
         Assert.Equal(HttpStatusCode.NoContent, client.ResponseStatusCode);
+        Assert.Empty(response.GetParameters());
 
         Mock.Get(applications).Verify(manager => manager.DeleteAsync(application, It.IsAny<CancellationToken>()), Times.Once());
         Mock.Get(tokens).Verify(manager => manager.RevokeByApplicationIdAsync("3E228451-1555-46F7-A471-951EFBA23A56", It.IsAny<CancellationToken>()), Times.Once());
@@ -815,6 +825,598 @@ public abstract partial class OpenIddictServerIntegrationTests
         // Assert
         Assert.Equal(HttpStatusCode.Forbidden, client.ResponseStatusCode);
         Assert.Equal(Errors.InsufficientAccess, response.Error);
+    }
+
+    [Fact]
+    public async Task HandleRegistrationRequest_ServerIssuedInitialAccessTokenIsAccepted()
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.SetRegistrationEndpointUris(RegistrationEndpoint)
+                   .EnableDynamicClientRegistration()
+                   .SetInitialAccessTokenScopes("dcr");
+
+            options.AddEventHandler<ValidateTokenContext>(builder =>
+            {
+                builder.UseInlineHandler(context =>
+                {
+                    Assert.Equal("SlAV32hkKG", context.Token);
+                    Assert.Equal([TokenTypeIdentifiers.AccessToken], context.ValidTokenTypes);
+
+                    context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                        .SetTokenType(TokenTypeIdentifiers.AccessToken)
+                        .SetScopes("dcr")
+                        .SetClaim(Claims.Subject, "Bob le Magnifique");
+
+                    return ValueTask.CompletedTask;
+                });
+
+                builder.SetOrder(OpenIddictServerHandlers.Protection.ValidateIdentityModelToken.Descriptor.Order - 500);
+            });
+
+            options.Services.AddSingleton(CreateApplicationManager(mock =>
+                mock.Setup(manager => manager.CreateAsync(It.IsAny<OpenIddictApplicationDescriptor>(), It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(new OpenIddictApplication())));
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.SendJsonAsync(HttpMethod.Post, RegistrationEndpoint,
+            """{"grant_types":["client_credentials"]}""", token: "SlAV32hkKG");
+
+        // Assert
+        Assert.Equal(HttpStatusCode.Created, client.ResponseStatusCode);
+        Assert.NotNull((string?) response[ClientMetadata.ClientId]);
+    }
+
+    [Fact]
+    public async Task ExtractRegistrationRequest_AccessTokenIsNotExtractedFromQueryString()
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.SetRegistrationEndpointUris(RegistrationEndpoint)
+                   .EnableDynamicClientRegistration()
+                   .SetInitialAccessTokenScopes("dcr");
+
+            options.AddEventHandler<ValidateTokenContext>(builder =>
+            {
+                builder.UseInlineHandler(context =>
+                {
+                    context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                        .SetTokenType(TokenTypeIdentifiers.AccessToken)
+                        .SetScopes("dcr");
+
+                    return ValueTask.CompletedTask;
+                });
+
+                builder.SetOrder(OpenIddictServerHandlers.Protection.ValidateIdentityModelToken.Descriptor.Order - 500);
+            });
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.SendJsonAsync(HttpMethod.Post, RegistrationEndpoint + "?access_token=SlAV32hkKG",
+            """{"grant_types":["client_credentials"],"access_token":"SlAV32hkKG"}""");
+
+        // Assert
+        // Note: missing token errors don't include an error code in the WWW-Authenticate header (RFC 6750, section 3.1).
+        Assert.Equal(HttpStatusCode.Unauthorized, client.ResponseStatusCode);
+        Assert.StartsWith(Schemes.Bearer, Assert.Single(client.ResponseHeaders["WWW-Authenticate"]), StringComparison.Ordinal);
+        Assert.Null(response.Error);
+    }
+
+    [Fact]
+    public async Task ExtractRegistrationRequest_RegistrationAccessTokenIsNotExtractedFromQueryString()
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options =>
+        {
+            ConfigureRegistration(options);
+            ConfigureRegisteredClient(options);
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.SendJsonAsync(HttpMethod.Get,
+            RegistrationEndpoint + "?client_id=Fabrikam&access_token=registration-token", payload: null);
+
+        // Assert
+        // Note: missing token errors don't include an error code in the WWW-Authenticate header (RFC 6750, section 3.1).
+        Assert.Equal(HttpStatusCode.Unauthorized, client.ResponseStatusCode);
+        Assert.StartsWith(Schemes.Bearer, Assert.Single(client.ResponseHeaders["WWW-Authenticate"]), StringComparison.Ordinal);
+        Assert.Null(response.Error);
+    }
+
+    [Fact]
+    public async Task ExtractRegistrationRequest_ClientMetadataAreNotExtractedFromQueryString()
+    {
+        // Arrange
+        OpenIddictApplicationDescriptor? descriptor = null;
+
+        await using var server = await CreateServerAsync(options =>
+        {
+            ConfigureRegistration(options);
+
+            options.Services.AddSingleton(CreateApplicationManager(mock =>
+                mock.Setup(manager => manager.CreateAsync(It.IsAny<OpenIddictApplicationDescriptor>(), It.IsAny<CancellationToken>()))
+                    .Callback((OpenIddictApplicationDescriptor value, CancellationToken _) => descriptor = value)
+                    .ReturnsAsync(new OpenIddictApplication())));
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.SendJsonAsync(HttpMethod.Post,
+            RegistrationEndpoint + "?client_name=Injected&redirect_uris=" + Uri.EscapeDataString("""["https://attacker.com/"]"""),
+            """{"grant_types":["client_credentials"]}""");
+
+        // Assert
+        Assert.Equal(HttpStatusCode.Created, client.ResponseStatusCode);
+        Assert.NotNull(descriptor);
+        Assert.Null(descriptor.DisplayName);
+        Assert.Empty(descriptor.RedirectUris);
+        Assert.Null(response[ClientMetadata.ClientName]);
+        Assert.Null(response[ClientMetadata.RedirectUris]);
+    }
+
+    [Fact]
+    public async Task ValidateRegistrationRequest_InitialAccessTokenScopeCannotBeRequested()
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.SetRegistrationEndpointUris(RegistrationEndpoint)
+                   .EnableDynamicClientRegistration()
+                   .SetInitialAccessTokenScopes("dcr")
+                   .RegisterScopes("dcr");
+
+            options.AddEventHandler<ValidateRegistrationRequestContext>(builder =>
+            {
+                builder.UseInlineHandler(context =>
+                {
+                    context.InitialAccessTokenPrincipal = new ClaimsPrincipal(new ClaimsIdentity("Bearer")).SetScopes("dcr");
+
+                    return ValueTask.CompletedTask;
+                });
+
+                builder.SetOrder(ValidateInitialAccessToken.Descriptor.Order - 500);
+            });
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.SendJsonAsync(HttpMethod.Post, RegistrationEndpoint,
+            """{"grant_types":["client_credentials"],"scope":"dcr"}""");
+
+        // Assert
+        Assert.Equal(HttpStatusCode.BadRequest, client.ResponseStatusCode);
+        Assert.Equal(Errors.InvalidClientMetadata, response.Error);
+        Assert.Equal(SR.FormatID2404(ClientMetadata.Scope, "dcr"), response.ErrorDescription);
+    }
+
+    [Theory]
+    [InlineData("admin", false)]
+    [InlineData("openid offline_access api", true)]
+    public async Task ValidateRegistrationRequest_RegistrationAllowedScopesAreEnforced(string scope, bool allowed)
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options =>
+        {
+            ConfigureRegistration(options);
+
+            options.RegisterScopes("api", "admin")
+                   .SetRegistrationAllowedScopes("api");
+
+            options.Services.AddSingleton(CreateApplicationManager(mock =>
+                mock.Setup(manager => manager.CreateAsync(It.IsAny<OpenIddictApplicationDescriptor>(), It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(new OpenIddictApplication())));
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.SendJsonAsync(HttpMethod.Post, RegistrationEndpoint,
+            $$"""{"grant_types":["client_credentials","refresh_token"],"scope":"{{scope}}"}""");
+
+        // Assert
+        if (allowed)
+        {
+            Assert.Equal(HttpStatusCode.Created, client.ResponseStatusCode);
+            Assert.Equal(scope, (string?) response[ClientMetadata.Scope]);
+        }
+
+        else
+        {
+            Assert.Equal(Errors.InvalidClientMetadata, response.Error);
+            Assert.Equal(SR.FormatID2404(ClientMetadata.Scope, scope), response.ErrorDescription);
+        }
+    }
+
+    [Fact]
+    public async Task ValidateRegistrationRequest_RegistrationAllowedGrantTypesCanBeExtended()
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options =>
+        {
+            ConfigureRegistration(options);
+            options.SetRegistrationAllowedGrantTypes(GrantTypes.Password);
+
+            options.Services.AddSingleton(CreateApplicationManager(mock =>
+                mock.Setup(manager => manager.CreateAsync(It.IsAny<OpenIddictApplicationDescriptor>(), It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(new OpenIddictApplication())));
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        await client.SendJsonAsync(HttpMethod.Post, RegistrationEndpoint, """{"grant_types":["password"]}""");
+        var rejected = await client.SendJsonAsync(HttpMethod.Post, RegistrationEndpoint, """{"grant_types":["client_credentials"]}""");
+
+        // Assert
+        Assert.Equal(Errors.InvalidClientMetadata, rejected.Error);
+        Assert.Equal(SR.FormatID2404(ClientMetadata.GrantTypes, GrantTypes.ClientCredentials), rejected.ErrorDescription);
+    }
+
+    [Fact]
+    public async Task HandleRegistrationRequest_WebClientUsingImplicitGrantWithHttpsRedirectUriIsRegistered()
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options =>
+        {
+            ConfigureRegistration(options);
+
+            options.Services.AddSingleton(CreateApplicationManager(mock =>
+                mock.Setup(manager => manager.CreateAsync(It.IsAny<OpenIddictApplicationDescriptor>(), It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(new OpenIddictApplication())));
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.SendJsonAsync(HttpMethod.Post, RegistrationEndpoint, """
+            {
+              "redirect_uris": ["https://fabrikam.com/callback"],
+              "grant_types": ["implicit"],
+              "response_types": ["id_token"],
+              "token_endpoint_auth_method": "none"
+            }
+            """);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.Created, client.ResponseStatusCode);
+        Assert.Equal<IEnumerable<string?>?>(["https://fabrikam.com/callback"], (ImmutableArray<string?>?) response[ClientMetadata.RedirectUris]);
+    }
+
+    [Fact]
+    public async Task HandleRegistrationRequest_DescriptorAmendmentsAreReflectedInResponse()
+    {
+        // Arrange
+        OpenIddictApplicationDescriptor? descriptor = null;
+
+        await using var server = await CreateServerAsync(options =>
+        {
+            ConfigureRegistration(options);
+            options.RegisterScopes("api", "email");
+
+            options.AddEventHandler<ValidateRegistrationRequestContext>(builder =>
+            {
+                builder.UseInlineHandler(context =>
+                {
+                    context.Descriptor.Permissions.Remove(Permissions.GrantTypes.RefreshToken);
+                    context.Descriptor.Permissions.Remove(Permissions.Prefixes.Scope + "api");
+                    context.Descriptor.Requirements.Add(Requirements.Features.PushedAuthorizationRequests);
+                    context.Descriptor.RedirectUris.Remove(new Uri("https://fabrikam.com/other"));
+
+                    return ValueTask.CompletedTask;
+                });
+
+                builder.SetOrder(AttachApplicationDescriptor.Descriptor.Order + 500);
+            });
+
+            options.Services.AddSingleton(CreateApplicationManager(mock =>
+                mock.Setup(manager => manager.CreateAsync(It.IsAny<OpenIddictApplicationDescriptor>(), It.IsAny<CancellationToken>()))
+                    .Callback((OpenIddictApplicationDescriptor value, CancellationToken _) => descriptor = value)
+                    .ReturnsAsync(new OpenIddictApplication())));
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.SendJsonAsync(HttpMethod.Post, RegistrationEndpoint, """
+            {
+              "redirect_uris": ["https://fabrikam.com/callback", "https://fabrikam.com/other"],
+              "grant_types": ["authorization_code", "refresh_token"],
+              "scope": "openid api email"
+            }
+            """);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.Created, client.ResponseStatusCode);
+        Assert.NotNull(descriptor);
+        Assert.Equal<IEnumerable<string?>?>([GrantTypes.AuthorizationCode], (ImmutableArray<string?>?) response[ClientMetadata.GrantTypes]);
+        Assert.Equal<IEnumerable<string?>?>([ResponseTypes.Code], (ImmutableArray<string?>?) response[ClientMetadata.ResponseTypes]);
+        Assert.Equal<IEnumerable<string?>?>(["https://fabrikam.com/callback"], (ImmutableArray<string?>?) response[ClientMetadata.RedirectUris]);
+        Assert.Equal("openid email", (string?) response[ClientMetadata.Scope]);
+        Assert.True((bool?) response[ClientMetadata.RequirePushedAuthorizationRequests]);
+
+        // The stored metadata must match the returned metadata.
+        var metadata = descriptor.Properties[Properties.ClientMetadata];
+        Assert.Equal("openid email", metadata.GetProperty(ClientMetadata.Scope).GetString());
+    }
+
+    [Fact]
+    public async Task HandleRegistrationRequest_AdditionalParametersAreReturned()
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options =>
+        {
+            ConfigureRegistration(options);
+
+            options.AddEventHandler<HandleRegistrationRequestContext>(builder =>
+                builder.UseInlineHandler(context =>
+                {
+                    context.Parameters["custom_parameter"] = "custom_value";
+
+                    return ValueTask.CompletedTask;
+                }));
+
+            options.Services.AddSingleton(CreateApplicationManager(mock =>
+                mock.Setup(manager => manager.CreateAsync(It.IsAny<OpenIddictApplicationDescriptor>(), It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(new OpenIddictApplication())));
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.SendJsonAsync(HttpMethod.Post, RegistrationEndpoint, """{"grant_types":["client_credentials"]}""");
+
+        // Assert
+        Assert.Equal(HttpStatusCode.Created, client.ResponseStatusCode);
+        Assert.Equal("custom_value", (string?) response["custom_parameter"]);
+    }
+
+    [Fact]
+    public async Task ValidateRegistrationRequest_ExpiredSoftwareStatementIsRejected()
+    {
+        // Arrange
+        var key = new RsaSecurityKey(RSA.Create(2048)) { KeyId = "trusted" };
+
+        await using var server = await CreateServerAsync(options =>
+        {
+            ConfigureRegistration(options);
+            options.AddSoftwareStatementSigningKey(key, "https://issuer.example.com/");
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        var statement = CreateSoftwareStatement(key, "https://issuer.example.com/", expiration: DateTime.UtcNow.AddHours(-1));
+
+        // Act
+        var response = await client.SendJsonAsync(HttpMethod.Post, RegistrationEndpoint,
+            $$"""{"grant_types":["client_credentials"],"software_statement":"{{statement}}"}""");
+
+        // Assert
+        Assert.Equal(HttpStatusCode.BadRequest, client.ResponseStatusCode);
+        Assert.Equal(Errors.InvalidSoftwareStatement, response.Error);
+        Assert.Equal(SR.GetResourceString(SR.ID2409), response.ErrorDescription);
+    }
+
+    [Theory]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    public async Task ValidateRegistrationRequest_ExpiredOrRevokedRegistrationAccessTokenIsRejected(bool expired, bool revoked)
+    {
+        // Arrange
+        var (application, token) = (new OpenIddictApplication(), new OpenIddictToken());
+
+        await using var server = await CreateServerAsync(options =>
+        {
+            ConfigureRegistration(options);
+
+            options.Services.AddSingleton(CreateRegisteredApplicationManager(application));
+            options.Services.AddSingleton(CreateTokenManager(mock =>
+            {
+                ConfigureRegistrationToken(mock, token);
+
+                if (expired)
+                {
+                    mock.Setup(manager => manager.GetExpirationDateAsync(token, It.IsAny<CancellationToken>()))
+                        .ReturnsAsync(TimeProvider.System.GetUtcNow() - TimeSpan.FromMinutes(1));
+                }
+
+                if (revoked)
+                {
+                    mock.Setup(manager => manager.HasStatusAsync(token, Statuses.Valid, It.IsAny<CancellationToken>()))
+                        .ReturnsAsync(false);
+                }
+            }));
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.SendJsonAsync(HttpMethod.Get, RegistrationEndpoint + "?client_id=Fabrikam", payload: null, "registration-token");
+
+        // Assert
+        Assert.Equal(HttpStatusCode.Unauthorized, client.ResponseStatusCode);
+        Assert.Equal(Errors.InvalidToken, response.Error);
+        Assert.Equal(SR.GetResourceString(SR.ID2400), response.ErrorDescription);
+    }
+
+    [Theory]
+    [InlineData("GET", null)]
+    [InlineData("PUT", """{"client_id":"Fabrikam","grant_types":["client_credentials"]}""")]
+    public async Task HandleRegistrationRequest_ConcurrentlyUsedRegistrationAccessTokenIsRejected(string method, string? payload)
+    {
+        // Arrange
+        var (application, token) = (new OpenIddictApplication(), new OpenIddictToken());
+
+        var applications = CreateRegisteredApplicationManager(application);
+        var tokens = CreateTokenManager(mock =>
+        {
+            ConfigureRegistrationToken(mock, token);
+
+            mock.Setup(manager => manager.TryRevokeAsync(token, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(false);
+        });
+
+        await using var server = await CreateServerAsync(options =>
+        {
+            ConfigureRegistration(options);
+
+            options.Services.AddSingleton(applications);
+            options.Services.AddSingleton(tokens);
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.SendJsonAsync(new HttpMethod(method), RegistrationEndpoint + "?client_id=Fabrikam", payload, "registration-token");
+
+        // Assert
+        Assert.Equal(HttpStatusCode.Unauthorized, client.ResponseStatusCode);
+        Assert.Equal(Errors.InvalidToken, response.Error);
+
+        Mock.Get(tokens).Verify(manager => manager.CreateAsync(It.IsAny<OpenIddictTokenDescriptor>(), It.IsAny<CancellationToken>()), Times.Never());
+        Mock.Get(applications).Verify(manager => manager.UpdateAsync(application,
+            It.IsAny<OpenIddictApplicationDescriptor>(), It.IsAny<CancellationToken>()), Times.Never());
+    }
+
+    [Fact]
+    public async Task HandleRegistrationRequest_RegistrationAccessTokenIsRestoredWhenUpdateIsRejected()
+    {
+        // Arrange
+        var (application, token) = (new OpenIddictApplication(), new OpenIddictToken());
+        OpenIddictTokenDescriptor? restored = null;
+
+        var applications = CreateRegisteredApplicationManager(application, mock =>
+            mock.Setup(manager => manager.UpdateAsync(application, It.IsAny<OpenIddictApplicationDescriptor>(), It.IsAny<CancellationToken>()))
+                .Returns(new ValueTask(Task.FromException(new OpenIddictExceptions.ValidationException("Invalid application.",
+                    [new System.ComponentModel.DataAnnotations.ValidationResult(SR.GetResourceString(SR.ID2113))])))));
+
+        var tokens = CreateTokenManager(mock =>
+        {
+            ConfigureRegistrationToken(mock, token);
+
+            mock.Setup(manager => manager.UpdateAsync(token, It.IsAny<OpenIddictTokenDescriptor>(), It.IsAny<CancellationToken>()))
+                .Callback((OpenIddictToken _, OpenIddictTokenDescriptor value, CancellationToken _) => restored = value)
+                .Returns(ValueTask.CompletedTask);
+        });
+
+        await using var server = await CreateServerAsync(options =>
+        {
+            ConfigureRegistration(options);
+
+            options.Services.AddSingleton(applications);
+            options.Services.AddSingleton(tokens);
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.SendJsonAsync(HttpMethod.Put, RegistrationEndpoint + "?client_id=Fabrikam",
+            """{"client_id":"Fabrikam","grant_types":["client_credentials"]}""", "registration-token");
+
+        // Assert
+        Assert.Equal(Errors.InvalidClientMetadata, response.Error);
+        Assert.NotNull(restored);
+        Assert.Equal(Statuses.Valid, restored.Status);
+
+        Mock.Get(tokens).Verify(manager => manager.CreateAsync(It.IsAny<OpenIddictTokenDescriptor>(), It.IsAny<CancellationToken>()), Times.Never());
+    }
+
+    [Fact]
+    public async Task HandleRegistrationRequest_UpdateToPublicClientRemovesClientSecret()
+    {
+        // Arrange
+        var (application, token) = (new OpenIddictApplication(), new OpenIddictToken());
+        OpenIddictApplicationDescriptor? updated = null;
+
+        var applications = CreateRegisteredApplicationManager(application, mock =>
+            mock.Setup(manager => manager.UpdateAsync(application, It.IsAny<OpenIddictApplicationDescriptor>(), It.IsAny<CancellationToken>()))
+                .Callback((OpenIddictApplication _, OpenIddictApplicationDescriptor value, CancellationToken _) => updated = value)
+                .Returns(ValueTask.CompletedTask));
+
+        await using var server = await CreateServerAsync(options =>
+        {
+            ConfigureRegistration(options);
+
+            options.Services.AddSingleton(applications);
+            options.Services.AddSingleton(CreateTokenManager(mock => ConfigureRegistrationToken(mock, token)));
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.SendJsonAsync(HttpMethod.Put, RegistrationEndpoint + "?client_id=Fabrikam", """
+            {
+              "client_id": "Fabrikam",
+              "redirect_uris": ["com.fabrikam.app:/callback"],
+              "token_endpoint_auth_method": "none",
+              "application_type": "native"
+            }
+            """, "registration-token");
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, client.ResponseStatusCode);
+        Assert.NotNull(updated);
+        Assert.Null(updated.ClientSecret);
+        Assert.Equal(ClientTypes.Public, updated.ClientType);
+        Assert.Null(response[ClientMetadata.ClientSecret]);
+        Assert.Null(response[ClientMetadata.ClientSecretExpiresAt]);
+        Assert.Equal(ClientAuthenticationMethods.None, (string?) response[ClientMetadata.TokenEndpointAuthMethod]);
+    }
+
+    [Fact]
+    public async Task HandleRegistrationRequest_UpdateToConfidentialClientGeneratesClientSecret()
+    {
+        // Arrange
+        var (application, token) = (new OpenIddictApplication(), new OpenIddictToken());
+        OpenIddictApplicationDescriptor? updated = null;
+
+        var applications = CreateRegisteredApplicationManager(application, mock =>
+        {
+            mock.Setup(manager => manager.PopulateAsync(It.IsAny<OpenIddictApplicationDescriptor>(), application, It.IsAny<CancellationToken>()))
+                .Callback((OpenIddictApplicationDescriptor descriptor, OpenIddictApplication _, CancellationToken _) =>
+                {
+                    descriptor.ClientId = "Fabrikam";
+                    descriptor.ClientType = ClientTypes.Public;
+                })
+                .Returns(ValueTask.CompletedTask);
+
+            mock.Setup(manager => manager.UpdateAsync(application, It.IsAny<OpenIddictApplicationDescriptor>(), It.IsAny<CancellationToken>()))
+                .Callback((OpenIddictApplication _, OpenIddictApplicationDescriptor value, CancellationToken _) => updated = value)
+                .Returns(ValueTask.CompletedTask);
+        });
+
+        await using var server = await CreateServerAsync(options =>
+        {
+            ConfigureRegistration(options);
+
+            options.Services.AddSingleton(applications);
+            options.Services.AddSingleton(CreateTokenManager(mock => ConfigureRegistrationToken(mock, token)));
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.SendJsonAsync(HttpMethod.Put, RegistrationEndpoint + "?client_id=Fabrikam",
+            """{"client_id":"Fabrikam","grant_types":["client_credentials"],"token_endpoint_auth_method":"client_secret_post"}""",
+            "registration-token");
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, client.ResponseStatusCode);
+        Assert.NotNull(updated);
+        Assert.Equal(ClientTypes.Confidential, updated.ClientType);
+        Assert.False(string.IsNullOrEmpty(updated.ClientSecret));
+        Assert.Equal(updated.ClientSecret, (string?) response[ClientMetadata.ClientSecret]);
+        Assert.Equal(0, (long?) response[ClientMetadata.ClientSecretExpiresAt]);
     }
 
     private static void ConfigureRegistration(OpenIddictServerBuilder options)
@@ -886,13 +1488,18 @@ public abstract partial class OpenIddictServerIntegrationTests
 
         mock.Setup(manager => manager.GetApplicationIdAsync(token, It.IsAny<CancellationToken>()))
             .ReturnsAsync("3E228451-1555-46F7-A471-951EFBA23A56");
+
+        mock.Setup(manager => manager.TryRevokeAsync(token, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
     }
 
-    private static string CreateSoftwareStatement(SecurityKey key, string issuer, Dictionary<string, object>? claims = null)
-        => new JsonWebTokenHandler().CreateToken(new SecurityTokenDescriptor
+    private static string CreateSoftwareStatement(SecurityKey key, string issuer,
+        Dictionary<string, object>? claims = null, DateTime? expiration = null)
+        => new JsonWebTokenHandler { SetDefaultTimesOnTokenCreation = false }.CreateToken(new SecurityTokenDescriptor
         {
             Claims = claims,
-            Expires = DateTime.UtcNow.AddMinutes(5),
+            Expires = expiration ?? DateTime.UtcNow.AddMinutes(5),
+            IssuedAt = (expiration ?? DateTime.UtcNow).AddMinutes(-10),
             Issuer = issuer,
             SigningCredentials = new SigningCredentials(key, SecurityAlgorithms.RsaSha256)
         });

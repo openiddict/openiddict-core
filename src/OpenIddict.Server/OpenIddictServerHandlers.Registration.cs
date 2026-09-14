@@ -656,7 +656,7 @@ public static partial class OpenIddictServerHandlers
                 foreach (var property in document.RootElement.EnumerateObject())
                 {
                     if (property.Name is Claims.Issuer or Claims.Audience or Claims.ExpiresAt or
-                                         Claims.IssuedAt or Claims.NotBefore or Claims.JwtId)
+                                         Claims.IssuedAt or Claims.NotBefore or Claims.JwtId or ClientMetadata.SoftwareStatement)
                     {
                         continue;
                     }
@@ -860,9 +860,11 @@ public static partial class OpenIddictServerHandlers
                     ? types.EnumerateArray().Select(static type => type.GetString()!)
                     : [GrantTypes.AuthorizationCode]);
 
+                // Note: grant types must be both enabled on the server and allowed for dynamically registered clients.
+                // Rejecting the request (rather than silently removing the grant) is permitted by RFC 7591, section 3.2.2.
                 foreach (var type in context.GrantTypes)
                 {
-                    if (!context.Options.GrantTypes.Contains(type))
+                    if (!context.Options.GrantTypes.Contains(type) || !context.Options.RegistrationAllowedGrantTypes.Contains(type))
                     {
                         Reject(Errors.InvalidClientMetadata, SR.FormatID2404(ClientMetadata.GrantTypes, type), SR.ID2404);
                         return ValueTask.CompletedTask;
@@ -1022,6 +1024,23 @@ public static partial class OpenIddictServerHandlers
                     return ValueTask.CompletedTask;
                 }
 
+                // Web clients (the default application type) using the implicit grant MUST only register
+                // redirect URIs using the https scheme and MUST NOT use localhost as the host name.
+                //
+                // See https://openid.net/specs/openid-connect-registration-1_0.html#ClientMetadata for more information.
+                if (context.GrantTypes.Contains(GrantTypes.Implicit) &&
+                   (application.ValueKind is not JsonValueKind.String ||
+                    string.Equals(application.GetString(), ApplicationTypes.Web, StringComparison.Ordinal)))
+                {
+                    if (context.Metadata.TryGetValue(ClientMetadata.RedirectUris, out var callbacks) &&
+                        callbacks.EnumerateArray().Select(static item => new Uri(item.GetString()!, UriKind.Absolute)).FirstOrDefault(static uri =>
+                            !string.Equals(uri.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase) || uri.IsLoopback) is Uri callback)
+                    {
+                        Reject(Errors.InvalidRedirectUri, SR.FormatID2404(ClientMetadata.RedirectUris, callback.OriginalString), SR.ID2404);
+                        return ValueTask.CompletedTask;
+                    }
+                }
+
                 // Ensure the identity token signing algorithm is supported by one of the registered signing credentials.
                 if (context.Metadata.TryGetValue(ClientMetadata.IdTokenSignedResponseAlg, out var algorithm) &&
                     !context.Options.SigningCredentials.Any(credentials =>
@@ -1039,6 +1058,20 @@ public static partial class OpenIddictServerHandlers
                     context.Scopes.UnionWith(scope.GetString()!.Split(Separators.Space, StringSplitOptions.RemoveEmptyEntries));
                 }
 
+                // Enforce the scope registration policy: the scopes allowing to register new client applications can never
+                // be requested (otherwise, a registered client could mint its own initial access tokens) and, if an allow list
+                // was configured, only the listed scopes (and the openid/offline_access protocol scopes) can be requested.
+                foreach (var name in context.Scopes)
+                {
+                    if (context.Options.InitialAccessTokenScopes.Contains(name) ||
+                       (context.Options.RegistrationAllowedScopes.Count is > 0 && name is not (Scopes.OpenId or Scopes.OfflineAccess) &&
+                       !context.Options.RegistrationAllowedScopes.Contains(name)))
+                    {
+                        Reject(Errors.InvalidClientMetadata, SR.FormatID2404(ClientMetadata.Scope, name), SR.ID2404);
+                        return ValueTask.CompletedTask;
+                    }
+                }
+
                 return ValueTask.CompletedTask;
 
                 void Reject(string error, string description, string identifier)
@@ -1052,12 +1085,18 @@ public static partial class OpenIddictServerHandlers
                     => element.ValueKind is JsonValueKind.Array && element.EnumerateArray().All(item =>
                         item.ValueKind is JsonValueKind.String && predicate(item.GetString()));
 
-                // Callback URIs MUST be absolute and MUST NOT include a fragment.
+                // Callback URIs MUST be absolute and MUST NOT include a fragment. To prevent script injection (e.g javascript:
+                // or data: URIs rendered as the action of form_post responses), only the http and https schemes and private-use
+                // URI schemes based on a reverse domain name (that always contain a period) are accepted.
                 //
-                // See https://datatracker.ietf.org/doc/html/rfc6749#section-3.1.2 for more information.
+                // See https://datatracker.ietf.org/doc/html/rfc6749#section-3.1.2
+                // and https://datatracker.ietf.org/doc/html/rfc8252#section-7.1 for more information.
                 static bool IsCallbackUri(string? value)
                     => Uri.TryCreate(value, UriKind.Absolute, out Uri? uri) &&
-                      !OpenIddictHelpers.IsImplicitFileUri(uri) && string.IsNullOrEmpty(uri.Fragment);
+                      !OpenIddictHelpers.IsImplicitFileUri(uri) && string.IsNullOrEmpty(uri.Fragment) &&
+                      (string.Equals(uri.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase) ||
+                       string.Equals(uri.Scheme, Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase) ||
+                       uri.Scheme.IndexOf('.') is > 0);
 
                 static bool IsWebUri(string? value)
                     => Uri.TryCreate(value, UriKind.Absolute, out Uri? uri) &&
@@ -1315,13 +1354,11 @@ public static partial class OpenIddictServerHandlers
                 }
 
                 // Store the accepted client metadata (including the default values applied by the server) so they can be
-                // returned by the client configuration endpoint. Note: the software statement itself is not stored, as its
-                // claims were merged with the other metadata.
+                // returned by the client configuration endpoint. Note: if a software statement was used, its value MUST be
+                // returned unmodified in the client information response and is therefore stored with the other metadata.
                 //
                 // See https://datatracker.ietf.org/doc/html/rfc7591#section-3.2.1 for more information.
-                var values = metadata
-                    .Where(static item => item.Key is not ClientMetadata.SoftwareStatement)
-                    .ToDictionary(static item => item.Key, static item => item.Value, StringComparer.Ordinal);
+                var values = metadata.ToDictionary(static item => item.Key, static item => item.Value, StringComparer.Ordinal);
 
                 values[ClientMetadata.GrantTypes] = CreateElement(writer => WriteStrings(writer, context.GrantTypes));
                 values[ClientMetadata.ResponseTypes] = CreateElement(writer => WriteStrings(writer, context.ResponseTypes));
@@ -1415,14 +1452,32 @@ public static partial class OpenIddictServerHandlers
 
                 var response = new OpenIddictResponse();
 
+                // Revoke the registration access token used to authenticate read and update requests before performing the
+                // operation: since registration access tokens are not stored in plain text, a new token is issued for each
+                // read or update operation (as allowed by RFC 7592, section 3). If the token was concurrently used by another
+                // request (e.g a replayed stolen token), the revocation fails and the request is rejected, which ensures
+                // that at most one new registration access token can be derived from a given token.
+                if (validation.RegistrationAccessToken is not null &&
+                    validation.RequestType is OpenIddictServerRegistrationRequestType.Read or
+                                              OpenIddictServerRegistrationRequestType.Update &&
+                    !await tokens.TryRevokeAsync(validation.RegistrationAccessToken, context.CancellationToken))
+                {
+                    context.Logger.LogInformation(6603, SR.GetResourceString(SR.ID6603));
+
+                    context.Reject(
+                        error: Errors.InvalidToken,
+                        description: SR.GetResourceString(SR.ID2400),
+                        uri: SR.FormatID8000(SR.ID2400));
+
+                    return;
+                }
+
                 try
                 {
                     switch (validation.RequestType)
                     {
                         case OpenIddictServerRegistrationRequestType.Registration:
                         {
-                            var date = context.Options.TimeProvider.GetUtcNow();
-
                             // Generate a unique client identifier, unless one was explicitly set by a custom handler.
                             if (string.IsNullOrEmpty(descriptor.ClientId))
                             {
@@ -1431,8 +1486,8 @@ public static partial class OpenIddictServerHandlers
 
                             var secret = descriptor.ClientSecret;
 
-                            descriptor.Properties[Properties.ClientMetadata] = AddIssuanceDate(
-                                descriptor.Properties.TryGetValue(Properties.ClientMetadata, out var metadata) ? metadata : default, date);
+                            descriptor.Properties[Properties.ClientMetadata] = CreateMetadata(
+                                descriptor, context.Options.TimeProvider.GetUtcNow());
 
                             application = await applications.CreateAsync(descriptor, context.CancellationToken);
 
@@ -1463,10 +1518,6 @@ public static partial class OpenIddictServerHandlers
                             descriptor.ClientId = existing.ClientId;
                             descriptor.ConsentType ??= existing.ConsentType;
 
-                            descriptor.Properties[Properties.ClientMetadata] = AddIssuanceDate(
-                                descriptor.Properties.TryGetValue(Properties.ClientMetadata, out var metadata) ? metadata : default,
-                                GetIssuanceDate(existing) ?? context.Options.TimeProvider.GetUtcNow());
-
                             // Preserve the existing client secret (that is never returned, as it is not stored in plain
                             // text) when the client still uses a secret-based authentication method. A new secret is
                             // only generated (and returned) when the client didn't have a secret before the update.
@@ -1485,7 +1536,22 @@ public static partial class OpenIddictServerHandlers
                                 }
                             }
 
-                            await applications.UpdateAsync(application, descriptor, context.CancellationToken);
+                            descriptor.Properties[Properties.ClientMetadata] = CreateMetadata(descriptor,
+                                GetIssuanceDate(existing) ?? context.Options.TimeProvider.GetUtcNow());
+
+                            try
+                            {
+                                await applications.UpdateAsync(application, descriptor, context.CancellationToken);
+                            }
+
+                            catch (OpenIddictExceptions.ValidationException)
+                            {
+                                // If the update was rejected, restore the registration access token revoked
+                                // before the operation to allow the client to send a corrected update request.
+                                await RestoreRegistrationAccessTokenAsync();
+
+                                throw;
+                            }
 
                             await AttachResponseAsync(application, descriptor.ClientId, secret, descriptor.Properties[Properties.ClientMetadata]);
 
@@ -1568,6 +1634,15 @@ public static partial class OpenIddictServerHandlers
                         }
                     }
 
+                    // Attach the additional parameters specified by the application, if any.
+                    if (notification is not null)
+                    {
+                        foreach (var parameter in notification.Parameters)
+                        {
+                            response.SetParameter(parameter.Key, parameter.Value);
+                        }
+                    }
+
                     response[ClientMetadata.ClientId] = client;
 
                     if (!string.IsNullOrEmpty(secret))
@@ -1580,14 +1655,6 @@ public static partial class OpenIddictServerHandlers
                                                                                        ClientAuthenticationMethods.ClientSecretPost)
                     {
                         response[ClientMetadata.ClientSecretExpiresAt] = 0;
-                    }
-
-                    // Revoke the registration access token used to authenticate the request and issue a new one: since
-                    // registration access tokens are not stored in plain text, they can't be returned as-is and a new
-                    // token is issued for each read or update operation (as allowed by RFC 7592, section 3).
-                    if (validation.RegistrationAccessToken is not null)
-                    {
-                        await tokens.TryRevokeAsync(validation.RegistrationAccessToken, context.CancellationToken);
                     }
 
                     var token = Base64Url.EncodeToString(RandomNumberGenerator.GetBytes(count: 256 / 8));
@@ -1613,27 +1680,155 @@ public static partial class OpenIddictServerHandlers
                     }
                 }
 
+                async ValueTask RestoreRegistrationAccessTokenAsync()
+                {
+                    if (validation.RegistrationAccessToken is null)
+                    {
+                        return;
+                    }
+
+                    try
+                    {
+                        var descriptor = new OpenIddictTokenDescriptor();
+                        await tokens.PopulateAsync(descriptor, validation.RegistrationAccessToken, context.CancellationToken);
+
+                        descriptor.Status = Statuses.Valid;
+                        await tokens.UpdateAsync(validation.RegistrationAccessToken, descriptor, context.CancellationToken);
+                    }
+
+                    catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
+                    {
+                        // Note: failing to restore the token doesn't prevent the error from being returned.
+                        context.Logger.LogWarning(6613, exception, SR.GetResourceString(SR.ID6613));
+                    }
+                }
+
                 static DateTimeOffset? GetIssuanceDate(OpenIddictApplicationDescriptor descriptor)
                     => descriptor.Properties.TryGetValue(Properties.ClientMetadata, out var metadata) &&
                        metadata.ValueKind is JsonValueKind.Object &&
                        metadata.TryGetProperty(ClientMetadata.ClientIdIssuedAt, out var value) &&
                        value.TryGetInt64(out var seconds) ? DateTimeOffset.FromUnixTimeSeconds(seconds) : null;
+            }
 
-                static JsonElement AddIssuanceDate(JsonElement metadata, DateTimeOffset date)
+            /// <summary>
+            /// Creates the client metadata stored with the application and returned in the client information response
+            /// from the final application descriptor: since custom handlers can amend the descriptor after the metadata
+            /// were validated, the values derived from the descriptor (e.g grant types resolved from the permissions)
+            /// always take precedence, so that the client can determine which values were replaced by the server.
+            /// </summary>
+            /// <remarks>
+            /// See https://datatracker.ietf.org/doc/html/rfc7591#section-3.2.1 for more information.
+            /// </remarks>
+            internal static JsonElement CreateMetadata(OpenIddictApplicationDescriptor descriptor, DateTimeOffset date)
+            {
+                var values = new Dictionary<string, JsonElement>(StringComparer.Ordinal);
+
+                if (descriptor.Properties.TryGetValue(Properties.ClientMetadata, out var metadata) &&
+                    metadata.ValueKind is JsonValueKind.Object)
                 {
-                    var values = new Dictionary<string, JsonElement>(StringComparer.Ordinal);
-
-                    if (metadata.ValueKind is JsonValueKind.Object)
+                    foreach (var property in metadata.EnumerateObject())
                     {
-                        foreach (var property in metadata.EnumerateObject())
-                        {
-                            values[property.Name] = property.Value;
-                        }
+                        values[property.Name] = property.Value;
+                    }
+                }
+
+                Set(ClientMetadata.ClientName, descriptor.DisplayName is { Length: > 0 } name
+                    ? CreateElement(writer => writer.WriteStringValue(name)) : null);
+
+                Set(ClientMetadata.RedirectUris, descriptor.RedirectUris.Count is > 0
+                    ? CreateElement(writer => WriteStrings(writer, descriptor.RedirectUris.Select(static uri => uri.OriginalString))) : null);
+
+                Set(ClientMetadata.PostLogoutRedirectUris, descriptor.PostLogoutRedirectUris.Count is > 0
+                    ? CreateElement(writer => WriteStrings(writer, descriptor.PostLogoutRedirectUris.Select(static uri => uri.OriginalString))) : null);
+
+                Set(ClientMetadata.GrantTypes, CreateElement(writer => WriteStrings(writer, GetPermissions(Permissions.Prefixes.GrantType))));
+                Set(ClientMetadata.ResponseTypes, CreateElement(writer => WriteStrings(writer, GetPermissions(Permissions.Prefixes.ResponseType))));
+
+                // Note: protocol scopes (openid and offline_access) are not represented as permissions
+                // and are only returned if they were initially requested by the client application.
+                var scopes = new List<string>();
+
+                if (values.TryGetValue(ClientMetadata.Scope, out var scope) && scope.ValueKind is JsonValueKind.String)
+                {
+                    scopes.AddRange(scope.GetString()!.Split(Separators.Space, StringSplitOptions.RemoveEmptyEntries)
+                        .Where(name => name is Scopes.OpenId or Scopes.OfflineAccess ||
+                            descriptor.Permissions.Contains(Permissions.Prefixes.Scope + name)));
+                }
+
+                scopes.AddRange(GetPermissions(Permissions.Prefixes.Scope).Where(name => !scopes.Contains(name, StringComparer.Ordinal)));
+
+                Set(ClientMetadata.Scope, scopes.Count is > 0 ? CreateElement(writer => writer.WriteStringValue(string.Join(' ', scopes))) : null);
+
+                // Public clients never authenticate at the token endpoint.
+                if (descriptor.ClientType is ClientTypes.Public)
+                {
+                    Set(ClientMetadata.TokenEndpointAuthMethod, CreateElement(static writer =>
+                        writer.WriteStringValue(ClientAuthenticationMethods.None)));
+                }
+
+                if (descriptor.JsonWebKeySet is null)
+                {
+                    Set(ClientMetadata.Jwks, null);
+                }
+
+                SetFeature(ClientMetadata.RequirePushedAuthorizationRequests, Requirements.Features.PushedAuthorizationRequests);
+                SetFeature(ClientMetadata.RequireSignedRequestObject, Requirements.Features.SignedRequestObjects);
+                SetFeature(ClientMetadata.DPoPBoundAccessTokens, Requirements.Features.DPoP);
+
+                SetSetting(ClientMetadata.BackchannelLogoutUri, Settings.Logout.BackchannelUri, ClientMetadata.BackchannelLogoutSessionRequired);
+                SetSetting(ClientMetadata.FrontchannelLogoutUri, Settings.Logout.FrontchannelUri, ClientMetadata.FrontchannelLogoutSessionRequired);
+                SetSetting(ClientMetadata.IdTokenSignedResponseAlg, Settings.Registration.IdentityTokenSigningAlgorithm, dependent: null);
+
+                Set(ClientMetadata.ClientIdIssuedAt, CreateElement(writer => writer.WriteNumberValue(date.ToUnixTimeSeconds())));
+
+                return SerializeMetadata(values);
+
+                IEnumerable<string> GetPermissions(string prefix) => descriptor.Permissions
+                    .Where(permission => permission.StartsWith(prefix, StringComparison.Ordinal))
+                    .Select(permission => permission[prefix.Length..]);
+
+                void Set(string name, JsonElement? value)
+                {
+                    if (value is JsonElement element)
+                    {
+                        values[name] = element;
                     }
 
-                    values[ClientMetadata.ClientIdIssuedAt] = CreateElement(writer => writer.WriteNumberValue(date.ToUnixTimeSeconds()));
+                    else
+                    {
+                        values.Remove(name);
+                    }
+                }
 
-                    return SerializeMetadata(values);
+                void SetFeature(string name, string requirement)
+                {
+                    if (descriptor.Requirements.Contains(requirement))
+                    {
+                        Set(name, CreateElement(static writer => writer.WriteBooleanValue(true)));
+                    }
+
+                    else if (values.TryGetValue(name, out var value) && value.ValueKind is JsonValueKind.True)
+                    {
+                        Set(name, null);
+                    }
+                }
+
+                void SetSetting(string name, string setting, string? dependent)
+                {
+                    if (descriptor.Settings.TryGetValue(setting, out var value) && !string.IsNullOrEmpty(value))
+                    {
+                        Set(name, CreateElement(writer => writer.WriteStringValue(value)));
+                    }
+
+                    else
+                    {
+                        Set(name, null);
+
+                        if (!string.IsNullOrEmpty(dependent))
+                        {
+                            Set(dependent, null);
+                        }
+                    }
                 }
             }
         }

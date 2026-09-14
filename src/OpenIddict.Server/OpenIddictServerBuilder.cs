@@ -2119,6 +2119,51 @@ public sealed class OpenIddictServerBuilder
         => Configure(options => options.RegistrationAccessTokenLifetime = lifetime);
 
     /// <summary>
+    /// Sets the grant types dynamically registered client applications are allowed to use. The specified
+    /// grant types replace the default ones (authorization code, implicit, refresh token, client credentials,
+    /// device authorization and CIBA) and must also be enabled in the server options to be registrable.
+    /// </summary>
+    /// <param name="types">The grant types.</param>
+    /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
+    public OpenIddictServerBuilder SetRegistrationAllowedGrantTypes(params string[] types)
+    {
+        ArgumentNullException.ThrowIfNull(types);
+
+        if (Array.Exists(types, string.IsNullOrEmpty))
+        {
+            throw new ArgumentException(SR.FormatID0457(nameof(types)), nameof(types));
+        }
+
+        return Configure(options =>
+        {
+            options.RegistrationAllowedGrantTypes.Clear();
+            options.RegistrationAllowedGrantTypes.UnionWith(types);
+        });
+    }
+
+    /// <summary>
+    /// Sets the scopes dynamically registered client applications are allowed to request.
+    /// If no scope is specified, all the registered scopes (except the initial access token scopes) are allowed.
+    /// </summary>
+    /// <param name="scopes">The scopes.</param>
+    /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
+    public OpenIddictServerBuilder SetRegistrationAllowedScopes(params string[] scopes)
+    {
+        ArgumentNullException.ThrowIfNull(scopes);
+
+        if (Array.Exists(scopes, string.IsNullOrEmpty))
+        {
+            throw new ArgumentException(SR.FormatID0457(nameof(scopes)), nameof(scopes));
+        }
+
+        return Configure(options =>
+        {
+            options.RegistrationAllowedScopes.Clear();
+            options.RegistrationAllowedScopes.UnionWith(scopes);
+        });
+    }
+
+    /// <summary>
     /// Configures OpenIddict to require a software statement in client registration requests.
     /// </summary>
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>

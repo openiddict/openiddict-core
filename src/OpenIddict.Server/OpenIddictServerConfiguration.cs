@@ -332,6 +332,12 @@ public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenId
             {
                 builder.AddError(SR.GetResourceString(SR.ID0804));
             }
+
+            // Scopes allowing to register new clients must never be requestable by registered clients.
+            if (options.RegistrationAllowedScopes.Overlaps(options.InitialAccessTokenScopes))
+            {
+                builder.AddError(SR.GetResourceString(SR.ID0814));
+            }
         }
 
         // Ensure the grant types/response types configuration is consistent.

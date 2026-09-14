@@ -177,6 +177,68 @@ public class OpenIddictServerRegistrationTests
         Assert.Contains(SR.GetResourceString(SR.ID0804), result.Failures!, StringComparer.Ordinal);
     }
 
+    [Fact]
+    public void RegistrationPolicyMethods_UpdateTheOptions()
+    {
+        // Arrange
+        var services = new ServiceCollection().AddOptions();
+        var builder = new OpenIddictServerBuilder(services);
+
+        // Act
+        builder.SetRegistrationAllowedGrantTypes(GrantTypes.AuthorizationCode, GrantTypes.Password)
+               .SetRegistrationAllowedScopes("api");
+
+        var options = GetOptions(services);
+
+        // Assert
+        Assert.Equal([GrantTypes.AuthorizationCode, GrantTypes.Password], options.RegistrationAllowedGrantTypes);
+        Assert.Equal(["api"], options.RegistrationAllowedScopes);
+    }
+
+    [Fact]
+    public void RegistrationAllowedGrantTypes_ExcludesHighTrustGrantsByDefault()
+    {
+        // Arrange
+        var options = new OpenIddictServerOptions();
+
+        // Act and assert
+        Assert.Contains(GrantTypes.AuthorizationCode, options.RegistrationAllowedGrantTypes);
+        Assert.Contains(GrantTypes.ClientCredentials, options.RegistrationAllowedGrantTypes);
+        Assert.DoesNotContain(GrantTypes.Password, options.RegistrationAllowedGrantTypes);
+        Assert.DoesNotContain(GrantTypes.TokenExchange, options.RegistrationAllowedGrantTypes);
+        Assert.Empty(options.RegistrationAllowedScopes);
+    }
+
+    [Theory]
+    [InlineData(nameof(OpenIddictServerBuilder.SetRegistrationAllowedGrantTypes), "types")]
+    [InlineData(nameof(OpenIddictServerBuilder.SetRegistrationAllowedScopes), "scopes")]
+    public void RegistrationPolicyMethods_ThrowAnExceptionForEmptyValues(string method, string parameter)
+    {
+        // Arrange
+        var builder = new OpenIddictServerBuilder(new ServiceCollection());
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentException>(() => _ = method is nameof(OpenIddictServerBuilder.SetRegistrationAllowedGrantTypes)
+            ? builder.SetRegistrationAllowedGrantTypes(string.Empty)
+            : builder.SetRegistrationAllowedScopes(string.Empty));
+
+        Assert.Equal(parameter, exception.ParamName);
+    }
+
+    [Fact]
+    public void Validate_ReturnsAnErrorWhenAllowedScopesIncludeInitialAccessTokenScopes()
+    {
+        // Arrange
+        var options = CreateRegistrationOptions();
+        options.RegistrationAllowedScopes.Add("dcr");
+
+        // Act
+        var result = Validate(options);
+
+        // Assert
+        Assert.Contains(SR.GetResourceString(SR.ID0814), result.Failures!, StringComparer.Ordinal);
+    }
+
     private static OpenIddictServerOptions CreateBaseOptions() => new() { TimeProvider = TimeProvider.System };
 
     private static OpenIddictServerOptions CreateRegistrationOptions()

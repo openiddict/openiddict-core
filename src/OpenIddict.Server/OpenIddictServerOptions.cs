@@ -789,6 +789,29 @@ public sealed class OpenIddictServerOptions
     public List<SecurityKey> SoftwareStatementSigningKeys { get; } = [];
 
     /// <summary>
+    /// Gets the grant types dynamically registered client applications are allowed to use (in addition to
+    /// being enabled in the server options). By default, the authorization code, implicit, refresh token,
+    /// client credentials, device authorization and CIBA grants are allowed: grants that require a higher
+    /// level of trust (e.g password or token exchange) must be explicitly added to be registrable.
+    /// </summary>
+    public HashSet<string> RegistrationAllowedGrantTypes { get; } = new(StringComparer.Ordinal)
+    {
+        OpenIddictConstants.GrantTypes.AuthorizationCode,
+        OpenIddictConstants.GrantTypes.Ciba,
+        OpenIddictConstants.GrantTypes.ClientCredentials,
+        OpenIddictConstants.GrantTypes.DeviceCode,
+        OpenIddictConstants.GrantTypes.Implicit,
+        OpenIddictConstants.GrantTypes.RefreshToken
+    };
+
+    /// <summary>
+    /// Gets the scopes dynamically registered client applications are allowed to request. If no scope is
+    /// added, all the registered scopes can be requested. Note: the scopes listed in
+    /// <see cref="InitialAccessTokenScopes"/> can never be requested by dynamically registered clients.
+    /// </summary>
+    public HashSet<string> RegistrationAllowedScopes { get; } = new(StringComparer.Ordinal);
+
+    /// <summary>
     /// Gets or sets the maximum difference allowed between the issuance date of a DPoP proof and the current date.
     /// </summary>
     public TimeSpan DPoPProofLifetime { get; set; } = TimeSpan.FromMinutes(5);

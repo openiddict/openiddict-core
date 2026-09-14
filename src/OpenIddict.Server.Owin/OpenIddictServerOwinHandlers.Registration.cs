@@ -78,6 +78,15 @@ public static partial class OpenIddictServerOwinHandlers
                     let values = new StringValues(parameter.Value)
                     select KeyValuePair.Create(parameter.Key, values));
 
+                // Note: registration and client configuration requests MUST use the Authorization header to send
+                // initial access tokens and registration access tokens: the access_token parameter is never extracted
+                // from the query string (that may be logged or leaked via the Referer header) or from the JSON payload.
+                //
+                // See https://datatracker.ietf.org/doc/html/rfc6750#section-2.3,
+                // https://datatracker.ietf.org/doc/html/rfc7591#section-3
+                // and https://datatracker.ietf.org/doc/html/rfc7592#section-2 for more information.
+                query.AccessToken = null;
+
                 if (string.Equals(request.Method, "GET", StringComparison.OrdinalIgnoreCase) ||
                     string.Equals(request.Method, "DELETE", StringComparison.OrdinalIgnoreCase))
                 {
@@ -146,7 +155,15 @@ public static partial class OpenIddictServerOwinHandlers
                     return;
                 }
 
-                var result = new OpenIddictRequest(payload);
+                // Note: client metadata are exclusively extracted from the JSON payload (the query string parameters
+                // are deliberately ignored, as omitted metadata MUST be treated as null or empty values for updates).
+                //
+                // See https://datatracker.ietf.org/doc/html/rfc7591#section-3.1
+                // and https://datatracker.ietf.org/doc/html/rfc7592#section-2.2 for more information.
+                var result = new OpenIddictRequest(payload)
+                {
+                    AccessToken = null
+                };
 
                 // Update requests MUST include the client identifier in the JSON payload.
                 //
@@ -161,28 +178,19 @@ public static partial class OpenIddictServerOwinHandlers
                     return;
                 }
 
-                foreach (var parameter in query.GetParameters())
+                // The client identifier specified in the payload of update requests MUST match
+                // the client identifier used to identify the client configuration endpoint.
+                //
+                // See https://datatracker.ietf.org/doc/html/rfc7592#section-2.2 for more information.
+                if (string.Equals(request.Method, "PUT", StringComparison.OrdinalIgnoreCase) && !string.IsNullOrEmpty(query.ClientId) &&
+                    !string.Equals(result.ClientId, query.ClientId, StringComparison.Ordinal))
                 {
-                    if (!result.HasParameter(parameter.Key))
-                    {
-                        result.SetParameter(parameter.Key, parameter.Value);
-                        continue;
-                    }
+                    context.Reject(
+                        error: Errors.InvalidRequest,
+                        description: SR.FormatID2413(Parameters.ClientId),
+                        uri: SR.FormatID8000(SR.ID2413));
 
-                    // The client identifier specified in the payload of update requests MUST match
-                    // the client identifier used to identify the client configuration endpoint.
-                    //
-                    // See https://datatracker.ietf.org/doc/html/rfc7592#section-2.2 for more information.
-                    if (parameter.Key is Parameters.ClientId &&
-                        !string.Equals((string?) result[Parameters.ClientId], (string?) parameter.Value, StringComparison.Ordinal))
-                    {
-                        context.Reject(
-                            error: Errors.InvalidRequest,
-                            description: SR.FormatID2413(Parameters.ClientId),
-                            uri: SR.FormatID8000(SR.ID2413));
-
-                        return;
-                    }
+                    return;
                 }
 
                 context.Transaction.Request = result;

@@ -72,6 +72,15 @@ public static partial class OpenIddictServerAspNetCoreHandlers
 
                 var query = new OpenIddictRequest(request.Query);
 
+                // Note: registration and client configuration requests MUST use the Authorization header to send
+                // initial access tokens and registration access tokens: the access_token parameter is never extracted
+                // from the query string (that may be logged or leaked via the Referer header) or from the JSON payload.
+                //
+                // See https://datatracker.ietf.org/doc/html/rfc6750#section-2.3,
+                // https://datatracker.ietf.org/doc/html/rfc7591#section-3
+                // and https://datatracker.ietf.org/doc/html/rfc7592#section-2 for more information.
+                query.AccessToken = null;
+
                 if (HttpMethods.IsGet(request.Method) || HttpMethods.IsDelete(request.Method))
                 {
                     context.Transaction.Request = query;
@@ -152,7 +161,22 @@ public static partial class OpenIddictServerAspNetCoreHandlers
                     return;
                 }
 
-                if (!TryMergeQueryParameters(new OpenIddictRequest(payload), query, out var result))
+                // Note: client metadata are exclusively extracted from the JSON payload (the query string parameters
+                // are deliberately ignored, as omitted metadata MUST be treated as null or empty values for updates).
+                //
+                // See https://datatracker.ietf.org/doc/html/rfc7591#section-3.1
+                // and https://datatracker.ietf.org/doc/html/rfc7592#section-2.2 for more information.
+                var result = new OpenIddictRequest(payload)
+                {
+                    AccessToken = null
+                };
+
+                // The client identifier specified in the payload of update requests MUST match
+                // the client identifier used to identify the client configuration endpoint.
+                //
+                // See https://datatracker.ietf.org/doc/html/rfc7592#section-2.2 for more information.
+                if (HttpMethods.IsPut(request.Method) && !string.IsNullOrEmpty(query.ClientId) &&
+                    !string.Equals(result.ClientId, query.ClientId, StringComparison.Ordinal))
                 {
                     context.Reject(
                         error: Errors.InvalidRequest,
@@ -204,35 +228,6 @@ public static partial class OpenIddictServerAspNetCoreHandlers
 
                 return ValueTask.CompletedTask;
             }
-        }
-
-        /// <summary>
-        /// Merges the query string parameters with the parameters extracted from the JSON payload.
-        /// </summary>
-        internal static bool TryMergeQueryParameters(OpenIddictRequest payload, OpenIddictRequest query, out OpenIddictRequest result)
-        {
-            result = payload;
-
-            foreach (var parameter in query.GetParameters())
-            {
-                if (!payload.HasParameter(parameter.Key))
-                {
-                    payload.SetParameter(parameter.Key, parameter.Value);
-                    continue;
-                }
-
-                // The client identifier specified in the payload of update requests MUST match
-                // the client identifier used to identify the client configuration endpoint.
-                //
-                // See https://datatracker.ietf.org/doc/html/rfc7592#section-2.2 for more information.
-                if (parameter.Key is Parameters.ClientId &&
-                    !string.Equals((string?) payload[Parameters.ClientId], (string?) parameter.Value, StringComparison.Ordinal))
-                {
-                    return false;
-                }
-            }
-
-            return true;
         }
     }
 }
