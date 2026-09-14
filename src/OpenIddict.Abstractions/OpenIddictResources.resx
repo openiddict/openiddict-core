@@ -1989,7 +1989,7 @@ To apply backchannel authentication responses, create a class implementing 'IOpe
     <value>No asymmetric signing key was registered to sign logout tokens. Register an asymmetric signing credential (e.g using 'services.AddOpenIddict().AddServer().AddSigningCertificate()').</value>
   </data>
   <data name="ID0721" xml:space="preserve">
-    <value>Back-channel logout, front-channel logout, session revocation on sign-out and session expiration cannot be used when the degraded mode is enabled.</value>
+    <value>Back-channel logout, front-channel logout, session revocation on sign-out, automatic session creation and session expiration cannot be used when the degraded mode is enabled.</value>
   </data>
   <data name="ID0722" xml:space="preserve">
     <value>The check session iframe endpoint cannot be enabled when session management is disabled. To enable it, call 'services.AddOpenIddict().AddServer().EnableSessionManagement()'.</value>
