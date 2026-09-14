@@ -4,6 +4,17 @@
     <TargetFrameworks>$(NetFrameworkTargetFrameworks);$(NetCoreTargetFrameworks)</TargetFrameworks>
   </PropertyGroup>
 
+  <!--
+    Note: the SourceGear.sqlite3 package (used by the SQLite-based store tests) doesn't support
+    AnyCPU builds, so the .NET Framework test assembly is always built as a x64 assembly.
+  -->
+
+  <PropertyGroup Condition=" $(TargetFramework.StartsWith('net4')) ">
+    <RuntimeIdentifier Condition=" '$(RuntimeIdentifier)' == '' ">win-x64</RuntimeIdentifier>
+    <PlatformTarget Condition=" '$(PlatformTarget)' == '' ">x64</PlatformTarget>
+    <Prefer32Bit Condition=" '$(Prefer32Bit)' == '' ">false</Prefer32Bit>
+  </PropertyGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\..\src\OpenIddict.EntityFramework\OpenIddict.EntityFramework.csproj" />
   </ItemGroup>
@@ -11,6 +22,12 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <PackageReference Include="Moq" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFrameworkIdentifier)' == '.NETFramework' ">
+    <PackageReference Include="SourceGear.sqlite3" />
+    <PackageReference Include="SQLite.CodeFirst" />
+    <PackageReference Include="System.Data.SQLite.EF6" />
   </ItemGroup>
 
   <ItemGroup>

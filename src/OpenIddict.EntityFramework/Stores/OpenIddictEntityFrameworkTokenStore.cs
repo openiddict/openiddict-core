@@ -112,7 +112,48 @@ public class OpenIddictEntityFrameworkTokenStore<
 
         context.Set<TToken>().Add(token);
 
-        await context.SaveChangesAsync(cancellationToken);
+        if (string.IsNullOrEmpty(token.ReferenceId))
+        {
+            await context.SaveChangesAsync(cancellationToken);
+
+            return;
+        }
+
+        // Reference identifiers are expected to be unique (they are used to resolve reference tokens and
+        // to detect replayed values like DPoP proofs). Unlike Entity Framework Core, Entity Framework 6.x
+        // doesn't support declaring filtered unique indexes, so the ReferenceId index cannot be unique.
+        // To prevent concurrent requests from creating two entries with the same reference identifier,
+        // the existence check and the insertion are executed in a serializable transaction, which
+        // puts a range lock on the looked up value and blocks concurrent insertions of the same value
+        // until the transaction completes (one of the concurrent transactions is aborted by the database).
+        var identifier = token.ReferenceId;
+
+        for (var attempt = 1; ; attempt++)
+        {
+            using var transaction = CreateTransaction(context, IsolationLevel.Serializable);
+
+            try
+            {
+                if (await context.Set<TToken>().AnyAsync(entity => entity.ReferenceId == identifier, cancellationToken))
+                {
+                    throw new ConcurrencyException(SR.GetResourceString(SR.ID0986));
+                }
+
+                await context.SaveChangesAsync(cancellationToken);
+                transaction?.Commit();
+
+                return;
+            }
+
+            // Note: range locks can occasionally cause deadlocks between transactions inserting different
+            // values. In this case, the aborted transaction is retried: if the entry was concurrently
+            // created by another transaction, the existence check will detect it during the next attempt.
+            catch (Exception exception) when (transaction is not null && attempt < 3 &&
+                exception is not ConcurrencyException && !OpenIddictHelpers.IsFatal(exception))
+            {
+                continue;
+            }
+        }
     }
 
     /// <inheritdoc/>

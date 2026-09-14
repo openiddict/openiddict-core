@@ -2296,6 +2296,9 @@ Make sure the authorization server supports 'private_key_jwt', 'tls_client_auth'
   <data name="ID0985" xml:space="preserve">
     <value>No sender-constraining mechanism allowed by the FAPI 2.0 security profile (DPoP or mTLS) could be negotiated with the authorization server.</value>
   </data>
+  <data name="ID0986" xml:space="preserve">
+    <value>The token entry cannot be created as another token entry with the same reference identifier already exists.</value>
+  </data>
   <data name="ID2000" xml:space="preserve">
     <value>The security token is missing.</value>
   </data>
