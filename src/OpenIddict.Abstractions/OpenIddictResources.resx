@@ -2417,6 +2417,12 @@ To register a distributed cache, use 'services.AddDistributedMemoryCache()' or a
   <data name="ID0907" xml:space="preserve">
     <value>The metadata document cannot be retrieved: the address must use the HTTPS or file scheme and the server must return a successful response.</value>
   </data>
+  <data name="ID0908" xml:space="preserve">
+    <value>The SAML relay state must not exceed 80 bytes.</value>
+  </data>
+  <data name="ID0909" xml:space="preserve">
+    <value>The SAML assertion consumer service URL must be an absolute URL.</value>
+  </data>
   <data name="ID2000" xml:space="preserve">
     <value>The security token is missing.</value>
   </data>
