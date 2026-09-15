@@ -38,8 +38,30 @@ Baseline `dev@dd0d5d7d` (8.0.0-preview.5, fork of upstream). **Plan only — do 
 | P11.4 templates | ✅ `templates/OpenIddict.Templates.csproj` | `56cd9786`, `1cb254e1` | `openiddict-server-identity`, `openiddict-server-empty`, `openiddict-bff`; `templates/verify.sh` (pack + `dotnet new` + build + HTTP smoke). Review: `prompt=none` → `login_required`, Bootstrap SRI. See deviations below. |
 | P11.5 admin API | ✅ `Server.AspNetCore` | `e4cc3771`, `6a0d72b7` | `MapOpenIddictAdminApi(policy, prefix)`. See deviations below. |
 | P11.6 SAML IdP | ✅ new packages `OpenIddict.Server.Saml` (net48 + net10.0) + `OpenIddict.Server.Saml.AspNetCore` + `OpenIddict.Server.Saml.Owin` | `b6ba3f30`, `814f25f8`, `3c25b4d4` | `UseSaml()`, `UseAspNetCore()`/`MapOpenIddictSamlEndpoints()`, `UseOwin()`/`app.UseOpenIddictSaml()`. See "P11.6 SAML plan" in P11 and deviations below. |
-| P1, P2, P4, P9, P11.1 | ⏸ blocked | — | Waiting for upstream `8.0.0-preview.5` (back-channel logout #2175, DCR #2404) |
-| P3 front-channel, P7 JARM | ⛔ dropped | — | See Resolutions |
+| P1, P2, P3, P11.1 sessions + OP logout | ✅ (round 2, fork-side, not waiting for upstream) | `cf7dd70d`…`9d7bae60` | See "Round 2 phases" |
+| P4 client RP logout | ✅ | `2833482b`…`d1820d4d` | See "Round 2 phases" |
+| P9 DCR | ✅ 7591 + 7592 | `ebe69efc`…`030c4e35` | See "Round 2 phases" |
+| P7 JARM | ✅ (un-dropped) | `4008a5b9`…`33ce5dcd` | See "Round 2 phases" |
+| P8c, P13–P19 | ✅ | see below | CIBA ping/push, JAR by reference, multi-issuer, FAPI 2.0, SAML extras/SP/SLO, admin UI |
+
+## Round 2 phases (2026-09-15, all done, merged into `dev`)
+
+| Phase | Status | Commits | Scope delivered | Not done |
+|---|---|---|---|---|
+| P1/P2/P3/P11.1 sessions + OP logout | ✅ | `cf7dd70d` `ee4ae5f1` `cc13f47b` `9d7bae60` | Session expiry/idle/revocation; back-channel logout (`OpenIddict.Server.SystemNetHttp`); front-channel logout; `check_session_iframe`; automatic session creation; admin API sessions | Outbox/retry; migrations/indexes for new columns; OWIN admin API |
+| P4 client RP logout | ✅ | `2833482b`…`53277c89`, `d1820d4d` | Back/front-channel logout endpoints (ASP.NET Core, OWIN), `IOpenIddictClientSessionStore`, `AuthenticateWithLogoutTokenAsync`, BFF reuse, startup validation | RP `check_session_iframe` helper; dynamic-registration logout URIs |
+| P9 DCR | ✅ | `ebe69efc`…`966d50eb`, `030c4e35` | RFC 7591 + 7592 server/client, software statements, allow-lists, atomic registration token rotation | `jwks_uri`, `client_secret_jwt`, external IATs |
+| P8c CIBA ping/push | ✅ | `b07d681e`…`4ea80d79` | Ping/push server + client, signed CIBA requests, `user_code`, retry policy | RP notification endpoint, `expired_token` push, durable delivery |
+| P7 JARM | ✅ | `4008a5b9`…`33ce5dcd` | 4 JWT modes, signing + RSA-OAEP encryption, client validation/negotiation, encryption requirement | ECDH-ES; DCR metadata for JARM algs |
+| P13 JAR by reference | ✅ | `bff94117` `6c6fab8a` | Registered `request_uri` prefixes, SSRF-filtered fetcher, fragment hash, PAR precedence | Distributed request-object cache; net48 connect-time IP check |
+| P14 multi-issuer | ✅ | `78b31cf2` `760c6009` `6c6fab8a` | Per-request issuer resolution, per-issuer credentials, token `iss` validation, ServerIntegration validation | Remote validation per issuer; CIBA/mTLS aliases |
+| P15 FAPI 2.0 + follow-ups | ✅ | `db53d7f8`…`fc4fd512`, `3140d801` | Server/client FAPI presets, introspection alg restriction, DPoP nonce retry with fresh assertion, userinfo DPoP challenge, EF6/MongoDB `ReferenceId` uniqueness, BFF distributed caches | Conformance run; sandbox FAPI config |
+| P16 SAML IdP extras | ✅ | `ac932d04`…`35e13526` | Encrypted assertions, HTTP-Artifact + ArtifactResolve, replay cache (on by default) | HTTP-POST artifact encoding, SP metadata import, ECDH-ES |
+| P17 SAML SP | ✅ | `50b6f1b4`…`2063246c` | `OpenIddict.Client.Saml` (+ AspNetCore/Owin), dynamic registrations, metadata retrieval/expiry, decryption | SP SLO, artifact/redirect ACS, `OpenIddictClientService` integration |
+| P18 admin UI | ✅ | `96f2a233`…`336ab92f`, `b911f7ff` `ee6d9e75` `fe9e453e` | Blazor SSR admin UI (apps, scopes, authorizations, tokens, keys, sessions), template `--admin-ui` | Interactive components, OWIN host, token session filter |
+| P19 SAML SLO | ✅ | `899d5fb4`…`08c2205e` | Redirect/POST chain, SOAP in/out, OIDC session termination, PartialLogout | HTTP-POST SP notification from OIDC end-session; BaseID/EncryptedID |
+
+Verification: full test run at the final `dev` tip, see report §4.1.
 
 **P11.6 deviations**
 
