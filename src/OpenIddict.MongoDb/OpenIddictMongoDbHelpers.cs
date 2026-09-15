@@ -22,7 +22,11 @@ public static class OpenIddictMongoDbHelpers
     /// </summary>
     /// <remarks>
     /// Note: this method can be safely called multiple times (e.g when the application starts) as creating
-    /// an index that already exists with the same options is a no-op. Partial indexes are not supported
+    /// an index that already exists with the same name and options is a no-op. All the indexes use explicit
+    /// names prefixed by "openiddict_". If an index with the same name or key pattern but different options
+    /// was already created (e.g manually), it is left untouched and the corresponding index is skipped
+    /// (MongoDB "IndexOptionsConflict" and "IndexKeySpecsConflict" errors are ignored): in this case, the
+    /// existing indexes must be manually verified or dropped before calling this method. Partial indexes are not supported
     /// by all the MongoDB-compatible databases (e.g Azure Cosmos DB): in this case, the indexes must be
     /// manually created and the replay protection of DPoP proofs is not guaranteed under concurrent requests.
     /// </remarks>
@@ -44,7 +48,7 @@ public static class OpenIddictMongoDbHelpers
 
         await CreateAsync(options.AuthorizationsCollectionName,
         [
-            new CreateIndexModel<BsonDocument>(Builders<BsonDocument>.IndexKeys
+            Index("openiddict_application_id_scopes_status_subject_type", Builders<BsonDocument>.IndexKeys
                 .Ascending("application_id")
                 .Ascending("scopes")
                 .Ascending("status")
@@ -64,8 +68,8 @@ public static class OpenIddictMongoDbHelpers
 
         await CreateAsync(options.SessionsCollectionName,
         [
-            new CreateIndexModel<BsonDocument>(Builders<BsonDocument>.IndexKeys.Ascending("login_id")),
-            new CreateIndexModel<BsonDocument>(Builders<BsonDocument>.IndexKeys
+            Index("openiddict_login_id", Builders<BsonDocument>.IndexKeys.Ascending("login_id")),
+            Index("openiddict_application_id_status_subject", Builders<BsonDocument>.IndexKeys
                 .Ascending("application_id")
                 .Ascending("status")
                 .Ascending("subject"))
@@ -74,8 +78,8 @@ public static class OpenIddictMongoDbHelpers
         await CreateAsync(options.TokensCollectionName,
         [
             Unique("reference_id"),
-            new CreateIndexModel<BsonDocument>(Builders<BsonDocument>.IndexKeys.Ascending("authorization_id")),
-            new CreateIndexModel<BsonDocument>(Builders<BsonDocument>.IndexKeys
+            Index("openiddict_authorization_id", Builders<BsonDocument>.IndexKeys.Ascending("authorization_id")),
+            Index("openiddict_application_id_status_subject_type", Builders<BsonDocument>.IndexKeys
                 .Ascending("application_id")
                 .Ascending("status")
                 .Ascending("subject")
@@ -86,8 +90,27 @@ public static class OpenIddictMongoDbHelpers
         {
             var collection = database.GetCollection<BsonDocument>(name);
 
-            await collection.Indexes.CreateManyAsync(models, cancellationToken);
+            // Note: the indexes are created one by one so that a conflict affecting
+            // an index doesn't prevent the other indexes from being created.
+            foreach (var model in models)
+            {
+                try
+                {
+                    await collection.Indexes.CreateOneAsync(model, options: null, cancellationToken);
+                }
+
+                // IndexOptionsConflict (85) and IndexKeySpecsConflict (86) are returned when an index with
+                // the same name or key pattern but different options already exists: in this case,
+                // the existing index is preserved.
+                catch (MongoCommandException exception) when (exception.Code is 85 or 86)
+                {
+                    continue;
+                }
+            }
         }
+
+        static CreateIndexModel<BsonDocument> Index(string name, IndexKeysDefinition<BsonDocument> keys)
+            => new(keys, new CreateIndexOptions<BsonDocument> { Name = name });
 
         // Note: the unique indexes are partial indexes that only apply to the documents that contain
         // a string value for the indexed element, so that documents without value are not constrained.
@@ -95,6 +118,7 @@ public static class OpenIddictMongoDbHelpers
             Builders<BsonDocument>.IndexKeys.Ascending(element),
             new CreateIndexOptions<BsonDocument>
             {
+                Name = "openiddict_" + element,
                 PartialFilterExpression = Builders<BsonDocument>.Filter.Type(element, BsonType.String),
                 Unique = true
             });
