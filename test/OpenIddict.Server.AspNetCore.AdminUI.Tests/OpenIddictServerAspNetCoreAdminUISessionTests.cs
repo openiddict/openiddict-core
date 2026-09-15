@@ -11,6 +11,7 @@ using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Moq;
 using OpenIddict.Server;
 using Xunit;
@@ -149,6 +150,8 @@ public partial class OpenIddictServerAspNetCoreAdminUITests
         Assert.Contains("href=\"/openiddict/admin/authorizations/authz-1\"", html, StringComparison.Ordinal);
         Assert.Contains("href=\"/openiddict/admin/tokens/token-1\"", html, StringComparison.Ordinal);
         Assert.Contains("action=\"/openiddict/admin/sessions/session-1/terminate\"", html, StringComparison.Ordinal);
+
+        // Note: these assertions only guard the rendered markup (the descriptor passed to the page isn't observable).
         Assert.DoesNotContain("secret-claim-value", html, StringComparison.Ordinal);
         Assert.DoesNotContain("secret-token-payload", html, StringComparison.Ordinal);
         Assert.Equal(HttpStatusCode.NotFound, unknown.StatusCode);
@@ -370,7 +373,13 @@ public partial class OpenIddictServerAspNetCoreAdminUITests
         {
             Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
             Assert.Contains("SetIssuer", html, StringComparison.Ordinal);
+            Assert.Contains(WebUtility.HtmlEncode(SR.GetResourceString(SR.ID2520)), html, StringComparison.Ordinal);
             Assert.Empty(requests);
+
+            // The issuer is validated before any entry is revoked: the session is still valid and can be terminated again.
+            Assert.Contains("action=\"/openiddict/admin/sessions/session-1/terminate\"", html, StringComparison.Ordinal);
+            manager.Verify(mock => mock.TryRevokeAsync(It.IsAny<object>(), It.IsAny<CancellationToken>()), Times.Never());
+            tokens.Verify(mock => mock.RevokeBySessionIdAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never());
 
             return;
         }
@@ -400,8 +409,11 @@ public partial class OpenIddictServerAspNetCoreAdminUITests
         await connection.OpenAsync();
 
         List<string> notifications = [];
+        var logger = new TestLoggerProvider();
 
-        using var host = await CreateEntityFrameworkCoreHostAsync(connection, services => services.AddOpenIddict()
+        using var host = await CreateEntityFrameworkCoreHostAsync(connection, services => services
+            .AddLogging(options => options.SetMinimumLevel(LogLevel.Information).AddProvider(logger))
+            .AddOpenIddict()
             .AddServer(options =>
             {
                 options.SetTokenEndpointUris("connect/token")
@@ -468,6 +480,10 @@ public partial class OpenIddictServerAspNetCoreAdminUITests
         Assert.DoesNotContain($"action=\"/openiddict/admin/sessions/{first}/terminate\"", html, StringComparison.Ordinal);
         Assert.Equal("fabrikam fabrikam", string.Join(' ', notifications));
 
+        Assert.Equal($"The session '{first}' was terminated using the admin UI (2 session entries terminated, " +
+            "2 client applications notified, 0 back-channel logout notifications failed) by 'admin'.",
+            Assert.Single(logger.GetEntries(6840)));
+
         await using (var scope = host.Services.CreateAsyncScope())
         {
             var manager = scope.ServiceProvider.GetRequiredService<IOpenIddictSessionManager>();
@@ -483,6 +499,7 @@ public partial class OpenIddictServerAspNetCoreAdminUITests
         Assert.Equal(HttpStatusCode.OK, again.StatusCode);
         Assert.Contains("No valid session was terminated", await again.Content.ReadAsStringAsync(), StringComparison.Ordinal);
         Assert.Equal(2, notifications.Count);
+        Assert.Single(logger.GetEntries(6840));
 
         static async Task<string> CreateSessionAsync(IOpenIddictSessionManager manager, string? application, string login)
         {
@@ -498,6 +515,66 @@ public partial class OpenIddictServerAspNetCoreAdminUITests
 
             return (await manager.GetIdAsync(session))!;
         }
+    }
+
+    [Fact]
+    public async Task EntityFrameworkCore_TerminationFailuresRenderTheActualSessionStatus()
+    {
+        // Arrange
+        await using var connection = new SqliteConnection("Data Source=:memory:");
+        await connection.OpenAsync();
+
+        var logger = new TestLoggerProvider();
+
+        using var host = await CreateEntityFrameworkCoreHostAsync(connection, services => services
+            .AddLogging(options => options.SetMinimumLevel(LogLevel.Information).AddProvider(logger))
+            .AddOpenIddict()
+            .AddServer(options =>
+            {
+                options.SetTokenEndpointUris("connect/token")
+                       .AllowClientCredentialsFlow()
+                       .SetIssuer(new Uri("https://www.contoso.com/", UriKind.Absolute));
+
+                options.AddEphemeralEncryptionKey()
+                       .AddEphemeralSigningKey();
+
+                // Note: this handler simulates a failure happening after the session entries were revoked.
+                options.AddEventHandler<ProcessSessionTerminationContext>(builder => builder
+                    .UseInlineHandler(context => throw new InvalidOperationException("custom-termination-failure"))
+                    .SetOrder(OpenIddictServerHandlers.Logout.RevokeSessionEntries.Descriptor.Order + 1));
+            }));
+
+        string identifier;
+
+        await using (var scope = host.Services.CreateAsyncScope())
+        {
+            var manager = scope.ServiceProvider.GetRequiredService<IOpenIddictSessionManager>();
+            var session = await manager.CreateAsync(new OpenIddictSessionDescriptor
+            {
+                CreationDate = DateTimeOffset.UtcNow,
+                ExpirationDate = DateTimeOffset.UtcNow.AddHours(1),
+                LoginId = "login-1",
+                Status = Statuses.Valid,
+                Subject = "alice"
+            });
+
+            identifier = (await manager.GetIdAsync(session))!;
+        }
+
+        using var client = CreateClient(host, role: "admin");
+
+        var antiforgery = await GetAntiforgeryAsync(client, $"/openiddict/admin/sessions/{identifier}");
+
+        // Act
+        var response = await PostAsync(client, antiforgery, $"/openiddict/admin/sessions/{identifier}/terminate", []);
+        var html = await response.Content.ReadAsStringAsync();
+
+        // Assert
+        Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+        Assert.Contains("custom-termination-failure", html, StringComparison.Ordinal);
+        Assert.Contains(WebUtility.HtmlEncode(SR.GetResourceString(SR.ID2520)), html, StringComparison.Ordinal);
+        Assert.DoesNotContain($"action=\"/openiddict/admin/sessions/{identifier}/terminate\"", html, StringComparison.Ordinal);
+        Assert.Empty(logger.GetEntries(6840));
     }
 
     private static void SetupSession(Mock<IOpenIddictSessionManager> manager, object session,
@@ -519,5 +596,42 @@ public partial class OpenIddictServerAspNetCoreAdminUITests
                 descriptor.Subject = "alice";
             })
             .Returns(ValueTask.CompletedTask);
+    }
+
+    private sealed class TestLoggerProvider : ILoggerProvider
+    {
+        private readonly List<(string Category, int Id, string Message)> _entries = [];
+
+        public ILogger CreateLogger(string categoryName) => new TestLogger(this, categoryName);
+
+        public IReadOnlyList<string> GetEntries(int id)
+        {
+            lock (_entries)
+            {
+                return [.. _entries
+                    .Where(entry => entry.Id == id && entry.Category is "OpenIddict.Server.AspNetCore.AdminUI.OpenIddictServerAspNetCoreAdminUIEndpoints")
+                    .Select(static entry => entry.Message)];
+            }
+        }
+
+        public void Dispose()
+        {
+        }
+
+        private sealed class TestLogger(TestLoggerProvider provider, string category) : ILogger
+        {
+            public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
+
+            public bool IsEnabled(LogLevel logLevel) => true;
+
+            public void Log<TState>(LogLevel logLevel, EventId eventId, TState state,
+                Exception? exception, Func<TState, Exception?, string> formatter)
+            {
+                lock (provider._entries)
+                {
+                    provider._entries.Add((category, eventId.Id, formatter(state, exception)));
+                }
+            }
+        }
     }
 }

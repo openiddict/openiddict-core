@@ -534,6 +534,17 @@ public static partial class OpenIddictServerHandlers
                     });
                 }
 
+                // Note: the issuer is required to generate logout tokens ("iss" claim, OpenID Connect Back-Channel
+                // Logout 1.0, section 2.4) and front-channel logout URIs ("iss" parameter, OpenID Connect Front-Channel
+                // Logout 1.0, section 3). To prevent the sessions from being revoked without the client applications
+                // being notified when the issuer can't be resolved, it is validated before any entry is revoked.
+                if (context.Participants.Exists(participant =>
+                    (context.SendBackchannelLogoutRequests && participant.BackchannelLogoutUri is not null) ||
+                    (context.ResolveFrontchannelLogoutUris && participant.FrontchannelLogoutUri is not null)))
+                {
+                    _ = GetIssuer(context);
+                }
+
                 Uri? GetUri(ImmutableDictionary<string, string> settings, string name, string client)
                 {
                     if (!settings.TryGetValue(name, out string? value) || string.IsNullOrEmpty(value))

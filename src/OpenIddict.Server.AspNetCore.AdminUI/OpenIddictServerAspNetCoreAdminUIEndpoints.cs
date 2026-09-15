@@ -800,9 +800,14 @@ internal sealed class OpenIddictServerAspNetCoreAdminUIEndpoints
         }
 
         // Configuration errors (e.g missing issuer or signing key, degraded mode) are rendered as a server error.
+        // Note: since the failure may happen after the sessions were revoked (e.g when thrown by a custom handler),
+        // the session is retrieved again so that the rendered status reflects the actual state of the session.
         catch (InvalidOperationException exception)
         {
-            return await SessionDetailsAsync(context, StatusCodes.Status500InternalServerError, manager, session, [exception.Message]);
+            session = await FindByIdAsync(manager.FindByIdAsync, identifier, context.RequestAborted) ?? session;
+
+            return await SessionDetailsAsync(context, StatusCodes.Status500InternalServerError, manager, session,
+                [exception.Message, SR.GetResourceString(SR.ID2520)]);
         }
 
         // Note: the session may have been deleted concurrently.

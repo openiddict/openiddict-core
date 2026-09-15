@@ -3641,6 +3641,9 @@ To register a distributed cache, use 'services.AddDistributedMemoryCache()' or a
   <data name="ID2514" xml:space="preserve">
     <value>SOAP headers that must be understood are not supported.</value>
   </data>
+  <data name="ID2520" xml:space="preserve">
+    <value>The session termination failed. The sessions may have been revoked without the client applications being notified: check the server configuration and the logs.</value>
+  </data>
   <data name="ID4000" xml:space="preserve">
     <value>The '{0}' parameter shouldn't be null or empty at this point.</value>
   </data>

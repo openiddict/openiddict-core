@@ -435,6 +435,9 @@ public class OpenIddictServerLogoutTests
         {
             var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () => await service.TerminateSessionAsync("s1"));
             Assert.Equal(SR.GetResourceString(SR.ID0726), exception.Message);
+
+            // The issuer is validated before the sessions are revoked, so that they are not revoked without being notified.
+            sessions.Verify(mock => mock.TryRevokeAsync(It.IsAny<object>(), It.IsAny<CancellationToken>()), Times.Never());
         }
 
         else
