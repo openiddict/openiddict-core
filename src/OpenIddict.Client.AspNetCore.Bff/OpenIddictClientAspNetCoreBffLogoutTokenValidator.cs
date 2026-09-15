@@ -5,6 +5,7 @@
  */
 
 using System.Diagnostics;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using static OpenIddict.Abstractions.OpenIddictExceptions;
@@ -18,7 +19,8 @@ namespace OpenIddict.Client.AspNetCore.Bff;
 /// </summary>
 /// <remarks>
 /// Note: the validation logic is delegated to the OpenIddict client stack
-/// (see <see cref="OpenIddictClientService.AuthenticateWithLogoutTokenAsync"/>).
+/// (see <see cref="OpenIddictClientService.AuthenticateWithLogoutTokenAsync"/>), that also decrypts encrypted logout
+/// tokens and uses the registered <see cref="IDistributedCache"/> (if any) to detect cross-instance replays.
 /// </remarks>
 internal sealed class OpenIddictClientAspNetCoreBffLogoutTokenValidator
 {
@@ -44,6 +46,14 @@ internal sealed class OpenIddictClientAspNetCoreBffLogoutTokenValidator
     /// <returns>The back-channel logout notification, or <see langword="null"/> if the token is invalid.</returns>
     public async ValueTask<BackchannelLogoutNotification?> ValidateAsync(HttpContext context, string token)
     {
+        // Note: when distributed caching is enabled in the BFF options, a distributed cache must be registered
+        // so that the client stack can share the identifiers of the logout tokens between instances.
+        if (_options.CurrentValue.EnableDistributedCaching &&
+            context.RequestServices.GetService(typeof(IDistributedCache)) is null)
+        {
+            throw new InvalidOperationException(SR.GetResourceString(SR.ID0988));
+        }
+
         OpenIddictClientModels.LogoutTokenAuthenticationResult result;
 
         try

@@ -101,11 +101,13 @@ public sealed class OpenIddictClientAspNetCoreBffOptions
     /// <summary>
     /// Gets or sets a boolean indicating whether the <see cref="Microsoft.Extensions.Caching.Distributed.IDistributedCache"/>
     /// registered in the dependency injection container should be used, in addition to the in-memory caches, to share the
-    /// results of refresh token requests (protected using ASP.NET Core Data Protection) and the identifiers of the
-    /// logout tokens already received between multiple instances of the application (e.g in a web farm).
+    /// results of refresh token requests (protected using ASP.NET Core Data Protection) between multiple instances
+    /// of the application (e.g in a web farm). When enabled, a distributed cache must be registered.
     /// </summary>
     /// <remarks>
     /// Note: when enabled, the Data Protection key ring must be shared between all the instances of the application.
+    /// The identifiers of the logout tokens already received are shared by the OpenIddict client stack
+    /// whenever a distributed cache is registered, independently of this option.
     /// </remarks>
     public bool EnableDistributedCaching { get; set; }
 

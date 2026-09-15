@@ -165,7 +165,7 @@ public class OpenIddictClientAspNetCoreBffDistributedCacheTests
     }
 
     [Fact]
-    public async Task BackchannelLogoutEndpoint_TokenReceivedByAnotherInstanceIsAcceptedWhenDistributedCachingIsDisabled()
+    public async Task BackchannelLogoutEndpoint_TokenReceivedByAnotherInstanceIsRejectedByTheClientStackWhenDistributedCachingIsDisabled()
     {
         // Arrange
         var (cache, protection) = CreateSharedServices();
@@ -180,8 +180,9 @@ public class OpenIddictClientAspNetCoreBffDistributedCacheTests
         using var other = await SendLogoutTokenAsync(second, token);
 
         // Assert
+        // Note: the client stack uses the registered distributed cache independently of the BFF options.
         Assert.Equal(HttpStatusCode.OK, accepted.StatusCode);
-        Assert.Equal(HttpStatusCode.OK, other.StatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, other.StatusCode);
     }
 
     [Fact]

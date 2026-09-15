@@ -95,8 +95,9 @@ public sealed class OpenIddictClientAspNetCoreBffBuilder
 
     /// <summary>
     /// Enables the use of the <see cref="Microsoft.Extensions.Caching.Distributed.IDistributedCache"/> registered in the
-    /// dependency injection container to share the refresh token results and the logout token replay cache between
-    /// multiple instances of the application. The in-memory caches are used when distributed caching is not enabled.
+    /// dependency injection container to share the refresh token results between multiple instances of the application
+    /// and requires a distributed cache to be registered. The in-memory cache is used when distributed caching is not enabled.
+    /// Note: the identifiers of the logout tokens are always shared by the OpenIddict client stack when a distributed cache is registered.
     /// </summary>
     /// <param name="timeout">
     /// The maximum period during which an instance waits for the result of a refresh
