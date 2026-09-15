@@ -324,8 +324,6 @@ public static class OpenIddictConstants
         public const string BackchannelLogoutSessionSupported = "backchannel_logout_session_supported";
         public const string BackchannelLogoutSupported = "backchannel_logout_supported";
         public const string BackchannelAuthenticationRequestSigningAlgValuesSupported = "backchannel_authentication_request_signing_alg_values_supported";
-        public const string BackchannelLogoutSessionSupported = "backchannel_logout_session_supported";
-        public const string BackchannelLogoutSupported = "backchannel_logout_supported";
         public const string BackchannelTokenDeliveryModesSupported = "backchannel_token_delivery_modes_supported";
         public const string BackchannelUserCodeParameterSupported = "backchannel_user_code_parameter_supported";
         public const string CheckSessionIframe = "check_session_iframe";
@@ -613,11 +611,6 @@ public static class OpenIddictConstants
         public const string Phone = "phone";
         public const string Profile = "profile";
         public const string Roles = "roles";
-    }
-
-    public static class SecurityEventTypes
-    {
-        public const string BackchannelLogout = "http://schemas.openid.net/event/backchannel-logout";
     }
 
     public static class Separators
