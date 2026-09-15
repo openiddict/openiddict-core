@@ -615,6 +615,15 @@ public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenId
             {
                 builder.AddError(SR.GetResourceString(SR.ID0967));
             }
+
+            // Note: proofs whose "iat" claim is more than 60 seconds in the future must be rejected (section 5.3.2.1, item 13).
+            if (options.EnableDPoPSupport && options.DPoPProofLifetime > OpenIddictServerFapi2Profile.MaximumFutureDateOffset)
+            {
+                builder.AddError(SR.GetResourceString(SR.ID0989));
+            }
+
+            // Note: rolling refresh tokens are disabled by EnableFapi2SecurityProfile() but are not rejected here,
+            // as the profile allows refresh token rotation "in extraordinary circumstances" (section 5.3.2.1, item 10).
         }
 
         if (options.EnableFapi2MessageSigningProfile && (!options.EnableFapi2SecurityProfile ||
@@ -745,6 +754,28 @@ public sealed class OpenIddictServerConfiguration : IPostConfigureOptions<OpenId
             if (!options.SigningCredentials.Exists(static credentials => credentials.Key is AsymmetricSecurityKey))
             {
                 builder.AddError(SR.GetResourceString(SR.ID0086));
+            }
+
+            // When static credentials are used, ensure the introspection response signing algorithms can be honored.
+            if (options.EnableJsonWebTokenIntrospectionResponses &&
+                options.IntrospectionResponseSigningAlgorithms.Count is > 0 &&
+                options.SigningCredentials.Exists(static credentials => credentials.Key is AsymmetricSecurityKey) &&
+               !options.SigningCredentials.Exists(credentials => credentials.Key is AsymmetricSecurityKey &&
+                    options.IntrospectionResponseSigningAlgorithms.Contains(credentials.Algorithm switch
+                    {
+                        SecurityAlgorithms.EcdsaSha256Signature     => SecurityAlgorithms.EcdsaSha256,
+                        SecurityAlgorithms.EcdsaSha384Signature     => SecurityAlgorithms.EcdsaSha384,
+                        SecurityAlgorithms.EcdsaSha512Signature     => SecurityAlgorithms.EcdsaSha512,
+                        SecurityAlgorithms.RsaSha256Signature       => SecurityAlgorithms.RsaSha256,
+                        SecurityAlgorithms.RsaSha384Signature       => SecurityAlgorithms.RsaSha384,
+                        SecurityAlgorithms.RsaSha512Signature       => SecurityAlgorithms.RsaSha512,
+                        SecurityAlgorithms.RsaSsaPssSha256Signature => SecurityAlgorithms.RsaSsaPssSha256,
+                        SecurityAlgorithms.RsaSsaPssSha384Signature => SecurityAlgorithms.RsaSsaPssSha384,
+                        SecurityAlgorithms.RsaSsaPssSha512Signature => SecurityAlgorithms.RsaSsaPssSha512,
+                        string algorithm                            => algorithm
+                    })))
+            {
+                builder.AddError(SR.GetResourceString(SR.ID0990));
             }
 
             var now = options.TimeProvider.GetUtcNow().LocalDateTime;

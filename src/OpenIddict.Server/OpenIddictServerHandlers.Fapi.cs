@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Licensed under the Apache License, Version 2.0 (http://www.apache.org/licenses/LICENSE-2.0)
  * See https://github.com/openiddict/openiddict-core for more information concerning
  * the license and the contributors participating to this project.
@@ -215,8 +215,12 @@ public static partial class OpenIddictServerHandlers
                 }
 
                 // Note: the redirect_uri was already validated as an absolute URI at this stage.
+                //
+                // Only loopback IP literals are accepted for http redirect URIs (RFC 8252, section 7.3): since "localhost"
+                // is a DNS name that may not resolve to the loopback interface, it is not accepted (RFC 8252, section 8.3).
                 if (Uri.TryCreate(context.RedirectUri, UriKind.Absolute, out Uri? uri) &&
-                    string.Equals(uri.Scheme, Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase) && !uri.IsLoopback)
+                    string.Equals(uri.Scheme, Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase) &&
+                  !(uri.HostNameType is UriHostNameType.IPv4 or UriHostNameType.IPv6 && uri.IsLoopback))
                 {
                     context.Logger.LogInformation(6760, SR.GetResourceString(SR.ID6760), SR.FormatID2484(Parameters.RedirectUri));
 
@@ -259,7 +263,10 @@ public static partial class OpenIddictServerHandlers
                     return ValueTask.CompletedTask;
                 }
 
-                context.TokenValidationParameters.ValidAlgorithms = OpenIddictServerFapi2Profile.SigningAlgorithms;
+                // Note: TokenValidationParameters.ValidAlgorithms is not used as IdentityModel also applies it to the
+                // key management and content encryption algorithms of encrypted request objects (RFC 7516).
+                context.TokenValidationParameters.AlgorithmValidator = OpenIddictAlgorithmHelpers.CreateSigningAlgorithmValidator(
+                    OpenIddictServerFapi2Profile.SigningAlgorithms, context.TokenValidationParameters);
 
                 return ValueTask.CompletedTask;
             }

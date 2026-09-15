@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 using Xunit;
 using static OpenIddict.Client.OpenIddictClientEvents;
@@ -33,7 +34,8 @@ public class OpenIddictClientHandlersFapiTests
         Assert.Contains(TokenBindingMethods.Private.DPoP, registration.TokenBindingMethods);
         Assert.Contains(TokenBindingMethods.Private.TlsClientCertificate, registration.TokenBindingMethods);
         Assert.True(registration.IntrospectionResponseSigningAlgorithms.SetEquals(OpenIddictClientFapi2Profile.SigningAlgorithms));
-        Assert.Equal(OpenIddictClientFapi2Profile.SigningAlgorithms, registration.TokenValidationParameters.ValidAlgorithms, StringComparer.Ordinal);
+        Assert.Null(registration.TokenValidationParameters.ValidAlgorithms);
+        Assert.NotNull(registration.TokenValidationParameters.AlgorithmValidator);
         Assert.Equal(SecurityAlgorithms.RsaSsaPssSha256, Assert.Single(registration.SigningCredentials,
             static credentials => credentials.Key is RsaSecurityKey).Algorithm);
         Assert.NotNull(registration.DPoPSigningCredentials);
@@ -90,6 +92,46 @@ public class OpenIddictClientHandlersFapiTests
         Assert.Empty(registration.CodeChallengeMethods);
         Assert.Empty(registration.ResponseTypes);
         Assert.Null(registration.TokenValidationParameters.ValidAlgorithms);
+        Assert.Null(registration.TokenValidationParameters.AlgorithmValidator);
+    }
+
+    [Theory]
+    [InlineData(SecurityAlgorithms.RsaSsaPssSha256, false, true)]
+    [InlineData(SecurityAlgorithms.RsaSsaPssSha256, true, true)]
+    [InlineData(SecurityAlgorithms.RsaSha256, false, false)]
+    [InlineData(SecurityAlgorithms.RsaSha256, true, false)]
+    public async Task PostConfigure_OnlySigningAlgorithmsAreRestricted(string algorithm, bool encrypted, bool valid)
+    {
+        // Arrange
+        using var provider = CreateProvider();
+        var registration = GetRegistration(provider);
+
+        var signing = new RsaSecurityKey(RSA.Create(2048));
+        var encryption = new RsaSecurityKey(RSA.Create(2048));
+
+        var handler = new JsonWebTokenHandler();
+        var token = handler.CreateToken(new SecurityTokenDescriptor
+        {
+            Audience = "Fabrikam",
+            Claims = new Dictionary<string, object>(StringComparer.Ordinal) { [Claims.Subject] = "Bob" },
+            // Note: the key management and content encryption algorithms must not be restricted by the profile.
+            EncryptingCredentials = encrypted ? new EncryptingCredentials(encryption,
+                SecurityAlgorithms.RsaOAEP, SecurityAlgorithms.Aes256CbcHmacSha512) : null,
+            Issuer = "https://www.contoso.com/",
+            SigningCredentials = new SigningCredentials(signing, algorithm)
+        });
+
+        var parameters = registration.TokenValidationParameters.Clone();
+        parameters.IssuerSigningKey = signing;
+        parameters.TokenDecryptionKey = encryption;
+        parameters.ValidAudience = "Fabrikam";
+        parameters.ValidIssuer = "https://www.contoso.com/";
+
+        // Act
+        var result = await handler.ValidateTokenAsync(token, parameters);
+
+        // Assert
+        Assert.Equal(valid, result.IsValid);
     }
 
     public static TheoryData<string, Action<OpenIddictClientRegistration>> InvalidRegistrations => new()

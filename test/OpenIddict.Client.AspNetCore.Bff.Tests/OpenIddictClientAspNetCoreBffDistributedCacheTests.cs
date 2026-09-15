@@ -214,6 +214,41 @@ public class OpenIddictClientAspNetCoreBffDistributedCacheTests
         Assert.Equal("Contoso", notification.Registration.RegistrationId);
     }
 
+    [Theory]
+    [InlineData(SecurityAlgorithms.RsaSsaPssSha256, true)]
+    [InlineData(SecurityAlgorithms.RsaSha256, false)]
+    public async Task BackchannelLogoutEndpoint_EncryptedLogoutTokenIsValidatedForFapi2Registration(string algorithm, bool valid)
+    {
+        // Arrange
+        var handler = new RecordingLogoutHandler();
+
+        await using var host = await OpenIddictClientAspNetCoreBffTestHost.CreateAsync(
+            client: options => options.EnableDPoPTokenBinding().Configure(options =>
+            {
+                var registration = options.Registrations[0];
+                registration.ClientSecret = null;
+                registration.EnableFapi2SecurityProfile = true;
+                registration.SigningCredentials.Add(new SigningCredentials(
+                    new ECDsaSecurityKey(ECDsa.Create(ECCurve.NamedCurves.nistP256)), SecurityAlgorithms.EcdsaSha256));
+            }),
+            services: services => services.AddSingleton<IOpenIddictClientAspNetCoreBffBackchannelLogoutHandler>(handler));
+
+        var options = host.Services.GetRequiredService<IOptionsMonitor<OpenIddictClientOptions>>().CurrentValue;
+        Assert.True(options.Registrations[0].EnableFapi2SecurityProfile);
+
+        // Note: the key management and content encryption algorithms must not be
+        // restricted by the signing algorithms allowed by the FAPI 2.0 profile.
+        var token = CreateLogoutToken(host.SigningKey, new EncryptingCredentials(
+            options.EncryptionCredentials[0].Key, SecurityAlgorithms.RsaOAEP, SecurityAlgorithms.Aes256CbcHmacSha512), algorithm);
+
+        // Act
+        using var response = await SendLogoutTokenAsync(host, token);
+
+        // Assert
+        Assert.Equal(valid ? HttpStatusCode.OK : HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Equal(valid ? 1 : 0, handler.Notifications.Count);
+    }
+
     [Fact]
     public async Task BackchannelLogoutEndpoint_EncryptedLogoutTokenUsingUnknownKeyIsRejected()
     {
@@ -286,7 +321,8 @@ public class OpenIddictClientAspNetCoreBffDistributedCacheTests
             signingKey: key);
     }
 
-    private static string CreateLogoutToken(SecurityKey? signingKey, EncryptingCredentials? encryptingCredentials = null)
+    private static string CreateLogoutToken(SecurityKey? signingKey,
+        EncryptingCredentials? encryptingCredentials = null, string algorithm = SecurityAlgorithms.RsaSha256)
     {
         var now = DateTime.UtcNow;
 
@@ -307,7 +343,7 @@ public class OpenIddictClientAspNetCoreBffDistributedCacheTests
             IssuedAt = now,
             NotBefore = now,
             Issuer = OpenIddictClientAspNetCoreBffTestHost.Issuer.AbsoluteUri,
-            SigningCredentials = signingKey is null ? null : new SigningCredentials(signingKey, SecurityAlgorithms.RsaSha256),
+            SigningCredentials = signingKey is null ? null : new SigningCredentials(signingKey, algorithm),
             TokenType = JsonWebTokenTypes.LogoutToken
         });
     }

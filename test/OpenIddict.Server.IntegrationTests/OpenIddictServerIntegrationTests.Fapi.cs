@@ -7,8 +7,10 @@
 using System.Collections.Immutable;
 using System.Globalization;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text.Json.Nodes;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 using Moq;
 using Xunit;
@@ -164,15 +166,17 @@ public abstract partial class OpenIddictServerIntegrationTests
         Assert.Equal(SR.FormatID8000(SR.ID2029), response.ErrorUri);
     }
 
-    [Fact]
-    public async Task ValidatePushedAuthorizationRequest_Fapi2SecurityProfileRejectsNonLoopbackHttpRedirectUri()
+    [Theory]
+    [InlineData("http://www.fabrikam.com/path")]
+    [InlineData("http://localhost:5000/callback")]
+    public async Task ValidatePushedAuthorizationRequest_Fapi2SecurityProfileRejectsNonLoopbackHttpRedirectUri(string uri)
     {
         // Arrange
         await using var server = await CreateServerAsync(ConfigureFapiServer);
         await using var client = await server.CreateClientAsync();
 
         // Act
-        var response = await client.PostAsync("/connect/par", CreateFapiPushedAuthorizationRequest("http://www.fabrikam.com/path"));
+        var response = await client.PostAsync("/connect/par", CreateFapiPushedAuthorizationRequest(uri));
 
         // Assert
         Assert.Equal(Errors.InvalidRequest, response.Error);
@@ -183,6 +187,7 @@ public abstract partial class OpenIddictServerIntegrationTests
     [Theory]
     [InlineData("https://www.fabrikam.com/path")]
     [InlineData("http://127.0.0.1:5000/callback")]
+    [InlineData("http://[::1]:5000/callback")]
     [InlineData("com.fabrikam.app:/callback")]
     public async Task ValidatePushedAuthorizationRequest_Fapi2SecurityProfileAcceptsHttpsLoopbackAndPrivateUseRedirectUris(string uri)
     {
@@ -305,12 +310,13 @@ public abstract partial class OpenIddictServerIntegrationTests
 
         // Assert
         //
-        // Note: the client secret authentication methods are removed from the server options by the profile.
+        // Note: the client secret authentication methods are removed from the server options by the profile,
+        // so the request is rejected before Fapi.ValidateClientAuthentication is invoked (covered by unit tests).
         Assert.Equal(Errors.InvalidClient, response.Error);
         Assert.Equal(SR.FormatID2174(ClientAuthenticationMethods.ClientSecretPost), response.ErrorDescription);
     }
 
-[Fact]
+    [Fact]
     public async Task ValidateIntrospectionRequest_Fapi2SecurityProfileRejectsPublicClients()
     {
         // Arrange
@@ -451,28 +457,19 @@ public abstract partial class OpenIddictServerIntegrationTests
         Assert.Equal(TokenTypes.DPoP, response.TokenType);
     }
 
-    [Fact]
-    public async Task ValidateTokenRequest_Fapi2SecurityProfileRestrictsClientAssertionAlgorithms()
+    [Theory]
+    [InlineData(SecurityAlgorithms.RsaSsaPssSha256, true)]
+    [InlineData(SecurityAlgorithms.EcdsaSha256, true)]
+    [InlineData(SecurityAlgorithms.RsaSha256, false)]
+    [InlineData(SecurityAlgorithms.HmacSha256, false)]
+    [InlineData(SecurityAlgorithms.EcdsaSha384, false)]
+    public async Task ValidateTokenRequest_Fapi2SecurityProfileRestrictsClientAssertionAlgorithms(string algorithm, bool valid)
     {
         // Arrange
         await using var server = await CreateServerAsync(options =>
         {
             ConfigureFapiServer(options);
-
-            options.AddEventHandler<ValidateTokenContext>(builder =>
-            {
-                builder.UseInlineHandler(context =>
-                {
-                    Assert.Equal([SecurityAlgorithms.RsaSsaPssSha256, SecurityAlgorithms.EcdsaSha256, "EdDSA"],
-                        context.TokenValidationParameters.ValidAlgorithms, StringComparer.Ordinal);
-
-                    context.Reject(error: "algorithms_checked");
-
-                    return ValueTask.CompletedTask;
-                });
-
-                builder.SetOrder(Fapi.RestrictClientTokenSigningAlgorithms.Descriptor.Order + 1);
-            });
+            AttachFapiClientSigningKeys(options, TokenTypeIdentifiers.Private.ClientAssertion);
         });
 
         await using var client = await server.CreateClientAsync();
@@ -481,13 +478,133 @@ public abstract partial class OpenIddictServerIntegrationTests
         // Act
         var response = await client.PostAsync("/connect/token", new OpenIddictRequest
         {
-            ClientAssertion = "assertion",
+            ClientAssertion = CreateFapiClientToken(algorithm, JsonWebTokenTypes.ClientAuthentication, new(StringComparer.Ordinal)
+            {
+                [Claims.JwtId] = Guid.NewGuid().ToString(),
+                [Claims.Subject] = "Fabrikam"
+            }),
             ClientAssertionType = ClientAssertionTypes.JwtBearer,
             GrantType = GrantTypes.ClientCredentials
         });
 
         // Assert
-        Assert.Equal("algorithms_checked", response.Error);
+        if (valid)
+        {
+            Assert.Null(response.Error);
+            Assert.Equal(TokenTypes.DPoP, response.TokenType);
+        }
+
+        else
+        {
+            Assert.Equal(Errors.InvalidClient, response.Error);
+        }
+    }
+
+    [Theory]
+    [InlineData(SecurityAlgorithms.RsaSsaPssSha256, false, true)]
+    [InlineData(SecurityAlgorithms.RsaSsaPssSha256, true, true)]
+    [InlineData(SecurityAlgorithms.EcdsaSha256, true, true)]
+    [InlineData(SecurityAlgorithms.RsaSha256, false, false)]
+    [InlineData(SecurityAlgorithms.RsaSha256, true, false)]
+    [InlineData(SecurityAlgorithms.HmacSha256, false, false)]
+    public async Task ValidatePushedAuthorizationRequest_Fapi2SecurityProfileRestrictsRequestObjectAlgorithms(
+        string algorithm, bool encrypted, bool valid)
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options =>
+        {
+            ConfigureFapiServer(options);
+            options.EnableRequestObjectSupport();
+            options.AddEncryptionKey(FapiServerEncryptionKey);
+            AttachFapiClientSigningKeys(options, TokenTypeIdentifiers.Private.RequestObject);
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Note: the key management and content encryption algorithms of encrypted
+        // request objects must not be restricted by the allowed signing algorithms.
+        var request = CreateFapiClientToken(algorithm, JsonWebTokenTypes.AuthorizationRequest, CreateFapiRequestObjectClaims(),
+            encryption: encrypted ? new EncryptingCredentials(FapiServerEncryptionKey,
+                SecurityAlgorithms.RsaOAEP, SecurityAlgorithms.Aes256CbcHmacSha512) : null);
+
+        // Act
+        var response = await client.PostAsync("/connect/par", new OpenIddictRequest
+        {
+            ClientId = "Fabrikam",
+            Request = request
+        });
+
+        // Assert
+        if (valid)
+        {
+            Assert.Null(response.Error);
+            Assert.NotNull(response.RequestUri);
+        }
+
+        else
+        {
+            Assert.Equal(Errors.InvalidRequestObject, response.Error);
+            Assert.Equal(SR.GetResourceString(SR.ID2211), response.ErrorDescription);
+        }
+    }
+
+    [Theory]
+    [InlineData(120, false)]
+    [InlineData(10, true)]
+    public async Task ValidatePushedAuthorizationRequest_Fapi2SecurityProfileRejectsRequestObjectsIssuedInTheFuture(int offset, bool valid)
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options =>
+        {
+            ConfigureFapiServer(options);
+            options.EnableRequestObjectSupport();
+            AttachFapiClientSigningKeys(options, TokenTypeIdentifiers.Private.RequestObject);
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        var claims = CreateFapiRequestObjectClaims();
+        claims[Claims.IssuedAt] = DateTimeOffset.UtcNow.AddSeconds(offset).ToUnixTimeSeconds();
+
+        // Act
+        var response = await client.PostAsync("/connect/par", new OpenIddictRequest
+        {
+            ClientId = "Fabrikam",
+            Request = CreateFapiClientToken(SecurityAlgorithms.RsaSsaPssSha256, JsonWebTokenTypes.AuthorizationRequest, claims)
+        });
+
+        // Assert
+        if (valid)
+        {
+            Assert.Null(response.Error);
+        }
+
+        else
+        {
+            // Note: the specific error returned by the FAPI handler (ID2485) is replaced by a generic error.
+            Assert.Equal(Errors.InvalidRequestObject, response.Error);
+            Assert.Equal(SR.GetResourceString(SR.ID2211), response.ErrorDescription);
+        }
+    }
+
+    [Fact]
+    public async Task HandleConfigurationRequest_Fapi2SecurityProfileRestrictsRequestObjectSigningAlgorithms()
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options =>
+        {
+            ConfigureFapiServer(options);
+            options.EnableRequestObjectSupport();
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.GetAsync("/.well-known/openid-configuration");
+
+        // Assert
+        Assert.Equal([SecurityAlgorithms.RsaSsaPssSha256, SecurityAlgorithms.EcdsaSha256],
+            ((ImmutableArray<string?>?) response[Metadata.RequestObjectSigningAlgValuesSupported])!.Value, StringComparer.Ordinal);
     }
 
     [Fact]
@@ -621,6 +738,71 @@ public abstract partial class OpenIddictServerIntegrationTests
             });
 
             builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
+        });
+    }
+
+    private static readonly RsaSecurityKey FapiClientRsaKey = new(RSA.Create(keySizeInBits: 2048)) { KeyId = "fapi_rsa" };
+    private static readonly ECDsaSecurityKey FapiClientP256Key = new(ECDsa.Create(ECCurve.NamedCurves.nistP256)) { KeyId = "fapi_p256" };
+    private static readonly ECDsaSecurityKey FapiClientP384Key = new(ECDsa.Create(ECCurve.NamedCurves.nistP384)) { KeyId = "fapi_p384" };
+    private static readonly SymmetricSecurityKey FapiClientSymmetricKey = new(RandomNumberGenerator.GetBytes(32)) { KeyId = "fapi_hmac" };
+    private static readonly RsaSecurityKey FapiServerEncryptionKey = new(RSA.Create(keySizeInBits: 2048)) { KeyId = "fapi_encryption" };
+
+    private static void AttachFapiClientSigningKeys(OpenIddictServerBuilder options, string type)
+    {
+        // Note: in degraded mode, the signing keys used to validate client tokens must be attached manually.
+        options.AddEventHandler<ValidateTokenContext>(builder =>
+        {
+            builder.UseInlineHandler(context =>
+            {
+                if (context.ValidTokenTypes.Contains(type))
+                {
+                    context.TokenValidationParameters.IssuerSigningKeys =
+                        new SecurityKey[] { FapiClientRsaKey, FapiClientP256Key, FapiClientP384Key, FapiClientSymmetricKey };
+                }
+
+                return ValueTask.CompletedTask;
+            });
+
+            builder.SetOrder(ResolveTokenValidationParameters.Descriptor.Order + 500);
+        });
+    }
+
+    private static Dictionary<string, object> CreateFapiRequestObjectClaims() => new(StringComparer.Ordinal)
+    {
+        [Claims.ClientId] = "Fabrikam",
+        [Parameters.CodeChallenge] = "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM",
+        [Parameters.CodeChallengeMethod] = CodeChallengeMethods.Sha256,
+        [Parameters.RedirectUri] = "https://www.fabrikam.com/path",
+        [Parameters.ResponseType] = ResponseTypes.Code
+    };
+
+    private static string CreateFapiClientToken(string algorithm, string type,
+        Dictionary<string, object> claims, EncryptingCredentials? encryption = null)
+    {
+        SecurityKey key = algorithm switch
+        {
+            SecurityAlgorithms.EcdsaSha256 => FapiClientP256Key,
+            SecurityAlgorithms.EcdsaSha384 => FapiClientP384Key,
+            SecurityAlgorithms.HmacSha256  => FapiClientSymmetricKey,
+            _                              => FapiClientRsaKey
+        };
+
+        var now = DateTimeOffset.UtcNow;
+
+        if (!claims.ContainsKey(Claims.IssuedAt))
+        {
+            claims[Claims.IssuedAt] = now.ToUnixTimeSeconds();
+        }
+
+        return new JsonWebTokenHandler { SetDefaultTimesOnTokenCreation = false }.CreateToken(new SecurityTokenDescriptor
+        {
+            Audience = "http://localhost/",
+            Claims = claims,
+            EncryptingCredentials = encryption,
+            Expires = now.AddMinutes(1).UtcDateTime,
+            Issuer = "Fabrikam",
+            SigningCredentials = new SigningCredentials(key, algorithm),
+            TokenType = type
         });
     }
 

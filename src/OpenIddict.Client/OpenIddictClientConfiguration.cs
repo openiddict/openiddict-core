@@ -405,7 +405,10 @@ public sealed class OpenIddictClientConfiguration : IPostConfigureOptions<OpenId
             registration.IntrospectionResponseSigningAlgorithms.UnionWith(OpenIddictClientFapi2Profile.SigningAlgorithms);
         }
 
-        registration.TokenValidationParameters.ValidAlgorithms ??= [.. OpenIddictClientFapi2Profile.SigningAlgorithms];
+        // Note: TokenValidationParameters.ValidAlgorithms is not used as IdentityModel also applies it to the
+        // key management and content encryption algorithms of encrypted tokens (e.g identity tokens).
+        registration.TokenValidationParameters.AlgorithmValidator = OpenIddictAlgorithmHelpers.CreateSigningAlgorithmValidator(
+            OpenIddictClientFapi2Profile.SigningAlgorithms, registration.TokenValidationParameters);
 
         // RSASSA-PKCS1-v1_5 is not allowed by the profile but the same RSA keys can be used with RSASSA-PSS:
         // to support the credentials registered using the default RS256 algorithm, PS256 is used instead.

@@ -148,13 +148,20 @@ public class OpenIddictValidationHandlersIntrospectionResponseTests
     }
 
     [Theory]
-    [InlineData(SecurityAlgorithms.RsaSha256, true)]
-    [InlineData(SecurityAlgorithms.RsaSsaPssSha256, false)]
-    public async Task ValidateIntrospectionResponseToken_TokenSignedUsingDisallowedAlgorithmIsRejected(string algorithm, bool rejected)
+    [InlineData(SecurityAlgorithms.RsaSha256, false, true)]
+    [InlineData(SecurityAlgorithms.RsaSsaPssSha256, false, false)]
+    [InlineData(SecurityAlgorithms.RsaSha256, true, true)]
+    [InlineData(SecurityAlgorithms.RsaSsaPssSha256, true, false)]
+    public async Task ValidateIntrospectionResponseToken_TokenSignedUsingDisallowedAlgorithmIsRejected(string algorithm, bool encrypted, bool rejected)
     {
         // Arrange
         using var provider = CreateProvider(required: true, algorithms: [SecurityAlgorithms.RsaSsaPssSha256]);
-        var context = CreateContext(provider, CreateToken(signing: new SigningCredentials(ServerSigningKey, algorithm)));
+        var options = provider.GetRequiredService<IOptionsMonitor<OpenIddictValidationOptions>>().CurrentValue;
+
+        // Note: the key management and content encryption algorithms must not be restricted by the signing algorithms.
+        var context = CreateContext(provider, CreateToken(signing: new SigningCredentials(ServerSigningKey, algorithm),
+            encryption: encrypted ? new EncryptingCredentials(options.EncryptionCredentials[0].Key,
+                SecurityAlgorithms.RsaOAEP, SecurityAlgorithms.Aes256CbcHmacSha512) : null));
 
         // Act
         await CreateHandler(provider).HandleAsync(context);

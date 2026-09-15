@@ -2311,13 +2311,15 @@ public sealed class OpenIddictServerBuilder
     ///   <item><description>JWTs sent by clients (client assertions, request objects) must use PS256, ES256 or EdDSA
     ///   and the RSA signing credentials of the server use PS256;</description></item>
     ///   <item><description>authorization codes expire after at most 60 seconds and request URIs after less than 600 seconds;</description></item>
-    ///   <item><description>pushed authorization requests must include an https (or loopback) redirect_uri;</description></item>
-    ///   <item><description>rolling refresh tokens are disabled by default, as recommended by the profile.</description></item>
+    ///   <item><description>pushed authorization requests must include an https (or loopback IP literal http) redirect_uri;</description></item>
+    ///   <item><description>rolling refresh tokens are disabled, as required by the profile (section 5.3.2.1, item 10). Since the
+    ///   profile tolerates refresh token rotation in extraordinary circumstances, re-enabling it is not reported as an error.</description></item>
     /// </list>
     /// </summary>
     /// <remarks>
     /// Note: settings that conflict with the profile (e.g enabling the password flow or setting a longer
-    /// authorization code lifetime after calling this method) are reported when the options are validated.
+    /// authorization code lifetime or a DPoP proof lifetime exceeding 60 seconds after calling this method)
+    /// are reported when the options are validated.
     /// </remarks>
     /// <returns>The <see cref="OpenIddictServerBuilder"/> instance.</returns>
     public OpenIddictServerBuilder EnableFapi2SecurityProfile()

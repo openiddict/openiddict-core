@@ -146,7 +146,8 @@ public static partial class OpenIddictValidationHandlers
                 if (context.Options.IntrospectionResponseSigningAlgorithms.Count is > 0 && context.ValidTokenTypes.Count is 1 &&
                     context.ValidTokenTypes.Contains(TokenTypeIdentifiers.Private.IntrospectionResponse))
                 {
-                    parameters.ValidAlgorithms = [.. context.Options.IntrospectionResponseSigningAlgorithms];
+                    parameters.AlgorithmValidator = OpenIddictAlgorithmHelpers.CreateSigningAlgorithmValidator(
+                        context.Options.IntrospectionResponseSigningAlgorithms, parameters);
                 }
 
                 context.SecurityTokenHandler = context.Options.JsonWebTokenHandler;

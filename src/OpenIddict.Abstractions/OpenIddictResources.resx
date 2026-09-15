@@ -2306,6 +2306,12 @@ Make sure the authorization server supports 'private_key_jwt', 'tls_client_auth'
     <value>Distributed caching was enabled in the backend-for-frontend options but no IDistributedCache implementation was registered in the dependency injection container.
 To register a distributed cache, use 'services.AddDistributedMemoryCache()' or a cache provider package (e.g 'services.AddStackExchangeRedisCache()').</value>
   </data>
+  <data name="ID0989" xml:space="preserve">
+    <value>The FAPI 2.0 security profile requires rejecting proofs issued more than 60 seconds in the future: the DPoP proof lifetime cannot exceed 60 seconds when the profile is enforced.</value>
+  </data>
+  <data name="ID0990" xml:space="preserve">
+    <value>No asymmetric signing credentials using one of the introspection response signing algorithms allowed in the server options were registered.</value>
+  </data>
   <data name="ID2000" xml:space="preserve">
     <value>The security token is missing.</value>
   </data>

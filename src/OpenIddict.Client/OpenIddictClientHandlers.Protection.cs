@@ -201,7 +201,8 @@ public static partial class OpenIddictClientHandlers
                         // If the signing algorithms were restricted, reject introspection responses using other algorithms.
                         if (context.Registration.IntrospectionResponseSigningAlgorithms.Count is > 0)
                         {
-                            parameters.ValidAlgorithms = [.. context.Registration.IntrospectionResponseSigningAlgorithms];
+                            parameters.AlgorithmValidator = OpenIddictAlgorithmHelpers.CreateSigningAlgorithmValidator(
+                                context.Registration.IntrospectionResponseSigningAlgorithms, parameters);
                         }
                     }
 

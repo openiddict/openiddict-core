@@ -9,6 +9,7 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 using Moq;
@@ -558,7 +559,7 @@ public abstract partial class OpenIddictServerIntegrationTests
 
     [Theory]
     [InlineData(SecurityAlgorithms.EcdsaSha384, null)]
-    [InlineData(SecurityAlgorithms.RsaSha256, SecurityAlgorithms.EcdsaSha256)]
+    [InlineData(SecurityAlgorithms.RsaSsaPssSha256, SecurityAlgorithms.RsaSha256)]
     public async Task ApplyIntrospectionResponse_UnusableAlgorithmSelectedByClientCausesAnException(string value, string? allowed)
     {
         // Arrange
@@ -591,7 +592,7 @@ public abstract partial class OpenIddictServerIntegrationTests
     }
 
     [Fact]
-    public async Task ApplyIntrospectionResponse_MissingCredentialsForAllowedAlgorithmsCauseAnException()
+    public async Task ApplyIntrospectionResponse_MissingCredentialsForAllowedAlgorithmsAreReportedWhenValidatingOptions()
     {
         // Arrange
         await using var server = await CreateServerAsync(options =>
@@ -607,12 +608,12 @@ public abstract partial class OpenIddictServerIntegrationTests
         client.RequestHeaders["Accept"] = [IntrospectionResponseMediaType];
 
         // Act and assert
-        var exception = await Assert.ThrowsAsync<InvalidOperationException>(delegate
+        var exception = await Assert.ThrowsAsync<OptionsValidationException>(delegate
         {
             return client.PostAsync("/connect/introspect", CreateIntrospectionRequest());
         });
 
-        Assert.Equal(SR.GetResourceString(SR.ID0970), exception.Message);
+        Assert.Contains(SR.GetResourceString(SR.ID0990), exception.Failures, StringComparer.Ordinal);
     }
 
     private OpenIddictApplicationManager<OpenIddictApplication> CreateIntrospectionResponseApplicationManager(

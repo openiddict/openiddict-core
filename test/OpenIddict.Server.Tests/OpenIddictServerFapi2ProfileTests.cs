@@ -1,8 +1,11 @@
 using System.Security.Cryptography;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Xunit;
+using static OpenIddict.Server.OpenIddictServerEvents;
 
 namespace OpenIddict.Server.Tests;
 
@@ -202,6 +205,84 @@ public class OpenIddictServerFapi2ProfileTests
     public void Validate_ReturnsAnErrorWhenIntrospectionResponseSigningAlgorithmIsEmpty()
         => AssertFailure(options => options.IntrospectionResponseSigningAlgorithms.Add(string.Empty), SR.ID0971);
 
+    [Fact]
+    public void Validate_ReturnsAnErrorWhenDPoPProofLifetimeIsTooLong()
+        => AssertFailure(options => options.DPoPProofLifetime = TimeSpan.FromMinutes(5), SR.ID0989);
+
+    [Fact]
+    public void Validate_DoesNotReturnAnErrorWhenRollingRefreshTokensAreEnabled()
+    {
+        // Arrange
+        var configuration = new OpenIddictServerConfiguration(new ServiceCollection().BuildServiceProvider());
+        var options = CreateCompliantOptions();
+        options.DisableRollingRefreshTokens = false;
+        configuration.PostConfigure(name: null, options);
+
+        // Act
+        var result = configuration.Validate(name: null, options);
+
+        // Assert
+        Assert.True(result.Succeeded, string.Join(Environment.NewLine, result.Failures ?? []));
+    }
+
+    [Theory]
+    [InlineData(SecurityAlgorithms.RsaSsaPssSha256, true)]
+    [InlineData(SecurityAlgorithms.EcdsaSha256, false)]
+    public void Validate_ReturnsAnErrorWhenNoCredentialsMatchIntrospectionResponseSigningAlgorithms(string algorithm, bool failure)
+    {
+        // Arrange
+        var configuration = new OpenIddictServerConfiguration(new ServiceCollection().BuildServiceProvider());
+        var options = CreateCompliantOptions();
+        options.EnableJsonWebTokenIntrospectionResponses = true;
+        options.IntrospectionResponseSigningAlgorithms.Add(algorithm);
+        configuration.PostConfigure(name: null, options);
+
+        // Act
+        var result = configuration.Validate(name: null, options);
+
+        // Assert
+        Assert.Equal(failure, result.Failures?.Contains(SR.GetResourceString(SR.ID0990), StringComparer.Ordinal) ?? false);
+    }
+
+    [Theory]
+    [InlineData(OpenIddictServerEndpointType.Token, true)]
+    [InlineData(OpenIddictServerEndpointType.PushedAuthorization, true)]
+    [InlineData(OpenIddictServerEndpointType.Introspection, true)]
+    [InlineData(OpenIddictServerEndpointType.Authorization, false)]
+    public async Task ValidateClientAuthentication_RejectsClientSecrets(OpenIddictServerEndpointType type, bool rejected)
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        services.AddSingleton(typeof(ILogger<>), typeof(NullLogger<>));
+
+        var options = CreateCompliantOptions();
+        options.EnableDegradedMode = true;
+
+        var transaction = new OpenIddictServerTransaction
+        {
+            CancellationToken = CancellationToken.None,
+            EndpointType = type,
+            Options = options,
+            Request = new OpenIddictRequest { ClientId = "Fabrikam", ClientSecret = "7Fjfp0ZBr1KtDRbnfVdmIw" },
+            ServiceProvider = services.BuildServiceProvider()
+        };
+
+        var context = new ProcessAuthenticationContext(transaction);
+
+        // Act
+        await new OpenIddictServerHandlers.Fapi.ValidateClientAuthentication().HandleAsync(context);
+
+        // Assert
+        Assert.Equal(rejected, context.IsRejected);
+
+        if (rejected)
+        {
+            Assert.Equal(Errors.InvalidClient, context.Error);
+            Assert.Equal(SR.GetResourceString(SR.ID2480), context.ErrorDescription);
+            Assert.Equal(SR.FormatID8000(SR.ID2480), context.ErrorUri);
+        }
+    }
+
     private static void AssertFailure(Action<OpenIddictServerOptions> configure, string identifier)
     {
         // Arrange
@@ -223,6 +304,7 @@ public class OpenIddictServerFapi2ProfileTests
         {
             AuthorizationCodeLifetime = TimeSpan.FromSeconds(60),
             EnableDPoPSupport = true,
+            DPoPProofLifetime = TimeSpan.FromSeconds(60),
             EnableFapi2SecurityProfile = true,
             RequestTokenLifetime = TimeSpan.FromMinutes(5),
             RequireProofKeyForCodeExchange = true,
