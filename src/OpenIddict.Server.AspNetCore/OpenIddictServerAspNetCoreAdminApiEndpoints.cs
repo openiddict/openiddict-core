@@ -448,7 +448,7 @@ internal static class OpenIddictServerAspNetCoreAdminApiEndpoints
 
         var sessions = subject is null && application is null && status is null && login is null ?
             manager.ListAsync(count, offset, context.RequestAborted) :
-            PaginateAsync(manager.FindAsync((subject, login, application, null, status), context.RequestAborted),
+            OpenIddictServerAspNetCoreAdminOperations.PaginateAsync(manager.FindAsync((subject, login, application, null, status), context.RequestAborted),
                 count, offset, context.RequestAborted);
 
         List<(string? Identifier, OpenIddictSessionDescriptor Descriptor)> entries = [];

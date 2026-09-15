@@ -280,7 +280,7 @@ public static class OpenIddictServerAspNetCoreAdminOperations
         writer.WriteEndObject();
     }
 
-    private static async IAsyncEnumerable<object> PaginateAsync(IAsyncEnumerable<object> source,
+    internal static async IAsyncEnumerable<object> PaginateAsync(IAsyncEnumerable<object> source,
         int count, int offset, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         var index = 0;
