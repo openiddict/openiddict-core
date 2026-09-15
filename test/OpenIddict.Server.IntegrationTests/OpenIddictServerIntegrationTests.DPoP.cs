@@ -463,6 +463,45 @@ public abstract partial class OpenIddictServerIntegrationTests
     }
 
     [Fact]
+    public async Task ValidateTokenRequest_ProofConcurrentlyStoredByAnotherRequestIsRejected()
+    {
+        // Arrange
+        var token = new OpenIddictToken();
+
+        var manager = CreateTokenManager(mock =>
+        {
+            // Simulate a concurrent request storing the same proof between the lookup and the insertion,
+            // which is detected by the store (e.g using a unique index or a serializable transaction).
+            mock.SetupSequence(manager => manager.FindByReferenceIdAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(value: null)
+                .ReturnsAsync(token);
+
+            mock.Setup(manager => manager.CreateAsync(It.IsAny<OpenIddictTokenDescriptor>(), It.IsAny<CancellationToken>()))
+                .ThrowsAsync(new OpenIddictExceptions.ConcurrencyException(SR.GetResourceString(SR.ID0986)));
+        });
+
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.EnableDPoPSupport();
+            options.Services.AddSingleton(manager);
+        });
+
+        await using var client = await server.CreateClientAsync();
+        client.RequestHeaders["DPoP"] = [CreateDPoPProof(jti: "concurrent_identifier")];
+
+        // Act
+        var response = await client.PostAsync("/connect/token", CreateDPoPPasswordRequest());
+
+        // Assert
+        Assert.Equal(Errors.InvalidDPoPProof, response.Error);
+        Assert.Equal(SR.GetResourceString(SR.ID2227), response.ErrorDescription);
+        Assert.Equal(SR.FormatID8000(SR.ID2227), response.ErrorUri);
+
+        Mock.Get(manager).Verify(manager => manager.FindByReferenceIdAsync(
+            ComputeDPoPThumbprint() + ".concurrent_identifier", It.IsAny<CancellationToken>()), Times.Exactly(2));
+    }
+
+    [Fact]
     public async Task ValidateTokenRequest_TokenEntryIsCreatedForNewProofWhenTokenStorageIsEnabled()
     {
         // Arrange

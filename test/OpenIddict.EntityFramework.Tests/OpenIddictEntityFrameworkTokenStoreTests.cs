@@ -102,7 +102,7 @@ public sealed class OpenIddictEntityFrameworkTokenStoreTests : IDisposable
         // Assert
         using var verification = CreateContext();
         Assert.Equal(1, await verification.Set<OpenIddictEntityFrameworkToken>().CountAsync(static token => token.ReferenceId == "proof"));
-        Assert.InRange(tasks.Count(static task => task.Result), 0, 1);
+        Assert.Equal(1, tasks.Count(static task => task.Result));
     }
 
     public void Dispose()
