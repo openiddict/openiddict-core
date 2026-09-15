@@ -811,8 +811,12 @@ internal sealed class OpenIddictServerAspNetCoreAdminUIEndpoints
             return NotFound(context);
         }
 
-        Log(context, 6840, SR.ID6840, identifier, result.SessionIds.Length,
-            result.NotifiedParticipants.Length, result.FailedParticipants.Length);
+        // Note: an already terminated session is not terminated again (and the client applications are not notified).
+        if (!result.SessionIds.IsDefaultOrEmpty)
+        {
+            Log(context, 6840, SR.ID6840, identifier, result.SessionIds.Length,
+                result.NotifiedParticipants.Length, result.FailedParticipants.Length);
+        }
 
         // Note: the result is rendered directly (and not using a redirection) as it can't be represented in a URI.
         // The session is retrieved again to reflect the status updated by the termination.
