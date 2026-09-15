@@ -26,7 +26,9 @@ public static class OpenIddictServerAspNetCoreAdminUIConstants
         public const string Revoke = "revoke";
         public const string Scopes = "scopes";
         public const string Secret = "secret";
+        public const string Sessions = "sessions";
         public const string Stylesheet = "openiddict-admin.css";
+        public const string Terminate = "terminate";
         public const string Tokens = "tokens";
     }
 
@@ -57,6 +59,7 @@ public static class OpenIddictServerAspNetCoreAdminUIConstants
     {
         public const string Authorization = "authorization";
         public const string Client = "client";
+        public const string LoginId = "login_id";
         public const string Notice = "notice";
         public const string Page = "page";
         public const string Search = "search";
@@ -77,6 +80,7 @@ public static class OpenIddictServerAspNetCoreAdminUIConstants
         public const string Created = "created";
         public const string Deleted = "deleted";
         public const string Revoked = "revoked";
+        public const string Terminated = "terminated";
         public const string Updated = "updated";
     }
 }

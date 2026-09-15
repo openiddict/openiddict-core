@@ -123,6 +123,26 @@ public static class OpenIddictServerAspNetCoreAdminOperations
     }
 
     /// <summary>
+    /// Resolves the identifier and the descriptor of the specified session.
+    /// </summary>
+    /// <remarks>The returned descriptor contains the principal attached to the session, that must never be displayed.</remarks>
+    /// <param name="manager">The session manager.</param>
+    /// <param name="session">The session.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns>The identifier and the descriptor of the session.</returns>
+    public static async ValueTask<(string? Identifier, OpenIddictSessionDescriptor Descriptor)> DescribeSessionAsync(
+        IOpenIddictSessionManager manager, object session, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(manager);
+        ArgumentNullException.ThrowIfNull(session);
+
+        var descriptor = new OpenIddictSessionDescriptor();
+        await manager.PopulateAsync(descriptor, session, cancellationToken);
+
+        return (await manager.GetIdAsync(session, cancellationToken), descriptor);
+    }
+
+    /// <summary>
     /// Lists the authorizations matching the specified filters (a <see langword="null"/> filter is ignored).
     /// </summary>
     /// <param name="manager">The authorization manager.</param>
@@ -171,6 +191,32 @@ public static class OpenIddictServerAspNetCoreAdminOperations
         return subject is null && applicationId is null && status is null && type is null ?
             manager.ListAsync(count, offset, cancellationToken) :
             PaginateAsync(manager.FindAsync((subject, applicationId, status, type), cancellationToken),
+                count, offset, cancellationToken);
+    }
+
+    /// <summary>
+    /// Lists the sessions matching the specified filters (a <see langword="null"/> filter is ignored).
+    /// </summary>
+    /// <param name="manager">The session manager.</param>
+    /// <param name="subject">The subject, if applicable.</param>
+    /// <param name="loginId">The login identifier, if applicable.</param>
+    /// <param name="applicationId">The application identifier, if applicable.</param>
+    /// <param name="status">The status, if applicable.</param>
+    /// <param name="count">The maximum number of entries to return.</param>
+    /// <param name="offset">The number of entries to skip.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns>The sessions.</returns>
+    public static IAsyncEnumerable<object> ListSessionsAsync(IOpenIddictSessionManager manager,
+        string? subject, string? loginId, string? applicationId, string? status,
+        int count, int offset, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(manager);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(count);
+        ArgumentOutOfRangeException.ThrowIfNegative(offset);
+
+        return subject is null && loginId is null && applicationId is null && status is null ?
+            manager.ListAsync(count, offset, cancellationToken) :
+            PaginateAsync(manager.FindAsync((subject, loginId, applicationId, null, status), cancellationToken),
                 count, offset, cancellationToken);
     }
 

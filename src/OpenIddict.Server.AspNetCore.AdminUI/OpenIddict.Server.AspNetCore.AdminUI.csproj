@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <Description>Server-rendered Blazor administration UI for the OpenIddict server (applications, scopes, authorizations, tokens and keys).</Description>
+    <Description>Server-rendered Blazor administration UI for the OpenIddict server (applications, scopes, authorizations, tokens, sessions and keys).</Description>
     <PackageTags>$(PackageTags);server;aspnetcore;admin;blazor</PackageTags>
   </PropertyGroup>
 

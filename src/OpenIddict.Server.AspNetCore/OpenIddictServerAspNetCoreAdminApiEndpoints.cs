@@ -446,16 +446,14 @@ internal static class OpenIddictServerAspNetCoreAdminApiEndpoints
         var (subject, application, status, _) = GetFilters(context);
         var login = (string?) context.Request.Query[QueryStringParameters.LoginId] is { Length: > 0 } value ? value : null;
 
-        var sessions = subject is null && application is null && status is null && login is null ?
-            manager.ListAsync(count, offset, context.RequestAborted) :
-            OpenIddictServerAspNetCoreAdminOperations.PaginateAsync(manager.FindAsync((subject, login, application, null, status), context.RequestAborted),
-                count, offset, context.RequestAborted);
+        var sessions = OpenIddictServerAspNetCoreAdminOperations.ListSessionsAsync(
+            manager, subject, login, application, status, count, offset, context.RequestAborted);
 
         List<(string? Identifier, OpenIddictSessionDescriptor Descriptor)> entries = [];
 
         await foreach (var session in sessions.WithCancellation(context.RequestAborted))
         {
-            entries.Add(await DescribeSessionAsync(manager, session, context.RequestAborted));
+            entries.Add(await OpenIddictServerAspNetCoreAdminOperations.DescribeSessionAsync(manager, session, context.RequestAborted));
         }
 
         await WriteAsync(context, StatusCodes.Status200OK, writer =>
@@ -481,7 +479,7 @@ internal static class OpenIddictServerAspNetCoreAdminApiEndpoints
             return;
         }
 
-        var (identifier, descriptor) = await DescribeSessionAsync(manager, session, context.RequestAborted);
+        var (identifier, descriptor) = await OpenIddictServerAspNetCoreAdminOperations.DescribeSessionAsync(manager, session, context.RequestAborted);
         await WriteAsync(context, StatusCodes.Status200OK, writer => WriteSession(writer, identifier, descriptor));
     });
 
@@ -765,15 +763,6 @@ internal static class OpenIddictServerAspNetCoreAdminApiEndpoints
         writer.WriteString(Fields.Type, descriptor.Type);
         WriteProperties(writer, descriptor.Properties);
         writer.WriteEndObject();
-    }
-
-    private static async ValueTask<(string?, OpenIddictSessionDescriptor)> DescribeSessionAsync(
-        IOpenIddictSessionManager manager, object session, CancellationToken cancellationToken)
-    {
-        var descriptor = new OpenIddictSessionDescriptor();
-        await manager.PopulateAsync(descriptor, session, cancellationToken);
-
-        return (await manager.GetIdAsync(session, cancellationToken), descriptor);
     }
 
     private static void WriteSession(Utf8JsonWriter writer, string? identifier, OpenIddictSessionDescriptor descriptor)

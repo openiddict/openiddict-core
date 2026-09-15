@@ -1948,6 +1948,10 @@ To register them, call 'services.AddOpenIddictAdminUI()' from 'ConfigureServices
     <value>The OpenIddict admin UI endpoint '{0} {1}' conflicts with the existing endpoint '{2}'.
 Map the admin UI (or the conflicting endpoints, such as the admin API) using a different route prefix.</value>
   </data>
+  <data name="ID01040" xml:space="preserve">
+    <value>The OpenIddict admin UI requires the server services to terminate sessions.
+To register the OpenIddict server services, reference the 'OpenIddict.Server' package and call 'services.AddOpenIddict().AddServer()' from 'ConfigureServices'.</value>
+  </data>
   <data name="ID0565" xml:space="preserve">
     <value>The SAML identity provider entity identifier must be set. To set it, use 'services.AddOpenIddict().AddServer().UseSaml().SetEntityId()' or 'SetIssuer()'.</value>
   </data>
@@ -4587,6 +4591,9 @@ This may indicate that the hashed entry is corrupted or malformed.</value>
   </data>
   <data name="ID6484" xml:space="preserve">
     <value>The client secret of the application '{Identifier}' was changed by '{User}' using the admin UI.</value>
+  </data>
+  <data name="ID6840" xml:space="preserve">
+    <value>The session '{Identifier}' was terminated using the admin UI ({Count} session entries terminated, {Notified} client applications notified, {Failed} back-channel logout notifications failed) by '{User}'.</value>
   </data>
   <data name="ID6321" xml:space="preserve">
     <value>A back-channel logout notification was received from {Issuer} for the subject '{Subject}' and the session '{SessionId}'.</value>

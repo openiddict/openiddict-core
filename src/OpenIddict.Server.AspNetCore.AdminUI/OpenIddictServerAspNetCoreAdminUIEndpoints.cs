@@ -717,6 +717,111 @@ internal sealed class OpenIddictServerAspNetCoreAdminUIEndpoints
         return TypedResults.Redirect(GetUrl(context, Paths.Tokens, identifier, notice: Notices.Revoked));
     });
 
+    public Task ListSessionsAsync(HttpContext context) => ExecuteAsync(context, async context =>
+    {
+        var manager = GetManager<IOpenIddictSessionManager>(context);
+        var applications = GetManager<IOpenIddictApplicationManager>(context);
+        var (page, size, offset) = GetPagination(context);
+
+        var subject = GetQuery(context, QueryStringParameters.Subject);
+        var client = GetQuery(context, QueryStringParameters.Client);
+        var status = GetQuery(context, QueryStringParameters.Status);
+        var login = GetQuery(context, QueryStringParameters.LoginId);
+
+        List<(string Id, OpenIddictSessionDescriptor Descriptor)> items = [];
+        var next = false;
+
+        var (found, application) = await ResolveApplicationIdAsync(applications, client, context.RequestAborted);
+        if (found)
+        {
+            await foreach (var session in Operations.ListSessionsAsync(manager,
+                subject, login, application, status, size + 1, offset, context.RequestAborted))
+            {
+                if (items.Count == size)
+                {
+                    next = true;
+                    break;
+                }
+
+                items.Add(await DescribeSessionAsync(manager, session, context.RequestAborted));
+            }
+        }
+
+        return Page<SessionListPage>(context, new()
+        {
+            [nameof(SessionListPage.Items)] = items,
+            [nameof(SessionListPage.ClientIds)] = await ResolveClientIdsAsync(applications,
+                items.Select(static item => item.Descriptor.ApplicationId), context.RequestAborted),
+            [nameof(SessionListPage.Subject)] = subject,
+            [nameof(SessionListPage.Client)] = client,
+            [nameof(SessionListPage.Status)] = status,
+            [nameof(SessionListPage.LoginId)] = login,
+            [nameof(SessionListPage.PageNumber)] = page,
+            [nameof(SessionListPage.HasNextPage)] = next,
+            [nameof(SessionListPage.Notice)] = GetQuery(context, QueryStringParameters.Notice)
+        });
+    });
+
+    public Task ShowSessionAsync(HttpContext context) => ExecuteAsync(context, async context =>
+    {
+        var manager = GetManager<IOpenIddictSessionManager>(context);
+
+        if (await FindByIdAsync(manager.FindByIdAsync, GetIdentifier(context), context.RequestAborted) is not object session)
+        {
+            return NotFound(context);
+        }
+
+        return await SessionDetailsAsync(context, StatusCodes.Status200OK, manager, session, errors: [],
+            GetQuery(context, QueryStringParameters.Notice));
+    });
+
+    public Task TerminateSessionAsync(HttpContext context) => ExecuteAsync(context, async context =>
+    {
+        var manager = GetManager<IOpenIddictSessionManager>(context);
+        await ReadFormAsync(context);
+
+        if (await FindByIdAsync(manager.FindByIdAsync, GetIdentifier(context), context.RequestAborted) is not object session ||
+            await manager.GetIdAsync(session, context.RequestAborted) is not { Length: > 0 } identifier)
+        {
+            return NotFound(context);
+        }
+
+        var service = context.RequestServices.GetService<OpenIddictServerService>() ??
+            throw new InvalidOperationException(SR.GetResourceString(SR.ID01040));
+
+        OpenIddictServerSessionTerminationResult? result;
+
+        // Note: the session is terminated using the same server service as the admin API, so that the
+        // valid sessions sharing its login identifier are also revoked and the client applications that
+        // participated in these sessions are notified using back-channel logout, if enabled.
+        try
+        {
+            result = await service.TerminateSessionAsync(identifier, context.RequestAborted);
+        }
+
+        // Configuration errors (e.g missing issuer or signing key, degraded mode) are rendered as a server error.
+        catch (InvalidOperationException exception)
+        {
+            return await SessionDetailsAsync(context, StatusCodes.Status500InternalServerError, manager, session, [exception.Message]);
+        }
+
+        // Note: the session may have been deleted concurrently.
+        if (result is null)
+        {
+            return NotFound(context);
+        }
+
+        Log(context, 6840, SR.ID6840, identifier, result.SessionIds.Length,
+            result.NotifiedParticipants.Length, result.FailedParticipants.Length);
+
+        // Note: the result is rendered directly (and not using a redirection) as it can't be represented in a URI.
+        // The session is retrieved again to reflect the status updated by the termination.
+        session = await FindByIdAsync(manager.FindByIdAsync, identifier, context.RequestAborted) ?? session;
+
+        return await SessionDetailsAsync(context, StatusCodes.Status200OK, manager, session, errors: [],
+            result.SessionIds.IsDefaultOrEmpty ? null : Notices.Terminated, result);
+    });
+
     public Task ListKeysAsync(HttpContext context) => ExecuteAsync(context, async context =>
     {
         var manager = GetManager<IOpenIddictKeyManager>(context);
@@ -927,6 +1032,46 @@ internal sealed class OpenIddictServerAspNetCoreAdminUIEndpoints
         }, status);
     }
 
+    private async Task<IResult> SessionDetailsAsync(HttpContext context, int status, IOpenIddictSessionManager manager,
+        object session, IReadOnlyList<string> errors, string? notice = null, OpenIddictServerSessionTerminationResult? result = null)
+    {
+        var applications = GetManager<IOpenIddictApplicationManager>(context);
+        var size = GetPagination(context).Size;
+
+        var (identifier, descriptor) = await DescribeSessionAsync(manager, session, context.RequestAborted);
+
+        List<(string Id, OpenIddictTokenDescriptor Descriptor)> tokens = [];
+        var more = false;
+
+        // Note: at most one page of tokens is displayed.
+        if (!string.IsNullOrEmpty(identifier) && context.RequestServices.GetService<IOpenIddictTokenManager>() is { } manager2)
+        {
+            await foreach (var token in manager2.FindBySessionIdAsync(identifier, context.RequestAborted))
+            {
+                if (tokens.Count == size)
+                {
+                    more = true;
+                    break;
+                }
+
+                tokens.Add(await DescribeTokenAsync(manager2, token, context.RequestAborted));
+            }
+        }
+
+        return Page<SessionDetailsPage>(context, new()
+        {
+            [nameof(SessionDetailsPage.Id)] = identifier,
+            [nameof(SessionDetailsPage.Descriptor)] = descriptor,
+            [nameof(SessionDetailsPage.Tokens)] = tokens,
+            [nameof(SessionDetailsPage.HasMoreTokens)] = more,
+            [nameof(SessionDetailsPage.ClientIds)] = await ResolveClientIdsAsync(applications,
+                [descriptor.ApplicationId], context.RequestAborted),
+            [nameof(SessionDetailsPage.Result)] = result,
+            [nameof(SessionDetailsPage.Errors)] = errors,
+            [nameof(SessionDetailsPage.Notice)] = notice
+        }, status);
+    }
+
     private async Task<IResult> KeyListAsync(HttpContext context, int status,
         IOpenIddictKeyManager manager, IReadOnlyList<string> errors, string? notice = null)
     {
@@ -968,6 +1113,17 @@ internal sealed class OpenIddictServerAspNetCoreAdminUIEndpoints
 
         // Note: the token payload is deliberately never rendered.
         descriptor.Payload = null;
+
+        return (identifier ?? string.Empty, descriptor);
+    }
+
+    private static async ValueTask<(string Id, OpenIddictSessionDescriptor Descriptor)> DescribeSessionAsync(
+        IOpenIddictSessionManager manager, object session, CancellationToken cancellationToken)
+    {
+        var (identifier, descriptor) = await Operations.DescribeSessionAsync(manager, session, cancellationToken);
+
+        // Note: the principal attached to the session (that contains the claims of the end user) is deliberately never rendered.
+        descriptor.Principal = null;
 
         return (identifier ?? string.Empty, descriptor);
     }

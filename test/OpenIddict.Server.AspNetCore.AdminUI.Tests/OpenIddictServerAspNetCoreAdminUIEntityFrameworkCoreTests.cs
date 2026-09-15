@@ -129,7 +129,7 @@ public partial class OpenIddictServerAspNetCoreAdminUITests
         Assert.Contains("No token was found.", await tokens.Content.ReadAsStringAsync(), StringComparison.Ordinal);
     }
 
-    private static async Task<IHost> CreateEntityFrameworkCoreHostAsync(SqliteConnection connection)
+    private static async Task<IHost> CreateEntityFrameworkCoreHostAsync(SqliteConnection connection, Action<IServiceCollection>? configuration = null)
     {
         var host = await CreateHostAsync(services =>
         {
@@ -143,6 +143,8 @@ public partial class OpenIddictServerAspNetCoreAdminUITests
                 .AddCore(options => options.UseEntityFrameworkCore()
                     .UseDbContext<AdminUIDbContext>()
                     .ReplaceDefaultEntities<Guid>());
+
+            configuration?.Invoke(services);
         });
 
         await using var scope = host.Services.CreateAsyncScope();

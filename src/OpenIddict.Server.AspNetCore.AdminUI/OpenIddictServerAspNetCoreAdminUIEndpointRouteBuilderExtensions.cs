@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Builder;
 public static class OpenIddictServerAspNetCoreAdminUIEndpointRouteBuilderExtensions
 {
     /// <summary>
-    /// Maps the OpenIddict admin UI pages (applications, scopes, authorizations, tokens and automatic keys)
+    /// Maps the OpenIddict admin UI pages (applications, scopes, authorizations, tokens, sessions and automatic keys)
     /// under the specified route prefix. All the pages require the specified authorization policy.
     /// </summary>
     /// <remarks>
@@ -86,6 +86,10 @@ public static class OpenIddictServerAspNetCoreAdminUIEndpointRouteBuilderExtensi
         Map(HttpMethods.Get, Paths.Tokens, handlers.ListTokensAsync);
         Map(HttpMethods.Get, Paths.Tokens + "/{id}", handlers.ShowTokenAsync);
         Map(HttpMethods.Post, Paths.Tokens + "/{id}/" + Paths.Revoke, handlers.RevokeTokenAsync);
+
+        Map(HttpMethods.Get, Paths.Sessions, handlers.ListSessionsAsync);
+        Map(HttpMethods.Get, Paths.Sessions + "/{id}", handlers.ShowSessionAsync);
+        Map(HttpMethods.Post, Paths.Sessions + "/{id}/" + Paths.Terminate, handlers.TerminateSessionAsync);
 
         Map(HttpMethods.Get, Paths.Keys, handlers.ListKeysAsync);
         Map(HttpMethods.Post, Paths.Keys + "/{id}/" + Paths.Revoke, handlers.RevokeKeyAsync);
