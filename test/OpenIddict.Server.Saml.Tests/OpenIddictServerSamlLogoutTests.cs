@@ -465,6 +465,27 @@ public class OpenIddictServerSamlLogoutTests
     }
 
     [Fact]
+    public async Task ProcessLogoutRequestAsync_IgnoresSessionIndexesThatCannotBeConvertedByTheStore()
+    {
+        // Arrange
+        var (provider, sessions, _) = CreateProvider();
+        await using var _ = provider;
+
+        sessions.Add(CreateSamlSession("s1", ServiceProviderEntityId, "alice"));
+
+        var service = provider.GetRequiredService<OpenIddictServerSamlLogoutService>();
+        var result = await service.ValidateRedirectLogoutRequestAsync(CreateRedirectQueryString(
+            CreateLogoutRequest(sessionIndexes: ["invalid:index", "s1"]), certificate: ServiceProviderCertificate), Endpoint);
+
+        // Act
+        var action = await service.ProcessLogoutRequestAsync(result, CreatePrincipal());
+
+        // Assert
+        Assert.Equal("s1", Assert.Single(action.TerminatedSessionIds));
+        Assert.Equal(Statuses.Revoked, sessions[0].Status);
+    }
+
+    [Fact]
     public async Task ProcessLogoutRequestAsync_ResolvesSessionsFromLoginWhenNoSessionIndexIsSpecified()
     {
         // Arrange

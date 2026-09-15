@@ -272,8 +272,22 @@ public sealed class OpenIddictServerSamlLogoutService
             {
                 foreach (var index in request.SessionIndexes)
                 {
-                    if (await manager.FindByIdAsync(index, cancellationToken) is object session &&
-                        await IsMatchingSessionAsync(session) && identifiers.Add(index))
+                    object? session;
+
+                    try
+                    {
+                        session = await manager.FindByIdAsync(index, cancellationToken);
+                    }
+
+                    // Note: session indexes are opaque values returned by the service provider: values that cannot
+                    // be converted to the identifier type used by the store (e.g GUIDs) don't match any session.
+                    catch (Exception exception) when (exception is ArgumentException or FormatException or
+                        InvalidCastException or NotSupportedException or OverflowException)
+                    {
+                        continue;
+                    }
+
+                    if (session is not null && await IsMatchingSessionAsync(session) && identifiers.Add(index))
                     {
                         sessions.Add(session);
                     }

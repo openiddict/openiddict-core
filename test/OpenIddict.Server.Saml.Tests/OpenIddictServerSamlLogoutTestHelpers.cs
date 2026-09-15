@@ -94,8 +94,10 @@ public static class OpenIddictServerSamlLogoutTestHelpers
             });
 
         manager.Setup(mock => mock.FindByIdAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .Returns((string identifier, CancellationToken _) => new ValueTask<object?>(
-                sessions.Find(session => string.Equals(session.Id, identifier, StringComparison.Ordinal))));
+            .Returns((string identifier, CancellationToken _) => identifier.StartsWith("invalid:", StringComparison.Ordinal)
+                // Note: stores using non-string keys (e.g GUIDs) throw an exception for identifiers that cannot be converted.
+                ? throw new FormatException()
+                : new ValueTask<object?>(sessions.Find(session => string.Equals(session.Id, identifier, StringComparison.Ordinal))));
 
         manager.Setup(mock => mock.FindByLoginIdAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .Returns((string identifier, CancellationToken _) => ToAsyncEnumerableAsync(
