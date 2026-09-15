@@ -136,6 +136,16 @@ public sealed class OpenIddictServerSamlOptions
     public TimeSpan LogoutStateLifetime { get; set; } = TimeSpan.FromMinutes(10);
 
     /// <summary>
+    /// Gets or sets a boolean indicating whether logout requests that don't include any SessionIndex element are accepted.
+    /// Disabled by default, as session participants must include at least one SessionIndex (SAML profiles, 4.4.4.1).
+    /// </summary>
+    /// <remarks>
+    /// When enabled, such requests terminate the sessions of the NameID at the service provider that belong to the login of the
+    /// user currently authenticated at the identity provider (NameIDs can't be mapped to other logins).
+    /// </remarks>
+    public bool AcceptLogoutRequestsWithoutSessionIndex { get; set; }
+
+    /// <summary>
     /// Gets or sets the maximum size, in bytes, of the decoded (and inflated) SAML messages. By default, 64 KiB.
     /// </summary>
     public int MaximumMessageSize { get; set; } = 64 * 1024;

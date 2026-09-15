@@ -5,6 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\OpenIddict.Server.AspNetCore\OpenIddict.Server.AspNetCore.csproj" />
     <ProjectReference Include="..\..\src\OpenIddict.Server.Saml.AspNetCore\OpenIddict.Server.Saml.AspNetCore.csproj" />
   </ItemGroup>
 

@@ -343,6 +343,16 @@ public static class OpenIddictServerSamlModels
         public string? NameIdFormat { get; init; }
 
         /// <summary>
+        /// Gets the NameQualifier of the NameID, if specified.
+        /// </summary>
+        public string? NameQualifier { get; init; }
+
+        /// <summary>
+        /// Gets the SPNameQualifier of the NameID, if specified.
+        /// </summary>
+        public string? SPNameQualifier { get; init; }
+
+        /// <summary>
         /// Gets the session indexes identifying the sessions to terminate. If empty, all
         /// the sessions of the principal at the service provider must be terminated.
         /// </summary>

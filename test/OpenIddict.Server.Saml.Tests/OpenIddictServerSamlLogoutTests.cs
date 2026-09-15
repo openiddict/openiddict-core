@@ -256,7 +256,7 @@ public class OpenIddictServerSamlLogoutTests
         await using var _ = provider;
 
         var service = provider.GetRequiredService<OpenIddictServerSamlLogoutService>();
-        var query = CreateRedirectQueryString(CreateLogoutRequest(id: "_replayed"), certificate: ServiceProviderCertificate);
+        var query = CreateRedirectQueryString(CreateLogoutRequest(id: "_replayed", sessionIndexes: ["s1"]), certificate: ServiceProviderCertificate);
 
         // Act
         var first = await service.ValidateRedirectLogoutRequestAsync(query, Endpoint);
@@ -294,7 +294,8 @@ public class OpenIddictServerSamlLogoutTests
         await using var _ = provider;
 
         var service = provider.GetRequiredService<OpenIddictServerSamlLogoutService>();
-        var document = SignDocument(CreateLogoutRequest(id: "_post"), ServiceProviderCertificate);
+        var document = SignDocument(CreateLogoutRequest(id: "_post", sessionIndexes: ["s1"],
+            nameIdAttributes: "Format=\"" + NameIdFormats.Persistent + "\" SPNameQualifier=\"" + ServiceProviderEntityId + "\""), ServiceProviderCertificate);
 
         // Act
         var result = await service.ValidatePostLogoutRequestAsync(EncodePost(document.OuterXml), "relay", Endpoint);
@@ -302,7 +303,76 @@ public class OpenIddictServerSamlLogoutTests
         // Assert
         Assert.True(result.Succeeded, result.ErrorDescription);
         Assert.Equal(Bindings.HttpPost, result.Request!.Binding);
-        Assert.Empty(result.Request.SessionIndexes);
+        Assert.Equal("s1", Assert.Single(result.Request.SessionIndexes));
+        Assert.Equal(NameIdFormats.Persistent, result.Request.NameIdFormat);
+        Assert.Equal(ServiceProviderEntityId, result.Request.SPNameQualifier);
+        Assert.Null(result.Request.NameQualifier);
+    }
+
+    [Fact]
+    public async Task ValidatePostLogoutRequestAsync_RejectsRequestWithoutSessionIndex()
+    {
+        // Arrange
+        var (provider, _, _) = CreateProvider();
+        await using var _ = provider;
+
+        var service = provider.GetRequiredService<OpenIddictServerSamlLogoutService>();
+        var document = SignDocument(CreateLogoutRequest(id: "_no_index"), ServiceProviderCertificate);
+
+        // Act
+        var result = await service.ValidatePostLogoutRequestAsync(EncodePost(document.OuterXml), null, Endpoint);
+
+        // Assert
+        Assert.True(result.CanReturnErrorToServiceProvider);
+        Assert.Equal("_no_index", result.RequestId);
+        Assert.Equal(StatusCodes.Requester, result.Status);
+        Assert.Equal(SR.GetResourceString(SR.ID2512), result.ErrorDescription);
+    }
+
+    [Theory]
+    [InlineData("tampered")]
+    [InlineData("relocated")]
+    [InlineData("wrapped")]
+    public async Task ValidatePostLogoutRequestAsync_RejectsSignatureWrappingAttacks(string attack)
+    {
+        // Arrange
+        var (provider, _, _) = CreateProvider();
+        await using var _ = provider;
+
+        var service = provider.GetRequiredService<OpenIddictServerSamlLogoutService>();
+        var document = SignDocument(CreateLogoutRequest(id: "_signed", nameId: "bob", sessionIndexes: ["s1"]), ServiceProviderCertificate);
+        var manager = CreateNamespaceManager(document);
+        var root = document.DocumentElement!;
+
+        switch (attack)
+        {
+            // The NameID of the signed request is modified after signing.
+            case "tampered":
+                root.SelectSingleNode("saml:NameID", manager)!.InnerText = "alice";
+                break;
+
+            // The signature is moved to a descendant of the message element.
+            case "relocated":
+                var signature = root.SelectSingleNode("ds:Signature", manager)!;
+                root.RemoveChild(signature);
+                root.SelectSingleNode("saml:NameID", manager)!.AppendChild(signature);
+                break;
+
+            // The signed request is embedded in an unsigned request targeting another principal.
+            case "wrapped":
+                var outer = LoadResponse(CreateLogoutRequest(id: "_evil", nameId: "alice", sessionIndexes: ["s2"]));
+                outer.DocumentElement!.AppendChild(outer.ImportNode(root, deep: true));
+                document = outer;
+                break;
+        }
+
+        // Act
+        var result = await service.ValidatePostLogoutRequestAsync(EncodePost(document.OuterXml), null, Endpoint);
+
+        // Assert
+        Assert.False(result.Succeeded);
+        Assert.False(result.CanReturnErrorToServiceProvider);
+        Assert.Equal(SR.GetResourceString(SR.ID2504), result.ErrorDescription);
     }
 
     [Fact]
@@ -464,6 +534,34 @@ public class OpenIddictServerSamlLogoutTests
         Assert.StartsWith(ServiceProviderLogoutUrl + "?", action.RedirectUrl!.AbsoluteUri, StringComparison.Ordinal);
     }
 
+    [Theory]
+    [InlineData(NameIdFormats.EmailAddress, null, true)]
+    [InlineData(NameIdFormats.EmailAddress, "Format=\"" + NameIdFormats.EmailAddress + "\"", false)]
+    [InlineData(NameIdFormats.Unspecified, "Format=\"" + NameIdFormats.Persistent + "\"", true)]
+    [InlineData(NameIdFormats.Unspecified, "NameQualifier=\"https://other-idp.example.com/\"", true)]
+    [InlineData(NameIdFormats.Unspecified, "NameQualifier=\"" + IdentityProviderEntityId + "\"", false)]
+    [InlineData(NameIdFormats.Unspecified, "SPNameQualifier=\"" + SecondServiceProviderEntityId + "\"", true)]
+    [InlineData(NameIdFormats.Unspecified, "SPNameQualifier=\"" + ServiceProviderEntityId + "\"", false)]
+    public async Task ProcessLogoutRequestAsync_RequiresStronglyMatchingNameId(string format, string? attributes, bool rejected)
+    {
+        // Arrange
+        var (provider, sessions, _) = CreateProvider();
+        await using var _ = provider;
+
+        sessions.Add(CreateSamlSession("s1", ServiceProviderEntityId, "alice", format: format));
+
+        var service = provider.GetRequiredService<OpenIddictServerSamlLogoutService>();
+        var result = await service.ValidateRedirectLogoutRequestAsync(CreateRedirectQueryString(
+            CreateLogoutRequest(sessionIndexes: ["s1"], nameIdAttributes: attributes), certificate: ServiceProviderCertificate), Endpoint);
+
+        // Act
+        var action = await service.ProcessLogoutRequestAsync(result, CreatePrincipal());
+
+        // Assert
+        Assert.Equal(rejected, action.TerminatedSessionIds.Count is 0);
+        Assert.Equal(rejected ? Statuses.Valid : Statuses.Revoked, sessions[0].Status);
+    }
+
     [Fact]
     public async Task ProcessLogoutRequestAsync_IgnoresSessionIndexesThatCannotBeConvertedByTheStore()
     {
@@ -489,7 +587,8 @@ public class OpenIddictServerSamlLogoutTests
     public async Task ProcessLogoutRequestAsync_ResolvesSessionsFromLoginWhenNoSessionIndexIsSpecified()
     {
         // Arrange
-        var (provider, sessions, _) = CreateProvider(serviceProvider: sp => sp.SingleLogoutServiceBinding = Bindings.HttpPost);
+        var (provider, sessions, _) = CreateProvider(serviceProvider: sp => sp.SingleLogoutServiceBinding = Bindings.HttpPost,
+            configuration: saml => saml.AcceptLogoutRequestsWithoutSessionIndex());
         await using var _ = provider;
 
         sessions.Add(CreateSamlSession("s1", ServiceProviderEntityId, "alice"));
@@ -557,6 +656,209 @@ public class OpenIddictServerSamlLogoutTests
         Assert.Equal(new Uri(SecondServiceProviderLogoutUrl), Assert.Single(soap.Requests).Url);
         Assert.Equal(!succeeds, action.PartialLogout);
         Assert.StartsWith(ServiceProviderLogoutUrl + "?", action.RedirectUrl!.AbsoluteUri, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task ProcessLogoutRequestAsync_ContinuesChainWhenParticipantResponseIsRejected()
+    {
+        // Arrange
+        var (provider, sessions, _) = CreateProvider();
+        await using var _ = provider;
+
+        sessions.Add(CreateSamlSession("s1", ServiceProviderEntityId, "alice"));
+        sessions.Add(CreateSamlSession("s2", SecondServiceProviderEntityId, "alice-sp2"));
+
+        var service = provider.GetRequiredService<OpenIddictServerSamlLogoutService>();
+        var result = await service.ValidateRedirectLogoutRequestAsync(CreateRedirectQueryString(
+            CreateLogoutRequest(id: "_chain", sessionIndexes: ["s1"]), certificate: ServiceProviderCertificate), Endpoint);
+
+        var action = await service.ProcessLogoutRequestAsync(result, CreatePrincipal());
+        var (request, _, _) = DecodeRedirectUrl(action.RedirectUrl!, Parameters.SamlRequest, IdentityProviderCertificate);
+        var identifier = request.DocumentElement!.GetAttribute("ID");
+
+        // A response to the pending request claiming to be issued by another (registered) service provider doesn't consume the state.
+        var foreign = await service.ValidateRedirectLogoutResponseAsync(CreateRedirectQueryString(
+            CreateLogoutResponse(identifier, issuer: ServiceProviderEntityId), parameter: Parameters.SamlResponse), Endpoint);
+
+        Assert.False(foreign.Succeeded);
+        Assert.Null(await service.ProcessRejectedLogoutResponseAsync(foreign));
+
+        // The second service provider returns an unsigned logout response.
+        var response = await service.ValidateRedirectLogoutResponseAsync(CreateRedirectQueryString(
+            CreateLogoutResponse(identifier), parameter: Parameters.SamlResponse), Endpoint);
+
+        Assert.False(response.Succeeded);
+        Assert.Equal(SR.GetResourceString(SR.ID2503), response.ErrorDescription);
+        Assert.Equal(identifier, response.InResponseTo);
+        Assert.Equal(SecondServiceProviderEntityId, response.ServiceProvider?.EntityId);
+
+        // Act
+        var final = await service.ProcessRejectedLogoutResponseAsync(response);
+
+        // Assert: the logout response is returned to the initiator with a PartialLogout status.
+        Assert.NotNull(final);
+        Assert.True(final.PartialLogout);
+        Assert.StartsWith(ServiceProviderLogoutUrl + "?", final.RedirectUrl!.AbsoluteUri, StringComparison.Ordinal);
+
+        var (document, _, valid) = DecodeRedirectUrl(final.RedirectUrl, Parameters.SamlResponse, IdentityProviderCertificate);
+        var namespaces = CreateNamespaceManager(document);
+
+        Assert.True(valid);
+        Assert.Equal("_chain", document.DocumentElement!.GetAttribute("InResponseTo"));
+        Assert.Equal(StatusCodes.Success, document.SelectSingleNode("/samlp:LogoutResponse/samlp:Status/samlp:StatusCode/@Value", namespaces)!.Value);
+        Assert.Equal(StatusCodes.PartialLogout, document.SelectSingleNode(
+            "/samlp:LogoutResponse/samlp:Status/samlp:StatusCode/samlp:StatusCode/@Value", namespaces)!.Value);
+
+        // The state can only be used once.
+        Assert.Null(await service.ProcessRejectedLogoutResponseAsync(response));
+    }
+
+    [Fact]
+    public async Task ProcessRejectedLogoutResponseAsync_ReturnsNullForUnknownResponses()
+    {
+        // Arrange
+        var (provider, _, _) = CreateProvider();
+        await using var _ = provider;
+
+        var service = provider.GetRequiredService<OpenIddictServerSamlLogoutService>();
+        var response = await service.ValidateRedirectLogoutResponseAsync(CreateRedirectQueryString(
+            CreateLogoutResponse("_unknown"), parameter: Parameters.SamlResponse), Endpoint);
+
+        // Act and assert
+        Assert.Null(await service.ProcessRejectedLogoutResponseAsync(response));
+    }
+
+    [Fact]
+    public async Task ProcessLogoutRequestAsync_SendsSoapLogoutRequestAndRejectsInvalidResponseSignature()
+    {
+        // Arrange
+        var (provider, sessions, soap) = CreateProvider(secondBinding: Bindings.Soap);
+        await using var _ = provider;
+
+        soap.Callback = (url, envelope) =>
+        {
+            var request = LoadResponse(envelope);
+            var element = (XmlElement) request.SelectSingleNode("/soap:Envelope/soap:Body/samlp:LogoutRequest", CreateNamespaceManager(request))!;
+
+            // Note: the response is signed using a key that is not registered for the second service provider.
+            var response = SignDocument(CreateLogoutResponse(element.GetAttribute("ID"), destination: null), ServiceProviderCertificate);
+
+            return "<soap:Envelope xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\"><soap:Body>" +
+                response.DocumentElement!.OuterXml + "</soap:Body></soap:Envelope>";
+        };
+
+        sessions.Add(CreateSamlSession("s1", ServiceProviderEntityId, "alice"));
+        sessions.Add(CreateSamlSession("s2", SecondServiceProviderEntityId, "alice-sp2"));
+
+        var service = provider.GetRequiredService<OpenIddictServerSamlLogoutService>();
+        var result = await service.ValidateRedirectLogoutRequestAsync(CreateRedirectQueryString(
+            CreateLogoutRequest(sessionIndexes: ["s1"]), certificate: ServiceProviderCertificate), Endpoint);
+
+        // Act
+        var action = await service.ProcessLogoutRequestAsync(result, CreatePrincipal());
+
+        // Assert
+        Assert.Single(soap.Requests);
+        Assert.True(action.PartialLogout);
+    }
+
+    [Fact]
+    public async Task ProcessLogoutRequestAsync_InfersIssuerFromBaseUriWhenIssuerIsNotConfigured()
+    {
+        // Arrange
+        var (provider, sessions, _) = CreateProvider(server: options => options.EnableFrontchannelLogout(),
+            applications: CreateApplicationManager(), issuer: false);
+        await using var _ = provider;
+
+        sessions.Add(CreateSamlSession("s1", ServiceProviderEntityId, "alice"));
+        sessions.Add(new FakeSession { Id = "oidc", ApplicationId = "a1", LoginId = "login-1", Status = Statuses.Valid, Subject = "alice" });
+
+        var service = provider.GetRequiredService<OpenIddictServerSamlLogoutService>();
+
+        // Act and assert: without base URI, no session is terminated.
+        var first = await service.ValidateRedirectLogoutRequestAsync(CreateRedirectQueryString(
+            CreateLogoutRequest(sessionIndexes: ["s1"]), certificate: ServiceProviderCertificate), Endpoint);
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            await service.ProcessLogoutRequestAsync(first, CreatePrincipal()));
+
+        Assert.Equal(SR.GetResourceString(SR.ID0726), exception.Message);
+        Assert.All(sessions, session => Assert.Equal(Statuses.Valid, session.Status));
+
+        // Act
+        var second = await service.ValidateRedirectLogoutRequestAsync(CreateRedirectQueryString(
+            CreateLogoutRequest(sessionIndexes: ["s1"]), certificate: ServiceProviderCertificate), Endpoint);
+
+        var action = await service.ProcessLogoutRequestAsync(second, CreatePrincipal(), new Uri("https://idp.example.com/", UriKind.Absolute));
+
+        // Assert
+        Assert.All(sessions, session => Assert.Equal(Statuses.Revoked, session.Status));
+
+        var uri = Assert.Single(action.FrontchannelLogoutUris);
+        Assert.StartsWith("https://rp.example.com/frontchannel?", uri.AbsoluteUri, StringComparison.Ordinal);
+        Assert.Contains("iss=" + Uri.EscapeDataString("https://idp.example.com/"), uri.Query, StringComparison.Ordinal);
+        Assert.StartsWith(ServiceProviderLogoutUrl + "?", action.RedirectUrl!.AbsoluteUri, StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData("//evil.example.com")]
+    [InlineData("/\\evil.example.com")]
+    [InlineData("/\t/evil.example.com")]
+    [InlineData("/\r\n/evil.example.com")]
+    [InlineData("https://evil.example.com/")]
+    [InlineData("signed-out")]
+    public async Task StartLogoutAsync_RejectsNonLocalReturnUrls(string url)
+    {
+        // Arrange
+        var (provider, sessions, _) = CreateProvider();
+        await using var _ = provider;
+
+        sessions.Add(CreateSamlSession("s1", ServiceProviderEntityId, "alice"));
+
+        var service = provider.GetRequiredService<OpenIddictServerSamlLogoutService>();
+
+        // Act and assert
+        Assert.False(OpenIddictServerSamlLogoutService.IsLocalUrl(url));
+
+        if (Uri.TryCreate(url, UriKind.RelativeOrAbsolute, out var uri))
+        {
+            var exception = await Assert.ThrowsAsync<ArgumentException>(async () => await service.StartLogoutAsync(CreatePrincipal(), uri));
+            Assert.StartsWith(SR.GetResourceString(SR.ID01005), exception.Message, StringComparison.Ordinal);
+        }
+
+        Assert.Equal(Statuses.Valid, sessions[0].Status);
+    }
+
+    [Theory]
+    [InlineData("/")]
+    [InlineData("/signed-out")]
+    [InlineData("/signed-out?a=b#c")]
+    public void IsLocalUrl_AcceptsLocalUrls(string url) => Assert.True(OpenIddictServerSamlLogoutService.IsLocalUrl(url));
+
+    [Theory]
+    [InlineData(Bindings.HttpRedirect, true)]
+    [InlineData(Bindings.HttpPost, true)]
+    [InlineData(Bindings.Soap, false)]
+    public void ValidateServiceProvider_RequiresSigningCertificatesForFrontchannelSingleLogoutService(string binding, bool rejected)
+    {
+        // Arrange
+        var sp = CreateServiceProvider();
+        sp.RequireSignedAuthenticationRequests = false;
+        sp.SigningCertificates.Clear();
+        sp.SingleLogoutServiceUrl = new Uri(ServiceProviderLogoutUrl, UriKind.Absolute);
+        sp.SingleLogoutServiceBinding = binding;
+
+        // Act and assert
+        if (rejected)
+        {
+            var exception = Assert.Throws<InvalidOperationException>(() => OpenIddictServerSamlConfiguration.ValidateServiceProvider(sp));
+            Assert.Equal(SR.FormatID01007(ServiceProviderEntityId), exception.Message);
+        }
+
+        else
+        {
+            OpenIddictServerSamlConfiguration.ValidateServiceProvider(sp);
+        }
     }
 
     [Fact]
@@ -695,7 +997,9 @@ public class OpenIddictServerSamlLogoutTests
         Action<OpenIddictServerSamlServiceProvider>? serviceProvider = null,
         Action<OpenIddictServerBuilder>? server = null,
         string secondBinding = Bindings.HttpRedirect,
-        bool enable = true)
+        bool enable = true,
+        Mock<IOpenIddictApplicationManager>? applications = null,
+        bool issuer = true)
     {
         var sessions = new List<FakeSession>();
         var soap = new FakeSoapClient();
@@ -725,7 +1029,7 @@ public class OpenIddictServerSamlLogoutTests
             });
 
             server?.Invoke(options);
-        });
+        }, applications, issuer);
 
         services.AddSingleton<IOpenIddictServerSamlSoapClient>(soap);
 

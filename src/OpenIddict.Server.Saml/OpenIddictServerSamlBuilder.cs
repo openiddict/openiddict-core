@@ -210,6 +210,14 @@ public sealed class OpenIddictServerSamlBuilder
         => Configure(options => options.LogoutStateLifetime = lifetime);
 
     /// <summary>
+    /// Accepts logout requests that don't include any SessionIndex element (which session participants must include per
+    /// SAML profiles, 4.4.4.1): the sessions of the NameID belonging to the login of the authenticated user are terminated.
+    /// </summary>
+    /// <returns>The <see cref="OpenIddictServerSamlBuilder"/> instance.</returns>
+    public OpenIddictServerSamlBuilder AcceptLogoutRequestsWithoutSessionIndex()
+        => Configure(options => options.AcceptLogoutRequestsWithoutSessionIndex = true);
+
+    /// <summary>
     /// Registers a custom SOAP client, used to send logout requests using the SOAP binding.
     /// </summary>
     /// <typeparam name="TClient">The type of the SOAP client.</typeparam>

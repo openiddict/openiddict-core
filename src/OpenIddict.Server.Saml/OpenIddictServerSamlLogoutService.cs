@@ -241,10 +241,14 @@ public sealed class OpenIddictServerSamlLogoutService
     /// </remarks>
     /// <param name="result">The successful validation result.</param>
     /// <param name="principal">The principal currently authenticated by the host, if any.</param>
+    /// <param name="baseUri">
+    /// The absolute base URI of the current HTTP request, if any, used to infer the issuer of the OpenID Connect logout
+    /// notifications sent to the client applications sharing the login when <see cref="OpenIddictServerOptions.Issuer"/> is not set.
+    /// </param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>The action the host must apply.</returns>
     public ValueTask<LogoutAction> ProcessLogoutRequestAsync(LogoutRequestResult result,
-        ClaimsPrincipal? principal, CancellationToken cancellationToken = default)
+        ClaimsPrincipal? principal, Uri? baseUri = null, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(result);
 
@@ -253,11 +257,17 @@ public sealed class OpenIddictServerSamlLogoutService
             throw new ArgumentException(SR.GetResourceString(SR.ID01006), nameof(result));
         }
 
+        if (baseUri is { IsAbsoluteUri: false })
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID01008), nameof(baseUri));
+        }
+
         EnsureEnabled();
 
-        return ExecuteAsync(result, principal, cancellationToken);
+        return ExecuteAsync(result, principal, baseUri, cancellationToken);
 
-        async ValueTask<LogoutAction> ExecuteAsync(LogoutRequestResult result, ClaimsPrincipal? principal, CancellationToken cancellationToken)
+        async ValueTask<LogoutAction> ExecuteAsync(LogoutRequestResult result, ClaimsPrincipal? principal,
+            Uri? baseUri, CancellationToken cancellationToken)
         {
             var manager = GetSessionManager();
             var request = result.Request!;
@@ -297,7 +307,9 @@ public sealed class OpenIddictServerSamlLogoutService
             // Note: when no SessionIndex is specified, all the sessions of the principal at the service provider must be
             // terminated (SAML core, 3.7.3.2). Since NameIDs can't be mapped to users, only the sessions belonging to the
             // login of the authenticated user are considered (the other sessions expire or are terminated separately).
-            else if (!string.IsNullOrEmpty(login))
+            // Such requests are only accepted when explicitly allowed, as session participants must include
+            // at least one SessionIndex element (SAML profiles, 4.4.4.1).
+            else if (_options.CurrentValue.AcceptLogoutRequestsWithoutSessionIndex && !string.IsNullOrEmpty(login))
             {
                 await foreach (var session in manager.FindByLoginIdAsync(login, cancellationToken))
                 {
@@ -333,7 +345,7 @@ public sealed class OpenIddictServerSamlLogoutService
                 RelayState = result.RelayState
             };
 
-            var terminated = await TerminateAsync(sessions, state, cancellationToken);
+            var terminated = await TerminateAsync(sessions, state, baseUri, cancellationToken);
 
             return await ContinueAsync(state, signOut, terminated, cancellationToken);
 
@@ -346,16 +358,22 @@ public sealed class OpenIddictServerSamlLogoutService
                 }
 
                 var properties = await manager.GetPropertiesAsync(session, cancellationToken);
-                if (!string.Equals(GetProperty(properties, SessionProperties.ServiceProvider), request.Issuer, StringComparison.Ordinal) ||
-                    !string.Equals(GetProperty(properties, SessionProperties.NameId), request.NameId, StringComparison.Ordinal))
+                if (!string.Equals(GetProperty(properties, SessionProperties.ServiceProvider), request.Issuer, StringComparison.Ordinal))
                 {
                     return false;
                 }
 
-                // Note: the formats are only compared when they are both explicitly specified.
-                var format = GetProperty(properties, SessionProperties.NameIdFormat);
-                return request.NameIdFormat is null or NameIdFormats.Unspecified || format is null or NameIdFormats.Unspecified ||
-                       string.Equals(format, request.NameIdFormat, StringComparison.Ordinal);
+                // Note: the identifier of the request must strongly match the NameID issued in the assertion (SAML profiles,
+                // 4.4.4.1 and SAML core, 3.3.4): the value, format and qualifiers must be equal. Omitted formats are equivalent
+                // to the "unspecified" format (SAML core, 8.3.1). The NameIDs issued by the identity provider don't include
+                // qualifiers, whose values then default to the identity provider and the service provider (SAML core, 2.2.2).
+                return string.Equals(GetProperty(properties, SessionProperties.NameId), request.NameId, StringComparison.Ordinal) &&
+                       string.Equals(GetProperty(properties, SessionProperties.NameIdFormat) ?? NameIdFormats.Unspecified,
+                           request.NameIdFormat ?? NameIdFormats.Unspecified, StringComparison.Ordinal) &&
+                       (request.NameQualifier is null ||
+                        string.Equals(request.NameQualifier, _options.CurrentValue.EntityId, StringComparison.Ordinal)) &&
+                       (request.SPNameQualifier is null ||
+                        string.Equals(request.SPNameQualifier, request.Issuer, StringComparison.Ordinal));
             }
         }
     }
@@ -407,23 +425,110 @@ public sealed class OpenIddictServerSamlLogoutService
     }
 
     /// <summary>
+    /// Processes a logout response that failed validation (e.g missing or invalid signature, stale or misdirected response)
+    /// but that corresponds to a pending logout request sent to the service provider identified by its issuer: the participant
+    /// is considered as not logged out and the logout is propagated to the remaining participants, the initiator finally
+    /// receiving a PartialLogout status (SAML profiles, 4.4.3.4 and SAML core, 3.2.2.2).
+    /// </summary>
+    /// <remarks>
+    /// The pending logout state is only consumed when the logout request was sent to the service provider the response
+    /// claims to be issued by. When <see langword="null"/> is returned, the response doesn't correspond to a pending
+    /// logout request and the host is expected to return an error to the user agent.
+    /// </remarks>
+    /// <param name="result">The failed validation result.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns>The action the host must apply, or <see langword="null"/> if no pending logout can be resumed.</returns>
+    public ValueTask<LogoutAction?> ProcessRejectedLogoutResponseAsync(LogoutResponseResult result, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(result);
+
+        if (result.Succeeded)
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID01006), nameof(result));
+        }
+
+        EnsureEnabled();
+
+        if (string.IsNullOrEmpty(result.InResponseTo) || result.ServiceProvider?.EntityId is not { Length: > 0 })
+        {
+            return new(result: null);
+        }
+
+        return ExecuteAsync(result, cancellationToken);
+
+        async ValueTask<LogoutAction?> ExecuteAsync(LogoutResponseResult result, CancellationToken cancellationToken)
+        {
+            var handle = StateHandlePrefix + result.InResponseTo;
+
+            var message = await _store.RemoveAsync(handle, cancellationToken);
+            if (message is null || message.ExpirationDate < _options.CurrentValue.TimeProvider.GetUtcNow())
+            {
+                _logger.LogInformation(6806, SR.GetResourceString(SR.ID6806), result.InResponseTo);
+
+                return null;
+            }
+
+            // Note: unlike successfully validated responses, rejected responses are not authenticated. To prevent a service
+            // provider from interfering with a logout request sent to another service provider, the state is restored.
+            if (!string.Equals(message.ServiceProvider, result.ServiceProvider!.EntityId, StringComparison.Ordinal))
+            {
+                await _store.AddAsync(handle, message, cancellationToken);
+
+                _logger.LogInformation(6806, SR.GetResourceString(SR.ID6806), result.InResponseTo);
+
+                return null;
+            }
+
+            if (DeserializeState(message.Message) is not LogoutState state)
+            {
+                return null;
+            }
+
+            _logger.LogWarning(6810, SR.GetResourceString(SR.ID6810), result.ServiceProvider.EntityId, result.ErrorDescription);
+
+            state.PartialLogout = true;
+
+            return await ContinueAsync(state, signOut: false, terminated: [], cancellationToken);
+        }
+    }
+
+    /// <summary>
     /// Starts an identity provider-initiated single logout: all the valid sessions sharing the login identifier of the
     /// specified principal are terminated, the logout is propagated to their participants and the user agent is finally
     /// redirected to the return URL, if specified.
     /// </summary>
     /// <param name="principal">The authenticated principal.</param>
-    /// <param name="returnUrl">The local URL the user agent is redirected to once the logout is completed, if any.</param>
+    /// <param name="returnUrl">
+    /// The local URL (e.g "/signed-out") the user agent is redirected to once the logout is completed, if any.
+    /// </param>
+    /// <param name="baseUri">
+    /// The absolute base URI of the current HTTP request, if any, used to infer the issuer of the OpenID Connect logout
+    /// notifications sent to the client applications sharing the login when <see cref="OpenIddictServerOptions.Issuer"/> is not set.
+    /// </param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
     /// <returns>The action the host must apply.</returns>
-    public ValueTask<LogoutAction> StartLogoutAsync(ClaimsPrincipal principal, Uri? returnUrl, CancellationToken cancellationToken = default)
+    /// <exception cref="ArgumentException">The return URL is not a local URL.</exception>
+    public ValueTask<LogoutAction> StartLogoutAsync(ClaimsPrincipal principal, Uri? returnUrl,
+        Uri? baseUri = null, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(principal);
 
+        // Note: only local URLs are accepted to prevent open redirects.
+        if (returnUrl is not null && !IsLocalUrl(returnUrl))
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID01005), nameof(returnUrl));
+        }
+
+        if (baseUri is { IsAbsoluteUri: false })
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID01008), nameof(baseUri));
+        }
+
         EnsureEnabled();
 
-        return ExecuteAsync(principal, returnUrl, cancellationToken);
+        return ExecuteAsync(principal, returnUrl, baseUri, cancellationToken);
 
-        async ValueTask<LogoutAction> ExecuteAsync(ClaimsPrincipal principal, Uri? returnUrl, CancellationToken cancellationToken)
+        async ValueTask<LogoutAction> ExecuteAsync(ClaimsPrincipal principal, Uri? returnUrl, Uri? baseUri, CancellationToken cancellationToken)
         {
             var manager = GetSessionManager();
 
@@ -445,7 +550,7 @@ public sealed class OpenIddictServerSamlLogoutService
 
             var state = new LogoutState { ReturnUrl = returnUrl?.OriginalString };
 
-            var terminated = await TerminateAsync(sessions, state, cancellationToken);
+            var terminated = await TerminateAsync(sessions, state, baseUri, cancellationToken);
 
             return await ContinueAsync(state, signOut: true, terminated, cancellationToken);
         }
@@ -724,7 +829,8 @@ public sealed class OpenIddictServerSamlLogoutService
         return true;
     }
 
-    private async ValueTask<List<string>> TerminateAsync(List<object> sessions, LogoutState state, CancellationToken cancellationToken)
+    private async ValueTask<List<string>> TerminateAsync(List<object> sessions, LogoutState state,
+        Uri? baseUri, CancellationToken cancellationToken)
     {
         List<string> identifiers = [];
 
@@ -734,6 +840,14 @@ public sealed class OpenIddictServerSamlLogoutService
         }
 
         var server = GetServerOptions();
+
+        // Note: the issuer of the back-channel logout tokens and front-channel logout URIs is inferred from the base URI of
+        // the request when it is not explicitly configured. To avoid terminating the sessions without notifying their
+        // participants, an exception is thrown before any session is revoked when neither of them is available.
+        if (server.Issuer is null && baseUri is null && (server.EnableBackchannelLogout || server.EnableFrontchannelLogout))
+        {
+            throw new InvalidOperationException(SR.GetResourceString(SR.ID0726));
+        }
         var manager = GetSessionManager();
         var dispatcher = _provider.GetRequiredService<IOpenIddictServerDispatcher>();
 
@@ -745,6 +859,7 @@ public sealed class OpenIddictServerSamlLogoutService
 
             var transaction = new OpenIddictServerTransaction
             {
+                BaseUri = baseUri,
                 CancellationToken = cancellationToken,
                 Options = server,
                 ServiceProvider = _provider
@@ -1255,6 +1370,12 @@ public sealed class OpenIddictServerSamlLogoutService
             indexes.Add(index);
         }
 
+        // Note: session participants must include at least one SessionIndex element (SAML profiles, 4.4.4.1).
+        if (indexes.Count is 0 && !options.AcceptLogoutRequestsWithoutSessionIndex)
+        {
+            return RejectRequest(SR.ID2512, provider, message.RelayState, identifier, message.Binding, returnable: true);
+        }
+
         // Reject replayed logout requests while they are considered fresh (message identifiers are unique per SAML core, 1.3.4).
         if (options.EnableRequestReplayProtection && !await _replayCache.TryAddAsync(
             "logout-request:" + provider.EntityId + "\n" + identifier,
@@ -1279,6 +1400,8 @@ public sealed class OpenIddictServerSamlLogoutService
                 Issuer = provider.EntityId!,
                 NameId = nameId,
                 NameIdFormat = name.HasAttribute("Format") ? name.GetAttribute("Format") : null,
+                NameQualifier = name.HasAttribute("NameQualifier") ? name.GetAttribute("NameQualifier") : null,
+                SPNameQualifier = name.HasAttribute("SPNameQualifier") ? name.GetAttribute("SPNameQualifier") : null,
                 NotOnOrAfter = expiration,
                 Reason = root.HasAttribute("Reason") ? root.GetAttribute("Reason") : null,
                 SessionIndexes = indexes
@@ -1306,16 +1429,18 @@ public sealed class OpenIddictServerSamlLogoutService
             return RejectResponse(SR.ID2501, message.RelayState);
         }
 
+        // Note: once the message identifier the response corresponds to and the service provider are known, they are attached
+        // to the rejected result so that the logout can be propagated to the remaining participants of a pending logout.
         var (provider, failure) = await ValidateCommonAsync(message, root, instant, endpoint, cancellationToken);
         if (failure is not null)
         {
-            return RejectResponse(failure, message.RelayState);
+            return RejectResponse(failure, message.RelayState, inResponseTo, provider);
         }
 
         var (status, secondLevelStatus) = GetStatus(root);
         if (string.IsNullOrEmpty(status))
         {
-            return RejectResponse(SR.ID2501, message.RelayState);
+            return RejectResponse(SR.ID2501, message.RelayState, inResponseTo, provider);
         }
 
         return new LogoutResponseResult
@@ -1350,13 +1475,20 @@ public sealed class OpenIddictServerSamlLogoutService
         };
     }
 
-    private LogoutResponseResult RejectResponse(string description, string? relayState)
+    private LogoutResponseResult RejectResponse(string description, string? relayState,
+        string? inResponseTo = null, OpenIddictServerSamlServiceProvider? provider = null)
     {
         var message = SR.GetResourceString(description);
 
         _logger.LogInformation(6801, SR.GetResourceString(SR.ID6801), message);
 
-        return new LogoutResponseResult { ErrorDescription = message, RelayState = relayState };
+        return new LogoutResponseResult
+        {
+            ErrorDescription = message,
+            InResponseTo = inResponseTo,
+            RelayState = relayState,
+            ServiceProvider = provider
+        };
     }
 
     private void EnsureEnabled()
@@ -1383,6 +1515,50 @@ public sealed class OpenIddictServerSamlLogoutService
 
     private string? GetLoginId(ClaimsPrincipal? principal)
         => _options.CurrentValue.LoginIdClaimType is { Length: > 0 } type ? principal?.FindFirst(type)?.Value : null;
+
+    /// <summary>
+    /// Determines whether the specified URL is a local URL (e.g "/" or "/path"). Absolute URLs, protocol-relative URLs
+    /// ("//host" or "/\host") and URLs containing control characters (ignored by user agents when parsing URLs,
+    /// which could be used to bypass this check, e.g "/\t/host") are not considered local.
+    /// </summary>
+    /// <param name="url">The URL.</param>
+    /// <returns><see langword="true"/> if the URL is a local URL, <see langword="false"/> otherwise.</returns>
+    public static bool IsLocalUrl(Uri url)
+    {
+        ArgumentNullException.ThrowIfNull(url);
+
+        return !url.IsAbsoluteUri && IsLocalUrl(url.OriginalString);
+    }
+
+    /// <summary>
+    /// Determines whether the specified URL is a local URL (e.g "/" or "/path"). Absolute URLs, protocol-relative URLs
+    /// ("//host" or "/\host") and URLs containing control characters (ignored by user agents when parsing URLs,
+    /// which could be used to bypass this check, e.g "/\t/host") are not considered local.
+    /// </summary>
+    /// <param name="url">The URL.</param>
+    /// <returns><see langword="true"/> if the URL is a local URL, <see langword="false"/> otherwise.</returns>
+    public static bool IsLocalUrl(string? url)
+    {
+        if (string.IsNullOrEmpty(url) || url[0] is not '/')
+        {
+            return false;
+        }
+
+        if (url.Length > 1 && url[1] is '/' or '\\')
+        {
+            return false;
+        }
+
+        foreach (var character in url)
+        {
+            if (char.IsControl(character))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
 
     private static string? GetSubject(ClaimsPrincipal? principal)
         => principal?.FindFirst(Claims.Subject)?.Value is { Length: > 0 } subject ? subject :

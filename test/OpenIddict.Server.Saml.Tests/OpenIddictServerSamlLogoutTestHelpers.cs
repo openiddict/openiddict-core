@@ -41,7 +41,8 @@ public static class OpenIddictServerSamlLogoutTestHelpers
     /// Registers the mocked core managers (backed by the specified in-memory sessions) and a minimal server configuration.
     /// </summary>
     public static Mock<IOpenIddictSessionManager> AddServerServices(IServiceCollection services, List<FakeSession> sessions,
-        Action<OpenIddictServerBuilder>? configuration = null, Mock<IOpenIddictApplicationManager>? applications = null)
+        Action<OpenIddictServerBuilder>? configuration = null, Mock<IOpenIddictApplicationManager>? applications = null,
+        bool issuer = true)
     {
         var manager = CreateSessionManager(sessions);
 
@@ -56,12 +57,36 @@ public static class OpenIddictServerSamlLogoutTestHelpers
             {
                 options.SetTokenEndpointUris("connect/token")
                        .AllowClientCredentialsFlow()
-                       .SetIssuer(new Uri(OpenIddictServerSamlTestHelpers.IdentityProviderEntityId, UriKind.Absolute))
                        .AddEphemeralEncryptionKey()
                        .AddEphemeralSigningKey();
 
+                if (issuer)
+                {
+                    options.SetIssuer(new Uri(OpenIddictServerSamlTestHelpers.IdentityProviderEntityId, UriKind.Absolute));
+                }
+
                 configuration?.Invoke(options);
             });
+
+        return manager;
+    }
+
+    /// <summary>
+    /// Creates an application manager resolving a single OpenID Connect client application with a front-channel logout URI.
+    /// </summary>
+    public static Mock<IOpenIddictApplicationManager> CreateApplicationManager(string identifier = "a1",
+        string client = "Fabrikam", string frontchannelLogoutUri = "https://rp.example.com/frontchannel")
+    {
+        var application = new object();
+        var manager = new Mock<IOpenIddictApplicationManager>();
+
+        manager.Setup(mock => mock.FindByIdAsync(identifier, It.IsAny<CancellationToken>())).ReturnsAsync(application);
+        manager.Setup(mock => mock.GetClientIdAsync(application, It.IsAny<CancellationToken>())).ReturnsAsync(client);
+        manager.Setup(mock => mock.GetSettingsAsync(application, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                [Settings.Logout.FrontchannelLogoutUri] = frontchannelLogoutUri
+            }.ToImmutableDictionary(StringComparer.Ordinal));
 
         return manager;
     }
@@ -168,7 +193,8 @@ public static class OpenIddictServerSamlLogoutTestHelpers
         string? nameId = "alice",
         IEnumerable<string>? sessionIndexes = null,
         DateTimeOffset? issueInstant = null,
-        string? attributes = null)
+        string? attributes = null,
+        string? nameIdAttributes = null)
     {
         var builder = new StringBuilder()
             .Append("<samlp:LogoutRequest xmlns:samlp=\"urn:oasis:names:tc:SAML:2.0:protocol\" xmlns:saml=\"urn:oasis:names:tc:SAML:2.0:assertion\"")
@@ -190,7 +216,7 @@ public static class OpenIddictServerSamlLogoutTestHelpers
 
         if (nameId is not null)
         {
-            builder.Append("<saml:NameID>").Append(nameId).Append("</saml:NameID>");
+            builder.Append("<saml:NameID ").Append(nameIdAttributes).Append('>').Append(nameId).Append("</saml:NameID>");
         }
 
         foreach (var index in sessionIndexes ?? [])

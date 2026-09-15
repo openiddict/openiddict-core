@@ -2474,6 +2474,12 @@ To register a distributed cache, use 'services.AddDistributedMemoryCache()' or a
   <data name="ID01006" xml:space="preserve">
     <value>A SAML logout operation can only be processed from a successful validation result containing a service provider and a message identifier.</value>
   </data>
+  <data name="ID01007" xml:space="preserve">
+    <value>The SAML service provider '{0}' registers an HTTP-Redirect or HTTP-POST single logout service but no signing certificate: front-channel logout messages must be signed and couldn't be validated.</value>
+  </data>
+  <data name="ID01008" xml:space="preserve">
+    <value>The base URI must be an absolute URI.</value>
+  </data>
   <data name="ID2000" xml:space="preserve">
     <value>The security token is missing.</value>
   </data>
@@ -3621,6 +3627,15 @@ To register a distributed cache, use 'services.AddDistributedMemoryCache()' or a
   </data>
   <data name="ID2511" xml:space="preserve">
     <value>The mandatory 'SAMLRequest' or 'SAMLResponse' parameter is missing.</value>
+  </data>
+  <data name="ID2512" xml:space="preserve">
+    <value>The SAML logout request must contain at least one SessionIndex element.</value>
+  </data>
+  <data name="ID2513" xml:space="preserve">
+    <value>The SOAP single logout request is malformed.</value>
+  </data>
+  <data name="ID2514" xml:space="preserve">
+    <value>SOAP headers that must be understood are not supported.</value>
   </data>
   <data name="ID4000" xml:space="preserve">
     <value>The '{0}' parameter shouldn't be null or empty at this point.</value>
@@ -4914,6 +4929,9 @@ This may indicate that the hashed entry is corrupted or malformed.</value>
   </data>
   <data name="ID6809" xml:space="preserve">
     <value>A SAML logout response ({Status}) was returned to the service provider '{ServiceProvider}'.</value>
+  </data>
+  <data name="ID6810" xml:space="preserve">
+    <value>The SAML logout response returned by the service provider '{ServiceProvider}' was rejected ({Description}): the logout is propagated to the remaining participants and reported as partial.</value>
   </data>
   <data name="ID8000" xml:space="preserve">
     <value>https://documentation.openiddict.com/errors/{0}</value>

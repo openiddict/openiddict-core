@@ -47,8 +47,9 @@ public static class OpenIddictServerSamlOwinHelpers
         ArgumentNullException.ThrowIfNull(context);
 
         // Note: only local URLs are accepted to prevent open redirects.
-        if (!string.IsNullOrEmpty(returnUrl) && (returnUrl[0] is not '/' ||
-            (returnUrl.Length > 1 && returnUrl[1] is '/' or '\\')))
+        Uri? url = null;
+        if (!string.IsNullOrEmpty(returnUrl) && (!OpenIddictServerSamlLogoutService.IsLocalUrl(returnUrl) ||
+            !Uri.TryCreate(returnUrl, UriKind.Relative, out url)))
         {
             throw new ArgumentException(SR.GetResourceString(SR.ID01005), nameof(returnUrl));
         }
@@ -65,8 +66,7 @@ public static class OpenIddictServerSamlOwinHelpers
 
         var action = await service.StartLogoutAsync(
             authentication?.Identity is { IsAuthenticated: true } identity ? new ClaimsPrincipal(identity) : new ClaimsPrincipal(),
-            string.IsNullOrEmpty(returnUrl) ? null : new Uri(returnUrl, UriKind.Relative),
-            context.Request.CallCancelled);
+            url, OpenIddictServerSamlOwinMiddleware.GetBaseUri(context), context.Request.CallCancelled);
 
         context.Authentication.SignOut(options.AuthenticationType);
 

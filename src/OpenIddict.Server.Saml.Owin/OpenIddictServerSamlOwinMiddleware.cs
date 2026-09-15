@@ -378,7 +378,7 @@ public sealed class OpenIddictServerSamlOwinMiddleware : OwinMiddleware
 
                 action = await service.ProcessLogoutRequestAsync(requestResult,
                     authentication?.Identity is { IsAuthenticated: true } identity ? new ClaimsPrincipal(identity) : null,
-                    cancellationToken);
+                    GetBaseUri(context), cancellationToken);
 
                 if (action.SignOut)
                 {
@@ -391,11 +391,21 @@ public sealed class OpenIddictServerSamlOwinMiddleware : OwinMiddleware
         {
             if (!responseResult.Succeeded)
             {
-                await WriteErrorAsync(context, responseResult.ErrorDescription!);
-                return;
+                // Note: when the rejected response corresponds to a pending logout, the logout is propagated to the remaining
+                // participants instead of being aborted (SAML profiles, 4.4.3.4), which ultimately results in a partial logout.
+                if (await service.ProcessRejectedLogoutResponseAsync(responseResult, cancellationToken) is not LogoutAction resumed)
+                {
+                    await WriteErrorAsync(context, responseResult.ErrorDescription!);
+                    return;
+                }
+
+                action = resumed;
             }
 
-            action = await service.ProcessLogoutResponseAsync(responseResult, cancellationToken);
+            else
+            {
+                action = await service.ProcessLogoutResponseAsync(responseResult, cancellationToken);
+            }
         }
 
         else
@@ -506,6 +516,13 @@ public sealed class OpenIddictServerSamlOwinMiddleware : OwinMiddleware
 
     private static bool ValidateTransportSecurity(IOwinContext context, OpenIddictServerSamlOwinOptions options)
         => options.DisableTransportSecurityRequirement || context.Request.IsSecure;
+
+    /// <summary>
+    /// Gets the absolute base URI of the current request (built the same way as by the OpenIddict server OWIN host).
+    /// </summary>
+    internal static Uri? GetBaseUri(IOwinContext context)
+        => Uri.TryCreate(context.Request.Scheme + Uri.SchemeDelimiter + context.Request.Host.Value + context.Request.PathBase,
+            UriKind.Absolute, out var uri) ? uri : null;
 
     private static Uri GetEndpointUrl(IOwinContext context, PathString path)
         => new(context.Request.Scheme + Uri.SchemeDelimiter + context.Request.Host.Value +

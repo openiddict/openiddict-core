@@ -7,6 +7,7 @@ using Microsoft.Owin;
 using Microsoft.Owin.Security;
 using Microsoft.Owin.Security.Cookies;
 using Microsoft.Owin.Testing;
+using Moq;
 using OpenIddict.Server.Saml.Tests;
 using Owin;
 using Xunit;
@@ -168,6 +169,93 @@ public class OpenIddictServerSamlOwinLogoutTests
         Assert.Equal("/signed-out", completion.Headers.Location!.OriginalString);
     }
 
+    [Fact]
+    public async Task SingleLogout_ContinuesChainWhenParticipantResponseIsInvalid()
+    {
+        // Arrange
+        List<FakeSession> sessions =
+        [
+            CreateSamlSession("s1", ServiceProviderEntityId, "alice"),
+            CreateSamlSession("s2", SecondServiceProviderEntityId, "alice-sp2")
+        ];
+
+        using var server = CreateServer(sessions);
+        using var client = CreateClient(server);
+
+        using var propagation = await client.GetAsync("/saml/slo" + CreateRedirectQueryString(
+            CreateLogoutRequest(id: "_chain", sessionIndexes: ["s1"]), certificate: ServiceProviderCertificate));
+
+        Assert.Equal(HttpStatusCode.SeeOther, propagation.StatusCode);
+
+        var (logout, _, _) = DecodeRedirectUrl(propagation.Headers.Location!, Parameters.SamlRequest, IdentityProviderCertificate);
+
+        // Act: the second service provider returns a logout response signed using an unknown key.
+        using var response = await client.GetAsync("/saml/slo" + CreateRedirectQueryString(
+            CreateLogoutResponse(logout.DocumentElement!.GetAttribute("ID")), certificate: ServiceProviderCertificate,
+            parameter: Parameters.SamlResponse));
+
+        // Assert
+        Assert.Equal(HttpStatusCode.SeeOther, response.StatusCode);
+
+        var (document, _, valid) = DecodeRedirectUrl(response.Headers.Location!, Parameters.SamlResponse, IdentityProviderCertificate);
+        Assert.True(valid);
+        Assert.Equal("_chain", document.DocumentElement!.GetAttribute("InResponseTo"));
+        Assert.Equal(SamlStatusCodes.PartialLogout, document.SelectSingleNode(
+            "/samlp:LogoutResponse/samlp:Status/samlp:StatusCode/samlp:StatusCode/@Value", CreateNamespaceManager(document))!.Value);
+    }
+
+    [Fact]
+    public async Task SingleLogout_InfersIssuerFromRequestWhenIssuerIsNotConfigured()
+    {
+        // Arrange
+        List<FakeSession> sessions =
+        [
+            CreateSamlSession("s1", ServiceProviderEntityId, "alice"),
+            new FakeSession { Id = "oidc", ApplicationId = "a1", LoginId = "login-1", Status = Statuses.Valid, Subject = "alice" }
+        ];
+
+        using var server = CreateServer(sessions, server: options => options.EnableFrontchannelLogout(),
+            applications: CreateApplicationManager(), issuer: false);
+        using var client = CreateClient(server);
+
+        // Act
+        using var response = await client.GetAsync("/saml/slo" + CreateRedirectQueryString(
+            CreateLogoutRequest(sessionIndexes: ["s1"]), certificate: ServiceProviderCertificate));
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.All(sessions, session => Assert.Equal(Statuses.Revoked, session.Status));
+
+        var html = await response.Content.ReadAsStringAsync();
+        Assert.Contains("src=\"https://rp.example.com/frontchannel?", html, StringComparison.Ordinal);
+        Assert.Contains("iss=" + Uri.EscapeDataString("https://idp.example.com/"), html, StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData("//evil.example.com")]
+    [InlineData("/\\evil.example.com")]
+    [InlineData("/\t/evil.example.com")]
+    [InlineData("https://evil.example.com/")]
+    public async Task StartOpenIddictSamlLogoutAsync_RejectsNonLocalReturnUrl(string url)
+    {
+        // Arrange
+        List<FakeSession> sessions = [CreateSamlSession("s1", ServiceProviderEntityId, "alice")];
+
+        using var server = CreateServer(sessions);
+        using var client = CreateClient(server);
+
+        using var request = new HttpRequestMessage(HttpMethod.Get, "/logout-to?returnUrl=" + Uri.EscapeDataString(url));
+        request.Headers.Add("Cookie", await LoginAsync(client));
+
+        // Act
+        using var response = await client.SendAsync(request);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.StartsWith(SR.GetResourceString(SR.ID01005), await response.Content.ReadAsStringAsync(), StringComparison.Ordinal);
+        Assert.Equal(Statuses.Valid, sessions[0].Status);
+    }
+
     private static string ParseSamlResponse(string html)
     {
         var prefix = "<input type=\"hidden\" name=\"" + Parameters.SamlResponse + "\" value=\"";
@@ -190,7 +278,8 @@ public class OpenIddictServerSamlOwinLogoutTests
     }
 
     private static TestServer CreateServer(List<FakeSession> sessions,
-        Action<OpenIddictServerSamlServiceProvider>? serviceProvider = null, bool enable = true)
+        Action<OpenIddictServerSamlServiceProvider>? serviceProvider = null, bool enable = true,
+        Action<OpenIddictServerBuilder>? server = null, Mock<IOpenIddictApplicationManager>? applications = null, bool issuer = true)
     {
         var services = new ServiceCollection();
 
@@ -214,7 +303,9 @@ public class OpenIddictServerSamlOwinLogoutTests
                     saml.EnableSingleLogout();
                 }
             });
-        });
+
+            server?.Invoke(options);
+        }, applications, issuer);
 
         var provider = services.BuildServiceProvider();
 
@@ -263,9 +354,28 @@ public class OpenIddictServerSamlOwinLogoutTests
                     return context.StartOpenIddictSamlLogoutAsync("/signed-out");
                 }
 
+                if (context.Request.Path == new PathString("/logout-to"))
+                {
+                    return LogoutToAsync(context);
+                }
+
                 context.Response.StatusCode = 404;
                 return Task.CompletedTask;
             });
         });
+
+        static async Task LogoutToAsync(IOwinContext context)
+        {
+            try
+            {
+                await context.StartOpenIddictSamlLogoutAsync(context.Request.Query.Get("returnUrl"));
+            }
+
+            catch (ArgumentException exception)
+            {
+                context.Response.StatusCode = 400;
+                await context.Response.WriteAsync(exception.Message);
+            }
+        }
     }
 }

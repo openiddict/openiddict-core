@@ -328,7 +328,7 @@ internal static class OpenIddictServerSamlAspNetCoreEndpoints
                 var authentication = await context.AuthenticateAsync(options.AuthenticationScheme);
 
                 action = await service.ProcessLogoutRequestAsync(requestResult,
-                    authentication.Succeeded ? authentication.Principal : null, context.RequestAborted);
+                    authentication.Succeeded ? authentication.Principal : null, GetBaseUri(context), context.RequestAborted);
 
                 if (action.SignOut)
                 {
@@ -341,11 +341,21 @@ internal static class OpenIddictServerSamlAspNetCoreEndpoints
         {
             if (!responseResult.Succeeded)
             {
-                await WriteErrorAsync(context, responseResult.ErrorDescription!);
-                return;
+                // Note: when the rejected response corresponds to a pending logout, the logout is propagated to the remaining
+                // participants instead of being aborted (SAML profiles, 4.4.3.4), which ultimately results in a partial logout.
+                if (await service.ProcessRejectedLogoutResponseAsync(responseResult, context.RequestAborted) is not LogoutAction resumed)
+                {
+                    await WriteErrorAsync(context, responseResult.ErrorDescription!);
+                    return;
+                }
+
+                action = resumed;
             }
 
-            action = await service.ProcessLogoutResponseAsync(responseResult, context.RequestAborted);
+            else
+            {
+                action = await service.ProcessLogoutResponseAsync(responseResult, context.RequestAborted);
+            }
         }
 
         else
@@ -450,6 +460,13 @@ internal static class OpenIddictServerSamlAspNetCoreEndpoints
 
     private static bool ValidateTransportSecurity(HttpContext context, OpenIddictServerSamlAspNetCoreOptions options)
         => options.DisableTransportSecurityRequirement || context.Request.IsHttps;
+
+    /// <summary>
+    /// Gets the absolute base URI of the current request (built the same way as by the OpenIddict server ASP.NET Core host).
+    /// </summary>
+    internal static Uri? GetBaseUri(HttpContext context)
+        => Uri.TryCreate(UriHelper.BuildAbsolute(context.Request.Scheme, context.Request.Host, context.Request.PathBase),
+            UriKind.Absolute, out var uri) ? uri : null;
 
     private static Uri GetEndpointUrl(HttpContext context, PathString path)
         => new(UriHelper.BuildAbsolute(context.Request.Scheme, context.Request.Host, context.Request.PathBase, path), UriKind.Absolute);

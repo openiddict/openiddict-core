@@ -10,6 +10,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Moq;
+using OpenIddict.Server.AspNetCore;
 using OpenIddict.Server.Saml.Tests;
 using Xunit;
 using static OpenIddict.Server.Saml.OpenIddictServerSamlConstants;
@@ -215,6 +217,146 @@ public class OpenIddictServerSamlAspNetCoreLogoutTests
         Assert.Equal("/signed-out", completion.Headers.Location!.OriginalString);
     }
 
+    [Fact]
+    public async Task SingleLogout_ContinuesChainWhenParticipantResponseIsInvalid()
+    {
+        // Arrange
+        List<FakeSession> sessions =
+        [
+            CreateSamlSession("s1", ServiceProviderEntityId, "alice"),
+            CreateSamlSession("s2", SecondServiceProviderEntityId, "alice-sp2")
+        ];
+
+        using var host = await CreateHostAsync(sessions);
+        using var client = CreateClient(host);
+
+        using var propagation = await client.GetAsync("/saml/slo" + CreateRedirectQueryString(
+            CreateLogoutRequest(id: "_chain", sessionIndexes: ["s1"]), certificate: ServiceProviderCertificate));
+
+        Assert.Equal(HttpStatusCode.SeeOther, propagation.StatusCode);
+
+        var (logout, _, _) = DecodeRedirectUrl(propagation.Headers.Location!, Parameters.SamlRequest, IdentityProviderCertificate);
+
+        // Act: the second service provider returns an unsigned logout response.
+        using var response = await client.GetAsync("/saml/slo" + CreateRedirectQueryString(
+            CreateLogoutResponse(logout.DocumentElement!.GetAttribute("ID")), parameter: Parameters.SamlResponse));
+
+        // Assert: the logout response is returned to the initiator with a PartialLogout status.
+        Assert.Equal(HttpStatusCode.SeeOther, response.StatusCode);
+        Assert.StartsWith(ServiceProviderLogoutUrl + "?", response.Headers.Location!.AbsoluteUri, StringComparison.Ordinal);
+
+        var (document, _, valid) = DecodeRedirectUrl(response.Headers.Location!, Parameters.SamlResponse, IdentityProviderCertificate);
+        Assert.True(valid);
+        Assert.Equal("_chain", document.DocumentElement!.GetAttribute("InResponseTo"));
+        Assert.Equal(SamlStatusCodes.PartialLogout, document.SelectSingleNode(
+            "/samlp:LogoutResponse/samlp:Status/samlp:StatusCode/samlp:StatusCode/@Value", CreateNamespaceManager(document))!.Value);
+    }
+
+    [Fact]
+    public async Task SingleLogout_InfersIssuerFromRequestWhenIssuerIsNotConfigured()
+    {
+        // Arrange
+        List<FakeSession> sessions =
+        [
+            CreateSamlSession("s1", ServiceProviderEntityId, "alice"),
+            new FakeSession { Id = "oidc", ApplicationId = "a1", LoginId = "login-1", Status = Statuses.Valid, Subject = "alice" }
+        ];
+
+        using var host = await CreateHostAsync(sessions, server: options => options.EnableFrontchannelLogout(),
+            applications: CreateApplicationManager(), issuer: false);
+        using var client = CreateClient(host);
+
+        // Act
+        using var response = await client.GetAsync("/saml/slo" + CreateRedirectQueryString(
+            CreateLogoutRequest(sessionIndexes: ["s1"]), certificate: ServiceProviderCertificate));
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.All(sessions, session => Assert.Equal(Statuses.Revoked, session.Status));
+
+        var html = await response.Content.ReadAsStringAsync();
+        Assert.Contains("src=\"https://rp.example.com/frontchannel?", html, StringComparison.Ordinal);
+        Assert.Contains("iss=" + Uri.EscapeDataString("https://idp.example.com/"), html, StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData("//evil.example.com")]
+    [InlineData("/\\evil.example.com")]
+    [InlineData("/\t/evil.example.com")]
+    [InlineData("https://evil.example.com/")]
+    public async Task StartOpenIddictSamlLogoutAsync_RejectsNonLocalReturnUrl(string url)
+    {
+        // Arrange
+        List<FakeSession> sessions = [CreateSamlSession("s1", ServiceProviderEntityId, "alice")];
+
+        using var host = await CreateHostAsync(sessions);
+        using var client = CreateClient(host);
+
+        using var login = await client.GetAsync("/login?ReturnUrl=%2F");
+
+        using var request = new HttpRequestMessage(HttpMethod.Get, "/logout-to?returnUrl=" + Uri.EscapeDataString(url));
+        request.Headers.Add("Cookie", GetCookie(login));
+
+        // Act
+        using var response = await client.SendAsync(request);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.StartsWith(SR.GetResourceString(SR.ID01005), await response.Content.ReadAsStringAsync(), StringComparison.Ordinal);
+        Assert.Equal(Statuses.Valid, sessions[0].Status);
+    }
+
+    [Fact]
+    public async Task EndSession_TerminatesSamlSessionsSharingTheLogin()
+    {
+        // Arrange
+        List<FakeSession> sessions =
+        [
+            new FakeSession { Id = "oidc", LoginId = "login-1", Status = Statuses.Valid, Subject = "alice" },
+            CreateSamlSession("s1", ServiceProviderEntityId, "alice"),
+            CreateSamlSession("s2", SecondServiceProviderEntityId, "alice-sp2")
+        ];
+
+        using var host = await CreateHostAsync(sessions, server: options =>
+        {
+            options.SetEndSessionEndpointUris("connect/endsession")
+                   .EnableSessionRevocationOnSignOut()
+                   .EnableFrontchannelLogout();
+
+            options.UseAspNetCore()
+                   .EnableEndSessionEndpointPassthrough()
+                   .DisableTransportSecurityRequirement();
+        }, issuer: false);
+
+        using var client = CreateClient(host);
+
+        // Act
+        using var response = await client.GetAsync("/connect/endsession");
+
+        // Assert: the sessions sharing the login are revoked and the SAML service providers are notified in iframes.
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.All(sessions, session => Assert.Equal(Statuses.Revoked, session.Status));
+
+        var html = WebUtility.HtmlDecode(await response.Content.ReadAsStringAsync());
+
+        foreach (var (url, certificate, nameId, index) in (IEnumerable<(string, System.Security.Cryptography.X509Certificates.X509Certificate2, string, string)>)
+            [(ServiceProviderLogoutUrl, IdentityProviderCertificate, "alice", "s1"), (SecondServiceProviderLogoutUrl, IdentityProviderCertificate, "alice-sp2", "s2")])
+        {
+            var start = html.IndexOf("src=\"" + url + "?", StringComparison.Ordinal);
+            Assert.True(start >= 0, html);
+
+            start += "src=\"".Length;
+            var uri = new Uri(html[start..html.IndexOf('"', start)], UriKind.Absolute);
+
+            var (logout, _, valid) = DecodeRedirectUrl(uri, Parameters.SamlRequest, certificate);
+            var namespaces = CreateNamespaceManager(logout);
+
+            Assert.True(valid);
+            Assert.Equal(nameId, logout.SelectSingleNode("/samlp:LogoutRequest/saml:NameID", namespaces)!.InnerText);
+            Assert.Equal(index, logout.SelectSingleNode("/samlp:LogoutRequest/samlp:SessionIndex", namespaces)!.InnerText);
+        }
+    }
+
     private static async Task<string> ParseSamlResponseAsync(HttpResponseMessage response)
     {
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -241,7 +383,8 @@ public class OpenIddictServerSamlAspNetCoreLogoutTests
     }
 
     private static async Task<IHost> CreateHostAsync(List<FakeSession> sessions,
-        Action<OpenIddictServerSamlServiceProvider>? serviceProvider = null, bool enable = true)
+        Action<OpenIddictServerSamlServiceProvider>? serviceProvider = null, bool enable = true,
+        Action<OpenIddictServerBuilder>? server = null, Mock<IOpenIddictApplicationManager>? applications = null, bool issuer = true)
     {
         var builder = new HostBuilder();
 
@@ -272,7 +415,9 @@ public class OpenIddictServerSamlAspNetCoreLogoutTests
                         saml.EnableSingleLogout();
                     }
                 });
-            });
+
+                server?.Invoke(options);
+            }, applications, issuer);
         });
 
         builder.ConfigureWebHost(options =>
@@ -299,6 +444,24 @@ public class OpenIddictServerSamlAspNetCoreLogoutTests
                     });
 
                     endpoints.MapGet("/logout", (HttpContext context) => context.StartOpenIddictSamlLogoutAsync("/signed-out"));
+
+                    endpoints.MapGet("/logout-to", async (HttpContext context, string returnUrl) =>
+                    {
+                        try
+                        {
+                            await context.StartOpenIddictSamlLogoutAsync(returnUrl);
+                        }
+
+                        catch (ArgumentException exception)
+                        {
+                            context.Response.StatusCode = 400;
+                            await context.Response.WriteAsync(exception.Message);
+                        }
+                    });
+
+                    endpoints.MapGet("/connect/endsession", (HttpContext context) => context.SignOutAsync(
+                        OpenIddictServerAspNetCoreDefaults.AuthenticationScheme,
+                        new AuthenticationProperties(new Dictionary<string, string?>(StringComparer.Ordinal) { [Properties.SessionId] = "oidc" })));
                 });
             });
         });

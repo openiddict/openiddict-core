@@ -228,6 +228,15 @@ public sealed class OpenIddictServerSamlConfiguration : IPostConfigureOptions<Op
             throw new InvalidOperationException(SR.FormatID01000(provider.EntityId));
         }
 
+        // Note: logout messages exchanged using front-channel bindings must be signed (SAML profiles, 4.4.4.1 and 4.4.4.2),
+        // which requires the signing certificates of the service provider. Messages exchanged using the SOAP binding
+        // can be authenticated by the TLS server authentication of the service provider (SAML bindings, 3.2.4).
+        if (provider.SingleLogoutServiceUrl is not null && provider.SigningCertificates.Count is 0 &&
+            provider.SingleLogoutServiceBinding is not OpenIddictServerSamlConstants.Bindings.Soap)
+        {
+            throw new InvalidOperationException(SR.FormatID01007(provider.EntityId));
+        }
+
         static bool IsValidEndpoint(Uri url) => url.IsAbsoluteUri && string.IsNullOrEmpty(url.Fragment) &&
             (string.Equals(url.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase) ||
              string.Equals(url.Scheme, Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase));
