@@ -286,6 +286,25 @@ public static class OpenIddictServerSamlLogoutTestHelpers
         return (document, values.TryGetValue(Parameters.RelayState, out var state) ? state.Value : null, valid);
     }
 
+    public static string CreateSoapEnvelope(string message, string? header = null)
+        => "<soap:Envelope xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\">" + header + "<soap:Body>" +
+           message + "</soap:Body></soap:Envelope>";
+
+    /// <summary>
+    /// Creates a SOAP response to a logout request sent using the SOAP binding, signed using the specified certificate.
+    /// </summary>
+    public static string CreateSoapLogoutResponse(string envelope, string issuer, X509Certificate2 certificate)
+    {
+        var request = OpenIddictServerSamlTestHelpers.LoadResponse(envelope);
+        var element = (XmlElement) request.SelectSingleNode("/soap:Envelope/soap:Body/samlp:LogoutRequest",
+            OpenIddictServerSamlTestHelpers.CreateNamespaceManager(request))!;
+
+        var response = OpenIddictServerSamlTestHelpers.SignDocument(
+            CreateLogoutResponse(element.GetAttribute("ID"), issuer: issuer, destination: null), certificate);
+
+        return CreateSoapEnvelope(response.DocumentElement!.OuterXml);
+    }
+
     public static string FormatInstant(DateTimeOffset date)
         => date.UtcDateTime.ToString("yyyy-MM-dd'T'HH:mm:ss'Z'", CultureInfo.InvariantCulture);
 

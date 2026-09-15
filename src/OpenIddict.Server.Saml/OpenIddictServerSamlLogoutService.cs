@@ -275,53 +275,7 @@ public sealed class OpenIddictServerSamlLogoutService
             var login = principal?.Identity?.IsAuthenticated is true ? GetLoginId(principal) : null;
             var subject = principal?.Identity?.IsAuthenticated is true ? GetSubject(principal) : null;
 
-            List<object> sessions = [];
-            HashSet<string> identifiers = new(StringComparer.Ordinal);
-
-            if (request.SessionIndexes.Count is not 0)
-            {
-                foreach (var index in request.SessionIndexes)
-                {
-                    object? session;
-
-                    try
-                    {
-                        session = await manager.FindByIdAsync(index, cancellationToken);
-                    }
-
-                    // Note: session indexes are opaque values returned by the service provider: values that cannot
-                    // be converted to the identifier type used by the store (e.g GUIDs) don't match any session.
-                    catch (Exception exception) when (exception is ArgumentException or FormatException or
-                        InvalidCastException or NotSupportedException or OverflowException)
-                    {
-                        continue;
-                    }
-
-                    if (session is not null && await IsMatchingSessionAsync(session) && identifiers.Add(index))
-                    {
-                        sessions.Add(session);
-                    }
-                }
-            }
-
-            // Note: when no SessionIndex is specified, all the sessions of the principal at the service provider must be
-            // terminated (SAML core, 3.7.3.2). Since NameIDs can't be mapped to users, only the sessions belonging to the
-            // login of the authenticated user are considered (the other sessions expire or are terminated separately).
-            // Such requests are only accepted when explicitly allowed, as session participants must include
-            // at least one SessionIndex element (SAML profiles, 4.4.4.1).
-            else if (_options.CurrentValue.AcceptLogoutRequestsWithoutSessionIndex && !string.IsNullOrEmpty(login))
-            {
-                await foreach (var session in manager.FindByLoginIdAsync(login, cancellationToken))
-                {
-                    if (await IsMatchingSessionAsync(session) &&
-                        identifiers.Add((await manager.GetIdAsync(session, cancellationToken))!))
-                    {
-                        sessions.Add(session);
-                    }
-                }
-            }
-
-            _logger.LogInformation(6802, SR.GetResourceString(SR.ID6802), request.Issuer, sessions.Count);
+            var sessions = await FindSessionsAsync(request, login, cancellationToken);
 
             var signOut = false;
 
@@ -348,34 +302,129 @@ public sealed class OpenIddictServerSamlLogoutService
             var terminated = await TerminateAsync(sessions, state, baseUri, cancellationToken);
 
             return await ContinueAsync(state, signOut, terminated, cancellationToken);
-
-            async ValueTask<bool> IsMatchingSessionAsync(object session)
-            {
-                if (!await manager.HasStatusAsync(session, Statuses.Valid, cancellationToken) ||
-                    !string.IsNullOrEmpty(await manager.GetApplicationIdAsync(session, cancellationToken)))
-                {
-                    return false;
-                }
-
-                var properties = await manager.GetPropertiesAsync(session, cancellationToken);
-                if (!string.Equals(GetProperty(properties, SessionProperties.ServiceProvider), request.Issuer, StringComparison.Ordinal))
-                {
-                    return false;
-                }
-
-                // Note: the identifier of the request must strongly match the NameID issued in the assertion (SAML profiles,
-                // 4.4.4.1 and SAML core, 3.3.4): the value, format and qualifiers must be equal. Omitted formats are equivalent
-                // to the "unspecified" format (SAML core, 8.3.1). The NameIDs issued by the identity provider don't include
-                // qualifiers, whose values then default to the identity provider and the service provider (SAML core, 2.2.2).
-                return string.Equals(GetProperty(properties, SessionProperties.NameId), request.NameId, StringComparison.Ordinal) &&
-                       string.Equals(GetProperty(properties, SessionProperties.NameIdFormat) ?? NameIdFormats.Unspecified,
-                           request.NameIdFormat ?? NameIdFormats.Unspecified, StringComparison.Ordinal) &&
-                       (request.NameQualifier is null ||
-                        string.Equals(request.NameQualifier, _options.CurrentValue.EntityId, StringComparison.Ordinal)) &&
-                       (request.SPNameQualifier is null ||
-                        string.Equals(request.SPNameQualifier, request.Issuer, StringComparison.Ordinal));
-            }
         }
+    }
+
+    /// <summary>
+    /// Processes a logout request sent by a service provider using the SOAP binding (SAML profiles, 4.4.3.1 and SAML bindings,
+    /// 3.2): the request is validated (it must be signed using an enveloped signature), the sessions it identifies are terminated
+    /// and the logout is propagated to the session participants that can be notified without user agent (service providers using
+    /// the SOAP binding and OpenID Connect client applications using back-channel logout). The signed logout response is returned
+    /// in a SOAP envelope, with a PartialLogout status when front-channel participants couldn't be notified.
+    /// </summary>
+    /// <remarks>
+    /// As no user agent is involved, the local authentication cookie of the user cannot be removed: hosts that rely on the
+    /// server-side sessions being valid are expected to validate them when authenticating the user.
+    /// </remarks>
+    /// <param name="body">The body of the HTTP request.</param>
+    /// <param name="endpoint">The absolute URL of the single logout endpoint.</param>
+    /// <param name="baseUri">
+    /// The absolute base URI of the current HTTP request, if any, used to infer the issuer of the OpenID Connect logout
+    /// notifications sent to the client applications sharing the login when <see cref="OpenIddictServerOptions.Issuer"/> is not set.
+    /// </param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> that can be used to abort the operation.</param>
+    /// <returns>The SOAP response that must be returned to the service provider.</returns>
+    public ValueTask<SoapLogoutResult> ProcessSoapLogoutRequestAsync(Stream body, Uri endpoint,
+        Uri? baseUri = null, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(body);
+        ArgumentNullException.ThrowIfNull(endpoint);
+
+        if (baseUri is { IsAbsoluteUri: false })
+        {
+            throw new ArgumentException(SR.GetResourceString(SR.ID01008), nameof(baseUri));
+        }
+
+        EnsureEnabled();
+
+        return ExecuteAsync(body, endpoint, baseUri, cancellationToken);
+
+        async ValueTask<SoapLogoutResult> ExecuteAsync(Stream body, Uri endpoint, Uri? baseUri, CancellationToken cancellationToken)
+        {
+            var options = _options.CurrentValue;
+
+            // Note: the SAML SOAP binding uses SOAP 1.1 (SAML bindings, 3.2.2.1).
+            if (await ReadBodyAsync(body, options.MaximumMessageSize, cancellationToken) is not byte[] data ||
+                LoadDocument(data, options.MaximumMessageSize, out _) is not XmlDocument document ||
+                document.DocumentElement is not XmlElement envelope || !IsElement(envelope, Elements.Envelope, Namespaces.Soap11) ||
+                GetChildElements(envelope, Elements.Body, Namespaces.Soap11) is not [XmlElement element] ||
+                GetSoapChildElements(element) is not [XmlElement message])
+            {
+                return CreateFault(SoapFaultCodes.Client, SR.ID2513);
+            }
+
+            if (HasMandatorySoapHeaders(envelope))
+            {
+                return CreateFault(SoapFaultCodes.MustUnderstand, SR.ID2514);
+            }
+
+            // Note: SAML processing errors are returned as logout responses, not as SOAP faults (SAML bindings, 3.2.3.3).
+            var result = await ValidateRequestAsync(new DecodedMessage
+            {
+                Binding = Bindings.Soap,
+                Document = document,
+                Element = message
+            }, endpoint, cancellationToken);
+
+            if (!result.Succeeded)
+            {
+                _logger.LogInformation(6809, SR.GetResourceString(SR.ID6809), result.Status, result.ServiceProvider?.EntityId);
+
+                return new SoapLogoutResult
+                {
+                    Content = CreateSoapEnvelope(CreateLogoutResponse(destination: null, result.RequestId,
+                        result.Status ?? StatusCodes.Requester, result.SecondLevelStatus, result.ErrorDescription, signed: true)),
+                    ErrorDescription = result.ErrorDescription
+                };
+            }
+
+            var request = result.Request!;
+            var sessions = await FindSessionsAsync(request, login: null, cancellationToken);
+
+            var state = new LogoutState
+            {
+                InitiatorBinding = Bindings.Soap,
+                InitiatorRequestId = request.Id,
+                InitiatorServiceProvider = request.Issuer
+            };
+
+            var terminated = await TerminateAsync(sessions, state, baseUri, cancellationToken);
+
+            // Note: when the logout request is received using the SOAP binding, the participants that can only be notified
+            // using a front-channel binding (that requires a user agent) cannot be notified (SAML profiles, 4.4.3.4).
+            if (state.Pending.Count is not 0 || state.FrontchannelLogoutUris.Count is not 0)
+            {
+                _logger.LogWarning(6811, SR.GetResourceString(SR.ID6811), request.Issuer,
+                    state.Pending.Count + state.FrontchannelLogoutUris.Count);
+
+                state.PartialLogout = true;
+            }
+
+            _logger.LogInformation(6809, SR.GetResourceString(SR.ID6809), StatusCodes.Success, request.Issuer);
+
+            return new SoapLogoutResult
+            {
+                Content = CreateSoapEnvelope(CreateLogoutResponse(destination: null, request.Id, StatusCodes.Success,
+                    state.PartialLogout ? StatusCodes.PartialLogout : null, message: null, signed: true)),
+                PartialLogout = state.PartialLogout,
+                TerminatedSessionIds = terminated
+            };
+        }
+
+        SoapLogoutResult CreateFault(string code, string description)
+        {
+            var message = SR.GetResourceString(description);
+
+            _logger.LogInformation(6801, SR.GetResourceString(SR.ID6801), message);
+
+            return new SoapLogoutResult { Content = CreateSoapFault(code, message), ErrorDescription = message, IsFault = true };
+        }
+
+        static string CreateSoapEnvelope(string response) => new StringBuilder()
+            .Append("<soap:Envelope xmlns:soap=\"").Append(Namespaces.Soap11).Append("\"><soap:Body>")
+            .Append(response)
+            .Append("</soap:Body></soap:Envelope>")
+            .ToString();
     }
 
     /// <summary>
@@ -711,9 +760,13 @@ public sealed class OpenIddictServerSamlLogoutService
                 Url = url
             };
 
+            // Note: the service provider that initiated the logout is not sent a logout request (SAML profiles, 4.4.3.3).
             if (participant.Binding is Bindings.Soap)
             {
-                soap.Add((participant, provider));
+                if (!string.Equals(entityId, termination?.InitiatorServiceProvider, StringComparison.Ordinal))
+                {
+                    soap.Add((participant, provider));
+                }
             }
 
             else if (termination is not null)
@@ -851,7 +904,7 @@ public sealed class OpenIddictServerSamlLogoutService
         var manager = GetSessionManager();
         var dispatcher = _provider.GetRequiredService<IOpenIddictServerDispatcher>();
 
-        var termination = new TerminationState();
+        var termination = new TerminationState { InitiatorServiceProvider = state.InitiatorServiceProvider };
 
         foreach (var session in sessions)
         {
@@ -1097,7 +1150,7 @@ public sealed class OpenIddictServerSamlLogoutService
         return document.OuterXml;
     }
 
-    private string CreateLogoutResponse(Uri destination, string? inResponseTo, string status,
+    private string CreateLogoutResponse(Uri? destination, string? inResponseTo, string status,
         string? secondLevelStatus, string? message, bool signed)
     {
         var options = _options.CurrentValue;
@@ -1110,7 +1163,11 @@ public sealed class OpenIddictServerSamlLogoutService
         response.SetAttribute("ID", CreateIdentifier());
         response.SetAttribute("Version", "2.0");
         response.SetAttribute("IssueInstant", FormatInstant(options.TimeProvider.GetUtcNow()));
-        response.SetAttribute("Destination", destination.AbsoluteUri);
+
+        if (destination is not null)
+        {
+            response.SetAttribute("Destination", destination.AbsoluteUri);
+        }
 
         if (!string.IsNullOrEmpty(inResponseTo))
         {
@@ -1266,6 +1323,10 @@ public sealed class OpenIddictServerSamlLogoutService
 
             { Binding: Bindings.HttpPost } => ValidateRootSignature(root, provider.SigningCertificates),
 
+            // Note: messages received using the SOAP binding must be signed using an enveloped signature, as TLS
+            // client authentication is not supported to authenticate the requester (SAML profiles, 4.4.4.1).
+            { Binding: Bindings.Soap } => ValidateMessageSignature(root, provider.SigningCertificates),
+
             _ => SignatureValidationResult.Missing
         };
 
@@ -1282,8 +1343,10 @@ public sealed class OpenIddictServerSamlLogoutService
             return (provider, SR.ID2506);
         }
 
-        // Note: signed messages must specify their destination (SAML bindings, 3.4.5.2 and 3.5.5.2).
-        if (!root.HasAttribute("Destination") || !IsSameUrl(root.GetAttribute("Destination"), endpoint))
+        // Note: signed messages sent using front-channel bindings must specify their destination (SAML bindings, 3.4.5.2
+        // and 3.5.5.2). The destination is optional for messages sent using the SOAP binding, but must match when specified.
+        if ((message.Binding is not Bindings.Soap && !root.HasAttribute("Destination")) ||
+            (root.HasAttribute("Destination") && !IsSameUrl(root.GetAttribute("Destination"), endpoint)))
         {
             return (provider, SR.ID2507);
         }
@@ -1299,7 +1362,7 @@ public sealed class OpenIddictServerSamlLogoutService
         }
 
         var options = _options.CurrentValue;
-        var root = message.Document!.DocumentElement!;
+        var root = message.Element ?? message.Document!.DocumentElement!;
 
         if (!IsElement(root, Elements.LogoutRequest, Namespaces.Protocol) ||
             !string.Equals(root.GetAttribute("Version"), "2.0", StringComparison.Ordinal) ||
@@ -1489,6 +1552,88 @@ public sealed class OpenIddictServerSamlLogoutService
             RelayState = relayState,
             ServiceProvider = provider
         };
+    }
+
+    private async ValueTask<List<object>> FindSessionsAsync(LogoutRequest request, string? login, CancellationToken cancellationToken)
+    {
+        var manager = GetSessionManager();
+
+        List<object> sessions = [];
+        HashSet<string> identifiers = new(StringComparer.Ordinal);
+
+        if (request.SessionIndexes.Count is not 0)
+        {
+            foreach (var index in request.SessionIndexes)
+            {
+                object? session;
+
+                try
+                {
+                    session = await manager.FindByIdAsync(index, cancellationToken);
+                }
+
+                // Note: session indexes are opaque values returned by the service provider: values that cannot
+                // be converted to the identifier type used by the store (e.g GUIDs) don't match any session.
+                catch (Exception exception) when (exception is ArgumentException or FormatException or
+                    InvalidCastException or NotSupportedException or OverflowException)
+                {
+                    continue;
+                }
+
+                if (session is not null && await IsMatchingSessionAsync(session) && identifiers.Add(index))
+                {
+                    sessions.Add(session);
+                }
+            }
+        }
+
+        // Note: when no SessionIndex is specified, all the sessions of the principal at the service provider must be
+        // terminated (SAML core, 3.7.3.2). Since NameIDs can't be mapped to users, only the sessions belonging to the
+        // login of the authenticated user are considered (the other sessions expire or are terminated separately).
+        // Such requests are only accepted when explicitly allowed, as session participants must include
+        // at least one SessionIndex element (SAML profiles, 4.4.4.1).
+        else if (_options.CurrentValue.AcceptLogoutRequestsWithoutSessionIndex && !string.IsNullOrEmpty(login))
+        {
+            await foreach (var session in manager.FindByLoginIdAsync(login, cancellationToken))
+            {
+                if (await IsMatchingSessionAsync(session) &&
+                    identifiers.Add((await manager.GetIdAsync(session, cancellationToken))!))
+                {
+                    sessions.Add(session);
+                }
+            }
+        }
+
+        _logger.LogInformation(6802, SR.GetResourceString(SR.ID6802), request.Issuer, sessions.Count);
+
+        return sessions;
+
+        async ValueTask<bool> IsMatchingSessionAsync(object session)
+        {
+            if (!await manager.HasStatusAsync(session, Statuses.Valid, cancellationToken) ||
+                !string.IsNullOrEmpty(await manager.GetApplicationIdAsync(session, cancellationToken)))
+            {
+                return false;
+            }
+
+            var properties = await manager.GetPropertiesAsync(session, cancellationToken);
+            if (!string.Equals(GetProperty(properties, SessionProperties.ServiceProvider), request.Issuer, StringComparison.Ordinal))
+            {
+                return false;
+            }
+
+            // Note: the identifier of the request must strongly match the NameID issued in the assertion (SAML profiles,
+            // 4.4.4.1 and SAML core, 3.3.4): the value, format and qualifiers must be equal. Omitted formats are equivalent
+            // to the "unspecified" format (SAML core, 8.3.1). The NameIDs issued by the identity provider don't include
+            // qualifiers, whose values then default to the identity provider and the service provider (SAML core, 2.2.2).
+            return string.Equals(GetProperty(properties, SessionProperties.NameId), request.NameId, StringComparison.Ordinal) &&
+                   string.Equals(GetProperty(properties, SessionProperties.NameIdFormat) ?? NameIdFormats.Unspecified,
+                       request.NameIdFormat ?? NameIdFormats.Unspecified, StringComparison.Ordinal) &&
+                   (request.NameQualifier is null ||
+                    string.Equals(request.NameQualifier, _options.CurrentValue.EntityId, StringComparison.Ordinal)) &&
+                   (request.SPNameQualifier is null ||
+                    string.Equals(request.SPNameQualifier, request.Issuer, StringComparison.Ordinal));
+        }
     }
 
     private void EnsureEnabled()
@@ -1702,6 +1847,8 @@ public sealed class OpenIddictServerSamlLogoutService
 
         public XmlDocument? Document { get; init; }
 
+        public XmlElement? Element { get; init; }
+
         public string? Error { get; init; }
 
         public bool HasInvalidSignatureParameters { get; set; }
@@ -1736,6 +1883,8 @@ public sealed class OpenIddictServerSamlLogoutService
     internal sealed class TerminationState
     {
         public List<LogoutParticipant> FrontchannelParticipants { get; } = [];
+
+        public string? InitiatorServiceProvider { get; init; }
 
         public bool PartialLogout { get; set; }
     }

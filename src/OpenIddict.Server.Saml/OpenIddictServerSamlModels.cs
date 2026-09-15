@@ -562,6 +562,38 @@ public static class OpenIddictServerSamlModels
     }
 
     /// <summary>
+    /// Represents the result of a logout request received using the SOAP binding.
+    /// </summary>
+    public sealed record class SoapLogoutResult
+    {
+        /// <summary>
+        /// Gets the serialized SOAP envelope returned to the requester (containing a logout response or a SOAP fault).
+        /// </summary>
+        public required string Content { get; init; }
+
+        /// <summary>
+        /// Gets the reason why the request was rejected, if applicable.
+        /// </summary>
+        public string? ErrorDescription { get; init; }
+
+        /// <summary>
+        /// Gets a boolean indicating whether the envelope contains a SOAP fault
+        /// (in which case the HTTP status code must be 500, per SAML bindings, 3.2.3.3).
+        /// </summary>
+        public bool IsFault { get; init; }
+
+        /// <summary>
+        /// Gets a boolean indicating whether the logout could not be propagated to all the session participants.
+        /// </summary>
+        public bool PartialLogout { get; init; }
+
+        /// <summary>
+        /// Gets the identifiers of the server-side session entries terminated by this operation.
+        /// </summary>
+        public IReadOnlyList<string> TerminatedSessionIds { get; init; } = [];
+    }
+
+    /// <summary>
     /// Represents a SAML message stored until the artifact representing it is resolved.
     /// </summary>
     public sealed record class ArtifactMessage

@@ -170,6 +170,33 @@ public class OpenIddictServerSamlOwinLogoutTests
     }
 
     [Fact]
+    public async Task SingleLogout_ProcessesSoapLogoutRequest()
+    {
+        // Arrange
+        List<FakeSession> sessions = [CreateSamlSession("s1", ServiceProviderEntityId, "alice")];
+
+        using var server = CreateServer(sessions);
+        using var client = CreateClient(server);
+
+        var request = SignDocument(CreateLogoutRequest(id: "_soap", destination: null, sessionIndexes: ["s1"]), ServiceProviderCertificate);
+
+        // Act
+        using var response = await client.PostAsync("/saml/slo", new StringContent(
+            CreateSoapEnvelope(request.DocumentElement!.OuterXml), Encoding.UTF8, "text/xml"));
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(Statuses.Revoked, sessions[0].Status);
+
+        var document = LoadResponse(await response.Content.ReadAsStringAsync());
+        var manager = CreateNamespaceManager(document);
+
+        Assert.Equal("_soap", document.SelectSingleNode("/soap:Envelope/soap:Body/samlp:LogoutResponse/@InResponseTo", manager)!.Value);
+        Assert.Equal(SamlStatusCodes.Success, document.SelectSingleNode(
+            "/soap:Envelope/soap:Body/samlp:LogoutResponse/samlp:Status/samlp:StatusCode/@Value", manager)!.Value);
+    }
+
+    [Fact]
     public async Task SingleLogout_ContinuesChainWhenParticipantResponseIsInvalid()
     {
         // Arrange

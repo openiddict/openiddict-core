@@ -21,6 +21,100 @@ namespace OpenIddict.Server.Saml;
 internal static class OpenIddictServerSamlHelpers
 {
     /// <summary>
+    /// Reads the body of a request, up to the specified size.
+    /// </summary>
+    /// <returns>The body, or <see langword="null"/> if it is empty or exceeds the maximum size.</returns>
+    public static async ValueTask<byte[]?> ReadBodyAsync(Stream body, int maximumSize, CancellationToken cancellationToken)
+    {
+        using var output = new MemoryStream();
+
+        var buffer = new byte[4096];
+        int count;
+
+        while ((count = await body.ReadAsync(buffer, 0, buffer.Length, cancellationToken)) > 0)
+        {
+            if (output.Length + count > maximumSize)
+            {
+                return null;
+            }
+
+            output.Write(buffer, 0, count);
+        }
+
+        return output.Length is 0 ? null : output.ToArray();
+    }
+
+    /// <summary>
+    /// Gets the child elements of a SOAP envelope, header or body element.
+    /// </summary>
+    /// <returns>The child elements, or an empty list if the element contains text content (which is not allowed).</returns>
+    public static List<XmlElement> GetSoapChildElements(XmlElement element)
+    {
+        List<XmlElement> elements = [];
+
+        foreach (XmlNode node in element.ChildNodes)
+        {
+            switch (node)
+            {
+                case XmlElement child:
+                    elements.Add(child);
+                    break;
+
+                // Note: text content is not allowed in the SOAP envelope, header and body elements.
+                case XmlText or XmlCDataSection:
+                    return [];
+            }
+        }
+
+        return elements;
+    }
+
+    /// <summary>
+    /// Determines whether the specified SOAP 1.1 envelope contains header entries that must be understood
+    /// (SAML bindings, 3.2.2.2 allows headers, but the headers that must be understood are not supported).
+    /// </summary>
+    public static bool HasMandatorySoapHeaders(XmlElement envelope)
+    {
+        foreach (var header in GetChildElements(envelope, Elements.Header, Namespaces.Soap11))
+        {
+            foreach (var entry in GetSoapChildElements(header))
+            {
+                if (entry.GetAttribute("mustUnderstand", Namespaces.Soap11) is "1" or "true")
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Creates a serialized SOAP 1.1 envelope containing a SOAP fault.
+    /// </summary>
+    public static string CreateSoapFault(string code, string message)
+    {
+        var document = new XmlDocument { XmlResolver = null };
+
+        var envelope = document.CreateElement("soap", Elements.Envelope, Namespaces.Soap11);
+        envelope.SetAttribute("xmlns:soap", Namespaces.Soap11);
+        document.AppendChild(envelope);
+
+        var fault = AppendElement(AppendElement(envelope, "soap", Elements.Body, Namespaces.Soap11), "soap", Elements.Fault, Namespaces.Soap11);
+
+        // Note: the faultcode and faultstring elements are unqualified (SOAP 1.1, 4.4).
+        var faultCode = document.CreateElement(Elements.FaultCode);
+        faultCode.AppendChild(document.CreateTextNode("soap:" + code));
+        fault.AppendChild(faultCode);
+
+        var faultString = document.CreateElement(Elements.FaultString);
+        faultString.AppendChild(document.CreateTextNode(message));
+        fault.AppendChild(faultString);
+
+        return document.OuterXml;
+    }
+
+    /// <summary>
     /// Parses a raw query string, preserving the raw (still URL-encoded) values needed to validate
     /// redirect binding signatures. Parameters that are not SAML parameters are ignored.
     /// </summary>

@@ -322,6 +322,22 @@ public sealed class OpenIddictServerSamlOwinMiddleware : OwinMiddleware
         LogoutRequestResult? requestResult = null;
         LogoutResponseResult? responseResult = null;
 
+        // Logout requests sent using the SOAP binding are posted as text/xml SOAP 1.1 envelopes (SAML bindings, 3.2.3.1).
+        if (IsPost(request) && request.ContentType is { Length: > 0 } contentType &&
+            contentType.StartsWith(MediaTypes.Soap, StringComparison.OrdinalIgnoreCase))
+        {
+            var soap = await service.ProcessSoapLogoutRequestAsync(request.Body, endpoint, GetBaseUri(context), cancellationToken);
+
+            // Note: SOAP faults are returned with a 500 status code and SOAP responses must not be cached (SAML bindings, 3.2.3.3).
+            context.Response.StatusCode = soap.IsFault ? 500 : 200;
+            context.Response.Headers.Set("Cache-Control", "no-cache, no-store");
+            context.Response.Headers.Set("Pragma", "no-cache");
+            context.Response.ContentType = MediaTypes.Soap + "; charset=utf-8";
+
+            await WriteAsync(context, soap.Content);
+            return;
+        }
+
         if (IsGet(request) && request.Query.GetValues(Parameters.SamlRequest) is not null)
         {
             requestResult = await service.ValidateRedirectLogoutRequestAsync(request.QueryString.Value, endpoint, cancellationToken);

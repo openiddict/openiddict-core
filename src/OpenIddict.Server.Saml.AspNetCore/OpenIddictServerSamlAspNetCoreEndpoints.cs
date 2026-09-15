@@ -250,7 +250,7 @@ internal static class OpenIddictServerSamlAspNetCoreEndpoints
     }
 
     /// <summary>
-    /// Handles single logout requests and responses (HTTP-Redirect and HTTP-POST bindings).
+    /// Handles single logout requests and responses (HTTP-Redirect, HTTP-POST and SOAP bindings).
     /// </summary>
     public static async Task SingleLogoutAsync(HttpContext context)
     {
@@ -274,6 +274,22 @@ internal static class OpenIddictServerSamlAspNetCoreEndpoints
 
         LogoutRequestResult? requestResult = null;
         LogoutResponseResult? responseResult = null;
+
+        // Logout requests sent using the SOAP binding are posted as text/xml SOAP 1.1 envelopes (SAML bindings, 3.2.3.1).
+        if (HttpMethods.IsPost(request.Method) && request.ContentType is { Length: > 0 } type &&
+            type.StartsWith(MediaTypes.Soap, StringComparison.OrdinalIgnoreCase))
+        {
+            var soap = await service.ProcessSoapLogoutRequestAsync(request.Body, endpoint, GetBaseUri(context), context.RequestAborted);
+
+            // Note: SOAP faults are returned with a 500 status code and SOAP responses must not be cached (SAML bindings, 3.2.3.3).
+            context.Response.StatusCode = soap.IsFault ? StatusCodes.Status500InternalServerError : StatusCodes.Status200OK;
+            context.Response.Headers.CacheControl = "no-cache, no-store";
+            context.Response.Headers.Pragma = "no-cache";
+            context.Response.ContentType = MediaTypes.Soap + "; charset=utf-8";
+
+            await context.Response.WriteAsync(soap.Content, Encoding.UTF8, context.RequestAborted);
+            return;
+        }
 
         if (HttpMethods.IsGet(request.Method) && request.Query.ContainsKey(Parameters.SamlRequest))
         {

@@ -4933,6 +4933,9 @@ This may indicate that the hashed entry is corrupted or malformed.</value>
   <data name="ID6810" xml:space="preserve">
     <value>The SAML logout response returned by the service provider '{ServiceProvider}' was rejected ({Description}): the logout is propagated to the remaining participants and reported as partial.</value>
   </data>
+  <data name="ID6811" xml:space="preserve">
+    <value>The SOAP logout request sent by the service provider '{ServiceProvider}' couldn't be propagated to {Count} front-channel participant(s): a partial logout is returned.</value>
+  </data>
   <data name="ID8000" xml:space="preserve">
     <value>https://documentation.openiddict.com/errors/{0}</value>
   </data>

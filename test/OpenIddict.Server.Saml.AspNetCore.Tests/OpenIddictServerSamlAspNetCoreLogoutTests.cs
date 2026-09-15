@@ -218,6 +218,49 @@ public class OpenIddictServerSamlAspNetCoreLogoutTests
     }
 
     [Fact]
+    public async Task SingleLogout_ProcessesSoapLogoutRequest()
+    {
+        // Arrange
+        List<FakeSession> sessions = [CreateSamlSession("s1", ServiceProviderEntityId, "alice")];
+
+        using var host = await CreateHostAsync(sessions);
+        using var client = CreateClient(host);
+
+        var request = SignDocument(CreateLogoutRequest(id: "_soap", destination: null, sessionIndexes: ["s1"]), ServiceProviderCertificate);
+
+        // Act
+        using var response = await client.PostAsync("/saml/slo", new StringContent(
+            CreateSoapEnvelope(request.DocumentElement!.OuterXml), Encoding.UTF8, "text/xml"));
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal("text/xml", response.Content.Headers.ContentType!.MediaType);
+        Assert.Equal(Statuses.Revoked, sessions[0].Status);
+
+        var document = LoadResponse(await response.Content.ReadAsStringAsync());
+        var manager = CreateNamespaceManager(document);
+
+        Assert.Equal("_soap", document.SelectSingleNode("/soap:Envelope/soap:Body/samlp:LogoutResponse/@InResponseTo", manager)!.Value);
+        Assert.Equal(SamlStatusCodes.Success, document.SelectSingleNode(
+            "/soap:Envelope/soap:Body/samlp:LogoutResponse/samlp:Status/samlp:StatusCode/@Value", manager)!.Value);
+    }
+
+    [Fact]
+    public async Task SingleLogout_ReturnsSoapFaultForMalformedSoapRequest()
+    {
+        // Arrange
+        using var host = await CreateHostAsync([]);
+        using var client = CreateClient(host);
+
+        // Act
+        using var response = await client.PostAsync("/saml/slo", new StringContent("<invalid", Encoding.UTF8, "text/xml"));
+
+        // Assert
+        Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+        Assert.Contains("soap:Fault", await response.Content.ReadAsStringAsync(), StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task SingleLogout_ContinuesChainWhenParticipantResponseIsInvalid()
     {
         // Arrange

@@ -103,8 +103,9 @@ public class OpenIddictServerSamlLogoutTests
 
         // Assert
         var services = document.SelectNodes("/md:EntityDescriptor/md:IDPSSODescriptor/md:SingleLogoutService", CreateNamespaceManager(document))!;
-        Assert.Equal(2, services.Count);
-        Assert.Equal(SingleLogoutEndpoint, ((XmlElement) services[0]!).GetAttribute("Location"));
+        Assert.Equal(3, services.Count);
+        Assert.All(services.Cast<XmlElement>(), service => Assert.Equal(SingleLogoutEndpoint, service.GetAttribute("Location")));
+        Assert.Equal((string[]) [Bindings.HttpRedirect, Bindings.HttpPost, Bindings.Soap], services.Cast<XmlElement>().Select(static service => service.GetAttribute("Binding")).ToArray());
     }
 
     [Fact]
@@ -859,6 +860,151 @@ public class OpenIddictServerSamlLogoutTests
         {
             OpenIddictServerSamlConfiguration.ValidateServiceProvider(sp);
         }
+    }
+
+    [Fact]
+    public async Task ProcessSoapLogoutRequestAsync_TerminatesSessionsAndReturnsSignedResponse()
+    {
+        // Arrange
+        var (provider, sessions, soap) = CreateProvider(serviceProvider: sp => sp.SingleLogoutServiceBinding = Bindings.Soap,
+            secondBinding: Bindings.Soap);
+        await using var _ = provider;
+
+        soap.Callback = (url, envelope) => CreateSoapLogoutResponse(envelope, SecondServiceProviderEntityId, SecondServiceProviderCertificate);
+
+        sessions.Add(CreateSamlSession("s1", ServiceProviderEntityId, "alice"));
+        sessions.Add(CreateSamlSession("s2", SecondServiceProviderEntityId, "alice-sp2"));
+        sessions.Add(new FakeSession { Id = "oidc", LoginId = "login-1", Status = Statuses.Valid, Subject = "alice" });
+        sessions.Add(CreateSamlSession("other", ServiceProviderEntityId, "alice", login: "login-2"));
+
+        var service = provider.GetRequiredService<OpenIddictServerSamlLogoutService>();
+        var request = SignDocument(CreateLogoutRequest(id: "_soap", destination: null, sessionIndexes: ["s1"]), ServiceProviderCertificate);
+
+        using var body = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(CreateSoapEnvelope(request.DocumentElement!.OuterXml)));
+
+        // Act
+        var result = await service.ProcessSoapLogoutRequestAsync(body, Endpoint);
+
+        // Assert
+        Assert.False(result.IsFault);
+        Assert.Null(result.ErrorDescription);
+        Assert.False(result.PartialLogout);
+        Assert.True(new HashSet<string>(["s1", "s2", "oidc"], StringComparer.Ordinal).SetEquals(result.TerminatedSessionIds));
+        Assert.Equal(Statuses.Valid, sessions.Single(session => session.Id is "other").Status);
+
+        // Note: the service provider that initiated the logout is not sent a logout request.
+        Assert.Equal(new Uri(SecondServiceProviderLogoutUrl), Assert.Single(soap.Requests).Url);
+
+        var document = LoadResponse(result.Content);
+        var manager = CreateNamespaceManager(document);
+        var response = (XmlElement) document.SelectSingleNode("/soap:Envelope/soap:Body/samlp:LogoutResponse", manager)!;
+
+        Assert.Equal("_soap", response.GetAttribute("InResponseTo"));
+        Assert.False(response.HasAttribute("Destination"));
+        Assert.True(VerifySignature(response, IdentityProviderCertificate));
+        Assert.Equal(StatusCodes.Success, response.SelectSingleNode("samlp:Status/samlp:StatusCode/@Value", manager)!.Value);
+        Assert.Null(response.SelectSingleNode("samlp:Status/samlp:StatusCode/samlp:StatusCode", manager));
+    }
+
+    [Fact]
+    public async Task ProcessSoapLogoutRequestAsync_ReturnsPartialLogoutWhenFrontchannelParticipantsCannotBeNotified()
+    {
+        // Arrange
+        var (provider, sessions, soap) = CreateProvider(serviceProvider: sp => sp.SingleLogoutServiceBinding = Bindings.Soap);
+        await using var _ = provider;
+
+        sessions.Add(CreateSamlSession("s1", ServiceProviderEntityId, "alice"));
+        sessions.Add(CreateSamlSession("s2", SecondServiceProviderEntityId, "alice-sp2"));
+
+        var service = provider.GetRequiredService<OpenIddictServerSamlLogoutService>();
+        var request = SignDocument(CreateLogoutRequest(id: "_soap_partial", destination: SingleLogoutEndpoint, sessionIndexes: ["s1"]),
+            ServiceProviderCertificate);
+
+        using var body = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(CreateSoapEnvelope(request.DocumentElement!.OuterXml)));
+
+        // Act
+        var result = await service.ProcessSoapLogoutRequestAsync(body, Endpoint);
+
+        // Assert
+        Assert.True(result.PartialLogout);
+        Assert.Empty(soap.Requests);
+        Assert.All(sessions, session => Assert.Equal(Statuses.Revoked, session.Status));
+
+        var document = LoadResponse(result.Content);
+        Assert.Equal(StatusCodes.PartialLogout, document.SelectSingleNode(
+            "/soap:Envelope/soap:Body/samlp:LogoutResponse/samlp:Status/samlp:StatusCode/samlp:StatusCode/@Value",
+            CreateNamespaceManager(document))!.Value);
+    }
+
+    [Theory]
+    [InlineData("unsigned")]
+    [InlineData("destination")]
+    [InlineData("unknown-key")]
+    public async Task ProcessSoapLogoutRequestAsync_ReturnsRequesterStatusForInvalidRequests(string error)
+    {
+        // Arrange
+        var (provider, sessions, _) = CreateProvider(serviceProvider: sp => sp.SingleLogoutServiceBinding = Bindings.Soap);
+        await using var _ = provider;
+
+        sessions.Add(CreateSamlSession("s1", ServiceProviderEntityId, "alice"));
+
+        var service = provider.GetRequiredService<OpenIddictServerSamlLogoutService>();
+        var xml = CreateLogoutRequest(id: "_soap_invalid", sessionIndexes: ["s1"],
+            destination: error is "destination" ? "https://idp.example.com/other" : null);
+
+        var message = error switch
+        {
+            "unsigned" => xml,
+            "unknown-key" => SignDocument(xml, SecondServiceProviderCertificate).DocumentElement!.OuterXml,
+            _ => SignDocument(xml, ServiceProviderCertificate).DocumentElement!.OuterXml
+        };
+
+        using var body = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(CreateSoapEnvelope(message)));
+
+        // Act
+        var result = await service.ProcessSoapLogoutRequestAsync(body, Endpoint);
+
+        // Assert
+        Assert.False(result.IsFault);
+        Assert.Equal(error switch
+        {
+            "unsigned" => SR.GetResourceString(SR.ID2503),
+            "unknown-key" => SR.GetResourceString(SR.ID2504),
+            _ => SR.GetResourceString(SR.ID2507)
+        }, result.ErrorDescription);
+
+        Assert.Equal(Statuses.Valid, sessions[0].Status);
+
+        var document = LoadResponse(result.Content);
+        var manager = CreateNamespaceManager(document);
+        var response = (XmlElement) document.SelectSingleNode("/soap:Envelope/soap:Body/samlp:LogoutResponse", manager)!;
+
+        Assert.True(VerifySignature(response, IdentityProviderCertificate));
+        Assert.Equal(StatusCodes.Requester, response.SelectSingleNode("samlp:Status/samlp:StatusCode/@Value", manager)!.Value);
+    }
+
+    [Theory]
+    [InlineData("<invalid", "Client")]
+    [InlineData("<soap:Envelope xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\"><soap:Body /></soap:Envelope>", "Client")]
+    [InlineData("<soap:Envelope xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\"><soap:Header><h:Test xmlns:h=\"urn:test\" soap:mustUnderstand=\"1\" /></soap:Header><soap:Body><samlp:LogoutRequest xmlns:samlp=\"urn:oasis:names:tc:SAML:2.0:protocol\" /></soap:Body></soap:Envelope>", "MustUnderstand")]
+    public async Task ProcessSoapLogoutRequestAsync_ReturnsFaultForMalformedEnvelopes(string content, string code)
+    {
+        // Arrange
+        var (provider, _, _) = CreateProvider();
+        await using var _ = provider;
+
+        var service = provider.GetRequiredService<OpenIddictServerSamlLogoutService>();
+
+        using var body = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(content));
+
+        // Act
+        var result = await service.ProcessSoapLogoutRequestAsync(body, Endpoint);
+
+        // Assert
+        Assert.True(result.IsFault);
+
+        var document = LoadResponse(result.Content);
+        Assert.Equal("soap:" + code, document.SelectSingleNode("/soap:Envelope/soap:Body/soap:Fault/faultcode", CreateNamespaceManager(document))!.InnerText);
     }
 
     [Fact]

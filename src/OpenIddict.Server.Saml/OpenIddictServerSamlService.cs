@@ -1013,10 +1013,10 @@ public sealed class OpenIddictServerSamlService
         }
 
         // Note: SingleLogoutService elements must follow ArtifactResolutionService elements and precede NameIDFormat
-        // elements (SAML metadata, 2.4.2). Only the front-channel bindings are supported by the single logout endpoint.
+        // elements (SAML metadata, 2.4.2). The single logout endpoint supports the HTTP-Redirect, HTTP-POST and SOAP bindings.
         if (options.EnableSingleLogout && singleLogoutEndpoint is not null)
         {
-            foreach (var binding in (string[]) [Bindings.HttpRedirect, Bindings.HttpPost])
+            foreach (var binding in (string[]) [Bindings.HttpRedirect, Bindings.HttpPost, Bindings.Soap])
             {
                 var service = AppendElement(idp, "md", Elements.SingleLogoutService, Namespaces.Metadata);
                 service.SetAttribute("Binding", binding);
@@ -1143,7 +1143,7 @@ public sealed class OpenIddictServerSamlService
         {
             var options = _options.CurrentValue;
 
-            if (await ReadAsync(body, options.MaximumMessageSize, cancellationToken) is not byte[] data ||
+            if (await ReadBodyAsync(body, options.MaximumMessageSize, cancellationToken) is not byte[] data ||
                 LoadDocument(data, options.MaximumMessageSize, out _) is not XmlDocument document)
             {
                 return CreateFault(SoapFaultCodes.Client, SR.ID2421);
@@ -1154,21 +1154,15 @@ public sealed class OpenIddictServerSamlService
             if (!string.Equals(envelope.LocalName, Elements.Envelope, StringComparison.Ordinal) ||
                 !string.Equals(envelope.NamespaceURI, Namespaces.Soap11, StringComparison.Ordinal) ||
                 GetChildElements(envelope, Elements.Body, Namespaces.Soap11) is not [XmlElement soapBody] ||
-                GetElements(soapBody) is not [XmlElement request])
+                GetSoapChildElements(soapBody) is not [XmlElement request])
             {
                 return CreateFault(SoapFaultCodes.Client, SR.ID2421);
             }
 
             // SOAP headers are allowed (SAML bindings, 3.2.2.2) but the headers that must be understood are not supported.
-            foreach (var header in GetChildElements(envelope, Elements.Header, Namespaces.Soap11))
+            if (HasMandatorySoapHeaders(envelope))
             {
-                foreach (var entry in GetElements(header))
-                {
-                    if (entry.GetAttribute("mustUnderstand", Namespaces.Soap11) is "1" or "true")
-                    {
-                        return CreateFault(SoapFaultCodes.MustUnderstand, SR.ID2422);
-                    }
-                }
+                return CreateFault(SoapFaultCodes.MustUnderstand, SR.ID2422);
             }
 
             if (!string.Equals(request.LocalName, Elements.ArtifactResolve, StringComparison.Ordinal) ||
@@ -1245,65 +1239,7 @@ public sealed class OpenIddictServerSamlService
 
             _logger.LogInformation(6642, SR.GetResourceString(SR.ID6642), message);
 
-            var document = new XmlDocument { XmlResolver = null };
-
-            var envelope = document.CreateElement("soap", Elements.Envelope, Namespaces.Soap11);
-            envelope.SetAttribute("xmlns:soap", Namespaces.Soap11);
-            document.AppendChild(envelope);
-
-            var fault = AppendElement(AppendElement(envelope, "soap", Elements.Body, Namespaces.Soap11), "soap", Elements.Fault, Namespaces.Soap11);
-
-            // Note: the faultcode and faultstring elements are unqualified (SOAP 1.1, 4.4).
-            var faultCode = document.CreateElement(Elements.FaultCode);
-            faultCode.AppendChild(document.CreateTextNode("soap:" + code));
-            fault.AppendChild(faultCode);
-
-            var faultString = document.CreateElement(Elements.FaultString);
-            faultString.AppendChild(document.CreateTextNode(message));
-            fault.AppendChild(faultString);
-
-            return new ArtifactResolutionResult { Content = document.OuterXml, ErrorDescription = message, IsFault = true };
-        }
-
-        static async ValueTask<byte[]?> ReadAsync(Stream body, int maximumSize, CancellationToken cancellationToken)
-        {
-            using var output = new MemoryStream();
-
-            var buffer = new byte[4096];
-            int count;
-
-            while ((count = await body.ReadAsync(buffer, 0, buffer.Length, cancellationToken)) > 0)
-            {
-                if (output.Length + count > maximumSize)
-                {
-                    return null;
-                }
-
-                output.Write(buffer, 0, count);
-            }
-
-            return output.Length is 0 ? null : output.ToArray();
-        }
-
-        static List<XmlElement> GetElements(XmlElement element)
-        {
-            List<XmlElement> elements = [];
-
-            foreach (XmlNode node in element.ChildNodes)
-            {
-                switch (node)
-                {
-                    case XmlElement child:
-                        elements.Add(child);
-                        break;
-
-                    // Note: text content is not allowed in the SOAP envelope, header and body elements.
-                    case XmlText or XmlCDataSection:
-                        return [];
-                }
-            }
-
-            return elements;
+            return new ArtifactResolutionResult { Content = CreateSoapFault(code, message), ErrorDescription = message, IsFault = true };
         }
     }
 
