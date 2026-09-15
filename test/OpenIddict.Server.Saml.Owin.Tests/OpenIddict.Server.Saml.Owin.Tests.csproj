@@ -12,6 +12,7 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <PackageReference Include="Microsoft.Owin.Security.Cookies" />
     <PackageReference Include="Microsoft.Owin.Testing" />
+    <PackageReference Include="Moq" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFrameworkIdentifier)' == '.NETFramework' ">
@@ -20,6 +21,7 @@
 
   <ItemGroup>
     <Compile Include="..\OpenIddict.Server.Saml.Tests\OpenIddictServerSamlTestHelpers.cs" Link="OpenIddictServerSamlTestHelpers.cs" />
+    <Compile Include="..\OpenIddict.Server.Saml.Tests\OpenIddictServerSamlLogoutTestHelpers.cs" Link="OpenIddictServerSamlLogoutTestHelpers.cs" />
   </ItemGroup>
 
   <ItemGroup>
