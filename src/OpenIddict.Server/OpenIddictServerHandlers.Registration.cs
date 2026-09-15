@@ -1775,8 +1775,8 @@ public static partial class OpenIddictServerHandlers
                 SetFeature(ClientMetadata.RequireSignedRequestObject, Requirements.Features.SignedRequestObjects);
                 SetFeature(ClientMetadata.DPoPBoundAccessTokens, Requirements.Features.DPoP);
 
-                SetSetting(ClientMetadata.BackchannelLogoutUri, Settings.Logout.BackchannelUri, ClientMetadata.BackchannelLogoutSessionRequired);
-                SetSetting(ClientMetadata.FrontchannelLogoutUri, Settings.Logout.FrontchannelUri, ClientMetadata.FrontchannelLogoutSessionRequired);
+                SetSetting(ClientMetadata.BackchannelLogoutUri, Settings.Logout.BackchannelLogoutUri, ClientMetadata.BackchannelLogoutSessionRequired);
+                SetSetting(ClientMetadata.FrontchannelLogoutUri, Settings.Logout.FrontchannelLogoutUri, ClientMetadata.FrontchannelLogoutSessionRequired);
                 SetSetting(ClientMetadata.IdTokenSignedResponseAlg, Settings.Registration.IdentityTokenSigningAlgorithm, dependent: null);
 
                 Set(ClientMetadata.ClientIdIssuedAt, CreateElement(writer => writer.WriteNumberValue(date.ToUnixTimeSeconds())));

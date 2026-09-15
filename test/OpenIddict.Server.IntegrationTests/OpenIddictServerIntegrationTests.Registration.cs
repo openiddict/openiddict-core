@@ -296,7 +296,7 @@ public abstract partial class OpenIddictServerIntegrationTests
         Assert.Contains(Permissions.Endpoints.Introspection, descriptor.Permissions);
         Assert.Contains(Permissions.Endpoints.Registration, descriptor.Permissions);
         Assert.DoesNotContain(Permissions.Endpoints.Authorization, descriptor.Permissions);
-        Assert.Equal("https://fabrikam.com/logout", descriptor.Settings[Settings.Logout.BackchannelUri]);
+        Assert.Equal("https://fabrikam.com/logout", descriptor.Settings[Settings.Logout.BackchannelLogoutUri]);
         Assert.True(descriptor.Properties.ContainsKey(Properties.ClientMetadata));
 
         Assert.Equal("3E228451-1555-46F7-A471-951EFBA23A56", token.ApplicationId);
