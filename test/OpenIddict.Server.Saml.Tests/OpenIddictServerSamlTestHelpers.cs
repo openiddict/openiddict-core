@@ -89,7 +89,7 @@ public static class OpenIddictServerSamlTestHelpers
     }
 
     public static string CreateRedirectQueryString(string request, string? relayState = null,
-        X509Certificate2? certificate = null, string algorithm = SignatureAlgorithms.RsaSha256)
+        X509Certificate2? certificate = null, string algorithm = SignatureAlgorithms.RsaSha256, string parameter = Parameters.SamlRequest)
     {
         using var output = new MemoryStream();
         using (var stream = new DeflateStream(output, CompressionMode.Compress, leaveOpen: true))
@@ -99,7 +99,7 @@ public static class OpenIddictServerSamlTestHelpers
         }
 
         var query = new StringBuilder()
-            .Append(Parameters.SamlRequest).Append('=').Append(Uri.EscapeDataString(Convert.ToBase64String(output.ToArray())));
+            .Append(parameter).Append('=').Append(Uri.EscapeDataString(Convert.ToBase64String(output.ToArray())));
 
         if (relayState is not null)
         {

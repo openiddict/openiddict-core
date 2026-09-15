@@ -956,6 +956,20 @@ public sealed class OpenIddictServerSamlService
     /// </param>
     /// <returns>The serialized XML metadata.</returns>
     public string CreateMetadata(Uri endpoint, Uri? artifactResolutionEndpoint)
+        => CreateMetadata(endpoint, artifactResolutionEndpoint, singleLogoutEndpoint: null);
+
+    /// <summary>
+    /// Creates the metadata document (EntityDescriptor) of the identity provider.
+    /// </summary>
+    /// <param name="endpoint">The absolute URL of the single sign-on endpoint.</param>
+    /// <param name="artifactResolutionEndpoint">
+    /// The absolute URL of the artifact resolution endpoint, published when the artifact binding is enabled.
+    /// </param>
+    /// <param name="singleLogoutEndpoint">
+    /// The absolute URL of the single logout endpoint, published when single logout is enabled.
+    /// </param>
+    /// <returns>The serialized XML metadata.</returns>
+    public string CreateMetadata(Uri endpoint, Uri? artifactResolutionEndpoint, Uri? singleLogoutEndpoint)
     {
         ArgumentNullException.ThrowIfNull(endpoint);
 
@@ -996,6 +1010,18 @@ public sealed class OpenIddictServerSamlService
             service.SetAttribute("Location", artifactResolutionEndpoint.AbsoluteUri);
             service.SetAttribute("index", "0");
             service.SetAttribute("isDefault", "true");
+        }
+
+        // Note: SingleLogoutService elements must follow ArtifactResolutionService elements and precede NameIDFormat
+        // elements (SAML metadata, 2.4.2). Only the front-channel bindings are supported by the single logout endpoint.
+        if (options.EnableSingleLogout && singleLogoutEndpoint is not null)
+        {
+            foreach (var binding in (string[]) [Bindings.HttpRedirect, Bindings.HttpPost])
+            {
+                var service = AppendElement(idp, "md", Elements.SingleLogoutService, Namespaces.Metadata);
+                service.SetAttribute("Binding", binding);
+                service.SetAttribute("Location", singleLogoutEndpoint.AbsoluteUri);
+            }
         }
 
         foreach (var format in (string[]) [NameIdFormats.EmailAddress, NameIdFormats.Persistent, NameIdFormats.Transient, NameIdFormats.Unspecified])
@@ -1342,7 +1368,7 @@ public sealed class OpenIddictServerSamlService
         return OpenIddict.Extensions.OpenIddictSamlHelpers.CreateFormPostPage(url, fields, nonce);
     }
 
-    private static X509Certificate2 GetSigningCertificate(OpenIddictServerSamlOptions options)
+    internal static X509Certificate2 GetSigningCertificate(OpenIddictServerSamlOptions options)
     {
         var now = options.TimeProvider.GetUtcNow().UtcDateTime;
 

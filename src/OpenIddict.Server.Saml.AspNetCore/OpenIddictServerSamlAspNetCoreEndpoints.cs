@@ -39,7 +39,7 @@ internal static class OpenIddictServerSamlAspNetCoreEndpoints
         var service = GetService(context);
 
         var metadata = service.CreateMetadata(GetEndpointUrl(context, options.SingleSignOnPath),
-            GetEndpointUrl(context, options.ArtifactResolutionPath));
+            GetEndpointUrl(context, options.ArtifactResolutionPath), GetEndpointUrl(context, options.SingleLogoutPath));
 
         context.Response.ContentType = MediaTypes.Metadata;
         await context.Response.WriteAsync(metadata, Encoding.UTF8, context.RequestAborted);
@@ -162,21 +162,27 @@ internal static class OpenIddictServerSamlAspNetCoreEndpoints
             return;
         }
 
+        var assertionContext = new AssertionContext
+        {
+            AuthenticationInstant = authentication.Properties?.IssuedUtc,
+            CancellationToken = context.RequestAborted,
+            Principal = authentication.Principal!,
+            Request = result.Request,
+            ServiceProvider = result.ServiceProvider!
+        };
+
         var assertion = await context.RequestServices.GetRequiredService<IOpenIddictServerSamlAssertionProvider>()
-            .CreateAssertionAsync(new AssertionContext
-            {
-                AuthenticationInstant = authentication.Properties?.IssuedUtc,
-                CancellationToken = context.RequestAborted,
-                Principal = authentication.Principal!,
-                Request = result.Request,
-                ServiceProvider = result.ServiceProvider!
-            });
+            .CreateAssertionAsync(assertionContext);
 
         if (assertion is null)
         {
             await WriteErrorResponseAsync(result, SamlStatusCodes.Responder, SamlStatusCodes.RequestDenied, SR.GetResourceString(SR.ID2261));
             return;
         }
+
+        // When single logout is enabled, the session of the user at the service provider is tracked server-side.
+        assertion = await context.RequestServices.GetRequiredService<OpenIddictServerSamlLogoutService>()
+            .AttachSessionAsync(assertionContext, assertion);
 
         await WriteResponseAsync(context, service, result, service.CreateResponse(new ResponseDescriptor
         {
@@ -241,6 +247,145 @@ internal static class OpenIddictServerSamlAspNetCoreEndpoints
         context.Response.ContentType = MediaTypes.Soap + "; charset=utf-8";
 
         await context.Response.WriteAsync(result.Content, Encoding.UTF8, context.RequestAborted);
+    }
+
+    /// <summary>
+    /// Handles single logout requests and responses (HTTP-Redirect and HTTP-POST bindings).
+    /// </summary>
+    public static async Task SingleLogoutAsync(HttpContext context)
+    {
+        var options = GetOptions(context);
+
+        if (context.RequestServices.GetService<IOptionsMonitor<OpenIddictServerSamlOptions>>()?.CurrentValue is not { EnableSingleLogout: true })
+        {
+            context.Response.StatusCode = StatusCodes.Status404NotFound;
+            return;
+        }
+
+        if (!ValidateTransportSecurity(context, options))
+        {
+            await WriteErrorAsync(context, SR.GetResourceString(SR.ID2264));
+            return;
+        }
+
+        var service = context.RequestServices.GetRequiredService<OpenIddictServerSamlLogoutService>();
+        var endpoint = GetEndpointUrl(context, options.SingleLogoutPath);
+        var request = context.Request;
+
+        LogoutRequestResult? requestResult = null;
+        LogoutResponseResult? responseResult = null;
+
+        if (HttpMethods.IsGet(request.Method) && request.Query.ContainsKey(Parameters.SamlRequest))
+        {
+            requestResult = await service.ValidateRedirectLogoutRequestAsync(request.QueryString.Value, endpoint, context.RequestAborted);
+        }
+
+        else if (HttpMethods.IsGet(request.Method) && request.Query.ContainsKey(Parameters.SamlResponse))
+        {
+            responseResult = await service.ValidateRedirectLogoutResponseAsync(request.QueryString.Value, endpoint, context.RequestAborted);
+        }
+
+        else if (HttpMethods.IsPost(request.Method) && request.HasFormContentType)
+        {
+            var form = await request.ReadFormAsync(context.RequestAborted);
+            if (form[Parameters.SamlRequest].Count > 1 || form[Parameters.SamlResponse].Count > 1 || form[Parameters.RelayState].Count > 1 ||
+               (form.ContainsKey(Parameters.SamlRequest) && form.ContainsKey(Parameters.SamlResponse)))
+            {
+                await WriteErrorAsync(context, SR.GetResourceString(SR.ID2259));
+                return;
+            }
+
+            var relayState = form.ContainsKey(Parameters.RelayState) ? form[Parameters.RelayState].ToString() : null;
+
+            if (form.ContainsKey(Parameters.SamlRequest))
+            {
+                requestResult = await service.ValidatePostLogoutRequestAsync(form[Parameters.SamlRequest], relayState, endpoint, context.RequestAborted);
+            }
+
+            else if (form.ContainsKey(Parameters.SamlResponse))
+            {
+                responseResult = await service.ValidatePostLogoutResponseAsync(form[Parameters.SamlResponse], relayState, endpoint, context.RequestAborted);
+            }
+        }
+
+        LogoutAction action;
+
+        if (requestResult is not null)
+        {
+            if (!requestResult.Succeeded)
+            {
+                if (!requestResult.CanReturnErrorToServiceProvider)
+                {
+                    await WriteErrorAsync(context, requestResult.ErrorDescription!);
+                    return;
+                }
+
+                action = service.CreateErrorResponseAction(requestResult);
+            }
+
+            else
+            {
+                var authentication = await context.AuthenticateAsync(options.AuthenticationScheme);
+
+                action = await service.ProcessLogoutRequestAsync(requestResult,
+                    authentication.Succeeded ? authentication.Principal : null, context.RequestAborted);
+
+                if (action.SignOut)
+                {
+                    await context.SignOutAsync(options.AuthenticationScheme);
+                }
+            }
+        }
+
+        else if (responseResult is not null)
+        {
+            if (!responseResult.Succeeded)
+            {
+                await WriteErrorAsync(context, responseResult.ErrorDescription!);
+                return;
+            }
+
+            action = await service.ProcessLogoutResponseAsync(responseResult, context.RequestAborted);
+        }
+
+        else
+        {
+            await WriteErrorAsync(context, SR.GetResourceString(SR.ID2511));
+            return;
+        }
+
+        await WriteLogoutActionAsync(context, action);
+    }
+
+    /// <summary>
+    /// Writes the response corresponding to the specified logout action.
+    /// </summary>
+    internal static Task WriteLogoutActionAsync(HttpContext context, LogoutAction action)
+    {
+        var headers = context.Response.Headers;
+        headers.CacheControl = "no-cache, no-store";
+        headers.Pragma = "no-cache";
+
+        if (action.FormPostUrl is null && action.FrontchannelLogoutUris.Count is 0)
+        {
+            if (action.RedirectUrl is not null)
+            {
+                context.Response.StatusCode = StatusCodes.Status303SeeOther;
+                headers.Location = action.RedirectUrl.OriginalString;
+                return Task.CompletedTask;
+            }
+
+            context.Response.StatusCode = StatusCodes.Status200OK;
+            context.Response.ContentType = "text/plain; charset=utf-8";
+            return context.Response.WriteAsync(SR.GetResourceString(SR.ID8200), Encoding.UTF8, context.RequestAborted);
+        }
+
+        var nonce = Base64Url.EncodeToString(RandomNumberGenerator.GetBytes(16));
+
+        headers.ContentSecurityPolicy = OpenIddictServerSamlLogoutService.CreateLogoutContentSecurityPolicy(action, nonce);
+        context.Response.ContentType = "text/html; charset=utf-8";
+
+        return context.Response.WriteAsync(OpenIddictServerSamlLogoutService.CreateLogoutPage(action, nonce), Encoding.UTF8, context.RequestAborted);
     }
 
     private static async Task WriteResponseAsync(HttpContext context, OpenIddictServerSamlService service,

@@ -92,6 +92,19 @@ public sealed class OpenIddictServerSamlConfiguration : IPostConfigureOptions<Op
             return ValidateOptionsResult.Fail(SR.GetResourceString(SR.ID0845));
         }
 
+        if (options.EnableSingleLogout)
+        {
+            if (string.IsNullOrEmpty(options.LoginIdClaimType))
+            {
+                return ValidateOptionsResult.Fail(SR.GetResourceString(SR.ID01004));
+            }
+
+            if (options.SingleLogoutTimeout <= TimeSpan.Zero || options.LogoutStateLifetime <= TimeSpan.Zero)
+            {
+                return ValidateOptionsResult.Fail(SR.GetResourceString(SR.ID01003));
+            }
+        }
+
         if (!OpenIddictServerSamlHelpers.IsSupportedDataEncryptionAlgorithm(options.DataEncryptionAlgorithm) ||
             !OpenIddictServerSamlHelpers.IsSupportedKeyTransportAlgorithm(options.KeyTransportAlgorithm))
         {
@@ -205,5 +218,18 @@ public sealed class OpenIddictServerSamlConfiguration : IPostConfigureOptions<Op
         {
             throw new InvalidOperationException(SR.FormatID0577(provider.EntityId));
         }
+
+        if ((provider.SingleLogoutServiceUrl is null && provider.SingleLogoutServiceResponseUrl is not null) ||
+            (provider.SingleLogoutServiceUrl is not null && !IsValidEndpoint(provider.SingleLogoutServiceUrl)) ||
+            (provider.SingleLogoutServiceResponseUrl is not null && !IsValidEndpoint(provider.SingleLogoutServiceResponseUrl)) ||
+            provider.SingleLogoutServiceBinding is not (null or OpenIddictServerSamlConstants.Bindings.HttpRedirect or
+                OpenIddictServerSamlConstants.Bindings.HttpPost or OpenIddictServerSamlConstants.Bindings.Soap))
+        {
+            throw new InvalidOperationException(SR.FormatID01000(provider.EntityId));
+        }
+
+        static bool IsValidEndpoint(Uri url) => url.IsAbsoluteUri && string.IsNullOrEmpty(url.Fragment) &&
+            (string.Equals(url.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase) ||
+             string.Equals(url.Scheme, Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase));
     }
 }

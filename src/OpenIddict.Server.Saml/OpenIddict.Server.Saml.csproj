@@ -26,6 +26,10 @@ To use the SAML identity provider, reference the OpenIddict.Server.Saml.AspNetCo
     <PackageReference Include="System.Security.Cryptography.Xml" />
   </ItemGroup>
 
+  <ItemGroup Condition=" '$(TargetFrameworkIdentifier)' == '.NETFramework' ">
+    <Reference Include="System.Net.Http" />
+  </ItemGroup>
+
   <ItemGroup>
     <Using Include="OpenIddict.Abstractions" />
     <Using Include="OpenIddict.Abstractions.OpenIddictConstants" Static="true" />

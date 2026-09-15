@@ -174,6 +174,58 @@ public sealed class OpenIddictServerSamlBuilder
         => Configure(options => options.ArtifactLifetime = lifetime);
 
     /// <summary>
+    /// Enables SAML 2.0 single logout (SAML profiles, 4.4). The login identifier claim type must also be
+    /// configured using <see cref="SetLoginIdClaimType(string)"/> and the OpenIddict core services registered.
+    /// </summary>
+    /// <returns>The <see cref="OpenIddictServerSamlBuilder"/> instance.</returns>
+    public OpenIddictServerSamlBuilder EnableSingleLogout()
+        => Configure(options => options.EnableSingleLogout = true);
+
+    /// <summary>
+    /// Sets the claim type of the authenticated principal containing the login identifier.
+    /// </summary>
+    /// <param name="type">The claim type.</param>
+    /// <returns>The <see cref="OpenIddictServerSamlBuilder"/> instance.</returns>
+    public OpenIddictServerSamlBuilder SetLoginIdClaimType(string type)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(type);
+
+        return Configure(options => options.LoginIdClaimType = type);
+    }
+
+    /// <summary>
+    /// Sets the maximum amount of time allowed to send a logout request using the SOAP binding.
+    /// </summary>
+    /// <param name="timeout">The timeout.</param>
+    /// <returns>The <see cref="OpenIddictServerSamlBuilder"/> instance.</returns>
+    public OpenIddictServerSamlBuilder SetSingleLogoutTimeout(TimeSpan timeout)
+        => Configure(options => options.SingleLogoutTimeout = timeout);
+
+    /// <summary>
+    /// Sets the maximum amount of time a service provider has to return a front-channel logout response.
+    /// </summary>
+    /// <param name="lifetime">The lifetime.</param>
+    /// <returns>The <see cref="OpenIddictServerSamlBuilder"/> instance.</returns>
+    public OpenIddictServerSamlBuilder SetLogoutStateLifetime(TimeSpan lifetime)
+        => Configure(options => options.LogoutStateLifetime = lifetime);
+
+    /// <summary>
+    /// Registers a custom SOAP client, used to send logout requests using the SOAP binding.
+    /// </summary>
+    /// <typeparam name="TClient">The type of the SOAP client.</typeparam>
+    /// <param name="lifetime">The lifetime of the SOAP client.</param>
+    /// <returns>The <see cref="OpenIddictServerSamlBuilder"/> instance.</returns>
+    public OpenIddictServerSamlBuilder SetSoapClient<
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TClient>(
+        ServiceLifetime lifetime = ServiceLifetime.Singleton)
+        where TClient : class, IOpenIddictServerSamlSoapClient
+    {
+        Services.Replace(new ServiceDescriptor(typeof(IOpenIddictServerSamlSoapClient), typeof(TClient), lifetime));
+
+        return this;
+    }
+
+    /// <summary>
     /// Disables request replay protection: authentication requests can then be replayed during their validity window and
     /// request states can be used multiple times until they expire. Disabling replay protection is not recommended.
     /// </summary>

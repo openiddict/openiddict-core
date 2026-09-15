@@ -17,9 +17,10 @@ namespace Microsoft.AspNetCore.Builder;
 public static class OpenIddictServerSamlAspNetCoreEndpointRouteBuilderExtensions
 {
     /// <summary>
-    /// Maps the SAML metadata, single sign-on and artifact resolution endpoints using the paths
-    /// configured in <see cref="OpenIddictServerSamlAspNetCoreOptions"/>. Note: the artifact
-    /// resolution endpoint returns a 404 response unless the HTTP-Artifact binding is enabled.
+    /// Maps the SAML metadata, single sign-on, artifact resolution and single logout endpoints using the paths
+    /// configured in <see cref="OpenIddictServerSamlAspNetCoreOptions"/>. Note: the artifact resolution endpoint
+    /// returns a 404 response unless the HTTP-Artifact binding is enabled and the single logout endpoint
+    /// returns a 404 response unless single logout is enabled.
     /// </summary>
     /// <remarks>The endpoints must be mapped after <c>UseAuthentication()</c> is called.</remarks>
     /// <param name="endpoints">The endpoint route builder.</param>
@@ -35,7 +36,8 @@ public static class OpenIddictServerSamlAspNetCoreEndpointRouteBuilderExtensions
         [
             endpoints.MapGet(options.MetadataPath.Value!, OpenIddictServerSamlAspNetCoreEndpoints.MetadataAsync),
             endpoints.MapMethods(options.SingleSignOnPath.Value!, [HttpMethods.Get, HttpMethods.Post], OpenIddictServerSamlAspNetCoreEndpoints.SingleSignOnAsync),
-            endpoints.MapPost(options.ArtifactResolutionPath.Value!, OpenIddictServerSamlAspNetCoreEndpoints.ArtifactResolutionAsync)
+            endpoints.MapPost(options.ArtifactResolutionPath.Value!, OpenIddictServerSamlAspNetCoreEndpoints.ArtifactResolutionAsync),
+            endpoints.MapMethods(options.SingleLogoutPath.Value!, [HttpMethods.Get, HttpMethods.Post], OpenIddictServerSamlAspNetCoreEndpoints.SingleLogoutAsync)
         ]);
     }
 

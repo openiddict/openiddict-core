@@ -28,6 +28,12 @@ public sealed class OpenIddictServerSamlOwinOptions
     public PathString ArtifactResolutionPath { get; set; } = new("/saml/artifact");
 
     /// <summary>
+    /// Gets or sets the path of the single logout endpoint (HTTP-Redirect and HTTP-POST bindings), that
+    /// is only handled when single logout is enabled in the SAML options.
+    /// </summary>
+    public PathString SingleLogoutPath { get; set; } = new("/saml/slo");
+
+    /// <summary>
     /// Gets or sets the authentication type used to authenticate and challenge the user (e.g the cookies authentication type).
     /// </summary>
     public string? AuthenticationType { get; set; }

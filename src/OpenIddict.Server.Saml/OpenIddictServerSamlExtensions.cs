@@ -33,6 +33,21 @@ public static class OpenIddictServerSamlExtensions
         builder.Services.TryAddSingleton<IOpenIddictServerSamlArtifactStore, OpenIddictServerSamlArtifactStore>();
         builder.Services.TryAddSingleton<IOpenIddictServerSamlReplayCache, OpenIddictServerSamlReplayCache>();
         builder.Services.TryAddScoped<OpenIddictServerSamlService>();
+        builder.Services.TryAddScoped<OpenIddictServerSamlLogoutService>();
+        builder.Services.TryAddSingleton<IOpenIddictServerSamlSoapClient, OpenIddictServerSamlSoapClient>();
+
+        // Register the server event handlers used by the SAML identity provider (e.g to propagate session terminations).
+        builder.Services.TryAdd(OpenIddictServerSamlHandlers.DefaultHandlers.Select(static descriptor => descriptor.ServiceDescriptor));
+        builder.Configure(static options =>
+        {
+            foreach (var descriptor in OpenIddictServerSamlHandlers.DefaultHandlers)
+            {
+                if (!options.Handlers.Contains(descriptor))
+                {
+                    options.Handlers.Add(descriptor);
+                }
+            }
+        });
 
         // Note: TryAddEnumerable() is used here to ensure the initializers are only registered once.
         builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<

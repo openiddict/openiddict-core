@@ -92,12 +92,16 @@ public static class OpenIddictServerSamlConstants
         public const string Issuer = "Issuer";
         public const string KeyDescriptor = "KeyDescriptor";
         public const string KeyInfo = "KeyInfo";
+        public const string LogoutRequest = "LogoutRequest";
+        public const string LogoutResponse = "LogoutResponse";
         public const string MaskGenerationFunction = "MGF";
         public const string NameId = "NameID";
         public const string NameIdFormat = "NameIDFormat";
         public const string NameIdPolicy = "NameIDPolicy";
         public const string Response = "Response";
+        public const string SessionIndex = "SessionIndex";
         public const string Signature = "Signature";
+        public const string SingleLogoutService = "SingleLogoutService";
         public const string SingleSignOnService = "SingleSignOnService";
         public const string Status = "Status";
         public const string StatusCode = "StatusCode";
@@ -118,6 +122,12 @@ public static class OpenIddictServerSamlConstants
     {
         public const string RsaOaep = "http://www.w3.org/2009/xmlenc11#rsa-oaep";
         public const string RsaOaepMgf1P = "http://www.w3.org/2001/04/xmlenc#rsa-oaep-mgf1p";
+    }
+
+    public static class LogoutReasons
+    {
+        public const string Admin = "urn:oasis:names:tc:SAML:2.0:logout:admin";
+        public const string User = "urn:oasis:names:tc:SAML:2.0:logout:user";
     }
 
     public static class MaskGenerationFunctions
@@ -162,6 +172,16 @@ public static class OpenIddictServerSamlConstants
         public const string State = "openiddict_saml_state";
     }
 
+    /// <summary>
+    /// Contains the names of the properties attached to the server-side session entries created for SAML service providers.
+    /// </summary>
+    public static class SessionProperties
+    {
+        public const string NameId = "saml_name_id";
+        public const string NameIdFormat = "saml_name_id_format";
+        public const string ServiceProvider = "saml_service_provider";
+    }
+
     public static class SignatureAlgorithms
     {
         public const string RsaSha256 = "http://www.w3.org/2001/04/xmldsig-more#rsa-sha256";
@@ -180,11 +200,13 @@ public static class OpenIddictServerSamlConstants
         public const string AuthnFailed = "urn:oasis:names:tc:SAML:2.0:status:AuthnFailed";
         public const string InvalidNameIdPolicy = "urn:oasis:names:tc:SAML:2.0:status:InvalidNameIDPolicy";
         public const string NoPassive = "urn:oasis:names:tc:SAML:2.0:status:NoPassive";
+        public const string PartialLogout = "urn:oasis:names:tc:SAML:2.0:status:PartialLogout";
         public const string Requester = "urn:oasis:names:tc:SAML:2.0:status:Requester";
         public const string RequestDenied = "urn:oasis:names:tc:SAML:2.0:status:RequestDenied";
         public const string RequestUnsupported = "urn:oasis:names:tc:SAML:2.0:status:RequestUnsupported";
         public const string Responder = "urn:oasis:names:tc:SAML:2.0:status:Responder";
         public const string Success = "urn:oasis:names:tc:SAML:2.0:status:Success";
+        public const string UnknownPrincipal = "urn:oasis:names:tc:SAML:2.0:status:UnknownPrincipal";
         public const string UnsupportedBinding = "urn:oasis:names:tc:SAML:2.0:status:UnsupportedBinding";
         public const string VersionMismatch = "urn:oasis:names:tc:SAML:2.0:status:VersionMismatch";
     }

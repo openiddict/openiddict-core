@@ -106,6 +106,36 @@ public sealed class OpenIddictServerSamlOptions
     public bool? WantAuthenticationRequestsSigned { get; set; }
 
     /// <summary>
+    /// Gets or sets a boolean indicating whether SAML 2.0 single logout is enabled (SAML profiles, 4.4). Disabled by default.
+    /// </summary>
+    /// <remarks>
+    /// When enabled, a server-side session entry (sharing the login identifier of the authenticated user) is created for each
+    /// service provider an assertion is issued to, which requires the OpenIddict core services and the non-degraded mode.
+    /// Sessions terminated by the SAML single logout endpoint or by the OpenID Connect end session endpoint are propagated
+    /// to the SAML service providers and to the OpenID Connect client applications participating in the same login.
+    /// </remarks>
+    public bool EnableSingleLogout { get; set; }
+
+    /// <summary>
+    /// Gets or sets the claim type of the authenticated principal containing the login identifier, used to correlate the
+    /// SAML and OpenID Connect server-side sessions created for the same authentication of the user. Required when
+    /// <see cref="EnableSingleLogout"/> is <see langword="true"/>.
+    /// </summary>
+    public string? LoginIdClaimType { get; set; }
+
+    /// <summary>
+    /// Gets or sets the maximum amount of time allowed to send a logout request to a service provider using the SOAP binding.
+    /// By default, 5 seconds.
+    /// </summary>
+    public TimeSpan SingleLogoutTimeout { get; set; } = TimeSpan.FromSeconds(5);
+
+    /// <summary>
+    /// Gets or sets the maximum amount of time a service provider has to return a logout response when logout requests are
+    /// propagated using front-channel bindings. By default, 10 minutes.
+    /// </summary>
+    public TimeSpan LogoutStateLifetime { get; set; } = TimeSpan.FromMinutes(10);
+
+    /// <summary>
     /// Gets or sets the maximum size, in bytes, of the decoded (and inflated) SAML messages. By default, 64 KiB.
     /// </summary>
     public int MaximumMessageSize { get; set; } = 64 * 1024;

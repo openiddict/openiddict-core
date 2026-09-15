@@ -308,6 +308,250 @@ public static class OpenIddictServerSamlModels
     }
 
     /// <summary>
+    /// Represents a validated SAML 2.0 logout request sent by a service provider (SAML core, 3.7.1).
+    /// </summary>
+    public sealed record class LogoutRequest
+    {
+        /// <summary>
+        /// Gets the identifier of the request (used as the InResponseTo value of the logout response).
+        /// </summary>
+        public required string Id { get; init; }
+
+        /// <summary>
+        /// Gets the entity identifier of the service provider that issued the request.
+        /// </summary>
+        public required string Issuer { get; init; }
+
+        /// <summary>
+        /// Gets the issue instant of the request.
+        /// </summary>
+        public required DateTimeOffset IssueInstant { get; init; }
+
+        /// <summary>
+        /// Gets the binding used to send the request.
+        /// </summary>
+        public required string Binding { get; init; }
+
+        /// <summary>
+        /// Gets the NameID identifying the principal.
+        /// </summary>
+        public required string NameId { get; init; }
+
+        /// <summary>
+        /// Gets the format of the NameID, if specified.
+        /// </summary>
+        public string? NameIdFormat { get; init; }
+
+        /// <summary>
+        /// Gets the session indexes identifying the sessions to terminate. If empty, all
+        /// the sessions of the principal at the service provider must be terminated.
+        /// </summary>
+        public IReadOnlyList<string> SessionIndexes { get; init; } = [];
+
+        /// <summary>
+        /// Gets the destination of the request, if specified.
+        /// </summary>
+        public string? Destination { get; init; }
+
+        /// <summary>
+        /// Gets the date after which the request must be discarded, if specified.
+        /// </summary>
+        public DateTimeOffset? NotOnOrAfter { get; init; }
+
+        /// <summary>
+        /// Gets the reason of the logout, if specified.
+        /// </summary>
+        public string? Reason { get; init; }
+    }
+
+    /// <summary>
+    /// Represents the result of the validation of a SAML 2.0 logout request.
+    /// </summary>
+    public sealed record class LogoutRequestResult
+    {
+        /// <summary>
+        /// Gets the validated request, if available.
+        /// </summary>
+        public LogoutRequest? Request { get; init; }
+
+        /// <summary>
+        /// Gets the service provider, if it could be resolved.
+        /// </summary>
+        public OpenIddictServerSamlServiceProvider? ServiceProvider { get; init; }
+
+        /// <summary>
+        /// Gets the identifier of the request, if it could be extracted from a trusted request.
+        /// </summary>
+        public string? RequestId { get; init; }
+
+        /// <summary>
+        /// Gets the binding used to send the request, if available.
+        /// </summary>
+        public string? Binding { get; init; }
+
+        /// <summary>
+        /// Gets the relay state, if specified.
+        /// </summary>
+        public string? RelayState { get; init; }
+
+        /// <summary>
+        /// Gets the SAML status code describing the error, if applicable.
+        /// </summary>
+        public string? Status { get; init; }
+
+        /// <summary>
+        /// Gets the second-level SAML status code describing the error, if applicable.
+        /// </summary>
+        public string? SecondLevelStatus { get; init; }
+
+        /// <summary>
+        /// Gets the error description, if applicable.
+        /// </summary>
+        public string? ErrorDescription { get; init; }
+
+        /// <summary>
+        /// Gets a boolean indicating whether the request was successfully validated.
+        /// </summary>
+        public bool Succeeded => Status is null;
+
+        /// <summary>
+        /// Gets a boolean indicating whether an error logout response can be safely returned to the service provider
+        /// (i.e the service provider, its single logout service and the signature of the request were validated).
+        /// </summary>
+        public bool CanReturnErrorToServiceProvider { get; init; }
+    }
+
+    /// <summary>
+    /// Represents the result of the validation of a SAML 2.0 logout response returned by a service provider.
+    /// </summary>
+    public sealed record class LogoutResponseResult
+    {
+        /// <summary>
+        /// Gets the identifier of the response, if available.
+        /// </summary>
+        public string? Id { get; init; }
+
+        /// <summary>
+        /// Gets the identifier of the logout request the response corresponds to, if available.
+        /// </summary>
+        public string? InResponseTo { get; init; }
+
+        /// <summary>
+        /// Gets the service provider, if it could be resolved.
+        /// </summary>
+        public OpenIddictServerSamlServiceProvider? ServiceProvider { get; init; }
+
+        /// <summary>
+        /// Gets the top-level status code returned by the service provider, if available.
+        /// </summary>
+        public string? Status { get; init; }
+
+        /// <summary>
+        /// Gets the second-level status code returned by the service provider, if available.
+        /// </summary>
+        public string? SecondLevelStatus { get; init; }
+
+        /// <summary>
+        /// Gets the relay state, if specified.
+        /// </summary>
+        public string? RelayState { get; init; }
+
+        /// <summary>
+        /// Gets the reason why the response was rejected, if applicable.
+        /// </summary>
+        public string? ErrorDescription { get; init; }
+
+        /// <summary>
+        /// Gets a boolean indicating whether the response was successfully validated (the status
+        /// returned by the service provider is exposed by <see cref="Status"/> and may indicate a failure).
+        /// </summary>
+        public bool Succeeded => ErrorDescription is null;
+    }
+
+    /// <summary>
+    /// Represents a SAML service provider session that must be notified when a server-side session is terminated.
+    /// </summary>
+    public sealed record class LogoutParticipant
+    {
+        /// <summary>
+        /// Gets the entity identifier of the service provider.
+        /// </summary>
+        public required string ServiceProvider { get; init; }
+
+        /// <summary>
+        /// Gets the identifier of the server-side session entry (used as the SessionIndex).
+        /// </summary>
+        public required string SessionId { get; init; }
+
+        /// <summary>
+        /// Gets the NameID issued to the service provider.
+        /// </summary>
+        public required string NameId { get; init; }
+
+        /// <summary>
+        /// Gets the format of the NameID issued to the service provider, if available.
+        /// </summary>
+        public string? NameIdFormat { get; init; }
+
+        /// <summary>
+        /// Gets the binding of the single logout service of the service provider.
+        /// </summary>
+        public required string Binding { get; init; }
+
+        /// <summary>
+        /// Gets the location of the single logout service of the service provider.
+        /// </summary>
+        public required Uri Url { get; init; }
+    }
+
+    /// <summary>
+    /// Describes the response a host must return to the user agent to continue or complete a single logout operation.
+    /// </summary>
+    public sealed record class LogoutAction
+    {
+        /// <summary>
+        /// Gets the URL the user agent must be redirected to (HTTP-Redirect binding or local return URL), if applicable.
+        /// </summary>
+        public Uri? RedirectUrl { get; init; }
+
+        /// <summary>
+        /// Gets the URL the form containing <see cref="FormFields"/> must be posted to (HTTP-POST binding), if applicable.
+        /// </summary>
+        public Uri? FormPostUrl { get; init; }
+
+        /// <summary>
+        /// Gets the fields of the form posted to <see cref="FormPostUrl"/>.
+        /// </summary>
+        public IReadOnlyList<KeyValuePair<string, string>> FormFields { get; init; } = [];
+
+        /// <summary>
+        /// Gets the front-channel logout URIs (e.g of OpenID Connect client applications) that must be rendered in
+        /// hidden iframes before the user agent is redirected or the form is posted.
+        /// </summary>
+        public IReadOnlyList<Uri> FrontchannelLogoutUris { get; init; } = [];
+
+        /// <summary>
+        /// Gets a boolean indicating whether the host must sign the user out of the local authentication scheme.
+        /// </summary>
+        public bool SignOut { get; init; }
+
+        /// <summary>
+        /// Gets a boolean indicating whether the logout could not be propagated to all the session participants.
+        /// </summary>
+        public bool PartialLogout { get; init; }
+
+        /// <summary>
+        /// Gets the identifiers of the server-side session entries terminated by this operation.
+        /// </summary>
+        public IReadOnlyList<string> TerminatedSessionIds { get; init; } = [];
+
+        /// <summary>
+        /// Gets a boolean indicating whether the operation is completed and no navigation is required.
+        /// </summary>
+        public bool IsCompleted => RedirectUrl is null && FormPostUrl is null && FrontchannelLogoutUris.Count is 0;
+    }
+
+    /// <summary>
     /// Represents a SAML message stored until the artifact representing it is resolved.
     /// </summary>
     public sealed record class ArtifactMessage

@@ -2453,6 +2453,27 @@ To register a distributed cache, use 'services.AddDistributedMemoryCache()' or a
   <data name="ID0913" xml:space="preserve">
     <value>The SAML registration '{0}' cannot disable authentication request signing when service provider signing certificates are configured, as the service provider metadata advertises that all the authentication requests are signed (AuthnRequestsSigned).</value>
   </data>
+  <data name="ID01000" xml:space="preserve">
+    <value>The single logout service of the SAML service provider '{0}' is invalid: its URLs must be absolute HTTP or HTTPS URLs without a fragment and its binding must be HTTP-Redirect, HTTP-POST or SOAP.</value>
+  </data>
+  <data name="ID01001" xml:space="preserve">
+    <value>SAML single logout requires the OpenIddict core services (session manager) and cannot be used when the degraded mode is enabled. To register the core services, use 'services.AddOpenIddict().AddCore()'.</value>
+  </data>
+  <data name="ID01002" xml:space="preserve">
+    <value>SAML single logout is not enabled. To enable it, use 'services.AddOpenIddict().AddServer().UseSaml().EnableSingleLogout()'.</value>
+  </data>
+  <data name="ID01003" xml:space="preserve">
+    <value>The SAML single logout timeout and logout state lifetime must be positive.</value>
+  </data>
+  <data name="ID01004" xml:space="preserve">
+    <value>The login identifier claim type must be set when SAML single logout is enabled. To set it, use 'services.AddOpenIddict().AddServer().UseSaml().SetLoginIdClaimType()'.</value>
+  </data>
+  <data name="ID01005" xml:space="preserve">
+    <value>The SAML logout return URL must be a local URL.</value>
+  </data>
+  <data name="ID01006" xml:space="preserve">
+    <value>A SAML logout operation can only be processed from a successful validation result containing a service provider and a message identifier.</value>
+  </data>
   <data name="ID2000" xml:space="preserve">
     <value>The security token is missing.</value>
   </data>
@@ -3564,6 +3585,42 @@ To register a distributed cache, use 'services.AddDistributedMemoryCache()' or a
   </data>
   <data name="ID2459" xml:space="preserve">
     <value>The user was not authenticated again by the identity provider, although forced authentication was requested.</value>
+  </data>
+  <data name="ID2500" xml:space="preserve">
+    <value>The SAML message is not a valid SAML 2.0 logout request.</value>
+  </data>
+  <data name="ID2501" xml:space="preserve">
+    <value>The SAML message is not a valid SAML 2.0 logout response.</value>
+  </data>
+  <data name="ID2502" xml:space="preserve">
+    <value>The issuer of the SAML logout message is missing or doesn't correspond to a registered service provider.</value>
+  </data>
+  <data name="ID2503" xml:space="preserve">
+    <value>The SAML logout message must be signed.</value>
+  </data>
+  <data name="ID2504" xml:space="preserve">
+    <value>The signature of the SAML logout message is invalid.</value>
+  </data>
+  <data name="ID2505" xml:space="preserve">
+    <value>The signature algorithm of the SAML logout message is not supported.</value>
+  </data>
+  <data name="ID2506" xml:space="preserve">
+    <value>The SAML logout message has expired or its issue instant is in the future.</value>
+  </data>
+  <data name="ID2507" xml:space="preserve">
+    <value>The destination of the SAML logout message is missing or doesn't match the single logout endpoint.</value>
+  </data>
+  <data name="ID2508" xml:space="preserve">
+    <value>The SAML logout request must contain a single non-encrypted NameID element.</value>
+  </data>
+  <data name="ID2509" xml:space="preserve">
+    <value>The SAML logout request has already been used.</value>
+  </data>
+  <data name="ID2510" xml:space="preserve">
+    <value>No single logout service is registered for the SAML service provider.</value>
+  </data>
+  <data name="ID2511" xml:space="preserve">
+    <value>The mandatory 'SAMLRequest' or 'SAMLResponse' parameter is missing.</value>
   </data>
   <data name="ID4000" xml:space="preserve">
     <value>The '{0}' parameter shouldn't be null or empty at this point.</value>
@@ -4828,6 +4885,36 @@ This may indicate that the hashed entry is corrupted or malformed.</value>
   <data name="ID6686" xml:space="preserve">
     <value>The SAML challenge couldn't be applied because the response headers were already sent by another component.</value>
   </data>
+  <data name="ID6800" xml:space="preserve">
+    <value>The SAML session '{SessionId}' was attached to the assertion issued to the service provider '{ServiceProvider}'.</value>
+  </data>
+  <data name="ID6801" xml:space="preserve">
+    <value>The SAML logout message was rejected: {Description}</value>
+  </data>
+  <data name="ID6802" xml:space="preserve">
+    <value>The SAML logout request sent by '{ServiceProvider}' matched {Count} session(s).</value>
+  </data>
+  <data name="ID6803" xml:space="preserve">
+    <value>A SAML logout request was sent to the service provider '{ServiceProvider}' using the {Binding} binding.</value>
+  </data>
+  <data name="ID6804" xml:space="preserve">
+    <value>The SOAP logout request sent to the service provider '{ServiceProvider}' failed: {Description}</value>
+  </data>
+  <data name="ID6805" xml:space="preserve">
+    <value>The SAML logout response returned by the service provider '{ServiceProvider}' indicates a failure ({Status}).</value>
+  </data>
+  <data name="ID6806" xml:space="preserve">
+    <value>The SAML logout response '{InResponseTo}' doesn't correspond to a pending logout request.</value>
+  </data>
+  <data name="ID6807" xml:space="preserve">
+    <value>The session '{SessionId}' couldn't be terminated: {Error} ({Description})</value>
+  </data>
+  <data name="ID6808" xml:space="preserve">
+    <value>The service provider '{ServiceProvider}' uses the HTTP-POST single logout binding and cannot be notified using a front-channel logout URI.</value>
+  </data>
+  <data name="ID6809" xml:space="preserve">
+    <value>A SAML logout response ({Status}) was returned to the service provider '{ServiceProvider}'.</value>
+  </data>
   <data name="ID8000" xml:space="preserve">
     <value>https://documentation.openiddict.com/errors/{0}</value>
   </data>
@@ -4845,5 +4932,8 @@ This may indicate that the hashed entry is corrupted or malformed.</value>
   </data>
   <data name="ID8005" xml:space="preserve">
     <value>OpenIddict/Quartz.NET integration</value>
+  </data>
+  <data name="ID8200" xml:space="preserve">
+    <value>The logout was completed.</value>
   </data>
 </root>

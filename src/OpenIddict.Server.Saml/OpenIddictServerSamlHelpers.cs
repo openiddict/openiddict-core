@@ -49,7 +49,8 @@ internal static class OpenIddictServerSamlHelpers
             var name = UrlDecode(index is -1 ? segment : segment[..index]);
             var raw = index is -1 ? string.Empty : segment[(index + 1)..];
 
-            if (name is not (Parameters.SamlRequest or Parameters.RelayState or Parameters.SignatureAlgorithm or Parameters.Signature))
+            if (name is not (Parameters.SamlRequest or Parameters.SamlResponse or Parameters.RelayState or
+                             Parameters.SignatureAlgorithm or Parameters.Signature))
             {
                 continue;
             }

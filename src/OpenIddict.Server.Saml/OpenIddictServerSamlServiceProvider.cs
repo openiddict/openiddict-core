@@ -87,6 +87,27 @@ public sealed class OpenIddictServerSamlServiceProvider
     public bool AllowIdentityProviderInitiatedSingleSignOn { get; set; }
 
     /// <summary>
+    /// Gets or sets the location of the single logout service of the service provider (i.e the Location attribute of the
+    /// SingleLogoutService element of the service provider metadata), used when single logout is enabled to send logout
+    /// requests and, unless <see cref="SingleLogoutServiceResponseUrl"/> is set, logout responses.
+    /// Service providers without a single logout service don't participate in single logout.
+    /// </summary>
+    public Uri? SingleLogoutServiceUrl { get; set; }
+
+    /// <summary>
+    /// Gets or sets the location used to return logout responses to the service provider (i.e the ResponseLocation
+    /// attribute of the SingleLogoutService element). If <see langword="null"/>, <see cref="SingleLogoutServiceUrl"/> is used.
+    /// </summary>
+    public Uri? SingleLogoutServiceResponseUrl { get; set; }
+
+    /// <summary>
+    /// Gets or sets the binding of the single logout service: <see cref="OpenIddictServerSamlConstants.Bindings.HttpRedirect"/>
+    /// (default), <see cref="OpenIddictServerSamlConstants.Bindings.HttpPost"/> (front-channel) or
+    /// <see cref="OpenIddictServerSamlConstants.Bindings.Soap"/> (back-channel, logout requests are sent directly by the identity provider).
+    /// </summary>
+    public string? SingleLogoutServiceBinding { get; set; }
+
+    /// <summary>
     /// Gets the mappings between the claim types of the authenticated principal and
     /// the names of the SAML attributes included in the assertions (e.g "email" → "mail").
     /// Claims whose type is not listed are not included.

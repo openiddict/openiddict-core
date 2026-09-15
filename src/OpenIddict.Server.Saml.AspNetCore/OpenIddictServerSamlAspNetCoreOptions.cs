@@ -28,6 +28,12 @@ public sealed class OpenIddictServerSamlAspNetCoreOptions
     public PathString ArtifactResolutionPath { get; set; } = "/saml/artifact";
 
     /// <summary>
+    /// Gets or sets the path of the single logout endpoint (HTTP-Redirect and HTTP-POST bindings), that
+    /// is only available when single logout is enabled in the SAML options.
+    /// </summary>
+    public PathString SingleLogoutPath { get; set; } = "/saml/slo";
+
+    /// <summary>
     /// Gets or sets the authentication scheme used to authenticate and challenge the user.
     /// If <see langword="null"/>, the default authenticate and challenge schemes are used.
     /// </summary>
