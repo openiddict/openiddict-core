@@ -2450,6 +2450,94 @@ public abstract partial class OpenIddictServerIntegrationTests
     }
 
     [Fact]
+    public async Task ProcessAuthentication_IdentityTokenPrincipalIsPopulatedWhenRequestTokenIsUsedWithIdTokenHint()
+    {
+        // Arrange
+        await using var server = await CreateServerAsync(options =>
+        {
+            options.EnableDegradedMode();
+            options.SetAuthorizationEndpointUris("/authenticate");
+
+            options.AddEventHandler<HandleAuthorizationRequestContext>(builder =>
+                builder.UseInlineHandler(context =>
+                {
+                    context.SkipRequest();
+
+                    return ValueTask.CompletedTask;
+                }));
+
+            options.AddEventHandler<ValidateTokenContext>(builder =>
+            {
+                builder.UseInlineHandler(context =>
+                {
+                    if (context.ValidTokenTypes.Contains(TokenTypeIdentifiers.Private.RequestToken))
+                    {
+                        Assert.Equal("request_token", context.Token);
+                        Assert.Equal([TokenTypeIdentifiers.Private.RequestToken], context.ValidTokenTypes);
+
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetTokenType(TokenTypeIdentifiers.Private.RequestToken)
+                            .SetClaim(Claims.Private.RequestTokenType, RequestTokenTypes.Private.PushedAuthorizationRequest)
+                            .SetClaim(Claims.Private.RequestParameters, new JsonObject
+                            {
+                                ["client_id"] = "Fabrikam",
+                                ["id_token_hint"] = "id_token",
+                                ["redirect_uri"] = "http://www.fabrikam.com/path",
+                                ["response_type"] = ResponseTypes.Code,
+                                ["scope"] = Scopes.OpenId
+                            });
+
+                        return ValueTask.CompletedTask;
+                    }
+
+                    else if (context.ValidTokenTypes.Contains(TokenTypeIdentifiers.IdentityToken))
+                    {
+                        Assert.Equal("id_token", context.Token);
+                        Assert.Equal([TokenTypeIdentifiers.IdentityToken], context.ValidTokenTypes);
+
+                        context.Principal = new ClaimsPrincipal(new ClaimsIdentity("Bearer"))
+                            .SetTokenType(TokenTypeIdentifiers.IdentityToken)
+                            .SetClaim(Claims.Subject, "Bob le Magnifique")
+                            .SetAudiences("Fabrikam");
+
+                        return ValueTask.CompletedTask;
+                    }
+
+                    return ValueTask.CompletedTask;
+                });
+
+                builder.SetOrder(ValidateIdentityModelToken.Descriptor.Order - 500);
+            });
+
+            options.AddEventHandler<ProcessAuthenticationContext>(builder =>
+            {
+                builder.UseInlineHandler(context =>
+                {
+                    // Assert
+                    Assert.NotNull(context.IdentityTokenPrincipal);
+                    Assert.Equal("Bob le Magnifique", context.IdentityTokenPrincipal.GetClaim(Claims.Subject));
+
+                    return ValueTask.CompletedTask;
+                });
+
+                builder.SetOrder(ValidateIdentityToken.Descriptor.Order + 1);
+            });
+        });
+
+        await using var client = await server.CreateClientAsync();
+
+        // Act
+        var response = await client.PostAsync("/authenticate", new OpenIddictRequest
+        {
+            ClientId = "Fabrikam",
+            RequestUri = RequestUris.Prefixes.Generic + "request_token"
+        });
+
+        // Assert
+        Assert.Equal("Bob le Magnifique", (string?) response[Claims.Subject]);
+    }
+
+    [Fact]
     public async Task ProcessAuthentication_MissingRefreshTokenReturnsNull()
     {
         // Arrange
