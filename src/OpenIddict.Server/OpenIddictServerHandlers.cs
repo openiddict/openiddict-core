@@ -53,6 +53,7 @@ public static partial class OpenIddictServerHandlers
         ValidateClientCertificate.Descriptor,
         ValidateRequestToken.Descriptor,
         ValidateRequestTokenType.Descriptor,
+        RestoreParametersFromRequestToken.Descriptor,
         ValidateAccessToken.Descriptor,
         ValidateAuthorizationCode.Descriptor,
         ValidateDeviceCode.Descriptor,
@@ -1543,6 +1544,97 @@ public static partial class OpenIddictServerHandlers
     }
 
     /// <summary>
+    /// Contains the logic responsible for restoring the parameters stored in the request token, if applicable.
+    /// </summary>
+    public sealed class RestoreParametersFromRequestToken : IOpenIddictServerHandler<ProcessAuthenticationContext>
+    {
+        /// <summary>
+        /// Gets the default descriptor definition assigned to this handler.
+        /// </summary>
+        public static OpenIddictServerHandlerDescriptor Descriptor { get; }
+            = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
+                .UseSingletonHandler<RestoreParametersFromRequestToken>()
+                .SetOrder(ValidateRequestTokenType.Descriptor.Order + 1_000)
+                .SetType(OpenIddictServerHandlerType.BuiltIn)
+                .Build();
+
+        /// <inheritdoc/>
+        public ValueTask HandleAsync(ProcessAuthenticationContext context)
+        {
+            ArgumentNullException.ThrowIfNull(context);
+
+            var value = context.RequestTokenPrincipal?.GetClaim(Claims.Private.RequestParameters);
+            if (string.IsNullOrEmpty(value))
+            {
+                return ValueTask.CompletedTask;
+            }
+
+            using var document = JsonDocument.Parse(value);
+            var request = new OpenIddictRequest(document.RootElement.Clone())
+            {
+                RequestUri = context.Request.RequestUri
+            };
+
+            // If the request is an authorization request, ensure the client_id attached to the regular
+            // authorization request parameters matches the value present in the request token principal.
+            if (context.EndpointType is OpenIddictServerEndpointType.Authorization)
+            {
+                if (string.IsNullOrEmpty(context.ClientId))
+                {
+                    context.Reject(
+                        error: Errors.InvalidRequest,
+                        description: SR.FormatID2029(Parameters.ClientId),
+                        uri: SR.FormatID8000(SR.ID2029));
+
+                    return ValueTask.CompletedTask;
+                }
+
+                if (!string.Equals(request.ClientId, context.ClientId, StringComparison.Ordinal))
+                {
+                    context.Reject(
+                        error: Errors.InvalidRequest,
+                        description: SR.FormatID2178(Parameters.ClientId),
+                        uri: SR.FormatID8000(SR.ID2178));
+
+                    return ValueTask.CompletedTask;
+                }
+            }
+
+            // Restore the identity token hint from the request token parameters
+            // to ensure the principal is correctly extracted, if applicable.
+            context.IdentityToken = context.EndpointType switch
+            {
+                OpenIddictServerEndpointType.Authorization or OpenIddictServerEndpointType.EndSession
+                    => request.IdTokenHint,
+
+                _ => context.IdentityToken
+            };
+
+            // Note: the "request" and "request_uri" parameters have been initially introduced by the OpenID Connect
+            // core specification, that allows overriding the parameters contained in the request object by attaching
+            // parameters to the query string (or to the request form, for POST requests) of the authorization request.
+            // This mechanism allows using pre-computed or static request objects while still being able to attach
+            // dynamic values (e.g a state value) to the authorization requests. Unfortunately, when this feature was
+            // backported to OAuth 2.0 by the OAuth 2.0 JWT-Secured Authorization Request specification, an incompatible
+            // design was defined, as authorization servers MUST now ignore parameters that are attached as regular
+            // OAuth 2.0 parameters to the authorization requests (i.e not attached to the request object/PAR request).
+            //
+            // Since the design defined in the OAuth 2.0 JWT-Secured Authorization Request specification is safer, it
+            // is the approach implemented by OpenIddict, that ignores all the parameters directly attached to the
+            // authorization requests when a request token (e.g retrieved using a pushed authorization request) is used.
+            //
+            // For consistency, the same logic is also enforced for end session requests.
+            //
+            // For more information, see https://datatracker.ietf.org/doc/html/rfc9101#section-5 and
+            // https://openid.net/specs/openid-connect-core-1_0.html#RequestUriRationale.
+
+            context.Request = request;
+
+            return ValueTask.CompletedTask;
+        }
+    }
+
+    /// <summary>
     /// Contains the logic responsible for validating the access token resolved from the context.
     /// </summary>
     public sealed class ValidateAccessToken : IOpenIddictServerHandler<ProcessAuthenticationContext>
@@ -1559,7 +1651,7 @@ public static partial class OpenIddictServerHandlers
             = OpenIddictServerHandlerDescriptor.CreateBuilder<ProcessAuthenticationContext>()
                 .AddFilter<RequireAccessTokenValidated>()
                 .UseSingletonHandler<ValidateAccessToken>()
-                .SetOrder(ValidateRequestTokenType.Descriptor.Order + 1_000)
+                .SetOrder(RestoreParametersFromRequestToken.Descriptor.Order + 1_000)
                 .SetType(OpenIddictServerHandlerType.BuiltIn)
                 .Build();
 

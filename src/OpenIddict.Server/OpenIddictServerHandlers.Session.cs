@@ -8,7 +8,6 @@ using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Security.Claims;
-using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -37,7 +36,6 @@ public static partial class OpenIddictServerHandlers
             ValidateRequestUriParameter.Descriptor,
             ValidatePostLogoutRedirectUriParameter.Descriptor,
             ValidateAuthentication.Descriptor,
-            RestorePushedAuthorizationRequestParameters.Descriptor,
             ValidateClientPostLogoutRedirectUri.Descriptor,
             ValidateEndpointPermissions.Descriptor,
             ValidateAuthorizedParty.Descriptor,
@@ -505,45 +503,12 @@ public static partial class OpenIddictServerHandlers
                 // Attach the security principals extracted from the tokens to the validation context.
                 context.IdentityTokenHintPrincipal = notification.IdentityTokenPrincipal;
                 context.RequestTokenPrincipal = notification.RequestTokenPrincipal;
-            }
-        }
 
-        /// <summary>
-        /// Contains the logic responsible for restoring the parameters attached to the pushed authorization request.
-        /// </summary>
-        public sealed class RestorePushedAuthorizationRequestParameters : IOpenIddictServerHandler<ValidateEndSessionRequestContext>
-        {
-            /// <summary>
-            /// Gets the default descriptor definition assigned to this handler.
-            /// </summary>
-            public static OpenIddictServerHandlerDescriptor Descriptor { get; }
-                = OpenIddictServerHandlerDescriptor.CreateBuilder<ValidateEndSessionRequestContext>()
-                    .UseSingletonHandler<RestorePushedAuthorizationRequestParameters>()
-                    .SetOrder(ValidateAuthentication.Descriptor.Order + 1_000)
-                    .SetType(OpenIddictServerHandlerType.BuiltIn)
-                    .Build();
-
-            /// <inheritdoc/>
-            public ValueTask HandleAsync(ValidateEndSessionRequestContext context)
-            {
-                ArgumentNullException.ThrowIfNull(context);
-
-                var value = context.RequestTokenPrincipal?.GetClaim(Claims.Private.RequestParameters);
-                if (string.IsNullOrEmpty(value))
+                // Restore the post_logout_redirect_uri from the request token principal, if available.
+                if (notification.RequestTokenPrincipal is not null)
                 {
-                    return ValueTask.CompletedTask;
+                    context.PostLogoutRedirectUri = notification.Request.PostLogoutRedirectUri;
                 }
-
-                using var document = JsonDocument.Parse(value);
-                var request = new OpenIddictRequest(document.RootElement.Clone())
-                {
-                    RequestUri = context.Request.RequestUri
-                };
-
-                context.Request = request;
-                context.PostLogoutRedirectUri = request.PostLogoutRedirectUri;
-
-                return ValueTask.CompletedTask;
             }
         }
 
@@ -562,7 +527,7 @@ public static partial class OpenIddictServerHandlers
                     .AddFilter<RequireDegradedModeDisabled>()
                     .AddFilter<RequirePostLogoutRedirectUriParameter>()
                     .UseSingletonHandler<ValidateClientPostLogoutRedirectUri>()
-                    .SetOrder(RestorePushedAuthorizationRequestParameters.Descriptor.Order + 1_000)
+                    .SetOrder(ValidateAuthentication.Descriptor.Order + 1_000)
                     .SetType(OpenIddictServerHandlerType.BuiltIn)
                     .Build();
 
