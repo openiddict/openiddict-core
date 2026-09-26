@@ -28,7 +28,11 @@ public static class OpenIddictQuartzExtensions
         // Note: the AddQuartz() method MUST only be called once to avoid adding multiple jobs and triggers.
         if (!builder.Services.Any(static descriptor => descriptor.ServiceType == typeof(OpenIddictQuartzJob)))
         {
+#if NET10_0_OR_GREATER
+            builder.Services.ConfigureAllQuartzSchedulers(options =>
+#else
             builder.Services.AddQuartz(options =>
+#endif
             {
                 options.AddJob<OpenIddictQuartzJob>(static builder =>
                 {
