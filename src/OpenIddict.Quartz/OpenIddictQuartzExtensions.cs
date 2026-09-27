@@ -55,10 +55,7 @@ public static class OpenIddictQuartzExtensions
             });
         }
 
-#if !NET10_0_OR_GREATER
-        // Note: unlike Quartz.NET 4.0+, Quartz.NET 3.x doesn't automatically register the job as a service.
         builder.Services.TryAddTransient<OpenIddictQuartzJob>();
-#endif
 
         // Note: TryAddEnumerable() is used here to ensure the initializer is registered only once.
         builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<
