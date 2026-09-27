@@ -42,15 +42,9 @@ public class OpenIddictQuartzExtensionsTests
         builder.UseQuartz();
 
         // Assert
-#if NET10_0_OR_GREATER
-        Assert.Contains(services, service => service.ServiceType == typeof(OpenIddictQuartzJob) &&
-            service.ImplementationType == typeof(OpenIddictQuartzJob) &&
-            service.Lifetime is ServiceLifetime.Scoped);
-#else
         Assert.Contains(services, service => service.ServiceType == typeof(OpenIddictQuartzJob) &&
             service.ImplementationType == typeof(OpenIddictQuartzJob) &&
             service.Lifetime is ServiceLifetime.Transient);
-#endif
     }
 
     [Fact]
