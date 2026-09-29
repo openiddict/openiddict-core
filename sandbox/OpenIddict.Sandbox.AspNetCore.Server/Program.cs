@@ -10,7 +10,6 @@ using Microsoft.IdentityModel.Tokens;
 using OpenIddict.Abstractions;
 using OpenIddict.Sandbox.AspNetCore.Server.Models;
 using OpenIddict.Sandbox.AspNetCore.Server.Services;
-using Quartz;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -50,17 +49,6 @@ builder.Services.Configure<SecurityStampValidatorOptions>(options => options.OnR
     return Task.CompletedTask;
 });
 
-// OpenIddict offers native integration with Quartz.NET to perform scheduled tasks
-// (like pruning orphaned authorizations/tokens from the database) at regular intervals.
-builder.Services.AddQuartz(options =>
-{
-    options.UseSimpleTypeLoader();
-    options.UseInMemoryStore();
-});
-
-// Register the Quartz.NET service and configure it to block shutdown until jobs are complete.
-builder.Services.AddQuartzHostedService(options => options.WaitForJobsToComplete = true);
-
 builder.Services.AddOpenIddict()
 
     // Register the OpenIddict core components.
@@ -75,8 +63,13 @@ builder.Services.AddOpenIddict()
         // options.UseMongoDb()
         //        .UseDatabase(new MongoClient().GetDatabase("openiddict"));
 
-        // Enable Quartz.NET integration.
-        options.UseQuartz();
+        // Note: by default, OpenIddict automatically prunes authorizations, sessions and tokens
+        // that are no longer valid at regular intervals. For those who prefer using their own
+        // pruning mechanism (e.g based on Quartz.NET or Hangfire), automatic pruning can be disabled.
+        //
+        // options.DisableAutomaticAuthorizationPruning()
+        //        .DisableAutomaticSessionPruning()
+        //        .DisableAutomaticTokenPruning();
     })
 
     // Register the OpenIddict client components.

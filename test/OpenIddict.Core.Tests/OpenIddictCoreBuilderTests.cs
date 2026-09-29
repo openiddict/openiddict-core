@@ -26,6 +26,122 @@ public class OpenIddictCoreBuilderTests
     }
 
     [Fact]
+    public void Configure_DelegateIsCorrectlyRegistered()
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+        var configuration = new Action<OpenIddictCoreOptions>(options => { });
+
+        // Act
+        builder.Configure(configuration);
+
+        // Assert
+        Assert.Contains(services, service => service.ServiceType == typeof(IConfigureOptions<OpenIddictCoreOptions>) &&
+            service.ImplementationInstance is ConfigureNamedOptions<OpenIddictCoreOptions> options &&
+            options.Action == configuration && string.IsNullOrEmpty(options.Name));
+    }
+
+    [Fact]
+    public void Configure_ThrowsAnExceptionWhenConfigurationIsNull()
+    {
+        // Arrange
+        var builder = CreateBuilder(CreateServices());
+
+        // Act and assert
+        var exception = Assert.Throws<ArgumentNullException>(() => builder.Configure(configuration: null!));
+
+        Assert.Equal("configuration", exception.ParamName);
+    }
+
+    [Fact]
+    public void DisableAutomaticAuthorizationPruning_AuthorizationPruningIsDisabled()
+    {
+        var services = CreateServices();
+        CreateBuilder(services).DisableAutomaticAuthorizationPruning();
+
+        Assert.True(services.BuildServiceProvider().GetRequiredService<IOptions<OpenIddictCoreOptions>>().Value.DisableAutomaticAuthorizationPruning);
+    }
+
+    [Fact]
+    public void DisableAutomaticSessionPruning_SessionPruningIsDisabled()
+    {
+        var services = CreateServices();
+        CreateBuilder(services).DisableAutomaticSessionPruning();
+
+        Assert.True(services.BuildServiceProvider().GetRequiredService<IOptions<OpenIddictCoreOptions>>().Value.DisableAutomaticSessionPruning);
+    }
+
+    [Fact]
+    public void DisableAutomaticTokenPruning_TokenPruningIsDisabled()
+    {
+        var services = CreateServices();
+        CreateBuilder(services).DisableAutomaticTokenPruning();
+
+        Assert.True(services.BuildServiceProvider().GetRequiredService<IOptions<OpenIddictCoreOptions>>().Value.DisableAutomaticTokenPruning);
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(9)]
+    public void SetMinimumAuthorizationLifespan_ThrowsAnExceptionForInvalidLifespan(int minutes)
+    {
+        var exception = Assert.Throws<ArgumentOutOfRangeException>(() =>
+            CreateBuilder(CreateServices()).SetMinimumAuthorizationLifespan(TimeSpan.FromMinutes(minutes)));
+
+        Assert.Equal("lifespan", exception.ParamName);
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(9)]
+    public void SetMinimumSessionLifespan_ThrowsAnExceptionForInvalidLifespan(int minutes)
+    {
+        var exception = Assert.Throws<ArgumentOutOfRangeException>(() =>
+            CreateBuilder(CreateServices()).SetMinimumSessionLifespan(TimeSpan.FromMinutes(minutes)));
+
+        Assert.Equal("lifespan", exception.ParamName);
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(9)]
+    public void SetMinimumTokenLifespan_ThrowsAnExceptionForInvalidLifespan(int minutes)
+    {
+        var exception = Assert.Throws<ArgumentOutOfRangeException>(() =>
+            CreateBuilder(CreateServices()).SetMinimumTokenLifespan(TimeSpan.FromMinutes(minutes)));
+
+        Assert.Equal("lifespan", exception.ParamName);
+    }
+
+    [Fact]
+    public void SetMinimumAuthorizationLifespan_MinimumAuthorizationLifespanIsSet()
+    {
+        var services = CreateServices();
+        CreateBuilder(services).SetMinimumAuthorizationLifespan(TimeSpan.FromDays(42));
+
+        Assert.Equal(TimeSpan.FromDays(42), services.BuildServiceProvider().GetRequiredService<IOptions<OpenIddictCoreOptions>>().Value.MinimumAuthorizationLifespan);
+    }
+
+    [Fact]
+    public void SetMinimumSessionLifespan_MinimumSessionLifespanIsSet()
+    {
+        var services = CreateServices();
+        CreateBuilder(services).SetMinimumSessionLifespan(TimeSpan.FromDays(42));
+
+        Assert.Equal(TimeSpan.FromDays(42), services.BuildServiceProvider().GetRequiredService<IOptions<OpenIddictCoreOptions>>().Value.MinimumSessionLifespan);
+    }
+
+    [Fact]
+    public void SetMinimumTokenLifespan_MinimumTokenLifespanIsSet()
+    {
+        var services = CreateServices();
+        CreateBuilder(services).SetMinimumTokenLifespan(TimeSpan.FromDays(42));
+
+        Assert.Equal(TimeSpan.FromDays(42), services.BuildServiceProvider().GetRequiredService<IOptions<OpenIddictCoreOptions>>().Value.MinimumTokenLifespan);
+    }
+
+    [Fact]
     public void ReplaceApplicationManager_ThrowsAnExceptionForClosedSourceManager()
     {
         // Arrange

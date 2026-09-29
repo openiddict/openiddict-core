@@ -5,6 +5,7 @@
  */
 
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Xunit;
@@ -64,6 +65,41 @@ public class OpenIddictCoreExtensionsTests
 
         // Assert
         Assert.Contains(services, service => service.ServiceType == typeof(IOptions<>));
+    }
+
+    [Fact]
+    public void AddCore_RegistersBackgroundService()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+
+        // Act
+        new OpenIddictBuilder(services).AddCore();
+
+        // Assert
+        Assert.Contains(services, service => service.ServiceType == typeof(IHostedService) &&
+            service.ImplementationType == typeof(OpenIddictCoreBackgroundService) &&
+            service.Lifetime is ServiceLifetime.Singleton);
+    }
+
+    [Fact]
+    public void AddCore_CanBeSafelyInvokedMultipleTimes()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        var builder = new OpenIddictBuilder(services);
+
+        // Act
+        builder.AddCore();
+        builder.AddCore();
+        builder.AddCore();
+
+        // Assert
+        Assert.Single(services, service => service.ServiceType == typeof(IHostedService) &&
+            service.ImplementationType == typeof(OpenIddictCoreBackgroundService));
+
+        Assert.Single(services, service => service.ServiceType == typeof(IPostConfigureOptions<OpenIddictCoreOptions>) &&
+            service.ImplementationType == typeof(OpenIddictCoreConfiguration));
     }
 
     [Theory]
