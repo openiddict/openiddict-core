@@ -58,6 +58,27 @@ public sealed class OpenIddictCoreBuilder
     }
 
     /// <summary>
+    /// Disables automatic authorizations pruning.
+    /// </summary>
+    /// <returns>The <see cref="OpenIddictCoreBuilder"/> instance.</returns>
+    public OpenIddictCoreBuilder DisableAutomaticAuthorizationPruning()
+        => Configure(options => options.DisableAutomaticAuthorizationPruning = true);
+
+    /// <summary>
+    /// Disables automatic sessions pruning.
+    /// </summary>
+    /// <returns>The <see cref="OpenIddictCoreBuilder"/> instance.</returns>
+    public OpenIddictCoreBuilder DisableAutomaticSessionPruning()
+        => Configure(options => options.DisableAutomaticSessionPruning = true);
+
+    /// <summary>
+    /// Disables automatic tokens pruning.
+    /// </summary>
+    /// <returns>The <see cref="OpenIddictCoreBuilder"/> instance.</returns>
+    public OpenIddictCoreBuilder DisableAutomaticTokenPruning()
+        => Configure(options => options.DisableAutomaticTokenPruning = true);
+
+    /// <summary>
     /// Replaces the application manager by the specified type.
     /// </summary>
     /// <typeparam name="TApplication">The type of the entity.</typeparam>
@@ -717,6 +738,42 @@ public sealed class OpenIddictCoreBuilder
         ArgumentOutOfRangeException.ThrowIfLessThan(limit, 10);
 
         return Configure(options => options.EntityCacheLimit = limit);
+    }
+
+    /// <summary>
+    /// Sets the minimum lifespan authorizations must have to be pruned.
+    /// </summary>
+    /// <param name="lifespan">The minimum lifespan authorizations must have to be pruned.</param>
+    /// <returns>The <see cref="OpenIddictCoreBuilder"/> instance.</returns>
+    public OpenIddictCoreBuilder SetMinimumAuthorizationLifespan(TimeSpan lifespan)
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThan(lifespan, TimeSpan.FromMinutes(10));
+
+        return Configure(options => options.MinimumAuthorizationLifespan = lifespan);
+    }
+
+    /// <summary>
+    /// Sets the minimum lifespan sessions must have to be pruned.
+    /// </summary>
+    /// <param name="lifespan">The minimum lifespan sessions must have to be pruned.</param>
+    /// <returns>The <see cref="OpenIddictCoreBuilder"/> instance.</returns>
+    public OpenIddictCoreBuilder SetMinimumSessionLifespan(TimeSpan lifespan)
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThan(lifespan, TimeSpan.FromMinutes(10));
+
+        return Configure(options => options.MinimumSessionLifespan = lifespan);
+    }
+
+    /// <summary>
+    /// Sets the minimum lifespan tokens must have to be pruned.
+    /// </summary>
+    /// <param name="lifespan">The minimum lifespan tokens must have to be pruned.</param>
+    /// <returns>The <see cref="OpenIddictCoreBuilder"/> instance.</returns>
+    public OpenIddictCoreBuilder SetMinimumTokenLifespan(TimeSpan lifespan)
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThan(lifespan, TimeSpan.FromMinutes(10));
+
+        return Configure(options => options.MinimumTokenLifespan = lifespan);
     }
 
     /// <inheritdoc/>

@@ -32,6 +32,14 @@ builder.Services.AddOpenIddict()
         options.UseEntityFramework()
                .UseDbContext<ApplicationDbContext>();
 #endif
+
+        // Note: by default, OpenIddict automatically prunes authorizations, sessions and tokens
+        // that are no longer valid at regular intervals. For those who prefer using their own
+        // pruning mechanism (e.g based on Quartz.NET or Hangfire), automatic pruning can be disabled.
+        //
+        // options.DisableAutomaticAuthorizationPruning()
+        //        .DisableAutomaticSessionPruning()
+        //        .DisableAutomaticTokenPruning();
     })
 
     // Register the OpenIddict client components.
