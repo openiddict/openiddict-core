@@ -30,10 +30,16 @@ public static class OpenIddictQuartzExtensions
         {
 #if NET10_0_OR_GREATER
             builder.Services.ConfigureAllQuartzSchedulers(options =>
+            {
+                // Only adds the Quartz jobs to the default scheduler, which has an empty SchedulerName.
+                if (!string.IsNullOrEmpty(options.SchedulerName))
+                {
+                    return;
+                }
 #else
             builder.Services.AddQuartz(options =>
-#endif
             {
+#endif
                 options.AddJob<OpenIddictQuartzJob>(static builder =>
                 {
                     builder.StoreDurably()
