@@ -28,8 +28,18 @@ public static class OpenIddictQuartzExtensions
         // Note: the AddQuartz() method MUST only be called once to avoid adding multiple jobs and triggers.
         if (!builder.Services.Any(static descriptor => descriptor.ServiceType == typeof(OpenIddictQuartzJob)))
         {
+#if NET10_0_OR_GREATER
+            builder.Services.ConfigureAllQuartzSchedulers(options =>
+            {
+                // Only adds the Quartz jobs to the default scheduler, which has an empty SchedulerName.
+                if (!string.IsNullOrEmpty(options.SchedulerName))
+                {
+                    return;
+                }
+#else
             builder.Services.AddQuartz(options =>
             {
+#endif
                 options.AddJob<OpenIddictQuartzJob>(static builder =>
                 {
                     builder.StoreDurably()
@@ -51,10 +61,7 @@ public static class OpenIddictQuartzExtensions
             });
         }
 
-#if !NET10_0_OR_GREATER
-        // Note: unlike Quartz.NET 4.0+, Quartz.NET 3.x doesn't automatically register the job as a service.
         builder.Services.TryAddTransient<OpenIddictQuartzJob>();
-#endif
 
         // Note: TryAddEnumerable() is used here to ensure the initializer is registered only once.
         builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<
