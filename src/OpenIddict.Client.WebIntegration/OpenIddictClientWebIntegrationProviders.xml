@@ -403,6 +403,7 @@
                      UserInfoEndpoint="https://api.buffer.com/"
                      AuthorizationResponseIssParameterSupported="true">
         <CodeChallengeMethod Value="S256" />
+
         <GrantType Value="authorization_code" />
         <GrantType Value="refresh_token" />
       </Configuration>
@@ -411,7 +412,7 @@
       <Scope Name="offline_access" Default="true" Required="false" />
     </Environment>
 
-    <Setting PropertyName="UserFields" ParameterName="user_fields" Collection="true" Type="String"
+    <Setting PropertyName="UserFields" ParameterName="fields" Collection="true" Type="String"
              Description="The list of account fields to expand from the GraphQL endpoint (by default, only basic fields are requested)">
       <Item Value="email" Default="true" Required="false" />
       <Item Value="id"    Default="true" Required="false" />
