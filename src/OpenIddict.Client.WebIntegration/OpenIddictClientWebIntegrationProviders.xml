@@ -388,6 +388,38 @@
   </Provider>
 
   <!--
+                                              ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                                              ██ ▄▄▀██ ██ ██ ▄▄▄██ ▄▄▄██ ▄▄▄██ ▄▄▀██
+                                              ██ ▄▄▀██ ██ ██ ▄▄███ ▄▄███ ▄▄▄██ ▀▀▄██
+                                              ██ ▀▀ ██▄▀▀▄██ █████ █████ ▀▀▀██ ██ ██
+                                              ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
+  
+  <Provider Name="Buffer" Id="a4e8c3f1-7d92-4b6a-9e15-3c8f2d5a91b7"
+            Documentation="https://developers.buffer.com/guides/authentication">
+    <Environment Issuer="https://auth.buffer.com/">
+      <Configuration AuthorizationEndpoint="https://auth.buffer.com/auth"
+                     TokenEndpoint="https://auth.buffer.com/token"
+                     UserInfoEndpoint="https://api.buffer.com/"
+                     AuthorizationResponseIssParameterSupported="true">
+        <CodeChallengeMethod Value="S256" />
+
+        <GrantType Value="authorization_code" />
+        <GrantType Value="refresh_token" />
+      </Configuration>
+
+      <Scope Name="account:read" Default="true" Required="true" />
+      <Scope Name="offline_access" Default="true" Required="false" />
+    </Environment>
+
+    <Setting PropertyName="UserFields" ParameterName="fields" Collection="true" Type="String"
+             Description="The list of account fields to expand from the GraphQL endpoint (by default, only basic fields are requested)">
+      <Item Value="email" Default="true" Required="false" />
+      <Item Value="id"    Default="true" Required="false" />
+    </Setting>
+  </Provider>
+  
+  <!--
                                     ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
                                     ██ ▄▄▀██ ██ ██ ▀██ ██ ▄▄ █▄ ▄██ ▄▄▄█████ ▀██ ██ ▄▄▄█▄▄ ▄▄██
                                     ██ ▄▄▀██ ██ ██ █ █ ██ █▀▀██ ███ ▄▄▄█▀▀██ █ █ ██ ▄▄▄███ ████

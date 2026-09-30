@@ -1177,11 +1177,20 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             ArgumentNullException.ThrowIfNull(context);
 
             Debug.Assert(context.UserInfoRequest is not null, SR.GetResourceString(SR.ID4008));
+            
+            // Buffer's userinfo endpoint is a GraphQL implementation that requires
+            // sending a proper "query" parameter containing the requested account details.
+            if (context.Registration.ProviderType is ProviderTypes.Buffer)
+            {
+                var settings = context.Registration.GetBufferSettings();
+
+                context.UserInfoRequest["query"] = $"{{ account {{ {string.Join(Separators.Space[0], settings.UserFields)} }} }}";
+            }
 
             // Dailymotion limits the number of fields returned by the userinfo endpoint
             // but allows returning additional information using special parameters that
             // determine what fields will be returned as part of the userinfo response.
-            if (context.Registration.ProviderType is ProviderTypes.Dailymotion)
+            else if (context.Registration.ProviderType is ProviderTypes.Dailymotion)
             {
                 var settings = context.Registration.GetDailymotionSettings();
 
@@ -1598,18 +1607,18 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     ProviderTypes.Atlassian => (string?) context.UserInfoResponse?["account_id"],
 
                     // These providers return the user identifier as a custom "id" node:
-                    ProviderTypes.Airtable      or ProviderTypes.Basecamp   or ProviderTypes.Box       or
-                    ProviderTypes.Dailymotion   or ProviderTypes.Deezer     or ProviderTypes.Discord   or
-                    ProviderTypes.Disqus        or ProviderTypes.Facebook   or ProviderTypes.Figma     or
-                    ProviderTypes.Genesys       or ProviderTypes.Gitee      or ProviderTypes.GitHub    or
-                    ProviderTypes.Harvest       or ProviderTypes.Kook       or ProviderTypes.Kroger    or
-                    ProviderTypes.Lichess       or ProviderTypes.Linear     or ProviderTypes.Mastodon  or
-                    ProviderTypes.Meetup        or ProviderTypes.Miro       or ProviderTypes.Nextcloud or
-                    ProviderTypes.Osu           or ProviderTypes.Patreon    or ProviderTypes.Pipedrive or
-                    ProviderTypes.Reddit        or ProviderTypes.Smartsheet or ProviderTypes.Spotify   or
-                    ProviderTypes.SubscribeStar or ProviderTypes.Todoist    or ProviderTypes.Twitter   or
-                    ProviderTypes.Webflow       or ProviderTypes.Weibo      or ProviderTypes.Yandex    or
-                    ProviderTypes.Zoom
+                    ProviderTypes.Airtable  or ProviderTypes.Basecamp      or ProviderTypes.Box        or
+                    ProviderTypes.Buffer    or ProviderTypes.Dailymotion   or ProviderTypes.Deezer     or
+                    ProviderTypes.Discord   or ProviderTypes.Disqus        or ProviderTypes.Facebook   or
+                    ProviderTypes.Figma     or ProviderTypes.Genesys       or ProviderTypes.Gitee      or
+                    ProviderTypes.GitHub    or ProviderTypes.Harvest       or ProviderTypes.Kook       or
+                    ProviderTypes.Kroger    or ProviderTypes.Lichess       or ProviderTypes.Linear     or
+                    ProviderTypes.Mastodon  or ProviderTypes.Meetup        or ProviderTypes.Miro       or
+                    ProviderTypes.Nextcloud or ProviderTypes.Osu           or ProviderTypes.Patreon    or
+                    ProviderTypes.Pipedrive or ProviderTypes.Reddit        or ProviderTypes.Smartsheet or
+                    ProviderTypes.Spotify   or ProviderTypes.SubscribeStar or ProviderTypes.Todoist    or
+                    ProviderTypes.Twitter   or ProviderTypes.Webflow       or ProviderTypes.Weibo      or
+                    ProviderTypes.Yandex    or ProviderTypes.Zoom
                         => (string?) context.UserInfoResponse?["id"],
 
                     // Bitbucket returns the user identifier as a custom "uuid" node:

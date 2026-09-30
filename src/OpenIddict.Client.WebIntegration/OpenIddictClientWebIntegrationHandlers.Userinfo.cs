@@ -70,7 +70,8 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 {
                     // The userinfo endpoints exposed by these providers
                     // are based on GraphQL, which requires using POST:
-                    ProviderTypes.Linear or ProviderTypes.Meetup or ProviderTypes.SubscribeStar => HttpMethod.Post,
+                    ProviderTypes.Buffer or ProviderTypes.Linear or
+                    ProviderTypes.Meetup or ProviderTypes.SubscribeStar => HttpMethod.Post,
 
                     // The userinfo endpoints exposed by these providers
                     // use custom protocols that require using POST:
@@ -275,7 +276,8 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 {
                     // The userinfo endpoints exposed by these providers are based on GraphQL,
                     // which requires sending the request parameters as a JSON payload:
-                    ProviderTypes.Linear or ProviderTypes.Meetup or ProviderTypes.SubscribeStar => JsonContent.Create(
+                    ProviderTypes.Buffer or ProviderTypes.Linear or
+                    ProviderTypes.Meetup or ProviderTypes.SubscribeStar => JsonContent.Create(
                         context.Transaction.Request,
                         OpenIddictSerializer.Default.Request,
                         new MediaTypeHeaderValue(MediaTypes.Json)
@@ -389,6 +391,10 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                     {
                         ["accounts"] = context.Response["accounts"]
                     },
+
+                    // Buffer returns a nested "account" object that is itself nested in a GraphQL "data" node.
+                    ProviderTypes.Buffer => new(context.Response["data"]?["account"]?.GetNamedParameters() 
+                        ?? throw new InvalidOperationException(SR.FormatID0334("data/account"))),
 
                     // Bungie.net returns a nested "bungieNetUser" object that is itself nested in a "Response" object.
                     ProviderTypes.BungieNet => new(context.Response["Response"]?["bungieNetUser"]?.GetNamedParameters()
