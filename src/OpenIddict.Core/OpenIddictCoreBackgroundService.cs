@@ -56,7 +56,7 @@ public sealed class OpenIddictCoreBackgroundService : BackgroundService
 #if NET
         await Task.Delay(TimeSpan.FromMinutes(Random.Shared.Next(1, 10)), options.TimeProvider, stoppingToken);
 #else
-        await Task.Delay(TimeSpan.FromMinutes(Random.Shared.Next(1, 10)), stoppingToken);
+        await options.TimeProvider.Delay(TimeSpan.FromMinutes(Random.Shared.Next(1, 10)), stoppingToken);
 #endif
 
         using var timer = new PeriodicTimer(TimeSpan.FromHours(1), options.TimeProvider);

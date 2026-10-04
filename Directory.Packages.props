@@ -62,6 +62,7 @@
     <PackageVersion Include="AngleSharp"                                            Version="1.7.1"           />
     <PackageVersion Include="MartinCostello.Logging.XUnit"                          Version="0.7.1"           />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection"              Version="10.0.11"         />
+    <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing"             Version="10.9.0"          />
     <PackageVersion Include="Microsoft.Owin.Testing"                                Version="4.2.3"           />
     <PackageVersion Include="Moq"                                                   Version="4.18.4"          />
     <PackageVersion Include="System.Linq.Async"                                     Version="7.0.1"           />

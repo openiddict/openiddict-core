@@ -7,12 +7,9 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Time.Testing;
 using Moq;
 using Xunit;
-
-#if NET
-using Microsoft.Extensions.Time.Testing;
-#endif
 
 namespace OpenIddict.Core.Tests;
 
@@ -57,23 +54,22 @@ public class OpenIddictCoreBackgroundServiceTests
         factory.Verify(factory => factory.CreateScope(), Times.Never());
     }
 
-#if NET
     [Fact]
     public async Task ExecuteAsync_UsesAndDisposesServiceScope()
     {
         // Arrange
         var clock = new Mock<FakeTimeProvider> { CallBase = true };
-        var timer = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var timer = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
         clock.Setup(clock => clock.CreateTimer(It.IsAny<TimerCallback>(), It.IsAny<object?>(),
                 It.IsAny<TimeSpan>(), It.IsAny<TimeSpan>()))
-            .CallBase().Callback(() => timer.TrySetResult());
+            .CallBase().Callback(() => timer.TrySetResult(true));
         var options = new OpenIddictCoreOptions { TimeProvider = clock.Object };
         var scope = new Mock<IServiceScope>();
         var factory = new Mock<IServiceScopeFactory>();
         var manager = new Mock<IOpenIddictSessionManager>();
-        var completion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var completion = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
         manager.Setup(manager => manager.PruneAsync(It.IsAny<DateTimeOffset>(), It.IsAny<CancellationToken>()))
-            .Callback(() => completion.SetResult()).Returns(new ValueTask<long>(0));
+            .Callback(() => completion.SetResult(true)).Returns(new ValueTask<long>(0));
         var scoped = Mock.Of<IServiceProvider>(provider =>
             provider.GetService(typeof(IOpenIddictTokenManager)) == Mock.Of<IOpenIddictTokenManager>() &&
             provider.GetService(typeof(IOpenIddictAuthorizationManager)) == Mock.Of<IOpenIddictAuthorizationManager>() &&
@@ -102,10 +98,10 @@ public class OpenIddictCoreBackgroundServiceTests
     {
         // Arrange
         var clock = new Mock<FakeTimeProvider> { CallBase = true };
-        var timer = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var timer = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
         clock.Setup(clock => clock.CreateTimer(It.IsAny<TimerCallback>(), It.IsAny<object?>(),
                 It.IsAny<TimeSpan>(), It.IsAny<TimeSpan>()))
-            .CallBase().Callback(() => timer.TrySetResult());
+            .CallBase().Callback(() => timer.TrySetResult(true));
 
         var options = new OpenIddictCoreOptions
         {
@@ -116,10 +112,10 @@ public class OpenIddictCoreBackgroundServiceTests
         var tokens = new Mock<IOpenIddictTokenManager>();
         var authorizations = new Mock<IOpenIddictAuthorizationManager>();
         var sessions = new Mock<IOpenIddictSessionManager>();
-        var completion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var completion = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
 
         sessions.Setup(manager => manager.PruneAsync(It.IsAny<DateTimeOffset>(), It.IsAny<CancellationToken>()))
-            .Callback(() => completion.SetResult()).Returns(new ValueTask<long>(0));
+            .Callback(() => completion.SetResult(true)).Returns(new ValueTask<long>(0));
 
         var scoped = Mock.Of<IServiceProvider>(provider =>
             provider.GetService(typeof(IOpenIddictTokenManager)) == tokens.Object &&
@@ -150,10 +146,10 @@ public class OpenIddictCoreBackgroundServiceTests
     {
         // Arrange
         var clock = new Mock<FakeTimeProvider> { CallBase = true };
-        var timer = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var timer = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
         clock.Setup(clock => clock.CreateTimer(It.IsAny<TimerCallback>(), It.IsAny<object?>(),
                 It.IsAny<TimeSpan>(), It.IsAny<TimeSpan>()))
-            .CallBase().Callback(() => timer.TrySetResult());
+            .CallBase().Callback(() => timer.TrySetResult(true));
 
         var options = new OpenIddictCoreOptions
         {
@@ -164,10 +160,10 @@ public class OpenIddictCoreBackgroundServiceTests
         var tokens = new Mock<IOpenIddictTokenManager>();
         var authorizations = new Mock<IOpenIddictAuthorizationManager>();
         var sessions = new Mock<IOpenIddictSessionManager>();
-        var completion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var completion = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
 
         sessions.Setup(manager => manager.PruneAsync(It.IsAny<DateTimeOffset>(), It.IsAny<CancellationToken>()))
-            .Callback(() => completion.SetResult()).Returns(new ValueTask<long>(0));
+            .Callback(() => completion.SetResult(true)).Returns(new ValueTask<long>(0));
 
         var scoped = Mock.Of<IServiceProvider>(provider =>
             provider.GetService(typeof(IOpenIddictTokenManager)) == tokens.Object &&
@@ -198,10 +194,10 @@ public class OpenIddictCoreBackgroundServiceTests
     {
         // Arrange
         var clock = new Mock<FakeTimeProvider> { CallBase = true };
-        var timer = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var timer = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
         clock.Setup(clock => clock.CreateTimer(It.IsAny<TimerCallback>(), It.IsAny<object?>(),
                 It.IsAny<TimeSpan>(), It.IsAny<TimeSpan>()))
-            .CallBase().Callback(() => timer.TrySetResult());
+            .CallBase().Callback(() => timer.TrySetResult(true));
 
         var options = new OpenIddictCoreOptions
         {
@@ -212,10 +208,10 @@ public class OpenIddictCoreBackgroundServiceTests
         var tokens = new Mock<IOpenIddictTokenManager>();
         var authorizations = new Mock<IOpenIddictAuthorizationManager>();
         var sessions = new Mock<IOpenIddictSessionManager>();
-        var completion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var completion = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
 
         authorizations.Setup(manager => manager.PruneAsync(It.IsAny<DateTimeOffset>(), It.IsAny<CancellationToken>()))
-            .Callback(() => completion.SetResult()).Returns(new ValueTask<long>(0));
+            .Callback(() => completion.SetResult(true)).Returns(new ValueTask<long>(0));
 
         var scoped = Mock.Of<IServiceProvider>(provider =>
             provider.GetService(typeof(IOpenIddictTokenManager)) == tokens.Object &&
@@ -246,10 +242,10 @@ public class OpenIddictCoreBackgroundServiceTests
     {
         // Arrange
         var clock = new Mock<FakeTimeProvider> { CallBase = true };
-        var timer = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var timer = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
         clock.Setup(clock => clock.CreateTimer(It.IsAny<TimerCallback>(), It.IsAny<object?>(),
                 It.IsAny<TimeSpan>(), It.IsAny<TimeSpan>()))
-            .CallBase().Callback(() => timer.TrySetResult());
+            .CallBase().Callback(() => timer.TrySetResult(true));
         var options = new OpenIddictCoreOptions { TimeProvider = clock.Object };
         options.MinimumTokenLifespan = TimeSpan.FromDays(1);
         options.MinimumAuthorizationLifespan = TimeSpan.FromDays(2);
@@ -258,7 +254,7 @@ public class OpenIddictCoreBackgroundServiceTests
         var authorizations = new Mock<IOpenIddictAuthorizationManager>();
         var sessions = new Mock<IOpenIddictSessionManager>();
         var calls = new List<string>();
-        var completion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var completion = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
         tokens.Setup(manager => manager.PruneAsync(It.IsAny<DateTimeOffset>(), It.IsAny<CancellationToken>()))
             .Callback<DateTimeOffset, CancellationToken>((date, _) =>
             {
@@ -276,7 +272,7 @@ public class OpenIddictCoreBackgroundServiceTests
             {
                 Assert.Equal(options.TimeProvider.GetUtcNow() - options.MinimumSessionLifespan, date);
                 calls.Add("session");
-                completion.SetResult();
+                completion.SetResult(true);
             }).Returns(new ValueTask<long>(0));
         var scoped = Mock.Of<IServiceProvider>(provider =>
             provider.GetService(typeof(IOpenIddictTokenManager)) == tokens.Object &&
@@ -305,19 +301,19 @@ public class OpenIddictCoreBackgroundServiceTests
     {
         // Arrange
         var clock = new Mock<FakeTimeProvider> { CallBase = true };
-        var timer = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var timer = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
         clock.Setup(clock => clock.CreateTimer(It.IsAny<TimerCallback>(), It.IsAny<object?>(),
                 It.IsAny<TimeSpan>(), It.IsAny<TimeSpan>()))
-            .CallBase().Callback(() => timer.TrySetResult());
+            .CallBase().Callback(() => timer.TrySetResult(true));
         var options = new OpenIddictCoreOptions { TimeProvider = clock.Object };
         options.DisableAutomaticAuthorizationPruning = true;
         options.DisableAutomaticSessionPruning = true;
         var tokens = new Mock<IOpenIddictTokenManager>();
-        var first = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        var second = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var first = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var second = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
         var count = 0;
         tokens.Setup(manager => manager.PruneAsync(It.IsAny<DateTimeOffset>(), It.IsAny<CancellationToken>()))
-            .Callback(() => (Interlocked.Increment(ref count) is 1 ? first : second).SetResult())
+            .Callback(() => (Interlocked.Increment(ref count) is 1 ? first : second).SetResult(true))
             .Returns(new ValueTask<long>(0));
         var factory = new Mock<IServiceScopeFactory>();
         factory.Setup(factory => factory.CreateScope())
@@ -348,10 +344,10 @@ public class OpenIddictCoreBackgroundServiceTests
     {
         // Arrange
         var clock = new Mock<FakeTimeProvider> { CallBase = true };
-        var timer = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var timer = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
         clock.Setup(clock => clock.CreateTimer(It.IsAny<TimerCallback>(), It.IsAny<object?>(),
                 It.IsAny<TimeSpan>(), It.IsAny<TimeSpan>()))
-            .CallBase().Callback(() => timer.TrySetResult());
+            .CallBase().Callback(() => timer.TrySetResult(true));
 
         var options = new OpenIddictCoreOptions { TimeProvider = clock.Object };
         var tokens = new Mock<IOpenIddictTokenManager>();
@@ -359,12 +355,12 @@ public class OpenIddictCoreBackgroundServiceTests
         var sessions = new Mock<IOpenIddictSessionManager>();
         var logger = new Mock<ILogger<OpenIddictCoreBackgroundService>>();
         var error = new ApplicationException();
-        var completion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var completion = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
 
         tokens.Setup(manager => manager.PruneAsync(It.IsAny<DateTimeOffset>(), It.IsAny<CancellationToken>()))
             .Throws(error);
         sessions.Setup(manager => manager.PruneAsync(It.IsAny<DateTimeOffset>(), It.IsAny<CancellationToken>()))
-            .Callback(() => completion.SetResult()).Returns(new ValueTask<long>(0));
+            .Callback(() => completion.SetResult(true)).Returns(new ValueTask<long>(0));
 
         var scoped = Mock.Of<IServiceProvider>(provider =>
             provider.GetService(typeof(IOpenIddictTokenManager)) == tokens.Object &&
@@ -397,10 +393,10 @@ public class OpenIddictCoreBackgroundServiceTests
     {
         // Arrange
         var clock = new Mock<FakeTimeProvider> { CallBase = true };
-        var timer = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var timer = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
         clock.Setup(clock => clock.CreateTimer(It.IsAny<TimerCallback>(), It.IsAny<object?>(),
                 It.IsAny<TimeSpan>(), It.IsAny<TimeSpan>()))
-            .CallBase().Callback(() => timer.TrySetResult());
+            .CallBase().Callback(() => timer.TrySetResult(true));
 
         var options = new OpenIddictCoreOptions { TimeProvider = clock.Object };
         var tokens = new Mock<IOpenIddictTokenManager>();
@@ -408,12 +404,12 @@ public class OpenIddictCoreBackgroundServiceTests
         var sessions = new Mock<IOpenIddictSessionManager>();
         var logger = new Mock<ILogger<OpenIddictCoreBackgroundService>>();
         var error = new ApplicationException();
-        var completion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var completion = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
 
         authorizations.Setup(manager => manager.PruneAsync(It.IsAny<DateTimeOffset>(), It.IsAny<CancellationToken>()))
             .Throws(error);
         sessions.Setup(manager => manager.PruneAsync(It.IsAny<DateTimeOffset>(), It.IsAny<CancellationToken>()))
-            .Callback(() => completion.SetResult()).Returns(new ValueTask<long>(0));
+            .Callback(() => completion.SetResult(true)).Returns(new ValueTask<long>(0));
 
         var scoped = Mock.Of<IServiceProvider>(provider =>
             provider.GetService(typeof(IOpenIddictTokenManager)) == tokens.Object &&
@@ -445,10 +441,10 @@ public class OpenIddictCoreBackgroundServiceTests
     {
         // Arrange
         var clock = new Mock<FakeTimeProvider> { CallBase = true };
-        var timer = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var timer = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
         clock.Setup(clock => clock.CreateTimer(It.IsAny<TimerCallback>(), It.IsAny<object?>(),
                 It.IsAny<TimeSpan>(), It.IsAny<TimeSpan>()))
-            .CallBase().Callback(() => timer.TrySetResult());
+            .CallBase().Callback(() => timer.TrySetResult(true));
 
         var options = new OpenIddictCoreOptions { TimeProvider = clock.Object };
         var tokens = new Mock<IOpenIddictTokenManager>();
@@ -456,10 +452,10 @@ public class OpenIddictCoreBackgroundServiceTests
         var sessions = new Mock<IOpenIddictSessionManager>();
         var logger = new Mock<ILogger<OpenIddictCoreBackgroundService>>();
         var error = new ApplicationException();
-        var completion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var completion = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
 
         sessions.Setup(manager => manager.PruneAsync(It.IsAny<DateTimeOffset>(), It.IsAny<CancellationToken>()))
-            .Callback(() => completion.SetResult()).Throws(error);
+            .Callback(() => completion.SetResult(true)).Throws(error);
 
         var scoped = Mock.Of<IServiceProvider>(provider =>
             provider.GetService(typeof(IOpenIddictTokenManager)) == tokens.Object &&
@@ -491,10 +487,10 @@ public class OpenIddictCoreBackgroundServiceTests
     {
         // Arrange
         var clock = new Mock<FakeTimeProvider> { CallBase = true };
-        var timer = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var timer = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
         clock.Setup(clock => clock.CreateTimer(It.IsAny<TimerCallback>(), It.IsAny<object?>(),
                 It.IsAny<TimeSpan>(), It.IsAny<TimeSpan>()))
-            .CallBase().Callback(() => timer.TrySetResult());
+            .CallBase().Callback(() => timer.TrySetResult(true));
 
         var options = new OpenIddictCoreOptions
         {
@@ -530,10 +526,10 @@ public class OpenIddictCoreBackgroundServiceTests
     {
         // Arrange
         var clock = new Mock<FakeTimeProvider> { CallBase = true };
-        var timer = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var timer = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
         clock.Setup(clock => clock.CreateTimer(It.IsAny<TimerCallback>(), It.IsAny<object?>(),
                 It.IsAny<TimeSpan>(), It.IsAny<TimeSpan>()))
-            .CallBase().Callback(() => timer.TrySetResult());
+            .CallBase().Callback(() => timer.TrySetResult(true));
 
         var options = new OpenIddictCoreOptions
         {
@@ -569,10 +565,10 @@ public class OpenIddictCoreBackgroundServiceTests
     {
         // Arrange
         var clock = new Mock<FakeTimeProvider> { CallBase = true };
-        var timer = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var timer = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
         clock.Setup(clock => clock.CreateTimer(It.IsAny<TimerCallback>(), It.IsAny<object?>(),
                 It.IsAny<TimeSpan>(), It.IsAny<TimeSpan>()))
-            .CallBase().Callback(() => timer.TrySetResult());
+            .CallBase().Callback(() => timer.TrySetResult(true));
 
         var options = new OpenIddictCoreOptions
         {
@@ -608,10 +604,10 @@ public class OpenIddictCoreBackgroundServiceTests
     {
         // Arrange
         var clock = new Mock<FakeTimeProvider> { CallBase = true };
-        var timer = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var timer = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
         clock.Setup(clock => clock.CreateTimer(It.IsAny<TimerCallback>(), It.IsAny<object?>(),
                 It.IsAny<TimeSpan>(), It.IsAny<TimeSpan>()))
-            .CallBase().Callback(() => timer.TrySetResult());
+            .CallBase().Callback(() => timer.TrySetResult(true));
 
         var options = new OpenIddictCoreOptions
         {
@@ -621,14 +617,14 @@ public class OpenIddictCoreBackgroundServiceTests
         };
 
         var manager = new Mock<IOpenIddictTokenManager>();
-        var started = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var started = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
         var canceled = new TaskCompletionSource<long>(TaskCreationOptions.RunContinuationsAsynchronously);
 
         manager.Setup(manager => manager.PruneAsync(It.IsAny<DateTimeOffset>(), It.IsAny<CancellationToken>()))
             .Returns((DateTimeOffset _, CancellationToken token) =>
             {
                 token.Register(() => canceled.TrySetCanceled(token));
-                started.SetResult();
+                started.SetResult(true);
                 return new ValueTask<long>(canceled.Task);
             });
 
@@ -657,10 +653,10 @@ public class OpenIddictCoreBackgroundServiceTests
     {
         // Arrange
         var clock = new Mock<FakeTimeProvider> { CallBase = true };
-        var timer = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var timer = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
         clock.Setup(clock => clock.CreateTimer(It.IsAny<TimerCallback>(), It.IsAny<object?>(),
                 It.IsAny<TimeSpan>(), It.IsAny<TimeSpan>()))
-            .CallBase().Callback(() => timer.TrySetResult());
+            .CallBase().Callback(() => timer.TrySetResult(true));
 
         var options = new OpenIddictCoreOptions
         {
@@ -670,14 +666,14 @@ public class OpenIddictCoreBackgroundServiceTests
         };
 
         var manager = new Mock<IOpenIddictAuthorizationManager>();
-        var started = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var started = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
         var canceled = new TaskCompletionSource<long>(TaskCreationOptions.RunContinuationsAsynchronously);
 
         manager.Setup(manager => manager.PruneAsync(It.IsAny<DateTimeOffset>(), It.IsAny<CancellationToken>()))
             .Returns((DateTimeOffset _, CancellationToken token) =>
             {
                 token.Register(() => canceled.TrySetCanceled(token));
-                started.SetResult();
+                started.SetResult(true);
                 return new ValueTask<long>(canceled.Task);
             });
 
@@ -706,10 +702,10 @@ public class OpenIddictCoreBackgroundServiceTests
     {
         // Arrange
         var clock = new Mock<FakeTimeProvider> { CallBase = true };
-        var timer = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var timer = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
         clock.Setup(clock => clock.CreateTimer(It.IsAny<TimerCallback>(), It.IsAny<object?>(),
                 It.IsAny<TimeSpan>(), It.IsAny<TimeSpan>()))
-            .CallBase().Callback(() => timer.TrySetResult());
+            .CallBase().Callback(() => timer.TrySetResult(true));
 
         var options = new OpenIddictCoreOptions
         {
@@ -719,14 +715,14 @@ public class OpenIddictCoreBackgroundServiceTests
         };
 
         var manager = new Mock<IOpenIddictSessionManager>();
-        var started = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var started = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
         var canceled = new TaskCompletionSource<long>(TaskCreationOptions.RunContinuationsAsynchronously);
 
         manager.Setup(manager => manager.PruneAsync(It.IsAny<DateTimeOffset>(), It.IsAny<CancellationToken>()))
             .Returns((DateTimeOffset _, CancellationToken token) =>
             {
                 token.Register(() => canceled.TrySetCanceled(token));
-                started.SetResult();
+                started.SetResult(true);
                 return new ValueTask<long>(canceled.Task);
             });
 
@@ -755,10 +751,10 @@ public class OpenIddictCoreBackgroundServiceTests
     {
         // Arrange
         var clock = new Mock<FakeTimeProvider> { CallBase = true };
-        var timer = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var timer = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
         clock.Setup(clock => clock.CreateTimer(It.IsAny<TimerCallback>(), It.IsAny<object?>(),
                 It.IsAny<TimeSpan>(), It.IsAny<TimeSpan>()))
-            .CallBase().Callback(() => timer.TrySetResult());
+            .CallBase().Callback(() => timer.TrySetResult(true));
 
         var options = new OpenIddictCoreOptions
         {
@@ -791,10 +787,10 @@ public class OpenIddictCoreBackgroundServiceTests
     {
         // Arrange
         var clock = new Mock<FakeTimeProvider> { CallBase = true };
-        var timer = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var timer = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
         clock.Setup(clock => clock.CreateTimer(It.IsAny<TimerCallback>(), It.IsAny<object?>(),
                 It.IsAny<TimeSpan>(), It.IsAny<TimeSpan>()))
-            .CallBase().Callback(() => timer.TrySetResult());
+            .CallBase().Callback(() => timer.TrySetResult(true));
 
         var options = new OpenIddictCoreOptions
         {
@@ -827,10 +823,10 @@ public class OpenIddictCoreBackgroundServiceTests
     {
         // Arrange
         var clock = new Mock<FakeTimeProvider> { CallBase = true };
-        var timer = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var timer = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
         clock.Setup(clock => clock.CreateTimer(It.IsAny<TimerCallback>(), It.IsAny<object?>(),
                 It.IsAny<TimeSpan>(), It.IsAny<TimeSpan>()))
-            .CallBase().Callback(() => timer.TrySetResult());
+            .CallBase().Callback(() => timer.TrySetResult(true));
 
         var options = new OpenIddictCoreOptions
         {
@@ -857,5 +853,4 @@ public class OpenIddictCoreBackgroundServiceTests
             await service.ExecuteTask!.WaitAsync(TimeSpan.FromSeconds(5), TimeProvider.System));
         scoped.Verify(provider => provider.GetService(typeof(IOpenIddictSessionManager)), Times.Once());
     }
-#endif
 }
