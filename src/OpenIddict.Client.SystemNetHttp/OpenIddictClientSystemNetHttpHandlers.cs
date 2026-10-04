@@ -477,6 +477,11 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
                 response = await client.SendAsync(request, HttpCompletionOption.ResponseContentRead, context.CancellationToken);
             }
 
+            catch (OperationCanceledException) when (context.CancellationToken.IsCancellationRequested)
+            {
+                throw;
+            }
+
             // If an exception is thrown at this stage, this likely means a persistent network error occurred.
             // In this case, log the error details and return a generic error to stop processing the event.
             catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
@@ -721,6 +726,11 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
                 // transcodes the response stream if a non-UTF-8 response is returned by the remote server.
                 context.Transaction.Response = await response.Content.ReadFromJsonAsync(
                     OpenIddictSerializer.Default.Response, context.CancellationToken);
+            }
+
+            catch (OperationCanceledException) when (context.CancellationToken.IsCancellationRequested)
+            {
+                throw;
             }
 
             // If an exception is thrown at this stage, this likely means the returned response was not a valid

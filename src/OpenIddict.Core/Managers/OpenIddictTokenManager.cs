@@ -972,6 +972,11 @@ public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TTok
             return true;
         }
 
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
+
         catch (ConcurrencyException exception)
         {
             Logger.LogDebug(6169, exception, SR.GetResourceString(SR.ID6169), await Store.GetIdAsync(token, cancellationToken));
@@ -1008,6 +1013,11 @@ public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TTok
             return true;
         }
 
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
+
         catch (ConcurrencyException exception)
         {
             Logger.LogDebug(6172, exception, SR.GetResourceString(SR.ID6172), await Store.GetIdAsync(token, cancellationToken));
@@ -1042,6 +1052,11 @@ public class OpenIddictTokenManager<TToken> : IOpenIddictTokenManager where TTok
             Logger.LogInformation(6174, SR.GetResourceString(SR.ID6174), await Store.GetIdAsync(token, cancellationToken));
 
             return true;
+        }
+
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
         }
 
         catch (ConcurrencyException exception)

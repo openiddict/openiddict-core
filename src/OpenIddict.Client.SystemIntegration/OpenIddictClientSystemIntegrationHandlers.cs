@@ -1190,6 +1190,11 @@ public static partial class OpenIddictClientSystemIntegrationHandlers
                 await _service.RedirectProtocolActivationAsync(activation, identifier, source.Token);
             }
 
+            catch (OperationCanceledException) when (context.CancellationToken.IsCancellationRequested)
+            {
+                throw;
+            }
+
             catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
             {
                 context.Logger.LogWarning(6215, SR.GetResourceString(SR.ID6215), identifier);
