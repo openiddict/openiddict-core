@@ -1407,6 +1407,11 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
                 await UpdateAsync(application, secret, cancellationToken);
             }
 
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                throw;
+            }
+
             catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
             {
                 // If a non-fatal exception is thrown, ignore it: the client secret will be updated the next time it is validated again.
@@ -1569,7 +1574,7 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
             return false;
         }
 
-        catch (CryptographicException exception) when (!OpenIddictHelpers.IsFatal(exception))
+        catch (CryptographicException exception)
         {
             Logger.LogWarning(6288, exception, SR.GetResourceString(SR.ID6288));
 
@@ -1714,7 +1719,7 @@ public class OpenIddictApplicationManager<TApplication> : IOpenIddictApplication
             return true;
         }
 
-        catch (CryptographicException exception) when (!OpenIddictHelpers.IsFatal(exception))
+        catch (CryptographicException exception)
         {
             Logger.LogWarning(6288, exception, SR.GetResourceString(SR.ID6288));
 

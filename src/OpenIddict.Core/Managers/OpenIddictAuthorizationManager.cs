@@ -774,6 +774,11 @@ public class OpenIddictAuthorizationManager<TAuthorization> : IOpenIddictAuthori
             return true;
         }
 
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
+
         catch (ConcurrencyException exception)
         {
             Logger.LogDebug(6165, exception, SR.GetResourceString(SR.ID6165), await Store.GetIdAsync(authorization, cancellationToken));

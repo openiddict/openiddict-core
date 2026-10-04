@@ -39,9 +39,17 @@ public sealed class OpenIddictClientDispatcher : IOpenIddictClientDispatcher
                 await handler.HandleAsync(context);
             }
 
-            catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception) && context.Logger.IsEnabled(LogLevel.Debug))
+            catch (OperationCanceledException) when (context.CancellationToken.IsCancellationRequested)
             {
-                context.Logger.LogDebug(6132, exception, SR.GetResourceString(SR.ID6132), handler.GetType().FullName, typeof(TContext).FullName);
+                throw;
+            }
+
+            catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
+            {
+                if (context.Logger.IsEnabled(LogLevel.Debug))
+                {
+                    context.Logger.LogDebug(6132, exception, SR.GetResourceString(SR.ID6132), handler.GetType().FullName, typeof(TContext).FullName);
+                }
 
                 throw;
             }

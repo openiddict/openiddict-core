@@ -172,8 +172,12 @@ public static partial class OpenIddictValidationHandlers
                     ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0140));
             }
 
-            catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception) &&
-                exception is not OperationCanceledException)
+            catch (OperationCanceledException) when (context.CancellationToken.IsCancellationRequested)
+            {
+                throw;
+            }
+
+            catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
             {
                 context.Logger.LogError(6219, exception, SR.GetResourceString(SR.ID6219));
 

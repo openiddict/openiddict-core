@@ -1289,7 +1289,7 @@ public static partial class OpenIddictServerHandlers
                     }
                 }
 
-                catch (CryptographicException exception) when (!OpenIddictHelpers.IsFatal(exception))
+                catch (CryptographicException exception)
                 {
                     context.Logger.LogWarning(6288, exception, SR.GetResourceString(SR.ID6288));
 

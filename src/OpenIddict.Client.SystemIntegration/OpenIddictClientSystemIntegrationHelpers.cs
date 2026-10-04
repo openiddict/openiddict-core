@@ -452,6 +452,11 @@ public static class OpenIddictClientSystemIntegrationHelpers
             return await UIApplication.SharedApplication.OpenUrlAsync(new NSUrl(uri.AbsoluteUri), new UIApplicationOpenUrlOptions());
         }
 
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
+
         catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
         {
             return false;
@@ -487,6 +492,11 @@ public static class OpenIddictClientSystemIntegrationHelpers
             return true;
         }
 
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
+
         catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
         {
             return false;
@@ -519,6 +529,11 @@ public static class OpenIddictClientSystemIntegrationHelpers
             }), cancellationToken);
 
             return true;
+        }
+
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
         }
 
         catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
