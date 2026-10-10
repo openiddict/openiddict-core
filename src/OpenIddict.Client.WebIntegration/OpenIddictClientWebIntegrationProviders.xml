@@ -682,16 +682,6 @@
   <Provider Name="Discord" Id="542ac9f1-514f-4b8a-bc4c-d56d2b8356e5"
             Documentation="https://discord.com/developers/docs/topics/oauth2">
     <Environment Issuer="https://discord.com/">
-      <Configuration AuthorizationEndpoint="https://discord.com/oauth2/authorize"
-                     RevocationEndpoint="https://discord.com/api/oauth2/token/revoke"
-                     TokenEndpoint="https://discord.com/api/oauth2/token"
-                     UserInfoEndpoint="https://discord.com/api/users/@me">
-        <CodeChallengeMethod Value="S256" />
-
-        <GrantType Value="authorization_code" />
-        <GrantType Value="refresh_token" />
-      </Configuration>
-
       <!--
         Note: Discord requires sending the "identify" scope to be able to use the userinfo endpoint.
       -->
