@@ -104,8 +104,8 @@ public static partial class OpenIddictClientWebIntegrationHandlers
 
                 if (context.Registration.ProviderType is
                     ProviderTypes.AlibabaCloud or ProviderTypes.Apple    or
-                    ProviderTypes.FaceIt       or ProviderTypes.LinkedIn or
-                    ProviderTypes.QuickBooksOnline)
+                    ProviderTypes.Discord      or ProviderTypes.FaceIt   or
+                    ProviderTypes.LinkedIn     or ProviderTypes.QuickBooksOnline)
                 {
                     context.Configuration.GrantTypesSupported.Add(GrantTypes.AuthorizationCode);
                     context.Configuration.GrantTypesSupported.Add(GrantTypes.RefreshToken);
@@ -277,7 +277,8 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 // configuration and thus are treated as OAuth 2.0-only providers by the OpenIddict client.
                 // To avoid that, the "openid" scope is manually added to indicate OpenID Connect is supported.
                 else if (context.Registration.ProviderType is
-                    ProviderTypes.EpicGames or ProviderTypes.EveOnline or ProviderTypes.Xero)
+                    ProviderTypes.Discord   or ProviderTypes.EpicGames or
+                    ProviderTypes.EveOnline or ProviderTypes.Xero)
                 {
                     context.Configuration.ScopesSupported.Add(Scopes.OpenId);
                 }
@@ -341,6 +342,23 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 // server configuration but only supports the "client_secret_post" authentication method.
                 else if (context.Registration.ProviderType is ProviderTypes.Atlassian)
                 {
+                    context.Configuration.RevocationEndpointAuthMethodsSupported.Add(
+                        ClientAuthenticationMethods.ClientSecretPost);
+                }
+
+                // Discord doesn't return the list of supported client authentication methods in its server
+                // configuration but is known to support both "client_secret_basic" and "client_secret_post".
+                else if (context.Registration.ProviderType is ProviderTypes.Discord)
+                {
+                    context.Configuration.TokenEndpointAuthMethodsSupported.Add(
+                        ClientAuthenticationMethods.ClientSecretBasic);
+
+                    context.Configuration.TokenEndpointAuthMethodsSupported.Add(
+                        ClientAuthenticationMethods.ClientSecretPost);
+
+                    context.Configuration.RevocationEndpointAuthMethodsSupported.Add(
+                        ClientAuthenticationMethods.ClientSecretBasic);
+
                     context.Configuration.RevocationEndpointAuthMethodsSupported.Add(
                         ClientAuthenticationMethods.ClientSecretPost);
                 }
@@ -433,6 +451,17 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 {
                     context.Configuration.EndSessionEndpoint ??= OpenIddictHelpers.CreateAbsoluteUri(
                         context.Registration.Issuer, new Uri("oidc/logout", UriKind.Relative));
+                }
+
+                // While Discord supports OpenID Connect discovery, the configuration document doesn't include the
+                // address of the revocation endpoint. To work around that, the endpoint URI is manually added here.
+                //
+                // Note: the userinfo endpoint is returned in the configuration document but is replaced here to
+                // use the same endpoint as the one used in previous OpenIddict versions for compatibility reasons.
+                else if (context.Registration.ProviderType is ProviderTypes.Discord)
+                {
+                    context.Configuration.RevocationEndpoint = new Uri("https://discord.com/api/oauth2/token/revoke", UriKind.Absolute);
+                    context.Configuration.UserInfoEndpoint = new Uri("https://discord.com/api/users/@me", UriKind.Absolute);
                 }
 
                 // While Huawei supports OpenID Connect discovery, the configuration

@@ -918,10 +918,10 @@ public static partial class OpenIddictClientWebIntegrationHandlers
             context.DisableBackchannelIdentityTokenNonceValidation = context.Registration.ProviderType switch
             {
                 // These providers don't include the nonce in their identity tokens:
-                ProviderTypes.Asana    or ProviderTypes.DocuSign         or
-                ProviderTypes.Dropbox  or ProviderTypes.FaceIt           or
-                ProviderTypes.LinkedIn or ProviderTypes.QuickBooksOnline or
-                ProviderTypes.WorldId => true,
+                ProviderTypes.Asana    or ProviderTypes.Discord          or
+                ProviderTypes.DocuSign or ProviderTypes.Dropbox          or
+                ProviderTypes.FaceIt   or ProviderTypes.LinkedIn         or
+                ProviderTypes.QuickBooksOnline or ProviderTypes.WorldId => true,
 
                 _ => context.DisableBackchannelIdentityTokenNonceValidation
             };
@@ -1045,6 +1045,10 @@ public static partial class OpenIddictClientWebIntegrationHandlers
 
             context.DisableUserInfoValidation = context.Registration.ProviderType switch
             {
+                // The Discord provider uses a custom API endpoint instead of the standard OpenID
+                // Connect userinfo endpoint for compatibility with previous OpenIddict versions.
+                ProviderTypes.Discord => true,
+
                 // SuperOffice doesn't offer a standard OpenID Connect userinfo endpoint.
                 ProviderTypes.SuperOffice => true,
 
