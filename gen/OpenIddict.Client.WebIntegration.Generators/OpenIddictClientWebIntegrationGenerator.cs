@@ -1,10 +1,9 @@
 ﻿using System.Globalization;
 using System.Text;
 using System.Xml.Linq;
+using Fluid;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
-using Scriban;
-using Scriban.Runtime;
 
 namespace OpenIddict.Client.WebIntegration.Generators;
 
@@ -18,32 +17,33 @@ public sealed class OpenIddictClientWebIntegrationGenerator : IIncrementalGenera
 
         context.RegisterSourceOutput(files, static (context, file) =>
         {
+            var parser = new FluidParser();
             var document = XDocument.Load(file.Path, LoadOptions.None);
 
             context.AddSource(
                 "OpenIddictClientWebIntegrationBuilder.generated.cs",
-                SourceText.From(GenerateBuilderMethods(document), Encoding.UTF8));
+                SourceText.From(GenerateBuilderMethods(parser, document), Encoding.UTF8));
 
             context.AddSource(
                 "OpenIddictClientWebIntegrationConfiguration.generated.cs",
-                SourceText.From(GenerateConfigurationClasses(document), Encoding.UTF8));
+                SourceText.From(GenerateConfigurationClasses(parser, document), Encoding.UTF8));
 
             context.AddSource(
                 "OpenIddictClientWebIntegrationConstants.generated.cs",
-                SourceText.From(GenerateConstants(document), Encoding.UTF8));
+                SourceText.From(GenerateConstants(parser, document), Encoding.UTF8));
 
             context.AddSource(
                 "OpenIddictClientWebIntegrationHelpers.generated.cs",
-                SourceText.From(GenerateHelpers(document), Encoding.UTF8));
+                SourceText.From(GenerateHelpers(parser, document), Encoding.UTF8));
 
             context.AddSource(
                 "OpenIddictClientWebIntegrationSettings.generated.cs",
-                SourceText.From(GenerateSettings(document), Encoding.UTF8));
+                SourceText.From(GenerateSettings(parser, document), Encoding.UTF8));
         });
 
-        static string GenerateBuilderMethods(XDocument document)
+        static string GenerateBuilderMethods(FluidParser parser, XDocument document)
         {
-            var template = Template.Parse(@"#nullable enable
+            var template = parser.Parse(@"#nullable enable
 #pragma warning disable CS0618
 
 using System.ComponentModel;
@@ -66,18 +66,18 @@ namespace Microsoft.Extensions.DependencyInjection;
 
 public sealed partial class OpenIddictClientWebIntegrationBuilder
 {
-    {{~ for provider in providers ~}}
+    {% for provider in providers %}
     /// <summary>
     /// Adds a new {{ provider.display_name }} client registration.
-    {{~ if provider.documentation ~}}
+    {% if provider.documentation -%}
     /// For more information, read <see href=""{{ provider.documentation }}"">the documentation</see>.
-    {{~ end ~}}
+    {% endif -%}
     /// </summary>
     /// <param name=""configuration"">The delegate used to configure the OpenIddict/{{ provider.display_name }} options.</param>
     /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder""/> instance.</returns>
-    {{~ if provider.obsolete ~}}
+    {% if provider.obsolete -%}
     [Obsolete(""This provider is no longer supported and will be removed in a future version."")]
-    {{~ end ~}}
+    {% endif -%}
     public OpenIddictClientWebIntegrationBuilder Add{{ provider.name }}(Action<OpenIddictClientWebIntegrationBuilder.{{ provider.name }}> configuration)
     {
         ArgumentNullException.ThrowIfNull(configuration);
@@ -94,16 +94,15 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
 
         return this;
     }
+    {% endfor %}
 
-    {{~ end ~}}
-
-    {{~ for provider in providers ~}}
+    {% for provider in providers %}
     /// <summary>
     /// Exposes the necessary methods required to configure the {{ provider.display_name }} integration.
     /// </summary>
-    {{~ if provider.obsolete ~}}
+    {% if provider.obsolete -%}
     [Obsolete(""This provider is no longer supported and will be removed in a future version."")]
-    {{~ end ~}}
+    {% endif -%}
     public sealed partial class {{ provider.name }}
     {
         /// <summary>
@@ -394,7 +393,7 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
             return SetRedirectUri(new Uri(uri, UriKind.RelativeOrAbsolute));
         }
 
-        {{~ for environment in provider.environments ~}}
+        {% for environment in provider.environments %}
         /// <summary>
         /// Configures the provider to use the ""{{ environment.name }}"" environment.
         /// </summary>
@@ -405,19 +404,18 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
 
             return this;
         }
+        {% endfor %}
 
-        {{~ end ~}}
-
-        {{~ for setting in provider.settings ~}}
-        {{~ if setting.collection ~}}
+        {% for setting in provider.settings %}
+        {% if setting.collection %}
         /// <summary>
         /// Configures {{ setting.description }}.
         /// </summary>
-        /// <param name=""{{ setting.parameter_name }}"">{{ setting.description | string.capitalize }}.</param>
+        /// <param name=""{{ setting.parameter_name }}"">{{ setting.description | capitalize }}.</param>
         /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/> instance.</returns>
-        {{~ if setting.obsolete ~}}
+        {% if setting.obsolete -%}
         [Obsolete(""This option is no longer supported and will be removed in a future version."")]
-        {{~ end ~}}
+        {% endif -%}
         public {{ provider.name }} Add{{ setting.property_name }}(params {{ setting.clr_type }}[] {{ setting.parameter_name }})
         {
             ArgumentNullException.ThrowIfNull({{ setting.parameter_name }});
@@ -426,15 +424,17 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
 
             return this;
         }
-        {{~ else if setting.clr_type == 'ECDsaSecurityKey' ~}}
+        {% else %}
+        {% case setting.clr_type %}
+        {% when 'ECDsaSecurityKey' %}
         /// <summary>
         /// Configures {{ setting.description }}.
         /// </summary>
-        /// <param name=""{{ setting.parameter_name }}"">{{ setting.description | string.capitalize }}.</param>
+        /// <param name=""{{ setting.parameter_name }}"">{{ setting.description | capitalize }}.</param>
         /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/> instance.</returns>
-        {{~ if setting.obsolete ~}}
+        {% if setting.obsolete -%}
         [Obsolete(""This option is no longer supported and will be removed in a future version."")]
-        {{~ end ~}}
+        {% endif -%}
         public {{ provider.name }} Set{{ setting.property_name }}(ECDsaSecurityKey {{ setting.parameter_name }})
         {
             ArgumentNullException.ThrowIfNull({{ setting.parameter_name }});
@@ -457,9 +457,9 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
         /// The PEM-encoded Elliptic Curve Digital Signature Algorithm (ECDSA) signing key.
         /// </param>
         /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/> instance.</returns>
-        {{~ if setting.obsolete ~}}
+        {% if setting.obsolete -%}
         [Obsolete(""This option is no longer supported and will be removed in a future version."")]
-        {{~ end ~}}
+        {% endif -%}
         public {{ provider.name }} Set{{ setting.property_name }}(string key)
             => Set{{ setting.property_name }}(key.AsMemory());
 
@@ -470,9 +470,9 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
         /// The PEM-encoded Elliptic Curve Digital Signature Algorithm (ECDSA) signing key.
         /// </param>
         /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/> instance.</returns>
-        {{~ if setting.obsolete ~}}
+        {% if setting.obsolete -%}
         [Obsolete(""This option is no longer supported and will be removed in a future version."")]
-        {{~ end ~}}
+        {% endif -%}
         public {{ provider.name }} Set{{ setting.property_name }}(ReadOnlyMemory<char> key)
             => Set{{ setting.property_name }}(key.Span);
 
@@ -483,9 +483,9 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
         /// The PEM-encoded Elliptic Curve Digital Signature Algorithm (ECDSA) signing key.
         /// </param>
         /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/> instance.</returns>
-        {{~ if setting.obsolete ~}}
+        {% if setting.obsolete -%}
         [Obsolete(""This option is no longer supported and will be removed in a future version."")]
-        {{~ end ~}}
+        {% endif -%}
         public {{ provider.name }} Set{{ setting.property_name }}(ReadOnlySpan<char> key)
         {
             if (key.IsEmpty)
@@ -510,15 +510,15 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
             return Set{{ setting.property_name }}(new ECDsaSecurityKey(algorithm));
         }
 #endif
-        {{~ else if setting.clr_type == 'Uri' ~}}
+        {% when 'Uri' %}
         /// <summary>
         /// Configures {{ setting.description }}.
         /// </summary>
-        /// <param name=""{{ setting.parameter_name }}"">{{ setting.description | string.capitalize }}.</param>
+        /// <param name=""{{ setting.parameter_name }}"">{{ setting.description | capitalize }}.</param>
         /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/> instance.</returns>
-        {{~ if setting.obsolete ~}}
+        {% if setting.obsolete -%}
         [Obsolete(""This option is no longer supported and will be removed in a future version."")]
-        {{~ end ~}}
+        {% endif -%}
         public {{ provider.name }} Set{{ setting.property_name }}(Uri {{ setting.parameter_name }})
         {
             ArgumentNullException.ThrowIfNull({{ setting.parameter_name }});
@@ -536,26 +536,26 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
         /// <summary>
         /// Configures {{ setting.description }}.
         /// </summary>
-        /// <param name=""{{ setting.parameter_name }}"">{{ setting.description | string.capitalize }}.</param>
+        /// <param name=""{{ setting.parameter_name }}"">{{ setting.description | capitalize }}.</param>
         /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/> instance.</returns>
-        {{~ if setting.obsolete ~}}
+        {% if setting.obsolete -%}
         [Obsolete(""This option is no longer supported and will be removed in a future version."")]
-        {{~ end ~}}
+        {% endif -%}
         public {{ provider.name }} Set{{ setting.property_name }}(string {{ setting.parameter_name }})
         {
             ArgumentException.ThrowIfNullOrEmpty({{ setting.parameter_name }});
 
             return Set{{ setting.property_name }}(new Uri({{ setting.parameter_name }}, UriKind.RelativeOrAbsolute));
         }
-        {{~ else if setting.clr_type == 'X509Certificate2' ~}}
+        {% when 'X509Certificate2' %}
         /// <summary>
         /// Configures {{ setting.description }}.
         /// </summary>
-        /// <param name=""{{ setting.parameter_name }}"">{{ setting.description | string.capitalize }}.</param>
+        /// <param name=""{{ setting.parameter_name }}"">{{ setting.description | capitalize }}.</param>
         /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/> instance.</returns>
-        {{~ if setting.obsolete ~}}
+        {% if setting.obsolete -%}
         [Obsolete(""This option is no longer supported and will be removed in a future version."")]
-        {{~ end ~}}
+        {% endif -%}
         public {{ provider.name }} Set{{ setting.property_name }}(X509Certificate2 {{ setting.parameter_name }})
         {
             ArgumentNullException.ThrowIfNull({{ setting.parameter_name }});
@@ -577,9 +577,9 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
         /// <param name=""resource"">The name of the embedded resource.</param>
         /// <param name=""password"">The password used to open the certificate.</param>
         /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/> instance.</returns>
-        {{~ if setting.obsolete ~}}
+        {% if setting.obsolete -%}
         [Obsolete(""This option is no longer supported and will be removed in a future version."")]
-        {{~ end ~}}
+        {% endif -%}
         public {{ provider.name }} Set{{ setting.property_name }}(Assembly assembly, string resource, string? password)
             // Note: ephemeral key sets are currently not supported on macOS.
             => Set{{ setting.property_name }}(assembly, resource, password, OperatingSystem.IsMacOS()
@@ -594,9 +594,9 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
         /// <param name=""password"">The password used to open the certificate.</param>
         /// <param name=""flags"">An enumeration of flags indicating how and where to store the private key of the certificate.</param>
         /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/> instance.</returns>
-        {{~ if setting.obsolete ~}}
+        {% if setting.obsolete -%}
         [Obsolete(""This option is no longer supported and will be removed in a future version."")]
-        {{~ end ~}}
+        {% endif -%}
         public {{ provider.name }} Set{{ setting.property_name }}(
             Assembly assembly, string resource,
             string? password, X509KeyStorageFlags flags)
@@ -616,9 +616,9 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
         /// <param name=""stream"">The stream containing the certificate.</param>
         /// <param name=""password"">The password used to open the certificate.</param>
         /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/> instance.</returns>
-        {{~ if setting.obsolete ~}}
+        {% if setting.obsolete -%}
         [Obsolete(""This option is no longer supported and will be removed in a future version."")]
-        {{~ end ~}}
+        {% endif -%}
         public {{ provider.name }} Set{{ setting.property_name }}(Stream stream, string? password)
             // Note: ephemeral key sets are currently not supported on macOS.
             => Set{{ setting.property_name }}(stream, password, OperatingSystem.IsMacOS()
@@ -632,9 +632,9 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
         /// <param name=""password"">The password used to open the certificate.</param>
         /// <param name=""flags"">An enumeration of flags indicating how and where to store the private key of the certificate.</param>
         /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/> instance.</returns>
-        {{~ if setting.obsolete ~}}
+        {% if setting.obsolete -%}
         [Obsolete(""This option is no longer supported and will be removed in a future version."")]
-        {{~ end ~}}
+        {% endif -%}
         public {{ provider.name }} Set{{ setting.property_name }}(Stream stream, string? password, X509KeyStorageFlags flags)
         {
             ArgumentNullException.ThrowIfNull(stream);
@@ -657,9 +657,9 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
         /// </summary>
         /// <param name=""thumbprint"">The thumbprint of the certificate used to identify it in the X.509 store.</param>
         /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/> instance.</returns>
-        {{~ if setting.obsolete ~}}
+        {% if setting.obsolete -%}
         [Obsolete(""This option is no longer supported and will be removed in a future version."")]
-        {{~ end ~}}
+        {% endif -%}
         [UnsupportedOSPlatform(""linux"")]
         public {{ provider.name }} Set{{ setting.property_name }}(string thumbprint)
         {
@@ -688,9 +688,9 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
         /// <param name=""name"">The name of the X.509 store.</param>
         /// <param name=""location"">The location of the X.509 store.</param>
         /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/> instance.</returns>
-        {{~ if setting.obsolete ~}}
+        {% if setting.obsolete -%}
         [Obsolete(""This option is no longer supported and will be removed in a future version."")]
-        {{~ end ~}}
+        {% endif -%}
         public {{ provider.name }} Set{{ setting.property_name }}(string thumbprint, StoreName name, StoreLocation location)
         {
             ArgumentException.ThrowIfNullOrEmpty(thumbprint);
@@ -703,30 +703,30 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
                     .Cast<X509Certificate2>()
                     .SingleOrDefault() ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0066)));
         }
-        {{~ else if setting.clr_type == 'bool' ~}}
+        {% when 'bool' %}
         /// <summary>
         /// Configures {{ setting.description }}.
         /// </summary>
-        /// <param name=""{{ setting.parameter_name }}"">{{ setting.description | string.capitalize }}.</param>
+        /// <param name=""{{ setting.parameter_name }}"">{{ setting.description | capitalize }}.</param>
         /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/> instance.</returns>
-        {{~ if setting.obsolete ~}}
+        {% if setting.obsolete -%}
         [Obsolete(""This option is no longer supported and will be removed in a future version."")]
-        {{~ end ~}}
+        {% endif -%}
         public {{ provider.name }} Set{{ setting.property_name }}(bool {{ setting.parameter_name }})
         {
             Registration.Get{{ provider.name }}Settings().{{ setting.property_name }} = {{ setting.parameter_name }};
 
             return this;
         }
-        {{~ else ~}}
+        {% else %}
         /// <summary>
         /// Configures {{ setting.description }}.
         /// </summary>
-        /// <param name=""{{ setting.parameter_name }}"">{{ setting.description | string.capitalize }}.</param>
+        /// <param name=""{{ setting.parameter_name }}"">{{ setting.description | capitalize }}.</param>
         /// <returns>The <see cref=""OpenIddictClientWebIntegrationBuilder.{{ provider.name }}""/> instance.</returns>
-        {{~ if setting.obsolete ~}}
+        {% if setting.obsolete -%}
         [Obsolete(""This option is no longer supported and will be removed in a future version."")]
-        {{~ end ~}}
+        {% endif -%}
         public {{ provider.name }} Set{{ setting.property_name }}({{ setting.clr_type }} {{ setting.parameter_name }})
         {
             ArgumentNullException.ThrowIfNull({{ setting.parameter_name }});
@@ -735,9 +735,9 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
 
             return this;
         }
-        {{~ end ~}}
-
-        {{~ end ~}}
+        {% endcase %}
+        {% endif %}
+        {% endfor %}
 
         /// <inheritdoc/>
         [EditorBrowsable(EditorBrowsableState.Never)]
@@ -751,8 +751,7 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
         [EditorBrowsable(EditorBrowsableState.Never)]
         public override string? ToString() => base.ToString();
     }
-
-    {{~ end ~}}
+    {% endfor %}
 }
 ");
             var context = CreateTemplateContext(new
@@ -818,54 +817,54 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
             return template.Render(context);
         }
 
-        static string GenerateConstants(XDocument document)
+        static string GenerateConstants(FluidParser parser, XDocument document)
         {
-            var template = Template.Parse(@"#nullable enable
+            var template = parser.Parse(@"#nullable enable
 
 namespace OpenIddict.Client.WebIntegration;
 
 public static partial class OpenIddictClientWebIntegrationConstants
 {
-    {{~ for provider in providers ~}}
+    {% for provider in providers %}
     public static class {{ provider.name }}
     {
         public static class Environments
         {
-            {{~ for environment in provider.environments ~}}
+            {% for environment in provider.environments %}
             public const string {{ environment.name }} = ""{{ environment.name }}"";
-            {{~ end ~}}
+            {% endfor %}
         }
 
         public static class Properties
         {
-            {{~ for property in provider.properties ~}}
+            {% for property in provider.properties %}
             public const string {{ property.name }} = ""{{ property.dictionary_key }}"";
-            {{~ end ~}}
+            {% endfor %}
         }
 
-        {{~ for group in provider.constants ~}}
-        public static class {{ group.key }}
+        {% for group in provider.constants %}
+        public static class {{ group.class }}
         {
-            {{~ for constant in group ~}}
+            {% for constant in group.members %}
             public const string {{ constant.name }} = ""{{ constant.value }}"";
-            {{~ end ~}}
+            {% endfor %}
         }
-        {{~ end ~}}
+        {% endfor %}
     }
-    {{~ end ~}}
+    {% endfor %}
 
     public static class Providers
     {
-        {{~ for provider in providers ~}}
+        {% for provider in providers %}
         public const string {{ provider.name }} = ""{{ provider.name }}"";
-        {{~ end ~}}
+        {% endfor %}
     }
 
     public static class ProviderTypes
     {
-        {{~ for provider in providers ~}}
+        {% for provider in providers %}
         public const string {{ provider.name }} = ""{{ provider.id }}"";
-        {{~ end ~}}
+        {% endfor %}
     }
 }
 ");
@@ -898,6 +897,7 @@ public static partial class OpenIddictClientWebIntegrationConstants
                                 Value = (string) constant.Attribute("Value")
                             })
                             .GroupBy(static constant => constant.Class, StringComparer.Ordinal)
+                            .Select(static group => new { Class = group.Key, Members = group.ToList() })
                             .ToList(),
                     })
                     .ToList()
@@ -906,9 +906,9 @@ public static partial class OpenIddictClientWebIntegrationConstants
             return template.Render(context);
         }
 
-        static string GenerateConfigurationClasses(XDocument document)
+        static string GenerateConfigurationClasses(FluidParser parser, XDocument document)
         {
-            var template = Template.Parse(@"#nullable enable
+            var template = parser.Parse(@"#nullable enable
 #pragma warning disable CS0618
 
 using System.ComponentModel.DataAnnotations;
@@ -929,217 +929,214 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration
     {
         ArgumentNullException.ThrowIfNull(registration);
 
-        {{~ for provider in providers ~}}
-        {{~ if for.first ~}}
-        if (registration.ProviderType is ProviderTypes.{{ provider.name }})
-        {{~ else ~}}
-        else if (registration.ProviderType is ProviderTypes.{{ provider.name }})
-        {{~ end ~}}
+        {% for provider in providers %}
+        {% unless forloop.first %}else {% endunless %}if (registration.ProviderType is ProviderTypes.{{ provider.name }})
         {
             if (registration.ProviderSettings is not OpenIddictClientWebIntegrationSettings.{{ provider.name }} settings)
             {
                 return;
             }
 
-            {{~ for setting in provider.settings ~}}
-            {{~ if setting.default_value ~}}
-            {{~ if setting.type == 'String' ~}} 
+            {% for setting in provider.settings %}
+            {% if setting.default_value %}
+            {% case setting.type %}
+            {% when 'String' %}
             if (string.IsNullOrEmpty(settings.{{ setting.property_name }}))
             {
                 settings.{{ setting.property_name }} = ""{{ setting.default_value }}"";
             }
-            {{~ else if setting.type == 'Uri' ~}} 
+            {% when 'Uri' %}
             if (settings.{{ setting.property_name }} is null)
             {
                 settings.{{ setting.property_name }} = CreateUri(""{{ setting.default_value }}"", UriKind.RelativeOrAbsolute);
             }
-            {{~ else if setting.type == 'Boolean' ~}}
+            {% when 'Boolean' %}
             if (settings.{{ setting.property_name }} is null)
             {
                 settings.{{ setting.property_name }} = {{ setting.default_value }};
             }
-            {{~ end ~}}
-            {{~ end ~}}
+            {% endcase %}
+            {% endif %}
 
-            {{~ if setting.collection ~}}
+            {% if setting.collection %}
             if (settings.{{ setting.property_name }}.Count is 0)
             {
-                {{~ for item in setting.items ~}}
-                {{~ if item.default && !item.required ~}}
+                {% for item in setting.items %}
+                {% if item.default and item.required == false %}
                 settings.{{ setting.property_name }}.Add(""{{ item.value }}"");
-                {{~ end ~}}
-                {{~ end ~}}
+                {% endif %}
+                {% endfor %}
             }
-            {{~ end ~}}
+            {% endif %}
 
-            {{~ for item in setting.items ~}}
-            {{~ if item.required ~}}
+            {% for item in setting.items %}
+            {% if item.required %}
             settings.{{ setting.property_name }}.Add(""{{ item.value }}"");
-            {{~ end ~}}
-            {{~ end ~}}
-            {{~ end ~}}
+            {% endif %}
+            {% endfor %}
+            {% endfor %}
 
-            {{~ for environment in provider.environments ~}}
+            {% for environment in provider.environments %}
             if (settings.Environment is OpenIddictClientWebIntegrationConstants.{{ provider.name }}.Environments.{{ environment.name }})
             {
                 if (registration.Scopes.Count is 0)
                 {
-                    {{~ for scope in environment.scopes ~}}
-                    {{~ if scope.default && !scope.required ~}}
+                    {% for scope in environment.scopes %}
+                    {% if scope.default and scope.required == false %}
                     registration.Scopes.Add(""{{ scope.name }}"");
-                    {{~ end ~}}
-                    {{~ end ~}}
+                    {% endif %}
+                    {% endfor %}
                 }
 
-                {{~ for scope in environment.scopes ~}}
-                {{~ if scope.required ~}}
+                {% for scope in environment.scopes %}
+                {% if scope.required %}
                 registration.Scopes.Add(""{{ scope.name }}"");
-                {{~ end ~}}
-                {{~ end ~}}
+                {% endif %}
+                {% endfor %}
             }
-            {{~ end ~}}
+            {% endfor %}
 
             registration.ProviderName ??= Providers.{{ provider.name }};
             registration.ProviderDisplayName ??= ""{{ provider.display_name }}"";
 
             registration.Issuer ??= settings.Environment switch
             {
-                {{~ for environment in provider.environments ~}}
+                {% for environment in provider.environments %}
                 OpenIddictClientWebIntegrationConstants.{{ provider.name }}.Environments.{{ environment.name }}
-                    => CreateUri($""{{ environment.issuer | string.replace '\'' '""' }}"", UriKind.Absolute),
-                {{~ end ~}}
+                    => CreateUri($""{{ environment.issuer | replace: ""'"", '""' }}"", UriKind.Absolute),
+                {% endfor %}
 
                 _ => null
             };
 
             registration.ConfigurationEndpoint ??= settings.Environment switch
             {
-                {{~ for environment in provider.environments ~}}
+                {% for environment in provider.environments %}
                 OpenIddictClientWebIntegrationConstants.{{ provider.name }}.Environments.{{ environment.name }}
-                {{~ if environment.configuration_endpoint ~}}
-                    => CreateUri($""{{ environment.configuration_endpoint | string.replace '\'' '""' }}"", UriKind.Absolute),
-                {{~ else ~}}
+                {% if environment.configuration_endpoint %}
+                    => CreateUri($""{{ environment.configuration_endpoint | replace: ""'"", '""' }}"", UriKind.Absolute),
+                {% else %}
                     => null,
-                {{~ end ~}}
-                {{~ end ~}}
+                {% endif %}
+                {% endfor %}
 
                 _ => null
             };
 
             registration.Configuration ??= settings.Environment switch
             {
-                {{~ for environment in provider.environments ~}}
-                {{~ if environment.configuration ~}}
+                {% for environment in provider.environments %}
+                {% if environment.configuration %}
                 OpenIddictClientWebIntegrationConstants.{{ provider.name }}.Environments.{{ environment.name }} => new OpenIddictConfiguration
                 {
-                    {{~ if environment.configuration.authorization_endpoint ~}}
-                    AuthorizationEndpoint = CreateUri($""{{ environment.configuration.authorization_endpoint | string.replace '\'' '""' }}"", UriKind.Absolute),
-                    {{~ end ~}}
+                    {% if environment.configuration.authorization_endpoint %}
+                    AuthorizationEndpoint = CreateUri($""{{ environment.configuration.authorization_endpoint | replace: ""'"", '""' }}"", UriKind.Absolute),
+                    {% endif %}
 
-                    {{~ if environment.configuration.device_authorization_endpoint ~}}
-                    DeviceAuthorizationEndpoint = CreateUri($""{{ environment.configuration.device_authorization_endpoint | string.replace '\'' '""' }}"", UriKind.Absolute),
-                    {{~ end ~}}
+                    {% if environment.configuration.device_authorization_endpoint %}
+                    DeviceAuthorizationEndpoint = CreateUri($""{{ environment.configuration.device_authorization_endpoint | replace: ""'"", '""' }}"", UriKind.Absolute),
+                    {% endif %}
 
-                    {{~ if environment.configuration.introspection_endpoint ~}}
-                    IntrospectionEndpoint = CreateUri($""{{ environment.configuration.introspection_endpoint | string.replace '\'' '""' }}"", UriKind.Absolute),
-                    {{~ end ~}}
+                    {% if environment.configuration.introspection_endpoint %}
+                    IntrospectionEndpoint = CreateUri($""{{ environment.configuration.introspection_endpoint | replace: ""'"", '""' }}"", UriKind.Absolute),
+                    {% endif %}
 
-                    {{~ if environment.configuration.revocation_endpoint ~}}
-                    RevocationEndpoint = CreateUri($""{{ environment.configuration.revocation_endpoint | string.replace '\'' '""' }}"", UriKind.Absolute),
-                    {{~ end ~}}
+                    {% if environment.configuration.revocation_endpoint %}
+                    RevocationEndpoint = CreateUri($""{{ environment.configuration.revocation_endpoint | replace: ""'"", '""' }}"", UriKind.Absolute),
+                    {% endif %}
 
-                    {{~ if environment.configuration.token_endpoint ~}}
-                    TokenEndpoint = CreateUri($""{{ environment.configuration.token_endpoint | string.replace '\'' '""' }}"", UriKind.Absolute),
-                    {{~ end ~}}
+                    {% if environment.configuration.token_endpoint %}
+                    TokenEndpoint = CreateUri($""{{ environment.configuration.token_endpoint | replace: ""'"", '""' }}"", UriKind.Absolute),
+                    {% endif %}
 
-                    {{~ if environment.configuration.user_info_endpoint ~}}
-                    UserInfoEndpoint = CreateUri($""{{ environment.configuration.user_info_endpoint | string.replace '\'' '""' }}"", UriKind.Absolute),
-                    {{~ end ~}}
+                    {% if environment.configuration.user_info_endpoint %}
+                    UserInfoEndpoint = CreateUri($""{{ environment.configuration.user_info_endpoint | replace: ""'"", '""' }}"", UriKind.Absolute),
+                    {% endif %}
 
-                    AuthorizationResponseIssParameterSupported = {{ environment.configuration.authorization_response_iss_parameter_supported ?? ""null"" }},
+                    AuthorizationResponseIssParameterSupported = {{ environment.configuration.authorization_response_iss_parameter_supported | default: ""null"" }},
 
                     CodeChallengeMethodsSupported =
                     {
-                        {{~ for method in environment.configuration.code_challenge_methods_supported ~}}
+                        {% for method in environment.configuration.code_challenge_methods_supported %}
                         ""{{ method }}"",
-                        {{~ end ~}}
+                        {% endfor %}
                     },
 
                     GrantTypesSupported =
                     {
-                        {{~ for type in environment.configuration.grant_types_supported ~}}
+                        {% for type in environment.configuration.grant_types_supported %}
                         ""{{ type }}"",
-                        {{~ end ~}}
+                        {% endfor %}
                     },
 
                     ResponseModesSupported =
                     {
-                        {{~ for mode in environment.configuration.response_modes_supported ~}}
+                        {% for mode in environment.configuration.response_modes_supported %}
                         ""{{ mode }}"",
-                        {{~ end ~}}
+                        {% endfor %}
                     },
 
                     ResponseTypesSupported =
                     {
-                        {{~ for type in environment.configuration.response_types_supported ~}}
+                        {% for type in environment.configuration.response_types_supported %}
                         ""{{ type }}"",
-                        {{~ end ~}}
+                        {% endfor %}
                     },
 
                     ScopesSupported =
                     {
-                        {{~ for scope in environment.configuration.scopes_supported ~}}
+                        {% for scope in environment.configuration.scopes_supported %}
                         ""{{ scope }}"",
-                        {{~ end ~}}
+                        {% endfor %}
                     },
 
                     DeviceAuthorizationEndpointAuthMethodsSupported =
                     {
-                        {{~ for method in environment.configuration.device_authorization_endpoint_auth_methods_supported ~}}
+                        {% for method in environment.configuration.device_authorization_endpoint_auth_methods_supported %}
                         ""{{ method }}"",
-                        {{~ end ~}}
+                        {% endfor %}
                     },
 
                     IntrospectionEndpointAuthMethodsSupported =
                     {
-                        {{~ for method in environment.configuration.introspection_endpoint_auth_methods_supported ~}}
+                        {% for method in environment.configuration.introspection_endpoint_auth_methods_supported %}
                         ""{{ method }}"",
-                        {{~ end ~}}
+                        {% endfor %}
                     },
 
                     RevocationEndpointAuthMethodsSupported =
                     {
-                        {{~ for method in environment.configuration.revocation_endpoint_auth_methods_supported ~}}
+                        {% for method in environment.configuration.revocation_endpoint_auth_methods_supported %}
                         ""{{ method }}"",
-                        {{~ end ~}}
+                        {% endfor %}
                     },
 
                     TokenEndpointAuthMethodsSupported =
                     {
-                        {{~ for method in environment.configuration.token_endpoint_auth_methods_supported ~}}
+                        {% for method in environment.configuration.token_endpoint_auth_methods_supported %}
                         ""{{ method }}"",
-                        {{~ end ~}}
+                        {% endfor %}
                     }
                 },
-                {{~ else ~}}
+                {% else %}
                 OpenIddictClientWebIntegrationConstants.{{ provider.name }}.Environments.{{ environment.name }} => null,
-                {{~ end ~}}
-                {{~ end ~}}
+                {% endif %}
+                {% endfor %}
 
                 _ => null
             };
 
-            {{~ for setting in provider.settings ~}}
-            {{~ if setting.type == 'EncryptionKey' ~}}
+            {% for setting in provider.settings %}
+            {% if setting.type == 'EncryptionKey' %}
             if (settings.{{ setting.property_name }} is not null)
             {
                 registration.EncryptionCredentials.Add(new EncryptingCredentials(settings.{{ setting.property_name }}, ""{{ setting.encryption_algorithm }}"", SecurityAlgorithms.Aes256CbcHmacSha512));
             }
-            {{~ end ~}}
-            {{~ end ~}}
+            {% endif %}
+            {% endfor %}
 
-            {{~ for setting in provider.settings ~}}
-            {{~ if setting.type == 'SigningCertificate' ~}}
+            {% for setting in provider.settings %}
+            {% if setting.type == 'SigningCertificate' %}
             if (settings.{{ setting.property_name }} is not null)
             {
                 var key = new X509SecurityKey(settings.{{ setting.property_name }});
@@ -1169,13 +1166,13 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration
                     registration.SigningCredentials.Add(new SigningCredentials(key, SecurityAlgorithms.EcdsaSha512));
                 }
             }
-            {{~ end ~}}
-            {{~ if setting.type == 'SigningKey' ~}}
+            {% endif %}
+            {% if setting.type == 'SigningKey' %}
             if (settings.{{ setting.property_name }} is not null and not AsymmetricSecurityKey { PrivateKeyStatus: PrivateKeyStatus.DoesNotExist })
             {
-                {{~ if setting.signing_algorithm ~}}
+                {% if setting.signing_algorithm %}
                 registration.SigningCredentials.Add(new SigningCredentials(settings.{{ setting.property_name }}, ""{{ setting.signing_algorithm }}""));
-                {{~ else ~}}
+                {% else %}
                 if (settings.{{ setting.property_name }}.IsSupportedAlgorithm(SecurityAlgorithms.RsaSha256))
                 {
                     registration.SigningCredentials.Add(new SigningCredentials(settings.{{ setting.property_name }}, SecurityAlgorithms.RsaSha256));
@@ -1201,13 +1198,12 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration
                 {
                     registration.SigningCredentials.Add(new SigningCredentials(settings.{{ setting.property_name }}, SecurityAlgorithms.EcdsaSha512));
                 }
-                {{~ end ~}}
+                {% endif %}
             }
-            {{~ end ~}}
-            {{~ end ~}}
+            {% endif %}
+            {% endfor %}
         }
-
-        {{~ end ~}}
+        {% endfor %}
 
         static Uri? CreateUri(string? value, UriKind kind) => Uri.TryCreate(value, kind, out Uri? uri) ? uri : null;
     }
@@ -1220,12 +1216,8 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration
 
         IEnumerable<ValidationResult> Execute()
         {
-            {{~ for provider in providers ~}}
-            {{~ if for.index == 0 ~}}
-            if (registration.ProviderType is ProviderTypes.{{ provider.name }})
-            {{~ else ~}}
-            else if (registration.ProviderType is ProviderTypes.{{ provider.name }})
-            {{~ end ~}}
+            {% for provider in providers %}
+            {% unless forloop.first %}else {% endunless %}if (registration.ProviderType is ProviderTypes.{{ provider.name }})
             {
                 if (registration.ProviderSettings is not OpenIddictClientWebIntegrationSettings.{{ provider.name }} settings)
                 {
@@ -1237,40 +1229,36 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration
 
                 // Ensure the specified environment is valid.
                 if (settings.Environment is not (
-                    {{~ for environment in provider.environments ~}}
-                        {{~ if !for.last ~}}
-                        OpenIddictClientWebIntegrationConstants.{{ provider.name }}.Environments.{{ environment.name }} or
-                        {{~ else ~}}
-                        OpenIddictClientWebIntegrationConstants.{{ provider.name }}.Environments.{{ environment.name }}
-                        {{~ end ~}}
-                    {{~ end ~}}
+                    {% for environment in provider.environments %}
+                    OpenIddictClientWebIntegrationConstants.{{ provider.name }}.Environments.{{ environment.name }}{% unless forloop.last %} or{% endunless %}
+                    {% endfor %}
                 ))
                 {
                     yield return new ValidationResult(SR.FormatID0194(nameof(settings.Environment)));
                 }
 
-                {{~ for setting in provider.settings ~}}
-                {{~ if setting.required ~}}
-                {{~ if setting.type == 'String' ~}}
+                {% for setting in provider.settings %}
+                {% if setting.required %}
+                {% if setting.type == 'String' %}
                 if (string.IsNullOrEmpty(settings.{{ setting.property_name }}))
-                {{~ else ~}}
+                {% else %}
                 if (settings.{{ setting.property_name }} is null)
-                {{~ end ~}}
+                {% endif %}
                 {
                     yield return new ValidationResult(SR.FormatID0332(nameof(settings.{{ setting.property_name }}), Providers.{{ provider.name }}));
                 }
-                {{~ end ~}}
+                {% endif %}
 
-                {{~ if setting.type == 'Uri' ~}}
+                {% if setting.type == 'Uri' %}
                 else if (!settings.{{ setting.property_name }}.IsAbsoluteUri || OpenIddictHelpers.IsImplicitFileUri(settings.{{ setting.property_name }}))
                 {
                     yield return new ValidationResult(SR.FormatID0350(nameof(settings.{{ setting.property_name }}), Providers.{{ provider.name }}));
                 }
-                {{~ end ~}}
-                {{~ end ~}}
+                {% endif %}
+                {% endfor %}
 
-                {{~ for setting in provider.settings ~}}
-                {{~ if setting.type == 'SigningCertificate' ~}}
+                {% for setting in provider.settings %}
+                {% if setting.type == 'SigningCertificate' %}
                 if (settings.{{ setting.property_name }} is not null)
                 {
                     var key = new X509SecurityKey(settings.{{ setting.property_name }});
@@ -1283,8 +1271,8 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration
                         yield return new ValidationResult(SR.GetResourceString(SR.ID0068));
                     }
                 }
-                {{~ end ~}}
-                {{~ if setting.type == 'SigningKey' ~}}
+                {% endif %}
+                {% if setting.type == 'SigningKey' %}
                 if (settings.{{ setting.property_name }} is not null)
                 {
                     // If the signing key is an asymmetric security key, ensure it has a private key.
@@ -1293,7 +1281,7 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration
                         yield return new ValidationResult(SR.GetResourceString(SR.ID0067));
                     }
 
-                    {{~ if !setting.signing_algorithm ~}}
+                    {% unless setting.signing_algorithm %}
                     if (!settings.{{ setting.property_name }}.IsSupportedAlgorithm(SecurityAlgorithms.RsaSha256)   &&
                         !settings.{{ setting.property_name }}.IsSupportedAlgorithm(SecurityAlgorithms.HmacSha256)  &&
                         !settings.{{ setting.property_name }}.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha256) &&
@@ -1302,13 +1290,12 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration
                     {
                         yield return new ValidationResult(SR.GetResourceString(SR.ID0068));
                     }
-                    {{~ end ~}}
+                    {% endunless %}
                 }
-                {{~ end ~}}
-                {{~ end ~}}
+                {% endif %}
+                {% endfor %}
             }
-
-            {{~ end ~}}
+            {% endfor %}
 
             else
             {
@@ -1462,9 +1449,9 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration
             return template.Render(context);
         }
 
-        static string GenerateHelpers(XDocument document)
+        static string GenerateHelpers(FluidParser parser, XDocument document)
         {
-            var template = Template.Parse(@"#nullable enable
+            var template = parser.Parse(@"#nullable enable
 
 using Microsoft.IdentityModel.Tokens;
 using OpenIddict.Client;
@@ -1475,7 +1462,7 @@ namespace OpenIddict.Client.WebIntegration;
 
 public static partial class OpenIddictClientWebIntegrationHelpers
 {
-    {{~ for provider in providers ~}}
+    {% for provider in providers %}
     /// <summary>
     /// Resolves the {{ provider.display_name }} provider settings from the specified registration.
     /// </summary>
@@ -1490,8 +1477,7 @@ public static partial class OpenIddictClientWebIntegrationHelpers
             ? settings
             : throw new InvalidOperationException(SR.FormatID0333(Providers.{{ provider.name }}));
     }
-
-    {{~ end ~}}
+    {% endfor %}
 }
 ");
             var context = CreateTemplateContext(new
@@ -1508,9 +1494,9 @@ public static partial class OpenIddictClientWebIntegrationHelpers
             return template.Render(context);
         }
 
-        static string GenerateSettings(XDocument document)
+        static string GenerateSettings(FluidParser parser, XDocument document)
         {
-            var template = Template.Parse(@"#nullable enable
+            var template = parser.Parse(@"#nullable enable
 
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.IdentityModel.Tokens;
@@ -1519,7 +1505,7 @@ namespace OpenIddict.Client.WebIntegration;
 
 public sealed partial class OpenIddictClientWebIntegrationSettings
 {
-    {{~ for provider in providers ~}}
+    {% for provider in providers %}
     /// <summary>
     /// Provides various options needed to configure the {{ provider.display_name }} integration.
     /// </summary>
@@ -1530,23 +1516,22 @@ public sealed partial class OpenIddictClientWebIntegrationSettings
         /// </summary>
         public string? Environment { get; set; } = OpenIddictClientWebIntegrationConstants.{{ provider.name }}.Environments.Production;
 
-        {{~ for setting in provider.settings ~}}
+        {% for setting in provider.settings %}
         /// <summary>
         /// Gets or sets {{ setting.description }}.
         /// </summary>
-        {{~ if setting.obsolete ~}}
+        {% if setting.obsolete -%}
         [Obsolete(""This option is no longer supported and will be removed in a future version."")]
-        {{~ end ~}}
-        {{~ if setting.collection ~}}
+        {% endif -%}
+        {% if setting.collection %}
         public HashSet<{{ setting.clr_type }}> {{ setting.property_name }} { get; } = new();
-        {{~ else ~}}
+        {% else %}
         public {{ setting.clr_type }}? {{ setting.property_name }} { get; set; }
-        {{~ end ~}}
-
-        {{~ end ~}}
+        {% endif %}
+        {% endfor %}
     }
 
-    {{~ end ~}}
+    {% endfor %}
 }
 ");
             var context = CreateTemplateContext(new
@@ -1602,17 +1587,9 @@ public sealed partial class OpenIddictClientWebIntegrationSettings
             return template.Render(context);
         }
 
-        static TemplateContext CreateTemplateContext(object model)
+        static TemplateContext CreateTemplateContext(object model) => new(model, new TemplateOptions
         {
-            var context = new TemplateContext(StringComparer.OrdinalIgnoreCase)
-            {
-                LimitToString = 128 * 1024 * 1024,
-                LoopLimit = 100_000
-            };
-
-            context.PushGlobal(ScriptObject.From(model));
-
-            return context;
-        }
+            ModelNamesComparer = StringComparers.SnakeCase
+        });
     }
 }
