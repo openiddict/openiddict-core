@@ -370,7 +370,7 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
         /// <summary>
         /// Configures {{ setting.description }}.
         /// </summary>
-        /// <param name="{{ setting.parameter_name }}">{{ setting.description | capitalize }}.</param>
+        /// <param name="{{ setting.parameter_name }}">{{ setting.description | slice: 0 | upcase }}{{ setting.description | slice: 1, setting.description.size }}.</param>
         /// <returns>The <see cref="OpenIddictClientWebIntegrationBuilder.{{ provider.name }}"/> instance.</returns>
         {% if setting.obsolete -%}
         [Obsolete("This option is no longer supported and will be removed in a future version.")]
@@ -389,7 +389,7 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
         /// <summary>
         /// Configures {{ setting.description }}.
         /// </summary>
-        /// <param name="{{ setting.parameter_name }}">{{ setting.description | capitalize }}.</param>
+        /// <param name="{{ setting.parameter_name }}">{{ setting.description | slice: 0 | upcase }}{{ setting.description | slice: 1, setting.description.size }}.</param>
         /// <returns>The <see cref="OpenIddictClientWebIntegrationBuilder.{{ provider.name }}"/> instance.</returns>
         {% if setting.obsolete -%}
         [Obsolete("This option is no longer supported and will be removed in a future version.")]
@@ -473,7 +473,7 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
         /// <summary>
         /// Configures {{ setting.description }}.
         /// </summary>
-        /// <param name="{{ setting.parameter_name }}">{{ setting.description | capitalize }}.</param>
+        /// <param name="{{ setting.parameter_name }}">{{ setting.description | slice: 0 | upcase }}{{ setting.description | slice: 1, setting.description.size }}.</param>
         /// <returns>The <see cref="OpenIddictClientWebIntegrationBuilder.{{ provider.name }}"/> instance.</returns>
         {% if setting.obsolete -%}
         [Obsolete("This option is no longer supported and will be removed in a future version.")]
@@ -495,7 +495,7 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
         /// <summary>
         /// Configures {{ setting.description }}.
         /// </summary>
-        /// <param name="{{ setting.parameter_name }}">{{ setting.description | capitalize }}.</param>
+        /// <param name="{{ setting.parameter_name }}">{{ setting.description | slice: 0 | upcase }}{{ setting.description | slice: 1, setting.description.size }}.</param>
         /// <returns>The <see cref="OpenIddictClientWebIntegrationBuilder.{{ provider.name }}"/> instance.</returns>
         {% if setting.obsolete -%}
         [Obsolete("This option is no longer supported and will be removed in a future version.")]
@@ -510,7 +510,7 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
         /// <summary>
         /// Configures {{ setting.description }}.
         /// </summary>
-        /// <param name="{{ setting.parameter_name }}">{{ setting.description | capitalize }}.</param>
+        /// <param name="{{ setting.parameter_name }}">{{ setting.description | slice: 0 | upcase }}{{ setting.description | slice: 1, setting.description.size }}.</param>
         /// <returns>The <see cref="OpenIddictClientWebIntegrationBuilder.{{ provider.name }}"/> instance.</returns>
         {% if setting.obsolete -%}
         [Obsolete("This option is no longer supported and will be removed in a future version.")]
@@ -666,7 +666,7 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
         /// <summary>
         /// Configures {{ setting.description }}.
         /// </summary>
-        /// <param name="{{ setting.parameter_name }}">{{ setting.description | capitalize }}.</param>
+        /// <param name="{{ setting.parameter_name }}">{{ setting.description | slice: 0 | upcase }}{{ setting.description | slice: 1, setting.description.size }}.</param>
         /// <returns>The <see cref="OpenIddictClientWebIntegrationBuilder.{{ provider.name }}"/> instance.</returns>
         {% if setting.obsolete -%}
         [Obsolete("This option is no longer supported and will be removed in a future version.")]
@@ -681,7 +681,7 @@ public sealed partial class OpenIddictClientWebIntegrationBuilder
         /// <summary>
         /// Configures {{ setting.description }}.
         /// </summary>
-        /// <param name="{{ setting.parameter_name }}">{{ setting.description | capitalize }}.</param>
+        /// <param name="{{ setting.parameter_name }}">{{ setting.description | slice: 0 | upcase }}{{ setting.description | slice: 1, setting.description.size }}.</param>
         /// <returns>The <see cref="OpenIddictClientWebIntegrationBuilder.{{ provider.name }}"/> instance.</returns>
         {% if setting.obsolete -%}
         [Obsolete("This option is no longer supported and will be removed in a future version.")]

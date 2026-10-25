@@ -7,18 +7,18 @@
     <PublicSign>false</PublicSign>
     <IsPackable>false</IsPackable>
     <IsShipping>false</IsShipping>
-    <NoWarn>$(NoWarn);CS0219;CS0618</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Fluid.Core" PrivateAssets="all" GeneratePathProperty="true" />
     <PackageReference Include="Fluid.SourceGenerator" PrivateAssets="all" OutputItemType="Analyzer" />
     <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" PrivateAssets="all" GeneratePathProperty="true" />
+    <PackageReference Include="Microsoft.Bcl.Memory" PrivateAssets="all" GeneratePathProperty="true" />
     <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" PrivateAssets="all" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" PrivateAssets="all" />
     <PackageReference Include="Microsoft.Extensions.FileProviders.Abstractions" PrivateAssets="all" GeneratePathProperty="true" />
     <PackageReference Include="Parlot" PrivateAssets="all" GeneratePathProperty="true" />
-    <PackageReference Include="System.Linq.Async" PrivateAssets="all" GeneratePathProperty="true" />
+    <PackageReference Include="System.Linq.AsyncEnumerable" PrivateAssets="all" GeneratePathProperty="true" />
   </ItemGroup>
 
   <ItemGroup>
@@ -33,9 +33,10 @@
     <ItemGroup>
       <TargetPathWithTargetPlatformMoniker Include="$(PKGFluid_Core)\lib\netstandard2.0\Fluid.dll" IncludeRuntimeDependency="false" />
       <TargetPathWithTargetPlatformMoniker Include="$(PKGMicrosoft_Bcl_AsyncInterfaces)\lib\netstandard2.0\Microsoft.Bcl.AsyncInterfaces.dll" IncludeRuntimeDependency="false" />
+      <TargetPathWithTargetPlatformMoniker Include="$(PKGMicrosoft_Bcl_Memory)\lib\netstandard2.0\Microsoft.Bcl.Memory.dll" IncludeRuntimeDependency="false" />
       <TargetPathWithTargetPlatformMoniker Include="$(PKGMicrosoft_Extensions_FileProviders_Abstractions)\lib\netstandard2.0\Microsoft.Extensions.FileProviders.Abstractions.dll" IncludeRuntimeDependency="false" />
       <TargetPathWithTargetPlatformMoniker Include="$(PKGParlot)\lib\netstandard2.0\Parlot.dll" IncludeRuntimeDependency="false" />
-      <TargetPathWithTargetPlatformMoniker Include="$(PKGSystem_Linq_Async)\lib\netstandard2.0\System.Linq.Async.dll" IncludeRuntimeDependency="false" />
+      <TargetPathWithTargetPlatformMoniker Include="$(PKGSystem_Linq_AsyncEnumerable)\lib\netstandard2.0\System.Linq.AsyncEnumerable.dll" IncludeRuntimeDependency="false" />
     </ItemGroup>
   </Target>
 

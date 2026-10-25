@@ -18,36 +18,34 @@ public sealed class OpenIddictClientWebIntegrationGenerator : IIncrementalGenera
 
         context.RegisterSourceOutput(files, static (context, file) =>
         {
-            var parser = new FluidParser();
-            var options = new TemplateOptions
-            {
-                ModelNamesComparer = StringComparers.SnakeCase
-            };
+            var options = new TemplateOptionsBuilder()
+                .WithModelNamesComparer(StringComparers.SnakeCase)
+                .Build();
 
             var document = XDocument.Load(file.Path, LoadOptions.None);
 
             context.AddSource(
                 "OpenIddictClientWebIntegrationBuilder.generated.cs",
-                SourceText.From(GenerateBuilderMethods(parser, options, document, context.CancellationToken), Encoding.UTF8));
+                SourceText.From(GenerateBuilderMethods(options, document, context.CancellationToken), Encoding.UTF8));
 
             context.AddSource(
                 "OpenIddictClientWebIntegrationConfiguration.generated.cs",
-                SourceText.From(GenerateConfigurationClasses(parser, options, document, context.CancellationToken), Encoding.UTF8));
+                SourceText.From(GenerateConfigurationClasses(options, document, context.CancellationToken), Encoding.UTF8));
 
             context.AddSource(
                 "OpenIddictClientWebIntegrationConstants.generated.cs",
-                SourceText.From(GenerateConstants(parser, options, document, context.CancellationToken), Encoding.UTF8));
+                SourceText.From(GenerateConstants(options, document, context.CancellationToken), Encoding.UTF8));
 
             context.AddSource(
                 "OpenIddictClientWebIntegrationHelpers.generated.cs",
-                SourceText.From(GenerateHelpers(parser, options, document, context.CancellationToken), Encoding.UTF8));
+                SourceText.From(GenerateHelpers(options, document, context.CancellationToken), Encoding.UTF8));
 
             context.AddSource(
                 "OpenIddictClientWebIntegrationSettings.generated.cs",
-                SourceText.From(GenerateSettings(parser, options, document, context.CancellationToken), Encoding.UTF8));
+                SourceText.From(GenerateSettings(options, document, context.CancellationToken), Encoding.UTF8));
         });
 
-        static string GenerateBuilderMethods(FluidParser parser, TemplateOptions options, XDocument document, CancellationToken cancellationToken)
+        static string GenerateBuilderMethods(TemplateOptions options, XDocument document, CancellationToken cancellationToken)
         {
             var model = new
             {
@@ -117,7 +115,7 @@ public sealed class OpenIddictClientWebIntegrationGenerator : IIncrementalGenera
             return Templates.OpenIddictClientWebIntegrationBuilder.Render(context);
         }
 
-        static string GenerateConstants(FluidParser parser, TemplateOptions options, XDocument document, CancellationToken cancellationToken)
+        static string GenerateConstants(TemplateOptions options, XDocument document, CancellationToken cancellationToken)
         {
             var model = new
             {
@@ -162,7 +160,7 @@ public sealed class OpenIddictClientWebIntegrationGenerator : IIncrementalGenera
             return Templates.OpenIddictClientWebIntegrationConstants.Render(context);
         }
 
-        static string GenerateConfigurationClasses(FluidParser parser, TemplateOptions options, XDocument document, CancellationToken cancellationToken)
+        static string GenerateConfigurationClasses(TemplateOptions options, XDocument document, CancellationToken cancellationToken)
         {
             var model = new
             {
@@ -313,7 +311,7 @@ public sealed class OpenIddictClientWebIntegrationGenerator : IIncrementalGenera
             return Templates.OpenIddictClientWebIntegrationConfiguration.Render(context);
         }
 
-        static string GenerateHelpers(FluidParser parser, TemplateOptions options, XDocument document, CancellationToken cancellationToken)
+        static string GenerateHelpers(TemplateOptions options, XDocument document, CancellationToken cancellationToken)
         {
             var model = new
             {
@@ -334,7 +332,7 @@ public sealed class OpenIddictClientWebIntegrationGenerator : IIncrementalGenera
             return Templates.OpenIddictClientWebIntegrationHelpers.Render(context);
         }
 
-        static string GenerateSettings(FluidParser parser, TemplateOptions options, XDocument document, CancellationToken cancellationToken)
+        static string GenerateSettings(TemplateOptions options, XDocument document, CancellationToken cancellationToken)
         {
             var model = new
             {
