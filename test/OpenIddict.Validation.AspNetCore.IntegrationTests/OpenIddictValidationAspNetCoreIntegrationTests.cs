@@ -175,9 +175,7 @@ public class OpenIddictValidationAspNetCoreIntegrationTests : OpenIddictValidati
                     return;
                 }
 
-                else
-                {
-                    if (context.Request.Path == "/authenticate/properties")
+                if (context.Request.Path == "/authenticate/properties")
                 {
                     var result = await context.AuthenticateAsync(OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme);
                     if (result?.Properties is null)
@@ -190,11 +188,10 @@ public class OpenIddictValidationAspNetCoreIntegrationTests : OpenIddictValidati
                     return;
                 }
 
-                    if (context.Request.Path == "/challenge")
-                    {
-                        await context.ChallengeAsync(OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme);
-                        return;
-                    }
+                if (context.Request.Path == "/challenge")
+                {
+                    await context.ChallengeAsync(OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme);
+                    return;
                 }
 
                 await next(context);

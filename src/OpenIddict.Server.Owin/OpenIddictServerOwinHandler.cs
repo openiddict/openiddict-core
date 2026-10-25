@@ -169,38 +169,35 @@ public sealed class OpenIddictServerOwinHandler : AuthenticationHandler<Authenti
             return new AuthenticationTicket(new ClaimsIdentity(), properties);
         }
 
-        else
+        // A single main claims-based principal instance can be attached to an authentication ticket.
+        // To return the most appropriate one, the principal is selected based on the endpoint type.
+        var principal = context.EndpointType switch
         {
-            // A single main claims-based principal instance can be attached to an authentication ticket.
-            // To return the most appropriate one, the principal is selected based on the endpoint type.
-            var principal = context.EndpointType switch
-            {
-                OpenIddictServerEndpointType.Authorization or OpenIddictServerEndpointType.EndSession
-                    => context.IdentityTokenPrincipal,
+            OpenIddictServerEndpointType.Authorization or OpenIddictServerEndpointType.EndSession
+                => context.IdentityTokenPrincipal,
 
-                OpenIddictServerEndpointType.EndUserVerification => context.UserCodePrincipal,
+            OpenIddictServerEndpointType.EndUserVerification => context.UserCodePrincipal,
 
-                OpenIddictServerEndpointType.Introspection or OpenIddictServerEndpointType.Revocation
-                    => context.GenericTokenPrincipal,
+            OpenIddictServerEndpointType.Introspection or OpenIddictServerEndpointType.Revocation
+                => context.GenericTokenPrincipal,
 
-                OpenIddictServerEndpointType.Token when context.Request.IsAuthorizationCodeGrantType()
-                    => context.AuthorizationCodePrincipal,
-                OpenIddictServerEndpointType.Token when context.Request.IsDeviceCodeGrantType()
-                    => context.DeviceCodePrincipal,
-                OpenIddictServerEndpointType.Token when context.Request.IsRefreshTokenGrantType()
-                    => context.RefreshTokenPrincipal,
-                OpenIddictServerEndpointType.Token when context.Request.IsTokenExchangeGrantType()
-                    => context.SubjectTokenPrincipal,
+            OpenIddictServerEndpointType.Token when context.Request.IsAuthorizationCodeGrantType()
+                => context.AuthorizationCodePrincipal,
+            OpenIddictServerEndpointType.Token when context.Request.IsDeviceCodeGrantType()
+                => context.DeviceCodePrincipal,
+            OpenIddictServerEndpointType.Token when context.Request.IsRefreshTokenGrantType()
+                => context.RefreshTokenPrincipal,
+            OpenIddictServerEndpointType.Token when context.Request.IsTokenExchangeGrantType()
+                => context.SubjectTokenPrincipal,
 
-                OpenIddictServerEndpointType.UserInfo => context.AccessTokenPrincipal,
+            OpenIddictServerEndpointType.UserInfo => context.AccessTokenPrincipal,
 
-                _ => null
-            };
+            _ => null
+        };
 
-            var properties = CreateAuthenticationProperties(principal);
-
-            return new AuthenticationTicket(principal?.Identity as ClaimsIdentity ?? new ClaimsIdentity(), properties);
-        }
+        return new AuthenticationTicket(
+            principal?.Identity as ClaimsIdentity ?? new ClaimsIdentity(),
+            CreateAuthenticationProperties(principal));
 
         AuthenticationProperties CreateAuthenticationProperties(ClaimsPrincipal? principal = null)
         {

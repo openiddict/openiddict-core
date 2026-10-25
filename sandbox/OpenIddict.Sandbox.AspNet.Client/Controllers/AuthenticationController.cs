@@ -25,30 +25,25 @@ public class AuthenticationController : Controller
     {
         var context = HttpContext.GetOwinContext();
 
+        var properties = new AuthenticationProperties
+        {
+            // Only allow local return URLs to prevent open redirect attacks.
+            RedirectUri = Url.IsLocalUrl(returnUrl) ? returnUrl : "/"
+        };
+
         // The local authorization server sample allows the client to select the external
         // identity provider that will be used to eventually authenticate the user. For that,
         // a custom "identity_provider" parameter is sent to the authorization server so that
         // the user is directly redirected to GitHub (in this case, no login page is shown).
         if (string.Equals(provider, "Local+GitHub", StringComparison.Ordinal))
         {
-            var properties = new AuthenticationProperties(new Dictionary<string, string?>(StringComparer.Ordinal)
-            {
-                // Note: when only one client is registered in the client options,
-                // specifying the issuer URI or the provider name is not required.
-                [OpenIddictClientOwinConstants.Properties.ProviderName] = "Local",
+            // Note: when only one client is registered in the client options,
+            // specifying the issuer URI or the provider name is not required.
+            properties.Dictionary[OpenIddictClientOwinConstants.Properties.ProviderName] = "Local";
 
-                // Note: the OWIN host requires appending the #string suffix to indicate
-                // that the "identity_provider" property is a public string parameter.
-                [Parameters.IdentityProvider + OpenIddictClientOwinConstants.PropertyTypes.String] = "GitHub"
-            })
-            {
-                // Only allow local return URLs to prevent open redirect attacks.
-                RedirectUri = Url.IsLocalUrl(returnUrl) ? returnUrl : "/"
-            };
-
-            // Ask the OpenIddict client middleware to redirect the user agent to the identity provider.
-            context.Authentication.Challenge(properties, OpenIddictClientOwinDefaults.AuthenticationType);
-            return new EmptyResult();
+            // Note: the OWIN host requires appending the #string suffix to indicate
+            // that the "identity_provider" property is a public string parameter.
+            properties.Dictionary[Parameters.IdentityProvider + OpenIddictClientOwinConstants.PropertyTypes.String] = "GitHub";
         }
 
         else
@@ -61,21 +56,14 @@ public class AuthenticationController : Controller
                 return new HttpStatusCodeResult(400);
             }
 
-            var properties = new AuthenticationProperties(new Dictionary<string, string?>(StringComparer.Ordinal)
-            {
-                // Note: when only one client is registered in the client options,
-                // specifying the issuer URI or the provider name is not required.
-                [OpenIddictClientOwinConstants.Properties.ProviderName] = provider
-            })
-            {
-                // Only allow local return URLs to prevent open redirect attacks.
-                RedirectUri = Url.IsLocalUrl(returnUrl) ? returnUrl : "/"
-            };
-
-            // Ask the OpenIddict client middleware to redirect the user agent to the identity provider.
-            context.Authentication.Challenge(properties, OpenIddictClientOwinDefaults.AuthenticationType);
-            return new EmptyResult();
+            // Note: when only one client is registered in the client options,
+            // specifying the issuer URI or the provider name is not required.
+            properties.Dictionary[OpenIddictClientOwinConstants.Properties.ProviderName] = provider;
         }
+
+        // Ask the OpenIddict client middleware to redirect the user agent to the identity provider.
+        context.Authentication.Challenge(properties, OpenIddictClientOwinDefaults.AuthenticationType);
+        return new EmptyResult();
     }
 
     [HttpPost, Route("~/logout"), ValidateAntiForgeryToken]

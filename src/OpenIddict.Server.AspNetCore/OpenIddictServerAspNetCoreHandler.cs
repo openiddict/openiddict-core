@@ -154,42 +154,38 @@ public sealed class OpenIddictServerAspNetCoreHandler : AuthenticationHandler<Au
             return AuthenticateResult.Fail(SR.GetResourceString(SR.ID0113), properties);
         }
 
-        else
+        // A single main claims-based principal instance can be attached to an authentication ticket.
+        // To return the most appropriate one, the principal is selected based on the endpoint type.
+        // Independently of the selected main principal, all principals resolved from validated tokens
+        // are attached to the authentication properties bag so they can be accessed from user code.
+        var principal = context.EndpointType switch
         {
-            // A single main claims-based principal instance can be attached to an authentication ticket.
-            // To return the most appropriate one, the principal is selected based on the endpoint type.
-            // Independently of the selected main principal, all principals resolved from validated tokens
-            // are attached to the authentication properties bag so they can be accessed from user code.
-            var principal = context.EndpointType switch
-            {
-                OpenIddictServerEndpointType.Authorization or OpenIddictServerEndpointType.EndSession
-                    => context.IdentityTokenPrincipal,
+            OpenIddictServerEndpointType.Authorization or OpenIddictServerEndpointType.EndSession
+                => context.IdentityTokenPrincipal,
 
-                OpenIddictServerEndpointType.EndUserVerification => context.UserCodePrincipal,
+            OpenIddictServerEndpointType.EndUserVerification => context.UserCodePrincipal,
 
-                OpenIddictServerEndpointType.Introspection or OpenIddictServerEndpointType.Revocation
-                    => context.GenericTokenPrincipal,
+            OpenIddictServerEndpointType.Introspection or OpenIddictServerEndpointType.Revocation
+                => context.GenericTokenPrincipal,
 
-                OpenIddictServerEndpointType.Token when context.Request.IsAuthorizationCodeGrantType()
-                    => context.AuthorizationCodePrincipal,
-                OpenIddictServerEndpointType.Token when context.Request.IsDeviceCodeGrantType()
-                    => context.DeviceCodePrincipal,
-                OpenIddictServerEndpointType.Token when context.Request.IsRefreshTokenGrantType()
-                    => context.RefreshTokenPrincipal,
-                OpenIddictServerEndpointType.Token when context.Request.IsTokenExchangeGrantType()
-                    => context.SubjectTokenPrincipal,
+            OpenIddictServerEndpointType.Token when context.Request.IsAuthorizationCodeGrantType()
+                => context.AuthorizationCodePrincipal,
+            OpenIddictServerEndpointType.Token when context.Request.IsDeviceCodeGrantType()
+                => context.DeviceCodePrincipal,
+            OpenIddictServerEndpointType.Token when context.Request.IsRefreshTokenGrantType()
+                => context.RefreshTokenPrincipal,
+            OpenIddictServerEndpointType.Token when context.Request.IsTokenExchangeGrantType()
+                => context.SubjectTokenPrincipal,
 
-                OpenIddictServerEndpointType.UserInfo => context.AccessTokenPrincipal,
+            OpenIddictServerEndpointType.UserInfo => context.AccessTokenPrincipal,
 
-                _ => null
-            };
+            _ => null
+        };
 
-            var properties = CreateAuthenticationProperties(principal);
-
-            return AuthenticateResult.Success(new AuthenticationTicket(
-                principal ?? new ClaimsPrincipal(new ClaimsIdentity()), properties,
-                OpenIddictServerAspNetCoreDefaults.AuthenticationScheme));
-        }
+        return AuthenticateResult.Success(new AuthenticationTicket(
+            principal ?? new ClaimsPrincipal(new ClaimsIdentity()),
+            CreateAuthenticationProperties(principal),
+            OpenIddictServerAspNetCoreDefaults.AuthenticationScheme));
 
         AuthenticationProperties CreateAuthenticationProperties(ClaimsPrincipal? principal = null)
         {

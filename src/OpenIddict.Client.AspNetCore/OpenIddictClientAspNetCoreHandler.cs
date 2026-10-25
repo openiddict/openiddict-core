@@ -154,14 +154,10 @@ public sealed class OpenIddictClientAspNetCoreHandler : AuthenticationHandler<Au
             return AuthenticateResult.Fail(SR.GetResourceString(SR.ID0113), properties);
         }
 
-        else
-        {
-            var properties = CreateAuthenticationProperties();
-
-            return AuthenticateResult.Success(new AuthenticationTicket(
-                context.MergedPrincipal ?? new ClaimsPrincipal(new ClaimsIdentity()), properties,
-                OpenIddictClientAspNetCoreDefaults.AuthenticationScheme));
-        }
+        return AuthenticateResult.Success(new AuthenticationTicket(
+            context.MergedPrincipal ?? new ClaimsPrincipal(new ClaimsIdentity()),
+            CreateAuthenticationProperties(),
+            OpenIddictClientAspNetCoreDefaults.AuthenticationScheme));
 
         AuthenticationProperties CreateAuthenticationProperties()
         {

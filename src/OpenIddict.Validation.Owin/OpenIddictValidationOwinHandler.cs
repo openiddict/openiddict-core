@@ -169,20 +169,17 @@ public sealed class OpenIddictValidationOwinHandler : AuthenticationHandler<Auth
             return new AuthenticationTicket(new ClaimsIdentity(), properties);
         }
 
-        else
+        // A single main claims-based principal instance can be attached to an authentication ticket.
+        var principal = context.EndpointType switch
         {
-            // A single main claims-based principal instance can be attached to an authentication ticket.
-            var principal = context.EndpointType switch
-            {
-                OpenIddictValidationEndpointType.Unknown => context.AccessTokenPrincipal,
+            OpenIddictValidationEndpointType.Unknown => context.AccessTokenPrincipal,
 
-                _ => null
-            };
+            _ => null
+        };
 
-            var properties = CreateAuthenticationProperties(principal);
-
-            return new AuthenticationTicket(principal?.Identity as ClaimsIdentity ?? new ClaimsIdentity(), properties);
-        }
+        return new AuthenticationTicket(
+            principal?.Identity as ClaimsIdentity ?? new ClaimsIdentity(),
+            CreateAuthenticationProperties(principal));
 
         AuthenticationProperties CreateAuthenticationProperties(ClaimsPrincipal? principal = null)
         {

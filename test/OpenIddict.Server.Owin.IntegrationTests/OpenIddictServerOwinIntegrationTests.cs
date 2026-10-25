@@ -698,7 +698,7 @@ public partial class OpenIddictServerOwinIntegrationTests : OpenIddictServerInte
                     return;
                 }
 
-                else if (context.Request.Path == new PathString("/signin/custom"))
+                if (context.Request.Path == new PathString("/signin/custom"))
                 {
                     var identity = new ClaimsIdentity(OpenIddictServerOwinDefaults.AuthenticationType);
                     identity.AddClaim(Claims.Subject, "Bob le Bricoleur");
@@ -719,87 +719,82 @@ public partial class OpenIddictServerOwinIntegrationTests : OpenIddictServerInte
                     return;
                 }
 
-                else
-                {
-                    if (context.Request.Path == new PathString("/signout"))
+
+                if (context.Request.Path == new PathString("/signout"))
                 {
                     context.Authentication.SignOut(OpenIddictServerOwinDefaults.AuthenticationType);
                     return;
                 }
 
-                    if (context.Request.Path == new PathString("/signout/custom"))
+                if (context.Request.Path == new PathString("/signout/custom"))
+                {
+
+                    var properties = new AuthenticationProperties(new Dictionary<string, string?>(StringComparer.Ordinal)
                     {
+                        ["custom_property"] = "value",
 
-                        var properties = new AuthenticationProperties(new Dictionary<string, string?>(StringComparer.Ordinal)
-                        {
-                            ["custom_property"] = "value",
+                        ["boolean_parameter#boolean"] = "true",
+                        ["integer_parameter#integer"] = "42",
+                        ["string_parameter#string"] = "Bob l'Eponge"
+                    });
 
-                            ["boolean_parameter#boolean"] = "true",
-                            ["integer_parameter#integer"] = "42",
-                            ["string_parameter#string"] = "Bob l'Eponge"
-                        });
+                    context.Authentication.SignOut(properties, OpenIddictServerOwinDefaults.AuthenticationType);
+                    return;
+                }
 
-                        context.Authentication.SignOut(properties, OpenIddictServerOwinDefaults.AuthenticationType);
+                if (context.Request.Path == new PathString("/challenge"))
+                {
+                    context.Authentication.Challenge(OpenIddictServerOwinDefaults.AuthenticationType);
+                    return;
+                }
+
+                if (context.Request.Path == new PathString("/challenge/custom"))
+                {
+                    var properties = new AuthenticationProperties(new Dictionary<string, string?>(StringComparer.Ordinal)
+                    {
+                        [OpenIddictServerOwinConstants.Properties.Error] = "custom_error",
+                        [OpenIddictServerOwinConstants.Properties.ErrorDescription] = "custom_error_description",
+                        [OpenIddictServerOwinConstants.Properties.ErrorUri] = "custom_error_uri",
+
+                        ["custom_property"] = "value",
+
+                        ["boolean_parameter#boolean"] = "true",
+                        ["integer_parameter#integer"] = "42",
+                        ["string_parameter#string"] = "Bob l'Eponge",
+                        ["json_parameter#json"] = @"[""Contoso"",""Fabrikam""]"
+                    });
+
+                    context.Authentication.Challenge(properties, OpenIddictServerOwinDefaults.AuthenticationType);
+                    return;
+                }
+
+                if (context.Request.Path == new PathString("/authenticate"))
+                {
+                    var result = await context.Authentication.AuthenticateAsync(OpenIddictServerOwinDefaults.AuthenticationType);
+                    if (result?.Identity is not { IsAuthenticated: true })
+                    {
                         return;
                     }
 
-                    else
+                    var claims = result.Identity.Claims.GroupBy(claim => claim.Type, StringComparer.Ordinal)
+                        .Select(group => KeyValuePair.Create(group.Key, group.Select(claim => claim.Value).ToImmutableArray<string?>()));
+
+                    context.Response.ContentType = "application/json";
+                    await context.Response.WriteAsync(JsonSerializer.Serialize(new OpenIddictResponse(claims)));
+                    return;
+                }
+
+                if (context.Request.Path == new PathString("/authenticate/properties"))
+                {
+                    var result = await context.Authentication.AuthenticateAsync(OpenIddictServerOwinDefaults.AuthenticationType);
+                    if (result?.Properties is null)
                     {
-                        if (context.Request.Path == new PathString("/challenge"))
-                        {
-                            context.Authentication.Challenge(OpenIddictServerOwinDefaults.AuthenticationType);
-                            return;
-                        }
-
-                        if (context.Request.Path == new PathString("/challenge/custom"))
-                        {
-                            var properties = new AuthenticationProperties(new Dictionary<string, string?>(StringComparer.Ordinal)
-                            {
-                                [OpenIddictServerOwinConstants.Properties.Error] = "custom_error",
-                                [OpenIddictServerOwinConstants.Properties.ErrorDescription] = "custom_error_description",
-                                [OpenIddictServerOwinConstants.Properties.ErrorUri] = "custom_error_uri",
-
-                                ["custom_property"] = "value",
-
-                                ["boolean_parameter#boolean"] = "true",
-                                ["integer_parameter#integer"] = "42",
-                                ["string_parameter#string"] = "Bob l'Eponge",
-                                ["json_parameter#json"] = @"[""Contoso"",""Fabrikam""]"
-                            });
-
-                            context.Authentication.Challenge(properties, OpenIddictServerOwinDefaults.AuthenticationType);
-                            return;
-                        }
-
-                        if (context.Request.Path == new PathString("/authenticate"))
-                        {
-                            var result = await context.Authentication.AuthenticateAsync(OpenIddictServerOwinDefaults.AuthenticationType);
-                            if (result?.Identity is not { IsAuthenticated: true })
-                            {
-                                return;
-                            }
-
-                            var claims = result.Identity.Claims.GroupBy(claim => claim.Type, StringComparer.Ordinal)
-                                .Select(group => KeyValuePair.Create(group.Key, group.Select(claim => claim.Value).ToImmutableArray<string?>()));
-
-                            context.Response.ContentType = "application/json";
-                            await context.Response.WriteAsync(JsonSerializer.Serialize(new OpenIddictResponse(claims)));
-                            return;
-                        }
-
-                        else if (context.Request.Path == new PathString("/authenticate/properties"))
-                        {
-                            var result = await context.Authentication.AuthenticateAsync(OpenIddictServerOwinDefaults.AuthenticationType);
-                            if (result?.Properties is null)
-                            {
-                                return;
-                            }
-
-                            context.Response.ContentType = "application/json";
-                            await context.Response.WriteAsync(JsonSerializer.Serialize(new OpenIddictResponse(result.Properties.Dictionary)));
-                            return;
-                        }
+                        return;
                     }
+
+                    context.Response.ContentType = "application/json";
+                    await context.Response.WriteAsync(JsonSerializer.Serialize(new OpenIddictResponse(result.Properties.Dictionary)));
+                    return;
                 }
 
                 await next();

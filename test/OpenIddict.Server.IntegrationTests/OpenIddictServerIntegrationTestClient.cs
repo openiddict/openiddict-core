@@ -300,7 +300,7 @@ public class OpenIddictServerIntegrationTestClient : IAsyncDisposable
             }
         }
 
-        else if (message.Headers.Location is not null)
+        if (message.Headers.Location is not null)
         {
             var payload = message.Headers.Location.Fragment;
             if (string.IsNullOrEmpty(payload))
