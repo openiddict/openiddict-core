@@ -1,0 +1,396 @@
+﻿#nullable enable
+#pragma warning disable CS0618
+
+using System.ComponentModel.DataAnnotations;
+using System.Text.RegularExpressions;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
+using OpenIddict.Client;
+using OpenIddict.Extensions;
+using static OpenIddict.Client.WebIntegration.OpenIddictClientWebIntegrationConstants;
+using static OpenIddict.Extensions.OpenIddictHelpers;
+
+namespace OpenIddict.Client.WebIntegration;
+
+public sealed partial class OpenIddictClientWebIntegrationConfiguration
+{
+    public static partial void ConfigureProvider(OpenIddictClientRegistration registration)
+    {
+        ArgumentNullException.ThrowIfNull(registration);
+
+        {% for provider in providers %}
+        {% unless forloop.first %}else {% endunless %}if (registration.ProviderType is ProviderTypes.{{ provider.name }})
+        {
+            if (registration.ProviderSettings is not OpenIddictClientWebIntegrationSettings.{{ provider.name }} settings)
+            {
+                return;
+            }
+
+            {% for setting in provider.settings %}
+            {% if setting.default_value %}
+            {% case setting.type %}
+            {% when 'String' %}
+            if (string.IsNullOrEmpty(settings.{{ setting.property_name }}))
+            {
+                settings.{{ setting.property_name }} = "{{ setting.default_value }}";
+            }
+            {% when 'Uri' %}
+            if (settings.{{ setting.property_name }} is null)
+            {
+                settings.{{ setting.property_name }} = CreateUri("{{ setting.default_value }}", UriKind.RelativeOrAbsolute);
+            }
+            {% when 'Boolean' %}
+            if (settings.{{ setting.property_name }} is null)
+            {
+                settings.{{ setting.property_name }} = {{ setting.default_value }};
+            }
+            {% endcase %}
+            {% endif %}
+
+            {% if setting.collection %}
+            if (settings.{{ setting.property_name }}.Count is 0)
+            {
+                {% for item in setting.items %}
+                {% if item.default and item.required == false %}
+                settings.{{ setting.property_name }}.Add("{{ item.value }}");
+                {% endif %}
+                {% endfor %}
+            }
+            {% endif %}
+
+            {% for item in setting.items %}
+            {% if item.required %}
+            settings.{{ setting.property_name }}.Add("{{ item.value }}");
+            {% endif %}
+            {% endfor %}
+            {% endfor %}
+
+            {% for environment in provider.environments %}
+            if (settings.Environment is OpenIddictClientWebIntegrationConstants.{{ provider.name }}.Environments.{{ environment.name }})
+            {
+                if (registration.Scopes.Count is 0)
+                {
+                    {% for scope in environment.scopes %}
+                    {% if scope.default and scope.required == false %}
+                    registration.Scopes.Add("{{ scope.name }}");
+                    {% endif %}
+                    {% endfor %}
+                }
+
+                {% for scope in environment.scopes %}
+                {% if scope.required %}
+                registration.Scopes.Add("{{ scope.name }}");
+                {% endif %}
+                {% endfor %}
+            }
+            {% endfor %}
+
+            registration.ProviderName ??= Providers.{{ provider.name }};
+            registration.ProviderDisplayName ??= "{{ provider.display_name }}";
+
+            registration.Issuer ??= settings.Environment switch
+            {
+                {% for environment in provider.environments %}
+                OpenIddictClientWebIntegrationConstants.{{ provider.name }}.Environments.{{ environment.name }}
+                    => CreateUri($"{{ environment.issuer | replace: "'", '"' }}", UriKind.Absolute),
+                {% endfor %}
+
+                _ => null
+            };
+
+            registration.ConfigurationEndpoint ??= settings.Environment switch
+            {
+                {% for environment in provider.environments %}
+                OpenIddictClientWebIntegrationConstants.{{ provider.name }}.Environments.{{ environment.name }}
+                {% if environment.configuration_endpoint %}
+                    => CreateUri($"{{ environment.configuration_endpoint | replace: "'", '"' }}", UriKind.Absolute),
+                {% else %}
+                    => null,
+                {% endif %}
+                {% endfor %}
+
+                _ => null
+            };
+
+            registration.Configuration ??= settings.Environment switch
+            {
+                {% for environment in provider.environments %}
+                {% if environment.configuration %}
+                OpenIddictClientWebIntegrationConstants.{{ provider.name }}.Environments.{{ environment.name }} => new OpenIddictConfiguration
+                {
+                    {% if environment.configuration.authorization_endpoint %}
+                    AuthorizationEndpoint = CreateUri($"{{ environment.configuration.authorization_endpoint | replace: "'", '"' }}", UriKind.Absolute),
+                    {% endif %}
+
+                    {% if environment.configuration.device_authorization_endpoint %}
+                    DeviceAuthorizationEndpoint = CreateUri($"{{ environment.configuration.device_authorization_endpoint | replace: "'", '"' }}", UriKind.Absolute),
+                    {% endif %}
+
+                    {% if environment.configuration.introspection_endpoint %}
+                    IntrospectionEndpoint = CreateUri($"{{ environment.configuration.introspection_endpoint | replace: "'", '"' }}", UriKind.Absolute),
+                    {% endif %}
+
+                    {% if environment.configuration.revocation_endpoint %}
+                    RevocationEndpoint = CreateUri($"{{ environment.configuration.revocation_endpoint | replace: "'", '"' }}", UriKind.Absolute),
+                    {% endif %}
+
+                    {% if environment.configuration.token_endpoint %}
+                    TokenEndpoint = CreateUri($"{{ environment.configuration.token_endpoint | replace: "'", '"' }}", UriKind.Absolute),
+                    {% endif %}
+
+                    {% if environment.configuration.user_info_endpoint %}
+                    UserInfoEndpoint = CreateUri($"{{ environment.configuration.user_info_endpoint | replace: "'", '"' }}", UriKind.Absolute),
+                    {% endif %}
+
+                    AuthorizationResponseIssParameterSupported = {{ environment.configuration.authorization_response_iss_parameter_supported | default: "null" }},
+
+                    CodeChallengeMethodsSupported =
+                    {
+                        {% for method in environment.configuration.code_challenge_methods_supported %}
+                        "{{ method }}",
+                        {% endfor %}
+                    },
+
+                    GrantTypesSupported =
+                    {
+                        {% for type in environment.configuration.grant_types_supported %}
+                        "{{ type }}",
+                        {% endfor %}
+                    },
+
+                    ResponseModesSupported =
+                    {
+                        {% for mode in environment.configuration.response_modes_supported %}
+                        "{{ mode }}",
+                        {% endfor %}
+                    },
+
+                    ResponseTypesSupported =
+                    {
+                        {% for type in environment.configuration.response_types_supported %}
+                        "{{ type }}",
+                        {% endfor %}
+                    },
+
+                    ScopesSupported =
+                    {
+                        {% for scope in environment.configuration.scopes_supported %}
+                        "{{ scope }}",
+                        {% endfor %}
+                    },
+
+                    DeviceAuthorizationEndpointAuthMethodsSupported =
+                    {
+                        {% for method in environment.configuration.device_authorization_endpoint_auth_methods_supported %}
+                        "{{ method }}",
+                        {% endfor %}
+                    },
+
+                    IntrospectionEndpointAuthMethodsSupported =
+                    {
+                        {% for method in environment.configuration.introspection_endpoint_auth_methods_supported %}
+                        "{{ method }}",
+                        {% endfor %}
+                    },
+
+                    RevocationEndpointAuthMethodsSupported =
+                    {
+                        {% for method in environment.configuration.revocation_endpoint_auth_methods_supported %}
+                        "{{ method }}",
+                        {% endfor %}
+                    },
+
+                    TokenEndpointAuthMethodsSupported =
+                    {
+                        {% for method in environment.configuration.token_endpoint_auth_methods_supported %}
+                        "{{ method }}",
+                        {% endfor %}
+                    }
+                },
+                {% else %}
+                OpenIddictClientWebIntegrationConstants.{{ provider.name }}.Environments.{{ environment.name }} => null,
+                {% endif %}
+                {% endfor %}
+
+                _ => null
+            };
+
+            {% for setting in provider.settings %}
+            {% if setting.type == 'EncryptionKey' %}
+            if (settings.{{ setting.property_name }} is not null)
+            {
+                registration.EncryptionCredentials.Add(new EncryptingCredentials(settings.{{ setting.property_name }}, "{{ setting.encryption_algorithm }}", SecurityAlgorithms.Aes256CbcHmacSha512));
+            }
+            {% endif %}
+            {% endfor %}
+
+            {% for setting in provider.settings %}
+            {% if setting.type == 'SigningCertificate' %}
+            if (settings.{{ setting.property_name }} is not null)
+            {
+                var key = new X509SecurityKey(settings.{{ setting.property_name }});
+                if (key.IsSupportedAlgorithm(SecurityAlgorithms.RsaSha256))
+                {
+                    registration.SigningCredentials.Add(new SigningCredentials(key, SecurityAlgorithms.RsaSha256));
+                }
+
+                else if (key.IsSupportedAlgorithm(SecurityAlgorithms.HmacSha256))
+                {
+                    registration.SigningCredentials.Add(new SigningCredentials(key, SecurityAlgorithms.HmacSha256));
+                }
+
+                // Note: ECDSA algorithms are bound to specific curves and must be treated separately.
+                else if (key.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha256))
+                {
+                    registration.SigningCredentials.Add(new SigningCredentials(key, SecurityAlgorithms.EcdsaSha256));
+                }
+
+                else if (key.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha384))
+                {
+                    registration.SigningCredentials.Add(new SigningCredentials(key, SecurityAlgorithms.EcdsaSha384));
+                }
+
+                else if (key.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha512))
+                {
+                    registration.SigningCredentials.Add(new SigningCredentials(key, SecurityAlgorithms.EcdsaSha512));
+                }
+            }
+            {% endif %}
+            {% if setting.type == 'SigningKey' %}
+            if (settings.{{ setting.property_name }} is not null and not AsymmetricSecurityKey { PrivateKeyStatus: PrivateKeyStatus.DoesNotExist })
+            {
+                {% if setting.signing_algorithm %}
+                registration.SigningCredentials.Add(new SigningCredentials(settings.{{ setting.property_name }}, "{{ setting.signing_algorithm }}"));
+                {% else %}
+                if (settings.{{ setting.property_name }}.IsSupportedAlgorithm(SecurityAlgorithms.RsaSha256))
+                {
+                    registration.SigningCredentials.Add(new SigningCredentials(settings.{{ setting.property_name }}, SecurityAlgorithms.RsaSha256));
+                }
+
+                else if (settings.{{ setting.property_name }}.IsSupportedAlgorithm(SecurityAlgorithms.HmacSha256))
+                {
+                    registration.SigningCredentials.Add(new SigningCredentials(settings.{{ setting.property_name }}, SecurityAlgorithms.HmacSha256));
+                }
+
+                // Note: ECDSA algorithms are bound to specific curves and must be treated separately.
+                else if (settings.{{ setting.property_name }}.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha256))
+                {
+                    registration.SigningCredentials.Add(new SigningCredentials(settings.{{ setting.property_name }}, SecurityAlgorithms.EcdsaSha256));
+                }
+
+                else if (settings.{{ setting.property_name }}.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha384))
+                {
+                    registration.SigningCredentials.Add(new SigningCredentials(settings.{{ setting.property_name }}, SecurityAlgorithms.EcdsaSha384));
+                }
+
+                else if (settings.{{ setting.property_name }}.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha512))
+                {
+                    registration.SigningCredentials.Add(new SigningCredentials(settings.{{ setting.property_name }}, SecurityAlgorithms.EcdsaSha512));
+                }
+                {% endif %}
+            }
+            {% endif %}
+            {% endfor %}
+        }
+        {% endfor %}
+
+        static Uri? CreateUri(string? value, UriKind kind) => Uri.TryCreate(value, kind, out Uri? uri) ? uri : null;
+    }
+
+    public static partial IEnumerable<ValidationResult> ValidateProvider(OpenIddictClientRegistration registration)
+    {
+        ArgumentNullException.ThrowIfNull(registration);
+
+        return Execute();
+
+        IEnumerable<ValidationResult> Execute()
+        {
+            {% for provider in providers %}
+            {% unless forloop.first %}else {% endunless %}if (registration.ProviderType is ProviderTypes.{{ provider.name }})
+            {
+                if (registration.ProviderSettings is not OpenIddictClientWebIntegrationSettings.{{ provider.name }} settings)
+                {
+                    yield return new ValidationResult(SR.GetResourceString(SR.ID0406));
+
+                    // Note: if the settings instance is missing or of the wrong type, abort any further validation.
+                    yield break;
+                }
+
+                // Ensure the specified environment is valid.
+                if (settings.Environment is not (
+                    {% for environment in provider.environments %}
+                    OpenIddictClientWebIntegrationConstants.{{ provider.name }}.Environments.{{ environment.name }}{% unless forloop.last %} or{% endunless %}
+                    {% endfor %}
+                ))
+                {
+                    yield return new ValidationResult(SR.FormatID0194(nameof(settings.Environment)));
+                }
+
+                {% for setting in provider.settings %}
+                {% if setting.required %}
+                {% if setting.type == 'String' %}
+                if (string.IsNullOrEmpty(settings.{{ setting.property_name }}))
+                {% else %}
+                if (settings.{{ setting.property_name }} is null)
+                {% endif %}
+                {
+                    yield return new ValidationResult(SR.FormatID0332(nameof(settings.{{ setting.property_name }}), Providers.{{ provider.name }}));
+                }
+                {% endif %}
+
+                {% if setting.type == 'Uri' %}
+                else if (!settings.{{ setting.property_name }}.IsAbsoluteUri || OpenIddictHelpers.IsImplicitFileUri(settings.{{ setting.property_name }}))
+                {
+                    yield return new ValidationResult(SR.FormatID0350(nameof(settings.{{ setting.property_name }}), Providers.{{ provider.name }}));
+                }
+                {% endif %}
+                {% endfor %}
+
+                {% for setting in provider.settings %}
+                {% if setting.type == 'SigningCertificate' %}
+                if (settings.{{ setting.property_name }} is not null)
+                {
+                    var key = new X509SecurityKey(settings.{{ setting.property_name }});
+                    if (!key.IsSupportedAlgorithm(SecurityAlgorithms.RsaSha256)   &&
+                        !key.IsSupportedAlgorithm(SecurityAlgorithms.HmacSha256)  &&
+                        !key.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha256) &&
+                        !key.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha384) &&
+                        !key.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha512))
+                    {
+                        yield return new ValidationResult(SR.GetResourceString(SR.ID0068));
+                    }
+                }
+                {% endif %}
+                {% if setting.type == 'SigningKey' %}
+                if (settings.{{ setting.property_name }} is not null)
+                {
+                    // If the signing key is an asymmetric security key, ensure it has a private key.
+                    if (settings.{{ setting.property_name }} is AsymmetricSecurityKey { PrivateKeyStatus: PrivateKeyStatus.DoesNotExist })
+                    {
+                        yield return new ValidationResult(SR.GetResourceString(SR.ID0067));
+                    }
+
+                    {% unless setting.signing_algorithm %}
+                    if (!settings.{{ setting.property_name }}.IsSupportedAlgorithm(SecurityAlgorithms.RsaSha256)   &&
+                        !settings.{{ setting.property_name }}.IsSupportedAlgorithm(SecurityAlgorithms.HmacSha256)  &&
+                        !settings.{{ setting.property_name }}.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha256) &&
+                        !settings.{{ setting.property_name }}.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha384) &&
+                        !settings.{{ setting.property_name }}.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha512))
+                    {
+                        yield return new ValidationResult(SR.GetResourceString(SR.ID0068));
+                    }
+                    {% endunless %}
+                }
+                {% endif %}
+                {% endfor %}
+            }
+            {% endfor %}
+
+            else
+            {
+                yield return new ValidationResult(SR.GetResourceString(SR.ID0407));
+            }
+        }
+    }
+}

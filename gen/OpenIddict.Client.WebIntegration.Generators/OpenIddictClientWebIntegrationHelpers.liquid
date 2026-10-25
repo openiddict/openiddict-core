@@ -1,0 +1,28 @@
+﻿#nullable enable
+
+using Microsoft.IdentityModel.Tokens;
+using OpenIddict.Client;
+using OpenIddict.Client.WebIntegration;
+using static OpenIddict.Client.WebIntegration.OpenIddictClientWebIntegrationConstants;
+
+namespace OpenIddict.Client.WebIntegration;
+
+public static partial class OpenIddictClientWebIntegrationHelpers
+{
+    {% for provider in providers %}
+    /// <summary>
+    /// Resolves the {{ provider.display_name }} provider settings from the specified registration.
+    /// </summary>
+    /// <param name="registration">The client registration.</param>
+    /// <returns>The {{ provider.display_name }} provider settings.</returns>
+    /// <exception cref="InvalidOperationException">The provider options cannot be resolved.</exception>
+    public static OpenIddictClientWebIntegrationSettings.{{ provider.name }} Get{{ provider.name }}Settings(this OpenIddictClientRegistration registration)
+    {
+        ArgumentNullException.ThrowIfNull(registration);
+
+        return registration.ProviderSettings is OpenIddictClientWebIntegrationSettings.{{ provider.name }} settings
+            ? settings
+            : throw new InvalidOperationException(SR.FormatID0333(Providers.{{ provider.name }}));
+    }
+    {% endfor %}
+}

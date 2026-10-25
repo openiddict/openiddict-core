@@ -1,0 +1,714 @@
+﻿#nullable enable
+#pragma warning disable CS0618
+
+using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
+using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
+using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
+using OpenIddict.Client;
+using OpenIddict.Client.WebIntegration;
+using OpenIddict.Extensions;
+using static OpenIddict.Client.WebIntegration.OpenIddictClientWebIntegrationConstants;
+
+namespace Microsoft.Extensions.DependencyInjection;
+
+public sealed partial class OpenIddictClientWebIntegrationBuilder
+{
+    {% for provider in providers %}
+    {% if provider.documentation -%}
+    /// <summary>
+    /// Adds a new {{ provider.display_name }} client registration.
+    /// For more information, read <see href="{{ provider.documentation }}">the documentation</see>.
+    /// </summary>
+    {% else %}
+    /// <summary>
+    /// Adds a new {{ provider.display_name }} client registration.
+    /// </summary>
+    {% endif -%}
+    /// <param name="configuration">The delegate used to configure the OpenIddict/{{ provider.display_name }} options.</param>
+    /// <returns>The <see cref="OpenIddictClientWebIntegrationBuilder"/> instance.</returns>
+    {% if provider.obsolete -%}
+    [Obsolete("This provider is no longer supported and will be removed in a future version.")]
+    {% endif -%}
+    public OpenIddictClientWebIntegrationBuilder Add{{ provider.name }}(Action<OpenIddictClientWebIntegrationBuilder.{{ provider.name }}> configuration)
+    {
+        ArgumentNullException.ThrowIfNull(configuration);
+
+        var registration = new OpenIddictClientRegistration
+        {
+            ProviderSettings = new OpenIddictClientWebIntegrationSettings.{{ provider.name }}(),
+            ProviderType = ProviderTypes.{{ provider.name }}
+        };
+
+        configuration(new OpenIddictClientWebIntegrationBuilder.{{ provider.name }}(registration));
+
+        Services.Configure<OpenIddictClientOptions>(options => options.Registrations.Add(registration));
+
+        return this;
+    }
+    {% endfor %}
+
+    {% for provider in providers %}
+    /// <summary>
+    /// Exposes the necessary methods required to configure the {{ provider.display_name }} integration.
+    /// </summary>
+    {% if provider.obsolete -%}
+    [Obsolete("This provider is no longer supported and will be removed in a future version.")]
+    {% endif -%}
+    public sealed partial class {{ provider.name }}
+    {
+        /// <summary>
+        /// Initializes a new instance of <see cref="OpenIddictClientWebIntegrationBuilder.{{ provider.name }}"/>.
+        /// </summary>
+        /// <param name="registration">The client registration.</param>
+        public {{ provider.name }}(OpenIddictClientRegistration registration)
+            => Registration = registration ?? throw new ArgumentNullException(nameof(registration));
+
+        /// <summary>
+        /// Gets the client registration.
+        /// </summary>
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public OpenIddictClientRegistration Registration { get; }
+
+        /// <summary>
+        /// Adds one or more client authentication methods to the list of client authentication methods that can be negotiated for this provider.
+        /// </summary>
+        /// <param name="methods">The client authentication methods.</param>
+        /// <remarks>Note: explicitly configuring the allowed client authentication methods is NOT recommended in most cases.</remarks>
+        /// <returns>The <see cref="OpenIddictClientWebIntegrationBuilder.{{ provider.name }}"/> instance.</returns>
+        [EditorBrowsable(EditorBrowsableState.Advanced)]
+        public {{ provider.name }} AddClientAuthenticationMethods(params string[] methods)
+        {
+            ArgumentNullException.ThrowIfNull(methods);
+
+            Registration.ClientAuthenticationMethods.UnionWith(methods);
+
+            return this;
+        }
+
+        /// <summary>
+        /// Adds one or more code challenge methods to the list of code challenge methods that can be negotiated for this provider.
+        /// </summary>
+        /// <param name="methods">The code challenge methods.</param>
+        /// <remarks>Note: explicitly configuring the allowed code challenge methods is NOT recommended in most cases.</remarks>
+        /// <returns>The <see cref="OpenIddictClientWebIntegrationBuilder.{{ provider.name }}"/> instance.</returns>
+        [EditorBrowsable(EditorBrowsableState.Advanced)]
+        public {{ provider.name }} AddCodeChallengeMethods(params string[] methods)
+        {
+            ArgumentNullException.ThrowIfNull(methods);
+
+            Registration.CodeChallengeMethods.UnionWith(methods);
+
+            return this;
+        }
+
+        /// <summary>
+        /// Adds one or more grant types to the list of grant types that can be negotiated for this provider.
+        /// </summary>
+        /// <param name="types">The grant types.</param>
+        /// <remarks>Note: explicitly configuring the allowed grant types is NOT recommended in most cases.</remarks>
+        /// <returns>The <see cref="OpenIddictClientWebIntegrationBuilder.{{ provider.name }}"/> instance.</returns>
+        [EditorBrowsable(EditorBrowsableState.Advanced)]
+        public {{ provider.name }} AddGrantTypes(params string[] types)
+        {
+            ArgumentNullException.ThrowIfNull(types);
+
+            Registration.GrantTypes.UnionWith(types);
+
+            return this;
+        }
+
+        /// <summary>
+        /// Adds one or more response modes to the list of response modes that can be negotiated for this provider.
+        /// </summary>
+        /// <param name="modes">The response modes.</param>
+        /// <remarks>Note: explicitly configuring the allowed response modes is NOT recommended in most cases.</remarks>
+        /// <returns>The <see cref="OpenIddictClientWebIntegrationBuilder.{{ provider.name }}"/> instance.</returns>
+        [EditorBrowsable(EditorBrowsableState.Advanced)]
+        public {{ provider.name }} AddResponseModes(params string[] modes)
+        {
+            ArgumentNullException.ThrowIfNull(modes);
+
+            Registration.ResponseModes.UnionWith(modes);
+
+            return this;
+        }
+
+        /// <summary>
+        /// Adds one or more response types to the list of response types that can be negotiated for this provider.
+        /// </summary>
+        /// <param name="types">The response types.</param>
+        /// <remarks>Note: explicitly configuring the allowed response types is NOT recommended in most cases.</remarks>
+        /// <returns>The <see cref="OpenIddictClientWebIntegrationBuilder.{{ provider.name }}"/> instance.</returns>
+        [EditorBrowsable(EditorBrowsableState.Advanced)]
+        public {{ provider.name }} AddResponseTypes(params string[] types)
+        {
+            ArgumentNullException.ThrowIfNull(types);
+
+            Registration.ResponseTypes.UnionWith(types);
+
+            return this;
+        }
+
+        /// <summary>
+        /// Adds one or more scopes to the list of requested scopes, if applicable.
+        /// </summary>
+        /// <param name="scopes">The scopes.</param>
+        /// <returns>The <see cref="OpenIddictClientWebIntegrationBuilder.{{ provider.name }}"/> instance.</returns>
+        public {{ provider.name }} AddScopes(params string[] scopes)
+        {
+            ArgumentNullException.ThrowIfNull(scopes);
+
+            Registration.Scopes.UnionWith(scopes);
+
+            return this;
+        }
+
+        /// <summary>
+        /// Disables pushed authorization requests for this client registration. When pushed authorization
+        /// requests are disabled, PAR is not used by the OpenIddict client, even if the remote authorization
+        /// server exposes a pushed authorization endpoint. If the authorization server requires using PAR,
+        /// an exception is automatically thrown when starting an interactive authentication challenge.
+        /// </summary>
+        /// <returns>The <see cref="OpenIddictClientWebIntegrationBuilder.{{ provider.name }}"/> instance.</returns>
+        public {{ provider.name }} DisablePushedAuthorizationRequests()
+        {
+            Registration.DisablePushedAuthorizationRequests = true;
+
+            return this;
+        }
+
+        /// <summary>
+        /// Sets the issuer that will be attached to the <see cref="Claim"/>
+        /// instances created by the OpenIddict client stack for this provider.
+        /// </summary>
+        /// <param name="issuer">The claims issuer.</param>
+        /// <returns>The <see cref="OpenIddictClientWebIntegrationBuilder.{{ provider.name }}"/> instance.</returns>
+        public {{ provider.name }} SetClaimsIssuer(string issuer)
+        {
+            ArgumentException.ThrowIfNullOrEmpty(issuer);
+
+            Registration.ClaimsIssuer = issuer;
+
+            return this;
+        }
+
+        /// <summary>
+        /// Sets the provider name.
+        /// </summary>
+        /// <param name="name">The provider name.</param>
+        /// <returns>The <see cref="OpenIddictClientWebIntegrationBuilder.{{ provider.name }}"/> instance.</returns>
+        public {{ provider.name }} SetProviderName(string name)
+        {
+            ArgumentException.ThrowIfNullOrEmpty(name);
+
+            Registration.ProviderName = name;
+
+            return this;
+        }
+
+        /// <summary>
+        /// Sets the provider display name.
+        /// </summary>
+        /// <param name="name">The provider display name.</param>
+        /// <returns>The <see cref="OpenIddictClientWebIntegrationBuilder.{{ provider.name }}"/> instance.</returns>
+        public {{ provider.name }} SetProviderDisplayName(string name)
+        {
+            ArgumentException.ThrowIfNullOrEmpty(name);
+
+            Registration.ProviderDisplayName = name;
+
+            return this;
+        }
+
+        /// <summary>
+        /// Sets the registration identifier.
+        /// </summary>
+        /// <param name="identifier">The registration identifier.</param>
+        /// <returns>The <see cref="OpenIddictClientWebIntegrationBuilder.{{ provider.name }}"/> instance.</returns>
+        public {{ provider.name }} SetRegistrationId(string identifier)
+        {
+            ArgumentException.ThrowIfNullOrEmpty(identifier);
+
+            Registration.RegistrationId = identifier;
+
+            return this;
+        }
+
+        /// <summary>
+        /// Sets the client identifier.
+        /// </summary>
+        /// <param name="identifier">The client identifier.</param>
+        /// <returns>The <see cref="OpenIddictClientWebIntegrationBuilder.{{ provider.name }}"/> instance.</returns>
+        public {{ provider.name }} SetClientId(string identifier)
+        {
+            ArgumentException.ThrowIfNullOrEmpty(identifier);
+
+            Registration.ClientId = identifier;
+
+            return this;
+        }
+
+        /// <summary>
+        /// Sets the client secret, if applicable.
+        /// </summary>
+        /// <param name="secret">The client secret.</param>
+        /// <returns>The <see cref="OpenIddictClientWebIntegrationBuilder.{{ provider.name }}"/> instance.</returns>
+        public {{ provider.name }} SetClientSecret(string secret)
+        {
+            ArgumentException.ThrowIfNullOrEmpty(secret);
+
+            Registration.ClientSecret = secret;
+
+            return this;
+        }
+
+        /// <summary>
+        /// Sets the client type (typically, "public" or "confidential").
+        /// </summary>
+        /// <param name="type">The client type.</param>
+        /// <returns>The <see cref="OpenIddictClientWebIntegrationBuilder.{{ provider.name }}"/> instance.</returns>
+        public {{ provider.name }} SetClientType(string type)
+        {
+            ArgumentException.ThrowIfNullOrEmpty(type);
+
+            Registration.ClientType = type;
+
+            return this;
+        }
+
+        /// <summary>
+        /// Sets the post-logout redirection URI, if applicable.
+        /// </summary>
+        /// <remarks>
+        /// Note: the post-logout redirection URI is automatically added to
+        /// <see cref="OpenIddictClientOptions.PostLogoutRedirectionEndpointUris"/>.
+        /// </remarks>
+        /// <param name="uri">The post-logout redirection URI.</param>
+        /// <returns>The <see cref="OpenIddictClientWebIntegrationBuilder.{{ provider.name }}"/> instance.</returns>
+        public {{ provider.name }} SetPostLogoutRedirectUri(Uri uri)
+        {
+            ArgumentNullException.ThrowIfNull(uri);
+
+            Registration.PostLogoutRedirectUri = uri;
+
+            return this;
+        }
+
+        /// <summary>
+        /// Sets the post-logout redirection URI, if applicable.
+        /// </summary>
+        /// <remarks>
+        /// Note: the post-logout redirection URI is automatically added to
+        /// <see cref="OpenIddictClientOptions.PostLogoutRedirectionEndpointUris"/>.
+        /// </remarks>
+        /// <param name="uri">The post-logout redirection URI.</param>
+        /// <returns>The <see cref="OpenIddictClientWebIntegrationBuilder.{{ provider.name }}"/> instance.</returns>
+        public {{ provider.name }} SetPostLogoutRedirectUri([StringSyntax(StringSyntaxAttribute.Uri)] string uri)
+        {
+            ArgumentException.ThrowIfNullOrEmpty(uri);
+
+            return SetPostLogoutRedirectUri(new Uri(uri, UriKind.RelativeOrAbsolute));
+        }
+
+        /// <summary>
+        /// Sets the redirection URI, if applicable.
+        /// </summary>
+        /// <remarks>
+        /// Note: the redirection URI is automatically added to
+        /// <see cref="OpenIddictClientOptions.RedirectionEndpointUris"/>.
+        /// </remarks>
+        /// <param name="uri">The redirection URI.</param>
+        /// <returns>The <see cref="OpenIddictClientWebIntegrationBuilder.{{ provider.name }}"/> instance.</returns>
+        public {{ provider.name }} SetRedirectUri(Uri uri)
+        {
+            ArgumentNullException.ThrowIfNull(uri);
+
+            Registration.RedirectUri = uri;
+
+            return this;
+        }
+
+        /// <summary>
+        /// Sets the redirection URI, if applicable.
+        /// </summary>
+        /// <remarks>
+        /// Note: the redirection URI is automatically added to
+        /// <see cref="OpenIddictClientOptions.RedirectionEndpointUris"/>.
+        /// </remarks>
+        /// <param name="uri">The redirection URI.</param>
+        /// <returns>The <see cref="OpenIddictClientWebIntegrationBuilder.{{ provider.name }}"/> instance.</returns>
+        public {{ provider.name }} SetRedirectUri([StringSyntax(StringSyntaxAttribute.Uri)] string uri)
+        {
+            ArgumentException.ThrowIfNullOrEmpty(uri);
+
+            return SetRedirectUri(new Uri(uri, UriKind.RelativeOrAbsolute));
+        }
+
+        {% for environment in provider.environments %}
+        /// <summary>
+        /// Configures the provider to use the "{{ environment.name }}" environment.
+        /// </summary>
+        /// <returns>The <see cref="OpenIddictClientWebIntegrationBuilder.{{ provider.name }}"/> instance.</returns>
+        public {{ provider.name }} Use{{ environment.name }}Environment()
+        {
+            Registration.Get{{ provider.name }}Settings().Environment = OpenIddictClientWebIntegrationConstants.{{ provider.name }}.Environments.{{ environment.name }};
+
+            return this;
+        }
+        {% endfor %}
+
+        {% for setting in provider.settings %}
+        {% if setting.collection %}
+        /// <summary>
+        /// Configures {{ setting.description }}.
+        /// </summary>
+        /// <param name="{{ setting.parameter_name }}">{{ setting.description | slice: 0 | upcase }}{{ setting.description | slice: 1, setting.description.size }}.</param>
+        /// <returns>The <see cref="OpenIddictClientWebIntegrationBuilder.{{ provider.name }}"/> instance.</returns>
+        {% if setting.obsolete -%}
+        [Obsolete("This option is no longer supported and will be removed in a future version.")]
+        {% endif -%}
+        public {{ provider.name }} Add{{ setting.property_name }}(params {{ setting.clr_type }}[] {{ setting.parameter_name }})
+        {
+            ArgumentNullException.ThrowIfNull({{ setting.parameter_name }});
+
+            Registration.Get{{ provider.name }}Settings().{{ setting.property_name }}.UnionWith({{ setting.parameter_name }});
+
+            return this;
+        }
+        {% else %}
+        {% case setting.clr_type %}
+        {% when 'ECDsaSecurityKey' %}
+        /// <summary>
+        /// Configures {{ setting.description }}.
+        /// </summary>
+        /// <param name="{{ setting.parameter_name }}">{{ setting.description | slice: 0 | upcase }}{{ setting.description | slice: 1, setting.description.size }}.</param>
+        /// <returns>The <see cref="OpenIddictClientWebIntegrationBuilder.{{ provider.name }}"/> instance.</returns>
+        {% if setting.obsolete -%}
+        [Obsolete("This option is no longer supported and will be removed in a future version.")]
+        {% endif -%}
+        public {{ provider.name }} Set{{ setting.property_name }}(ECDsaSecurityKey {{ setting.parameter_name }})
+        {
+            ArgumentNullException.ThrowIfNull({{ setting.parameter_name }});
+
+            if ({{ setting.parameter_name }}.PrivateKeyStatus is PrivateKeyStatus.DoesNotExist)
+            {
+                throw new ArgumentException(SR.GetResourceString(SR.ID0055), nameof({{ setting.parameter_name }}));
+            }
+
+            Registration.Get{{ provider.name }}Settings().{{ setting.property_name }} = {{ setting.parameter_name }};
+
+            return this;
+        }
+
+#if NET
+        /// <summary>
+        /// Configures {{ setting.description }}.
+        /// </summary>
+        /// <param name="key">
+        /// The PEM-encoded Elliptic Curve Digital Signature Algorithm (ECDSA) signing key.
+        /// </param>
+        /// <returns>The <see cref="OpenIddictClientWebIntegrationBuilder.{{ provider.name }}"/> instance.</returns>
+        {% if setting.obsolete -%}
+        [Obsolete("This option is no longer supported and will be removed in a future version.")]
+        {% endif -%}
+        public {{ provider.name }} Set{{ setting.property_name }}(string key)
+            => Set{{ setting.property_name }}(key.AsMemory());
+
+        /// <summary>
+        /// Configures {{ setting.description }}.
+        /// </summary>
+        /// <param name="key">
+        /// The PEM-encoded Elliptic Curve Digital Signature Algorithm (ECDSA) signing key.
+        /// </param>
+        /// <returns>The <see cref="OpenIddictClientWebIntegrationBuilder.{{ provider.name }}"/> instance.</returns>
+        {% if setting.obsolete -%}
+        [Obsolete("This option is no longer supported and will be removed in a future version.")]
+        {% endif -%}
+        public {{ provider.name }} Set{{ setting.property_name }}(ReadOnlyMemory<char> key)
+            => Set{{ setting.property_name }}(key.Span);
+
+        /// <summary>
+        /// Configures {{ setting.description }}.
+        /// </summary>
+        /// <param name="key">
+        /// The PEM-encoded Elliptic Curve Digital Signature Algorithm (ECDSA) signing key.
+        /// </param>
+        /// <returns>The <see cref="OpenIddictClientWebIntegrationBuilder.{{ provider.name }}"/> instance.</returns>
+        {% if setting.obsolete -%}
+        [Obsolete("This option is no longer supported and will be removed in a future version.")]
+        {% endif -%}
+        public {{ provider.name }} Set{{ setting.property_name }}(ReadOnlySpan<char> key)
+        {
+            if (key.IsEmpty)
+            {
+                throw new ArgumentException(SR.GetResourceString(SR.ID0346), nameof(key));
+            }
+
+            var algorithm = ECDsa.Create();
+
+            try
+            {
+                algorithm.ImportFromPem(key);
+            }
+
+            catch
+            {
+                algorithm.Dispose();
+
+                throw;
+            }
+
+            return Set{{ setting.property_name }}(new ECDsaSecurityKey(algorithm));
+        }
+#endif
+        {% when 'Uri' %}
+        /// <summary>
+        /// Configures {{ setting.description }}.
+        /// </summary>
+        /// <param name="{{ setting.parameter_name }}">{{ setting.description | slice: 0 | upcase }}{{ setting.description | slice: 1, setting.description.size }}.</param>
+        /// <returns>The <see cref="OpenIddictClientWebIntegrationBuilder.{{ provider.name }}"/> instance.</returns>
+        {% if setting.obsolete -%}
+        [Obsolete("This option is no longer supported and will be removed in a future version.")]
+        {% endif -%}
+        public {{ provider.name }} Set{{ setting.property_name }}(Uri {{ setting.parameter_name }})
+        {
+            ArgumentNullException.ThrowIfNull({{ setting.parameter_name }});
+
+            if (!{{ setting.parameter_name }}.IsAbsoluteUri || OpenIddictHelpers.IsImplicitFileUri({{ setting.parameter_name }}))
+            {
+                throw new ArgumentException(SR.GetResourceString(SR.ID0144), nameof({{ setting.parameter_name }}));
+            }
+
+            Registration.Get{{ provider.name }}Settings().{{ setting.property_name }} = {{ setting.parameter_name }};
+
+            return this;
+        }
+
+        /// <summary>
+        /// Configures {{ setting.description }}.
+        /// </summary>
+        /// <param name="{{ setting.parameter_name }}">{{ setting.description | slice: 0 | upcase }}{{ setting.description | slice: 1, setting.description.size }}.</param>
+        /// <returns>The <see cref="OpenIddictClientWebIntegrationBuilder.{{ provider.name }}"/> instance.</returns>
+        {% if setting.obsolete -%}
+        [Obsolete("This option is no longer supported and will be removed in a future version.")]
+        {% endif -%}
+        public {{ provider.name }} Set{{ setting.property_name }}(string {{ setting.parameter_name }})
+        {
+            ArgumentException.ThrowIfNullOrEmpty({{ setting.parameter_name }});
+
+            return Set{{ setting.property_name }}(new Uri({{ setting.parameter_name }}, UriKind.RelativeOrAbsolute));
+        }
+        {% when 'X509Certificate2' %}
+        /// <summary>
+        /// Configures {{ setting.description }}.
+        /// </summary>
+        /// <param name="{{ setting.parameter_name }}">{{ setting.description | slice: 0 | upcase }}{{ setting.description | slice: 1, setting.description.size }}.</param>
+        /// <returns>The <see cref="OpenIddictClientWebIntegrationBuilder.{{ provider.name }}"/> instance.</returns>
+        {% if setting.obsolete -%}
+        [Obsolete("This option is no longer supported and will be removed in a future version.")]
+        {% endif -%}
+        public {{ provider.name }} Set{{ setting.property_name }}(X509Certificate2 {{ setting.parameter_name }})
+        {
+            ArgumentNullException.ThrowIfNull({{ setting.parameter_name }});
+
+            if (!{{ setting.parameter_name }}.HasPrivateKey)
+            {
+                throw new ArgumentException(SR.GetResourceString(SR.ID0061), nameof({{ setting.parameter_name }}));
+            }
+
+            Registration.Get{{ provider.name }}Settings().{{ setting.property_name }} = {{ setting.parameter_name }};
+
+            return this;
+        }
+
+        /// <summary>
+        /// Configures {{ setting.description }}.
+        /// </summary>
+        /// <param name="assembly">The assembly containing the certificate.</param>
+        /// <param name="resource">The name of the embedded resource.</param>
+        /// <param name="password">The password used to open the certificate.</param>
+        /// <returns>The <see cref="OpenIddictClientWebIntegrationBuilder.{{ provider.name }}"/> instance.</returns>
+        {% if setting.obsolete -%}
+        [Obsolete("This option is no longer supported and will be removed in a future version.")]
+        {% endif -%}
+        public {{ provider.name }} Set{{ setting.property_name }}(Assembly assembly, string resource, string? password)
+            // Note: ephemeral key sets are currently not supported on macOS.
+            => Set{{ setting.property_name }}(assembly, resource, password, OperatingSystem.IsMacOS()
+                ? X509KeyStorageFlags.MachineKeySet
+                : X509KeyStorageFlags.EphemeralKeySet);
+
+        /// <summary>
+        /// Configures {{ setting.description }}.
+        /// </summary>
+        /// <param name="assembly">The assembly containing the certificate.</param>
+        /// <param name="resource">The name of the embedded resource.</param>
+        /// <param name="password">The password used to open the certificate.</param>
+        /// <param name="flags">An enumeration of flags indicating how and where to store the private key of the certificate.</param>
+        /// <returns>The <see cref="OpenIddictClientWebIntegrationBuilder.{{ provider.name }}"/> instance.</returns>
+        {% if setting.obsolete -%}
+        [Obsolete("This option is no longer supported and will be removed in a future version.")]
+        {% endif -%}
+        public {{ provider.name }} Set{{ setting.property_name }}(
+            Assembly assembly, string resource,
+            string? password, X509KeyStorageFlags flags)
+        {
+            ArgumentNullException.ThrowIfNull(assembly);
+            ArgumentException.ThrowIfNullOrEmpty(resource);
+
+            using var stream = assembly.GetManifestResourceStream(resource)
+                ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0064));
+
+            return Set{{ setting.property_name }}(stream, password, flags);
+        }
+
+        /// <summary>
+        /// Configures {{ setting.description }}.
+        /// </summary>
+        /// <param name="stream">The stream containing the certificate.</param>
+        /// <param name="password">The password used to open the certificate.</param>
+        /// <returns>The <see cref="OpenIddictClientWebIntegrationBuilder.{{ provider.name }}"/> instance.</returns>
+        {% if setting.obsolete -%}
+        [Obsolete("This option is no longer supported and will be removed in a future version.")]
+        {% endif -%}
+        public {{ provider.name }} Set{{ setting.property_name }}(Stream stream, string? password)
+            // Note: ephemeral key sets are currently not supported on macOS.
+            => Set{{ setting.property_name }}(stream, password, OperatingSystem.IsMacOS()
+                ? X509KeyStorageFlags.MachineKeySet
+                : X509KeyStorageFlags.EphemeralKeySet);
+
+        /// <summary>
+        /// Configures {{ setting.description }}.
+        /// </summary>
+        /// <param name="stream">The stream containing the certificate.</param>
+        /// <param name="password">The password used to open the certificate.</param>
+        /// <param name="flags">An enumeration of flags indicating how and where to store the private key of the certificate.</param>
+        /// <returns>The <see cref="OpenIddictClientWebIntegrationBuilder.{{ provider.name }}"/> instance.</returns>
+        {% if setting.obsolete -%}
+        [Obsolete("This option is no longer supported and will be removed in a future version.")]
+        {% endif -%}
+        public {{ provider.name }} Set{{ setting.property_name }}(Stream stream, string? password, X509KeyStorageFlags flags)
+        {
+            ArgumentNullException.ThrowIfNull(stream);
+
+            using var buffer = new MemoryStream();
+            stream.CopyTo(buffer);
+
+            var certificate = X509Certificate2.GetCertContentType(buffer.ToArray()) switch
+            {
+                X509ContentType.Pkcs12 => X509CertificateLoader.LoadPkcs12(buffer.ToArray(), password, flags),
+
+                _ => throw new InvalidOperationException(SR.GetResourceString(SR.ID0454))
+            };
+
+            return Set{{ setting.property_name }}(certificate);
+        }
+
+        /// <summary>
+        /// Configures {{ setting.description }}.
+        /// </summary>
+        /// <param name="thumbprint">The thumbprint of the certificate used to identify it in the X.509 store.</param>
+        /// <returns>The <see cref="OpenIddictClientWebIntegrationBuilder.{{ provider.name }}"/> instance.</returns>
+        {% if setting.obsolete -%}
+        [Obsolete("This option is no longer supported and will be removed in a future version.")]
+        {% endif -%}
+        [UnsupportedOSPlatform("linux")]
+        public {{ provider.name }} Set{{ setting.property_name }}(string thumbprint)
+        {
+            ArgumentException.ThrowIfNullOrEmpty(thumbprint);
+
+            return Set{{ setting.property_name }}(
+                GetCertificate(StoreLocation.CurrentUser, thumbprint)
+                ?? GetCertificate(StoreLocation.LocalMachine, thumbprint)
+                ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0066)));
+
+            static X509Certificate2? GetCertificate(StoreLocation location, string thumbprint)
+            {
+                using var store = new X509Store(StoreName.My, location);
+                store.Open(OpenFlags.ReadOnly);
+
+                return store.Certificates.Find(X509FindType.FindByThumbprint, thumbprint, validOnly: false)
+                    .Cast<X509Certificate2>()
+                    .SingleOrDefault();
+            }
+        }
+
+        /// <summary>
+        /// Configures {{ setting.description }}.
+        /// </summary>
+        /// <param name="thumbprint">The thumbprint of the certificate used to identify it in the X.509 store.</param>
+        /// <param name="name">The name of the X.509 store.</param>
+        /// <param name="location">The location of the X.509 store.</param>
+        /// <returns>The <see cref="OpenIddictClientWebIntegrationBuilder.{{ provider.name }}"/> instance.</returns>
+        {% if setting.obsolete -%}
+        [Obsolete("This option is no longer supported and will be removed in a future version.")]
+        {% endif -%}
+        public {{ provider.name }} Set{{ setting.property_name }}(string thumbprint, StoreName name, StoreLocation location)
+        {
+            ArgumentException.ThrowIfNullOrEmpty(thumbprint);
+
+            using var store = new X509Store(name, location);
+            store.Open(OpenFlags.ReadOnly);
+
+            return Set{{ setting.property_name }}(
+                store.Certificates.Find(X509FindType.FindByThumbprint, thumbprint, validOnly: false)
+                    .Cast<X509Certificate2>()
+                    .SingleOrDefault() ?? throw new InvalidOperationException(SR.GetResourceString(SR.ID0066)));
+        }
+        {% when 'bool' %}
+        /// <summary>
+        /// Configures {{ setting.description }}.
+        /// </summary>
+        /// <param name="{{ setting.parameter_name }}">{{ setting.description | slice: 0 | upcase }}{{ setting.description | slice: 1, setting.description.size }}.</param>
+        /// <returns>The <see cref="OpenIddictClientWebIntegrationBuilder.{{ provider.name }}"/> instance.</returns>
+        {% if setting.obsolete -%}
+        [Obsolete("This option is no longer supported and will be removed in a future version.")]
+        {% endif -%}
+        public {{ provider.name }} Set{{ setting.property_name }}(bool {{ setting.parameter_name }})
+        {
+            Registration.Get{{ provider.name }}Settings().{{ setting.property_name }} = {{ setting.parameter_name }};
+
+            return this;
+        }
+        {% else %}
+        /// <summary>
+        /// Configures {{ setting.description }}.
+        /// </summary>
+        /// <param name="{{ setting.parameter_name }}">{{ setting.description | slice: 0 | upcase }}{{ setting.description | slice: 1, setting.description.size }}.</param>
+        /// <returns>The <see cref="OpenIddictClientWebIntegrationBuilder.{{ provider.name }}"/> instance.</returns>
+        {% if setting.obsolete -%}
+        [Obsolete("This option is no longer supported and will be removed in a future version.")]
+        {% endif -%}
+        public {{ provider.name }} Set{{ setting.property_name }}({{ setting.clr_type }} {{ setting.parameter_name }})
+        {
+            ArgumentNullException.ThrowIfNull({{ setting.parameter_name }});
+
+            Registration.Get{{ provider.name }}Settings().{{ setting.property_name }} = {{ setting.parameter_name }};
+
+            return this;
+        }
+        {% endcase %}
+        {% endif %}
+        {% endfor %}
+
+        /// <inheritdoc/>
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public override bool Equals([NotNullWhen(true)] object? obj) => base.Equals(obj);
+
+        /// <inheritdoc/>
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public override int GetHashCode() => base.GetHashCode();
+
+        /// <inheritdoc/>
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public override string? ToString() => base.ToString();
+    }
+    {% endfor %}
+}
