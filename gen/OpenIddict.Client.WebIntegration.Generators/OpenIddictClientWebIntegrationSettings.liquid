@@ -1,0 +1,36 @@
+﻿#nullable enable
+
+using System.Security.Cryptography.X509Certificates;
+using Microsoft.IdentityModel.Tokens;
+
+namespace OpenIddict.Client.WebIntegration;
+
+public sealed partial class OpenIddictClientWebIntegrationSettings
+{
+    {% for provider in providers %}
+    /// <summary>
+    /// Provides various options needed to configure the {{ provider.display_name }} integration.
+    /// </summary>
+    public sealed class {{ provider.name }}
+    {
+        /// <summary>
+        /// Gets or sets the environment that determines the endpoints to use (by default, "Production").
+        /// </summary>
+        public string? Environment { get; set; } = OpenIddictClientWebIntegrationConstants.{{ provider.name }}.Environments.Production;
+
+        {% for setting in provider.settings %}
+        /// <summary>
+        /// Gets or sets {{ setting.description }}.
+        /// </summary>
+        {% if setting.obsolete -%}
+        [Obsolete("This option is no longer supported and will be removed in a future version.")]
+        {% endif -%}
+        {% if setting.collection %}
+        public HashSet<{{ setting.clr_type }}> {{ setting.property_name }} { get; } = new();
+        {% else %}
+        public {{ setting.clr_type }}? {{ setting.property_name }} { get; set; }
+        {% endif %}
+        {% endfor %}
+    }
+    {% endfor %}
+}

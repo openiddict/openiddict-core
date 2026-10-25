@@ -171,12 +171,13 @@
       Note: the following references are exclusively used in the source generators:
     -->
     <PackageVersion Include="Fluid.Core"                                            Version="3.0.0-beta.8"    />
+    <PackageVersion Include="Fluid.SourceGenerator"                                 Version="3.0.0-beta.8"    />
     <PackageVersion Include="Microsoft.Bcl.AsyncInterfaces"                         Version="10.0.13"         />
     <PackageVersion Include="Microsoft.Extensions.FileProviders.Abstractions"       Version="10.0.13"         />
     <PackageVersion Include="Microsoft.CodeAnalysis.Analyzers"                      Version="5.9.0"           />
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp"                         Version="5.9.0"           />
     <PackageVersion Include="Parlot"                                                Version="1.5.8"           />
-    <PackageVersion Include="System.Linq.Async"                                     Version="7.0.1"           />
+    <PackageVersion Include="System.Linq.Async"                                     Version="6.0.3"           />
   </ItemGroup>
 
 </Project>

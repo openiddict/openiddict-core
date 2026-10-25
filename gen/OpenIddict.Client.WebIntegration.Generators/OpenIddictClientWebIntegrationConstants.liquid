@@ -1,0 +1,48 @@
+﻿#nullable enable
+
+namespace OpenIddict.Client.WebIntegration;
+
+public static partial class OpenIddictClientWebIntegrationConstants
+{
+    {% for provider in providers %}
+    public static class {{ provider.name }}
+    {
+        public static class Environments
+        {
+            {% for environment in provider.environments %}
+            public const string {{ environment.name }} = "{{ environment.name }}";
+            {% endfor %}
+        }
+
+        public static class Properties
+        {
+            {% for property in provider.properties %}
+            public const string {{ property.name }} = "{{ property.dictionary_key }}";
+            {% endfor %}
+        }
+
+        {% for group in provider.constants %}
+        public static class {{ group.class }}
+        {
+            {% for constant in group.members %}
+            public const string {{ constant.name }} = "{{ constant.value }}";
+            {% endfor %}
+        }
+        {% endfor %}
+    }
+    {% endfor %}
+
+    public static class Providers
+    {
+        {% for provider in providers %}
+        public const string {{ provider.name }} = "{{ provider.name }}";
+        {% endfor %}
+    }
+
+    public static class ProviderTypes
+    {
+        {% for provider in providers %}
+        public const string {{ provider.name }} = "{{ provider.id }}";
+        {% endfor %}
+    }
+}
