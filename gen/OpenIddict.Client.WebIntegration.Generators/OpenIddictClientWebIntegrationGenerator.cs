@@ -397,4 +397,4 @@ public sealed class OpenIddictClientWebIntegrationGenerator : IIncrementalGenera
 }
 
 [FluidTemplates("**/*.liquid", Exclude = ["_*.liquid"])]
-static partial class Templates;
+internal static partial class Templates;

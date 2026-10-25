@@ -14,9 +14,9 @@
     <PackageReference Include="Fluid.Core" PrivateAssets="all" GeneratePathProperty="true" />
     <PackageReference Include="Fluid.SourceGenerator" PrivateAssets="all" OutputItemType="Analyzer" />
     <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" PrivateAssets="all" GeneratePathProperty="true" />
-    <PackageReference Include="Microsoft.Extensions.FileProviders.Abstractions" PrivateAssets="all" GeneratePathProperty="true" />
     <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" PrivateAssets="all" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.Extensions.FileProviders.Abstractions" PrivateAssets="all" GeneratePathProperty="true" />
     <PackageReference Include="Parlot" PrivateAssets="all" GeneratePathProperty="true" />
     <PackageReference Include="System.Linq.Async" PrivateAssets="all" GeneratePathProperty="true" />
   </ItemGroup>
