@@ -18,30 +18,22 @@ public class AuthenticationController : Controller
     [HttpPost("~/login"), ValidateAntiForgeryToken]
     public async Task<ActionResult> LogIn(string provider, string returnUrl)
     {
+        var properties = new AuthenticationProperties
+        {
+            // Only allow local return URLs to prevent open redirect attacks.
+            RedirectUri = Url.IsLocalUrl(returnUrl) ? returnUrl : "/"
+        };
+
         // The local authorization server sample allows the client to select the external
         // identity provider that will be used to eventually authenticate the user. For that,
         // a custom "identity_provider" parameter is sent to the authorization server so that
         // the user is directly redirected to GitHub (in this case, no login page is shown).
         if (string.Equals(provider, "Local+GitHub", StringComparison.Ordinal))
         {
-            var properties = new AuthenticationProperties(new Dictionary<string, string?>(StringComparer.Ordinal)
-            {
-                // Note: when only one client is registered in the client options,
-                // specifying the issuer URI or the provider name is not required.
-                [OpenIddictClientAspNetCoreConstants.Properties.ProviderName] = "Local"
-            })
-            {
-                // Only allow local return URLs to prevent open redirect attacks.
-                RedirectUri = Url.IsLocalUrl(returnUrl) ? returnUrl : "/",
-
-                Parameters =
-                {
-                    [Parameters.IdentityProvider] = "GitHub"
-                }
-            };
-
-            // Ask the OpenIddict client middleware to redirect the user agent to the identity provider.
-            return Challenge(properties, OpenIddictClientAspNetCoreDefaults.AuthenticationScheme);
+            // Note: when only one client is registered in the client options,
+            // specifying the issuer URI or the provider name is not required.
+            properties.SetString(OpenIddictClientAspNetCoreConstants.Properties.ProviderName, "Local");
+            properties.SetParameter(Parameters.IdentityProvider, "GitHub");
         }
 
         else
@@ -54,20 +46,13 @@ public class AuthenticationController : Controller
                 return BadRequest();
             }
 
-            var properties = new AuthenticationProperties(new Dictionary<string, string?>(StringComparer.Ordinal)
-            {
-                // Note: when only one client is registered in the client options,
-                // specifying the issuer URI or the provider name is not required.
-                [OpenIddictClientAspNetCoreConstants.Properties.ProviderName] = provider
-            })
-            {
-                // Only allow local return URLs to prevent open redirect attacks.
-                RedirectUri = Url.IsLocalUrl(returnUrl) ? returnUrl : "/"
-            };
-
-            // Ask the OpenIddict client middleware to redirect the user agent to the identity provider.
-            return Challenge(properties, OpenIddictClientAspNetCoreDefaults.AuthenticationScheme);
+            // Note: when only one client is registered in the client options,
+            // specifying the issuer URI or the provider name is not required.
+            properties.SetString(OpenIddictClientAspNetCoreConstants.Properties.ProviderName, provider);
         }
+
+        // Ask the OpenIddict client middleware to redirect the user agent to the identity provider.
+        return Challenge(properties, OpenIddictClientAspNetCoreDefaults.AuthenticationScheme);
     }
 
     [HttpPost("~/logout"), ValidateAntiForgeryToken]

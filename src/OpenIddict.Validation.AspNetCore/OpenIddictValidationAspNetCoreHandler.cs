@@ -152,25 +152,21 @@ public sealed class OpenIddictValidationAspNetCoreHandler : AuthenticationHandle
             return AuthenticateResult.Fail(SR.GetResourceString(SR.ID0113), properties);
         }
 
-        else
+        // A single main claims-based principal instance can be attached to an authentication ticket.
+        // To return the most appropriate one, the principal is selected based on the endpoint type.
+        // Independently of the selected main principal, all principals resolved from validated tokens
+        // are attached to the authentication properties bag so they can be accessed from user code.
+        var principal = context.EndpointType switch
         {
-            // A single main claims-based principal instance can be attached to an authentication ticket.
-            // To return the most appropriate one, the principal is selected based on the endpoint type.
-            // Independently of the selected main principal, all principals resolved from validated tokens
-            // are attached to the authentication properties bag so they can be accessed from user code.
-            var principal = context.EndpointType switch
-            {
-                OpenIddictValidationEndpointType.Unknown => context.AccessTokenPrincipal,
+            OpenIddictValidationEndpointType.Unknown => context.AccessTokenPrincipal,
 
-                _ => null
-            };
+            _ => null
+        };
 
-            var properties = CreateAuthenticationProperties(principal);
-
-            return AuthenticateResult.Success(new AuthenticationTicket(
-                principal ?? new ClaimsPrincipal(new ClaimsIdentity()), properties,
-                OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme));
-        }
+        return AuthenticateResult.Success(new AuthenticationTicket(
+            principal ?? new ClaimsPrincipal(new ClaimsIdentity()),
+            CreateAuthenticationProperties(principal),
+            OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme));
 
         AuthenticationProperties CreateAuthenticationProperties(ClaimsPrincipal? principal = null)
         {

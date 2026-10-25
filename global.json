@@ -1,12 +1,12 @@
 {
   "sdk": {
-    "version": "10.0.400",
+    "version": "10.0.402",
     "allowPrerelease": true,
     "rollForward": "major"
   },
 
   "tools": {
-    "dotnet": "10.0.400"
+    "dotnet": "10.0.402"
   },
 
   "msbuild-sdks": {

@@ -591,7 +591,7 @@ public class AuthorizationController : Controller
             return SignIn(new ClaimsPrincipal(identity), OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
         }
 
-        else if (request.IsAuthorizationCodeGrantType() || request.IsDeviceCodeGrantType() || request.IsRefreshTokenGrantType())
+        if (request.IsAuthorizationCodeGrantType() || request.IsDeviceCodeGrantType() || request.IsRefreshTokenGrantType())
         {
             // Retrieve the claims principal stored in the authorization code/device code/refresh token.
             var result = await HttpContext.AuthenticateAsync(OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
@@ -640,7 +640,7 @@ public class AuthorizationController : Controller
             return SignIn(new ClaimsPrincipal(identity), OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
         }
 
-        else if (request.IsTokenExchangeGrantType())
+        if (request.IsTokenExchangeGrantType())
         {
             // Retrieve the claims principal stored in the subject token.
             //

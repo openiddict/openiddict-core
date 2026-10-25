@@ -273,7 +273,7 @@ public static partial class OpenIddictClientWebIntegrationHandlers
                 return ValueTask.CompletedTask;
             }
 
-            else if (context.Registration.ProviderType is ProviderTypes.Deezer)
+            if (context.Registration.ProviderType is ProviderTypes.Deezer)
             {
                 // Note: Deezer uses a custom "error_reason" parameter instead of the
                 // standard "error" parameter defined by the OAuth 2.0 specification.
