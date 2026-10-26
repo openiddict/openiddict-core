@@ -257,6 +257,16 @@ public sealed class OpenIddictClientSystemNetHttpBuilder
 #endif
 
     /// <summary>
+    /// Enables logging the raw payloads of the HTTP responses returned by the remote
+    /// server when an invalid or unexpected response is received. Since raw payloads
+    /// may contain sensitive data (e.g access tokens or refresh tokens), this option
+    /// should only be enabled in development environments.
+    /// </summary>
+    /// <returns>The <see cref="OpenIddictClientSystemNetHttpBuilder"/> instance.</returns>
+    public OpenIddictClientSystemNetHttpBuilder EnableSensitivePayloadLogging()
+        => Configure(options => options.EnableSensitivePayloadLogging = true);
+
+    /// <summary>
     /// Sets the product information used in the "User-Agent" header that is attached
     /// to the backchannel HTTP requests sent to the authorization server.
     /// </summary>

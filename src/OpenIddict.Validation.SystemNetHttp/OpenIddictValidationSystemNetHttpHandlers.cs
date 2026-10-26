@@ -680,6 +680,11 @@ public static partial class OpenIddictValidationSystemNetHttpHandlers
     /// </summary>
     public sealed class ExtractJsonHttpResponse<TContext> : IOpenIddictValidationHandler<TContext> where TContext : BaseExternalContext
     {
+        private readonly IOptionsMonitor<OpenIddictValidationSystemNetHttpOptions> _options;
+
+        public ExtractJsonHttpResponse(IOptionsMonitor<OpenIddictValidationSystemNetHttpOptions> options)
+            => _options = options ?? throw new ArgumentNullException(nameof(options));
+
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
         /// </summary>
@@ -734,8 +739,19 @@ public static partial class OpenIddictValidationSystemNetHttpHandlers
             // a server error occurs while the JSON response is being generated and returned to the client.
             catch (Exception exception) when (!OpenIddictHelpers.IsFatal(exception))
             {
-                context.Logger.LogError(6183, exception, SR.GetResourceString(SR.ID6183),
-                    await response.Content.ReadAsStringAsync(context.CancellationToken));
+                // Note: the raw payload is only logged if sensitive payload logging was explicitly
+                // enabled, as it may contain sensitive data (e.g access tokens or refresh tokens).
+                if (_options.CurrentValue.EnableSensitivePayloadLogging)
+                {
+                    context.Logger.LogError(6183, exception, SR.GetResourceString(SR.ID6183),
+                        await response.Content.ReadAsStringAsync(context.CancellationToken));
+                }
+
+                else
+                {
+                    context.Logger.LogError(6183, exception, SR.GetResourceString(SR.ID6301),
+                        response.Content.Headers.ContentType, response.Content.Headers.ContentLength);
+                }
 
                 context.Reject(
                     error: Errors.ServerError,
@@ -887,6 +903,11 @@ public static partial class OpenIddictValidationSystemNetHttpHandlers
     /// </summary>
     public sealed class ValidateHttpResponse<TContext> : IOpenIddictValidationHandler<TContext> where TContext : BaseExternalContext
     {
+        private readonly IOptionsMonitor<OpenIddictValidationSystemNetHttpOptions> _options;
+
+        public ValidateHttpResponse(IOptionsMonitor<OpenIddictValidationSystemNetHttpOptions> options)
+            => _options = options ?? throw new ArgumentNullException(nameof(options));
+
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
         /// </summary>
@@ -912,8 +933,19 @@ public static partial class OpenIddictValidationSystemNetHttpHandlers
             // error could be extracted from the payload or from the WWW-Authenticate header.
             if (!response.IsSuccessStatusCode && string.IsNullOrEmpty(context.Transaction.Response?.Error))
             {
-                context.Logger.LogError(6184, SR.GetResourceString(SR.ID6184), response.StatusCode,
-                    await response.Content.ReadAsStringAsync(context.CancellationToken));
+                // Note: the raw payload is only logged if sensitive payload logging was explicitly
+                // enabled, as it may contain sensitive data (e.g access tokens or refresh tokens).
+                if (_options.CurrentValue.EnableSensitivePayloadLogging)
+                {
+                    context.Logger.LogError(6184, SR.GetResourceString(SR.ID6184), response.StatusCode,
+                        await response.Content.ReadAsStringAsync(context.CancellationToken));
+                }
+
+                else
+                {
+                    context.Logger.LogError(6184, SR.GetResourceString(SR.ID6302), response.StatusCode,
+                        response.Content.Headers.ContentType, response.Content.Headers.ContentLength);
+                }
 
                 context.Reject(
                     error: (int) response.StatusCode switch
@@ -936,8 +968,19 @@ public static partial class OpenIddictValidationSystemNetHttpHandlers
             // (e.g because an unsupported content type was returned), return a generic error.
             if (context.Transaction.Response is null)
             {
-                context.Logger.LogError(6185, SR.GetResourceString(SR.ID6185), response.StatusCode,
-                    response.Content.Headers.ContentType, await response.Content.ReadAsStringAsync(context.CancellationToken));
+                // Note: the raw payload is only logged if sensitive payload logging was explicitly
+                // enabled, as it may contain sensitive data (e.g access tokens or refresh tokens).
+                if (_options.CurrentValue.EnableSensitivePayloadLogging)
+                {
+                    context.Logger.LogError(6185, SR.GetResourceString(SR.ID6185), response.StatusCode,
+                        response.Content.Headers.ContentType, await response.Content.ReadAsStringAsync(context.CancellationToken));
+                }
+
+                else
+                {
+                    context.Logger.LogError(6185, SR.GetResourceString(SR.ID6303), response.StatusCode,
+                        response.Content.Headers.ContentType, response.Content.Headers.ContentLength);
+                }
 
                 context.Reject(
                     error: Errors.ServerError,

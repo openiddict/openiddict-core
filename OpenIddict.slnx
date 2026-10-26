@@ -88,6 +88,7 @@
     <Project Path="test/OpenIddict.Client.Owin.IntegrationTests/OpenIddict.Client.Owin.IntegrationTests.csproj" />
     <Project Path="test/OpenIddict.Client.Owin.Tests/OpenIddict.Client.Owin.Tests.csproj" Id="d57775bf-7b38-48f5-b15c-d48916de9166" />
     <Project Path="test/OpenIddict.Client.SystemIntegration.Tests/OpenIddict.Client.SystemIntegration.Tests.csproj" Id="0d37c331-021f-4158-89e3-139c00731497" />
+    <Project Path="test/OpenIddict.Client.SystemNetHttp.Tests/OpenIddict.Client.SystemNetHttp.Tests.csproj" />
     <Project Path="test/OpenIddict.Client.Tests/OpenIddict.Client.Tests.csproj" Id="69998197-05ae-4259-adbf-d98fc9a51d88" />
     <Project Path="test/OpenIddict.Client.WebIntegration.Tests/OpenIddict.Client.WebIntegration.Tests.csproj" Id="9a65c61e-f5ac-40da-9703-a8c2d6479185" />
     <Project Path="test/OpenIddict.Core.Tests/OpenIddict.Core.Tests.csproj" />
@@ -107,6 +108,7 @@
     <Project Path="test/OpenIddict.Validation.IntegrationTests/OpenIddict.Validation.IntegrationTests.csproj" />
     <Project Path="test/OpenIddict.Validation.Owin.IntegrationTests/OpenIddict.Validation.Owin.IntegrationTests.csproj" />
     <Project Path="test/OpenIddict.Validation.Owin.Tests/OpenIddict.Validation.Owin.Tests.csproj" Id="6c6f2b51-8319-4c93-bf80-36db6a7ce9eb" />
+    <Project Path="test/OpenIddict.Validation.SystemNetHttp.Tests/OpenIddict.Validation.SystemNetHttp.Tests.csproj" />
     <Project Path="test/OpenIddict.Validation.Tests/OpenIddict.Validation.Tests.csproj" Id="8a9f3177-84c8-4098-bbe2-f9fdda866c43" />
   </Folder>
 
