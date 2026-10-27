@@ -86,6 +86,7 @@
     <Project Path="test/OpenIddict.Client.AspNetCore.IntegrationTests/OpenIddict.Client.AspNetCore.IntegrationTests.csproj" />
     <Project Path="test/OpenIddict.Client.IntegrationTests/OpenIddict.Client.IntegrationTests.csproj" />
     <Project Path="test/OpenIddict.Client.Owin.IntegrationTests/OpenIddict.Client.Owin.IntegrationTests.csproj" />
+    <Project Path="test/OpenIddict.Client.SystemNetHttp.Tests/OpenIddict.Client.SystemNetHttp.Tests.csproj" />
     <Project Path="test/OpenIddict.Core.Tests/OpenIddict.Core.Tests.csproj" />
     <Project Path="test/OpenIddict.EntityFramework.Tests/OpenIddict.EntityFramework.Tests.csproj" />
     <Project Path="test/OpenIddict.EntityFrameworkCore.Tests/OpenIddict.EntityFrameworkCore.Tests.csproj" />
@@ -99,6 +100,7 @@
     <Project Path="test/OpenIddict.Validation.AspNetCore.IntegrationTests/OpenIddict.Validation.AspNetCore.IntegrationTests.csproj" />
     <Project Path="test/OpenIddict.Validation.IntegrationTests/OpenIddict.Validation.IntegrationTests.csproj" />
     <Project Path="test/OpenIddict.Validation.Owin.IntegrationTests/OpenIddict.Validation.Owin.IntegrationTests.csproj" />
+    <Project Path="test/OpenIddict.Validation.SystemNetHttp.Tests/OpenIddict.Validation.SystemNetHttp.Tests.csproj" />
   </Folder>
 
   <Folder Name="/workflows/">

@@ -3332,6 +3332,15 @@ This may indicate that the hashed entry is corrupted or malformed.</value>
   <data name="ID6293" xml:space="preserve">
     <value>Certificate validation failed because the token binding certificate provided by an anonymous client was not valid: {Errors}.</value>
   </data>
+  <data name="ID6301" xml:space="preserve">
+    <value>An invalid JSON payload was returned by the remote HTTP server ({ContentType}, {ContentLength} bytes). Note: sensitive payload logging can be enabled to include the raw payload in the logs.</value>
+  </data>
+  <data name="ID6302" xml:space="preserve">
+    <value>A generic {StatusCode} response was returned by the remote HTTP server ({ContentType}, {ContentLength} bytes). Note: sensitive payload logging can be enabled to include the raw payload in the logs.</value>
+  </data>
+  <data name="ID6303" xml:space="preserve">
+    <value>An unsupported {StatusCode} response was returned by the remote HTTP server ({ContentType}, {ContentLength} bytes). Note: sensitive payload logging can be enabled to include the raw payload in the logs.</value>
+  </data>
   <data name="ID8000" xml:space="preserve">
     <value>https://documentation.openiddict.com/errors/{0}</value>
   </data>
