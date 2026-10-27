@@ -3288,6 +3288,15 @@ This may indicate that the hashed entry is corrupted or malformed.</value>
   <data name="ID6300" xml:space="preserve">
     <value>A non-fatal error occurred while pruning sessions from the database.</value>
   </data>
+  <data name="ID6301" xml:space="preserve">
+    <value>An invalid JSON payload was returned by the remote HTTP server ({ContentType}, {ContentLength} bytes). Note: sensitive payload logging can be enabled to include the raw payload in the logs.</value>
+  </data>
+  <data name="ID6302" xml:space="preserve">
+    <value>A generic {StatusCode} response was returned by the remote HTTP server ({ContentType}, {ContentLength} bytes). Note: sensitive payload logging can be enabled to include the raw payload in the logs.</value>
+  </data>
+  <data name="ID6303" xml:space="preserve">
+    <value>An unsupported {StatusCode} response was returned by the remote HTTP server ({ContentType}, {ContentLength} bytes). Note: sensitive payload logging can be enabled to include the raw payload in the logs.</value>
+  </data>
   <data name="ID8000" xml:space="preserve">
     <value>https://documentation.openiddict.com/errors/{0}</value>
   </data>

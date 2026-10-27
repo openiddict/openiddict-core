@@ -70,6 +70,16 @@ public sealed class OpenIddictValidationSystemNetHttpOptions
     public ProductInfoHeaderValue? ProductInformation { get; set; }
 
     /// <summary>
+    /// Gets or sets a boolean indicating whether the raw payloads of the HTTP responses returned by
+    /// the remote server should be included in the logs when an invalid or unexpected response is received.
+    /// </summary>
+    /// <remarks>
+    /// Note: raw payloads may contain sensitive data (e.g access tokens or refresh tokens).
+    /// As such, this option should only be enabled in development environments.
+    /// </remarks>
+    public bool EnableSensitivePayloadLogging { get; set; }
+
+    /// <summary>
     /// Gets the user-defined actions used to amend the <see cref="HttpClient"/>
     /// instances created by the OpenIddict validation/System.Net.Http integration.
     /// </summary>
