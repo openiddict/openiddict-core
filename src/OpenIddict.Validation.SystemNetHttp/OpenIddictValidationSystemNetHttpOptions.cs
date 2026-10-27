@@ -80,6 +80,22 @@ public sealed class OpenIddictValidationSystemNetHttpOptions
     public bool EnableSensitivePayloadLogging { get; set; }
 
     /// <summary>
+    /// Gets or sets the decompression methods the OpenIddict validation/System.Net.Http integration
+    /// is allowed to use to decode the compressed HTTP responses returned by the remote server.
+    /// </summary>
+    /// <remarks>
+    /// Note: while HTTP compression is never opted-in by default, encoded responses returned by servers
+    /// that enforce content compression are still decoded. This property can be used to exclude specific
+    /// algorithms (e.g to mitigate a vulnerability affecting one of the decoders used by the runtime).
+    /// </remarks>
+    public DecompressionMethods AllowedDecompressionMethods { get; set; }
+#if NET
+        = DecompressionMethods.GZip | DecompressionMethods.Deflate | DecompressionMethods.Brotli;
+#else
+        = DecompressionMethods.GZip;
+#endif
+
+    /// <summary>
     /// Gets the user-defined actions used to amend the <see cref="HttpClient"/>
     /// instances created by the OpenIddict validation/System.Net.Http integration.
     /// </summary>
