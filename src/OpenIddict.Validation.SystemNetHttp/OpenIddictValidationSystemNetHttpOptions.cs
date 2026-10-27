@@ -92,6 +92,10 @@ public sealed class OpenIddictValidationSystemNetHttpOptions
 #if NET
         = DecompressionMethods.GZip | DecompressionMethods.Deflate | DecompressionMethods.Brotli;
 #else
+        // Note: on .NET Framework, only GZip is allowed by default, as Deflate and Brotli are not supported:
+        // the HTTP "deflate" content coding requires a zlib-framed stream that can only be decoded using
+        // ZLibStream (which is only available on .NET 6.0 and higher), and BrotliStream is not available.
+        // Explicitly allowing Deflate or Brotli has no effect, as such responses are always rejected.
         = DecompressionMethods.GZip;
 #endif
 

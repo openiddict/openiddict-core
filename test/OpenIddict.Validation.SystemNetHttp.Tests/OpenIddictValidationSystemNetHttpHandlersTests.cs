@@ -5,6 +5,7 @@
  */
 
 using System.Globalization;
+using System.IO.Compression;
 using System.Net;
 using System.Net.Http;
 using System.Text;
@@ -14,6 +15,7 @@ using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
 using static OpenIddict.Validation.OpenIddictValidationEvents;
+using static OpenIddict.Validation.SystemNetHttp.OpenIddictValidationSystemNetHttpConstants;
 using static OpenIddict.Validation.SystemNetHttp.OpenIddictValidationSystemNetHttpHandlers;
 
 namespace OpenIddict.Validation.SystemNetHttp.Tests;
@@ -21,6 +23,57 @@ namespace OpenIddict.Validation.SystemNetHttp.Tests;
 public class OpenIddictValidationSystemNetHttpHandlersTests
 {
     private const string Payload = "SENSITIVE_PAYLOAD";
+
+    public static TheoryData<string, DecompressionMethods> SupportedEncodings => new()
+    {
+        { ContentEncodings.Gzip, DecompressionMethods.GZip },
+#if NET
+        { ContentEncodings.Deflate, DecompressionMethods.Deflate },
+        { ContentEncodings.Brotli, DecompressionMethods.Brotli }
+#endif
+    };
+
+    [Theory]
+    [MemberData(nameof(SupportedEncodings))]
+    public async Task DecompressResponseContent_DecompressesContentWhenMethodIsAllowed(string encoding, DecompressionMethods method)
+    {
+        // Arrange
+        using var response = CreateCompressedResponse(encoding);
+
+        var context = new PrepareConfigurationRequestContext(
+            CreateTransaction(Mock.Of<ILogger<OpenIddictValidationDispatcher>>(), response));
+        var handler = new DecompressResponseContent<PrepareConfigurationRequestContext>(CreateOptions(method));
+
+        // Act
+        await handler.HandleAsync(context);
+
+        // Assert
+        Assert.False(context.IsRejected);
+        Assert.Empty(response.Content.Headers.ContentEncoding);
+        Assert.Equal(Payload, await response.Content.ReadAsStringAsync());
+    }
+
+    [Theory]
+    [MemberData(nameof(SupportedEncodings))]
+    public async Task DecompressResponseContent_RejectsContentWhenMethodIsNotAllowed(string encoding, DecompressionMethods method)
+    {
+        // Arrange
+        using var response = CreateCompressedResponse(encoding);
+
+        var context = new PrepareConfigurationRequestContext(
+            CreateTransaction(Mock.Of<ILogger<OpenIddictValidationDispatcher>>(), response));
+
+        // Note: all the methods except the one used to encode the response are allowed.
+        var handler = new DecompressResponseContent<PrepareConfigurationRequestContext>(CreateOptions(~method));
+
+        // Act
+        await handler.HandleAsync(context);
+
+        // Assert
+        Assert.True(context.IsRejected);
+        Assert.Equal(Errors.ServerError, context.Error);
+        Assert.Equal(SR.GetResourceString(SR.ID2211), context.ErrorDescription);
+    }
 
     [Theory]
     [InlineData(false)]
@@ -116,11 +169,46 @@ public class OpenIddictValidationSystemNetHttpHandlersTests
             It.IsAny<Func<It.IsAnyType, Exception?, string>>()), Times.Once());
     }
 
+    private static HttpResponseMessage CreateCompressedResponse(string encoding)
+    {
+        using var buffer = new MemoryStream();
+
+        using (Stream stream = encoding switch
+        {
+            ContentEncodings.Gzip => new GZipStream(buffer, CompressionMode.Compress, leaveOpen: true),
+#if NET
+            ContentEncodings.Deflate => new ZLibStream(buffer, CompressionMode.Compress, leaveOpen: true),
+            ContentEncodings.Brotli => new BrotliStream(buffer, CompressionMode.Compress, leaveOpen: true),
+#endif
+            _ => throw new ArgumentOutOfRangeException(nameof(encoding))
+        })
+        {
+            var bytes = Encoding.UTF8.GetBytes(Payload);
+            stream.Write(bytes, 0, bytes.Length);
+        }
+
+        var response = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new ByteArrayContent(buffer.ToArray())
+        };
+
+        response.Content.Headers.ContentEncoding.Add(encoding);
+
+        return response;
+    }
+
     private static IOptionsMonitor<OpenIddictValidationSystemNetHttpOptions> CreateOptions(bool enabled)
         => Mock.Of<IOptionsMonitor<OpenIddictValidationSystemNetHttpOptions>>(monitor =>
             monitor.CurrentValue == new OpenIddictValidationSystemNetHttpOptions
             {
                 EnableSensitivePayloadLogging = enabled
+            });
+
+    private static IOptionsMonitor<OpenIddictValidationSystemNetHttpOptions> CreateOptions(DecompressionMethods methods)
+        => Mock.Of<IOptionsMonitor<OpenIddictValidationSystemNetHttpOptions>>(monitor =>
+            monitor.CurrentValue == new OpenIddictValidationSystemNetHttpOptions
+            {
+                AllowedDecompressionMethods = methods
             });
 
     private static OpenIddictValidationTransaction CreateTransaction(

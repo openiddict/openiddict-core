@@ -642,6 +642,10 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
                 }
 
 #if NET
+                // Note: Deflate and Brotli are deliberately not supported on .NET Framework, even if they are
+                // explicitly allowed via the options: the HTTP "deflate" content coding requires a zlib-framed
+                // stream that DeflateStream cannot decode (ZLibStream is only available on .NET 6.0 and higher)
+                // and BrotliStream is not available. In this case, such responses are rejected as unsupported.
                 // Note: some server implementations are known to incorrectly implement the "Deflate" compression
                 // algorithm and don't wrap the compressed data in a ZLib frame as required by the specifications.
                 //
@@ -1043,7 +1047,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
                         429 => Errors.SlowDown,
                         500 => Errors.ServerError,
                         503 => Errors.TemporarilyUnavailable,
-                        _   => Errors.ServerError
+                        _ => Errors.ServerError
                     },
                     description: SR.FormatID2161((int) response.StatusCode),
                     uri: SR.FormatID8000(SR.ID2161));
