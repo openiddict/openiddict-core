@@ -76,6 +76,28 @@ public class OpenIddictClientSystemNetHttpHandlersTests
     }
 
     [Theory]
+    [MemberData(nameof(SupportedEncodings))]
+    public async Task DecompressResponseContent_DecompressesContentWhenAllMethodsAreAllowed(string encoding, DecompressionMethods method)
+    {
+        // Arrange
+        using var response = CreateCompressedResponse(encoding);
+
+        var context = new PrepareDeviceAuthorizationRequestContext(
+            CreateTransaction(Mock.Of<ILogger<OpenIddictClientDispatcher>>(), response));
+        var handler = new DecompressResponseContent<PrepareDeviceAuthorizationRequestContext>(
+            CreateOptions(DecompressionMethods.All));
+
+        // Act
+        await handler.HandleAsync(context);
+
+        // Assert
+        Assert.True(DecompressionMethods.All.HasFlag(method));
+        Assert.False(context.IsRejected);
+        Assert.Empty(response.Content.Headers.ContentEncoding);
+        Assert.Equal(Payload, await response.Content.ReadAsStringAsync());
+    }
+
+    [Theory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task ExtractJsonHttpResponse_OnlyLogsPayloadWhenSensitivePayloadLoggingIsEnabled(bool enabled)

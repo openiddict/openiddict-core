@@ -87,6 +87,7 @@ public sealed class OpenIddictClientSystemNetHttpOptions
     /// Note: while HTTP compression is never opted-in by default, encoded responses returned by servers
     /// that enforce content compression are still decoded. This property can be used to exclude specific
     /// algorithms (e.g to mitigate a vulnerability affecting one of the decoders used by the runtime).
+    /// <c>DecompressionMethods.All</c> can be used to allow all the algorithms supported by OpenIddict.
     /// </remarks>
     public DecompressionMethods AllowedDecompressionMethods { get; set; }
 #if NET
