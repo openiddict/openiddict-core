@@ -6,6 +6,7 @@
 
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Mail;
@@ -173,6 +174,15 @@ public sealed class OpenIddictValidationSystemNetHttpBuilder
     /// <returns>The <see cref="OpenIddictValidationSystemNetHttpBuilder"/> instance.</returns>
     public OpenIddictValidationSystemNetHttpBuilder EnableSensitivePayloadLogging()
         => Configure(options => options.EnableSensitivePayloadLogging = true);
+
+    /// <summary>
+    /// Sets the decompression methods the OpenIddict validation/System.Net.Http integration is
+    /// allowed to use to decode the compressed HTTP responses returned by the remote server.
+    /// </summary>
+    /// <param name="methods">The allowed decompression methods.</param>
+    /// <returns>The <see cref="OpenIddictValidationSystemNetHttpBuilder"/> instance.</returns>
+    public OpenIddictValidationSystemNetHttpBuilder SetAllowedDecompressionMethods(DecompressionMethods methods)
+        => Configure(options => options.AllowedDecompressionMethods = methods);
 
     /// <summary>
     /// Sets the product information used in the "User-Agent" header that is attached

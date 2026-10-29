@@ -8,6 +8,7 @@ using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO.Compression;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
@@ -542,6 +543,11 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
     /// </summary>
     public sealed class DecompressResponseContent<TContext> : IOpenIddictClientHandler<TContext> where TContext : BaseExternalContext
     {
+        private readonly IOptionsMonitor<OpenIddictClientSystemNetHttpOptions> _options;
+
+        public DecompressResponseContent(IOptionsMonitor<OpenIddictClientSystemNetHttpOptions> options)
+            => _options = options ?? throw new ArgumentNullException(nameof(options));
+
         /// <summary>
         /// Gets the default descriptor definition assigned to this handler.
         /// </summary>
@@ -606,8 +612,15 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
 
             Stream? stream = null;
 
+            // Note: the algorithms that were not explicitly allowed are rejected even if they are natively
+            // supported by the runtime (e.g to prevent using a decoder affected by a known vulnerability).
+            //
+            // DecompressionMethods.All (whose backing value is -1) has all the bits set and can be
+            // used to bypass the individual checks and allow all the algorithms supported by OpenIddict.
+            var methods = _options.CurrentValue.AllowedDecompressionMethods;
+
             // Iterate the returned encodings and wrap the response stream using the specified algorithm.
-            // If one of the returned algorithms cannot be recognized, immediately return an error.
+            // If one of the returned algorithms cannot be recognized or is not allowed, immediately return an error.
             foreach (var encoding in response.Content.Headers.ContentEncoding.Reverse())
             {
                 if (string.Equals(encoding, ContentEncodings.Identity, StringComparison.OrdinalIgnoreCase))
@@ -617,11 +630,25 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
 
                 if (string.Equals(encoding, ContentEncodings.Gzip, StringComparison.OrdinalIgnoreCase))
                 {
+                    if (!methods.HasFlag(DecompressionMethods.GZip))
+                    {
+                        context.Reject(
+                            error: Errors.ServerError,
+                            description: SR.GetResourceString(SR.ID2211),
+                            uri: SR.FormatID8000(SR.ID2211));
+
+                        return;
+                    }
+
                     stream ??= await response.Content.ReadAsStreamAsync().WaitAsync(context.CancellationToken);
                     stream = new GZipStream(stream, CompressionMode.Decompress);
                 }
 
 #if NET
+                // Note: Deflate and Brotli are deliberately not supported on .NET Framework, even if they are
+                // explicitly allowed via the options: the HTTP "deflate" content coding requires a zlib-framed
+                // stream that DeflateStream cannot decode (ZLibStream is only available on .NET 6.0 and higher)
+                // and BrotliStream is not available. In this case, such responses are rejected as unsupported.
                 // Note: some server implementations are known to incorrectly implement the "Deflate" compression
                 // algorithm and don't wrap the compressed data in a ZLib frame as required by the specifications.
                 //
@@ -631,12 +658,32 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
                 // For more information, read https://www.rfc-editor.org/rfc/rfc9110.html#name-deflate-coding.
                 else if (string.Equals(encoding, ContentEncodings.Deflate, StringComparison.OrdinalIgnoreCase))
                 {
+                    if (!methods.HasFlag(DecompressionMethods.Deflate))
+                    {
+                        context.Reject(
+                            error: Errors.ServerError,
+                            description: SR.GetResourceString(SR.ID2211),
+                            uri: SR.FormatID8000(SR.ID2211));
+
+                        return;
+                    }
+
                     stream ??= await response.Content.ReadAsStreamAsync().WaitAsync(context.CancellationToken);
                     stream = new ZLibStream(stream, CompressionMode.Decompress);
                 }
 
                 else if (string.Equals(encoding, ContentEncodings.Brotli, StringComparison.OrdinalIgnoreCase))
                 {
+                    if (!methods.HasFlag(DecompressionMethods.Brotli))
+                    {
+                        context.Reject(
+                            error: Errors.ServerError,
+                            description: SR.GetResourceString(SR.ID2211),
+                            uri: SR.FormatID8000(SR.ID2211));
+
+                        return;
+                    }
+
                     stream ??= await response.Content.ReadAsStreamAsync().WaitAsync(context.CancellationToken);
                     stream = new BrotliStream(stream, CompressionMode.Decompress);
                 }
@@ -1003,7 +1050,7 @@ public static partial class OpenIddictClientSystemNetHttpHandlers
                         429 => Errors.SlowDown,
                         500 => Errors.ServerError,
                         503 => Errors.TemporarilyUnavailable,
-                        _   => Errors.ServerError
+                        _ => Errors.ServerError
                     },
                     description: SR.FormatID2161((int) response.StatusCode),
                     uri: SR.FormatID8000(SR.ID2161));

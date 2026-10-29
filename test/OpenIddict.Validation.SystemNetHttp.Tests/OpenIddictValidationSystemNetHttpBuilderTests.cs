@@ -4,6 +4,7 @@
  * the license and the contributors participating to this project.
  */
 
+using System.Net;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Xunit;
@@ -52,6 +53,52 @@ public class OpenIddictValidationSystemNetHttpBuilderTests
 
         // Assert
         Assert.True(options.EnableSensitivePayloadLogging);
+    }
+
+    [Fact]
+    public void SetAllowedDecompressionMethods_AllSupportedMethodsAreAllowedByDefault()
+    {
+        // Arrange
+        var services = CreateServices();
+        CreateBuilder(services);
+
+        // Act
+        var options = GetOptions(services);
+
+        // Assert
+#if NET
+        Assert.Equal(
+            DecompressionMethods.GZip | DecompressionMethods.Deflate | DecompressionMethods.Brotli,
+            options.AllowedDecompressionMethods);
+#else
+        Assert.Equal(DecompressionMethods.GZip, options.AllowedDecompressionMethods);
+#endif
+    }
+
+    [Theory]
+    [InlineData(DecompressionMethods.None)]
+    [InlineData(DecompressionMethods.GZip)]
+    [InlineData(DecompressionMethods.Deflate)]
+    [InlineData(DecompressionMethods.GZip | DecompressionMethods.Deflate)]
+#if NET
+    [InlineData(DecompressionMethods.Brotli)]
+    [InlineData(DecompressionMethods.GZip | DecompressionMethods.Brotli)]
+    [InlineData(DecompressionMethods.GZip | DecompressionMethods.Deflate | DecompressionMethods.Brotli)]
+    [InlineData(DecompressionMethods.All)]
+#endif
+    public void SetAllowedDecompressionMethods_SetsAllowedDecompressionMethods(DecompressionMethods methods)
+    {
+        // Arrange
+        var services = CreateServices();
+        var builder = CreateBuilder(services);
+
+        // Act
+        builder.SetAllowedDecompressionMethods(methods);
+
+        var options = GetOptions(services);
+
+        // Assert
+        Assert.Equal(methods, options.AllowedDecompressionMethods);
     }
 
     private static IServiceCollection CreateServices()

@@ -4,6 +4,7 @@
  * the license and the contributors participating to this project.
  */
 
+using System.Net;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
@@ -68,6 +69,20 @@ internal static class OpenIddictPolyfills
 
             return accumulator is 0;
         }
+#endif
+    }
+
+    extension(DecompressionMethods)
+    {
+#if !NET
+        /// <summary>
+        /// Use all compression-decompression algorithms.
+        /// </summary>
+        /// <remarks>
+        /// Note: the backing value (-1) is identical to the one used by the
+        /// <c>DecompressionMethods.All</c> member exposed by .NET Core 2.1 and higher.
+        /// </remarks>
+        public static DecompressionMethods All => (DecompressionMethods) (-1);
 #endif
     }
 
