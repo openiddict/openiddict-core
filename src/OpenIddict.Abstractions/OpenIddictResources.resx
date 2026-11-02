@@ -2415,6 +2415,9 @@ To use a custom policy relying on the system store, set 'OpenIddictServerOptions
   <data name="ID2210" xml:space="preserve">
     <value>The session associated with the token is no longer valid.</value>
   </data>
+  <data name="ID2211" xml:space="preserve">
+    <value>The remote server returned a content encoding that is not allowed by the configured decompression methods.</value>
+  </data>
   <data name="ID4000" xml:space="preserve">
     <value>The '{0}' parameter shouldn't be null or empty at this point.</value>
   </data>
