@@ -85,13 +85,13 @@ public class OpenIddictClientSystemNetHttpHandlersTests
         var context = new PrepareDeviceAuthorizationRequestContext(
             CreateTransaction(Mock.Of<ILogger<OpenIddictClientDispatcher>>(), response));
         var handler = new DecompressResponseContent<PrepareDeviceAuthorizationRequestContext>(
-            CreateOptions(DecompressionMethods.All));
+            CreateOptions(~DecompressionMethods.None));
 
         // Act
         await handler.HandleAsync(context);
 
         // Assert
-        Assert.True(DecompressionMethods.All.HasFlag(method));
+        Assert.True((~DecompressionMethods.None).HasFlag(method));
         Assert.False(context.IsRejected);
         Assert.Empty(response.Content.Headers.ContentEncoding);
         Assert.Equal(Payload, await response.Content.ReadAsStringAsync());

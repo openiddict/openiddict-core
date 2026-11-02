@@ -85,13 +85,13 @@ public class OpenIddictValidationSystemNetHttpHandlersTests
         var context = new PrepareConfigurationRequestContext(
             CreateTransaction(Mock.Of<ILogger<OpenIddictValidationDispatcher>>(), response));
         var handler = new DecompressResponseContent<PrepareConfigurationRequestContext>(
-            CreateOptions(DecompressionMethods.All));
+            CreateOptions(~DecompressionMethods.None));
 
         // Act
         await handler.HandleAsync(context);
 
         // Assert
-        Assert.True(DecompressionMethods.All.HasFlag(method));
+        Assert.True((~DecompressionMethods.None).HasFlag(method));
         Assert.False(context.IsRejected);
         Assert.Empty(response.Content.Headers.ContentEncoding);
         Assert.Equal(Payload, await response.Content.ReadAsStringAsync());

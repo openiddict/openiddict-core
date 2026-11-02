@@ -611,7 +611,7 @@ public static partial class OpenIddictValidationSystemNetHttpHandlers
             // Note: the algorithms that were not explicitly allowed are rejected even if they are natively
             // supported by the runtime (e.g to prevent using a decoder affected by a known vulnerability).
             //
-            // DecompressionMethods.All (whose backing value is -1) has all the bits set and can be
+            // ~DecompressionMethods.None (which is equivalent to .All) has all the bits set and can be
             // used to bypass the individual checks and allow all the algorithms supported by OpenIddict.
             var methods = _options.CurrentValue.AllowedDecompressionMethods;
 

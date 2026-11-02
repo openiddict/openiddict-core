@@ -72,20 +72,6 @@ internal static class OpenIddictPolyfills
 #endif
     }
 
-    extension(DecompressionMethods)
-    {
-#if !NET
-        /// <summary>
-        /// Use all compression-decompression algorithms.
-        /// </summary>
-        /// <remarks>
-        /// Note: the backing value (-1) is identical to the one used by the
-        /// <c>DecompressionMethods.All</c> member exposed by .NET Core 2.1 and higher.
-        /// </remarks>
-        public static DecompressionMethods All => (DecompressionMethods) (-1);
-#endif
-    }
-
     extension(HMACSHA256)
     {
 #if !NET

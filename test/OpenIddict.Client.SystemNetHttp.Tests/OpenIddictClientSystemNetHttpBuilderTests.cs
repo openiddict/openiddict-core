@@ -66,7 +66,7 @@ public class OpenIddictClientSystemNetHttpBuilderTests
         var options = GetOptions(services);
 
         // Assert
-        Assert.Equal(DecompressionMethods.All, options.AllowedDecompressionMethods);
+        Assert.Equal(~DecompressionMethods.None, options.AllowedDecompressionMethods);
     }
 
     [Theory]
@@ -78,7 +78,7 @@ public class OpenIddictClientSystemNetHttpBuilderTests
     [InlineData(DecompressionMethods.Brotli)]
     [InlineData(DecompressionMethods.GZip | DecompressionMethods.Brotli)]
     [InlineData(DecompressionMethods.GZip | DecompressionMethods.Deflate | DecompressionMethods.Brotli)]
-    [InlineData(DecompressionMethods.All)]
+    [InlineData(~DecompressionMethods.None)]
 #endif
     public void SetAllowedDecompressionMethods_SetsAllowedDecompressionMethods(DecompressionMethods methods)
     {

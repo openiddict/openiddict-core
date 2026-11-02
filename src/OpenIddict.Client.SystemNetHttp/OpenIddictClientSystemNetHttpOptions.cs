@@ -89,7 +89,7 @@ public sealed class OpenIddictClientSystemNetHttpOptions
     /// algorithms (e.g to mitigate a vulnerability affecting one of the decoders used by the runtime).
     /// By default, all the algorithms supported by OpenIddict are allowed.
     /// </remarks>
-    public DecompressionMethods AllowedDecompressionMethods { get; set; } = DecompressionMethods.All;
+    public DecompressionMethods AllowedDecompressionMethods { get; set; } = ~DecompressionMethods.None;
 
     /// <summary>
     /// Gets the user-defined actions used to amend the <see cref="HttpClient"/>
