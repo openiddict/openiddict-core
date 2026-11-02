@@ -104,7 +104,6 @@
   <PropertyGroup
     Condition=" ('$(TargetFrameworkIdentifier)' == '.NETCoreApp') Or
                 ('$(TargetFrameworkIdentifier)' == '.NETStandard' And $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '2.1'))) ">
-    <DefineConstants>$(DefineConstants);SUPPORTS_BROTLI_COMPRESSION</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_CURRENT_USER_ONLY_PIPE_OPTION</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_SERVICE_PROVIDER_IN_HTTP_MESSAGE_HANDLER_BUILDER</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_TIME_CONSTANT_COMPARISONS</DefineConstants>
@@ -113,6 +112,7 @@
 
   <PropertyGroup
     Condition=" '$(TargetFrameworkIdentifier)' == '.NETCoreApp' And $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '9.0')) ">
+    <DefineConstants>$(DefineConstants);SUPPORTS_BROTLI_COMPRESSION</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_CERTIFICATE_LOADER</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_JSON_ELEMENT_DEEP_EQUALS</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORTS_JSON_ELEMENT_PROPERTY_COUNT</DefineConstants>
