@@ -4,7 +4,6 @@
  * the license and the contributors participating to this project.
  */
 
-using System.Net;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
