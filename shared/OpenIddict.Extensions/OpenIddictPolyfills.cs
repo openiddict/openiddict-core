@@ -222,16 +222,6 @@ internal static class OpenIddictPolyfills
 #endif
     }
 
-    extension<TResult>(ValueTask<TResult>)
-    {
-#if !NET
-        /// <summary>
-        /// Gets a task that has already completed successfully.
-        /// </summary>
-        public static ValueTask<TResult> CompletedTask => default;
-#endif
-    }
-
 #if !NET
     static bool IsOSVersionAtLeast(int major, int minor, int build, int revision)
     {
