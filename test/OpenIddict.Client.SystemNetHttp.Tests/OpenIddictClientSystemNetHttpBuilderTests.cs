@@ -66,13 +66,7 @@ public class OpenIddictClientSystemNetHttpBuilderTests
         var options = GetOptions(services);
 
         // Assert
-#if NET
-        Assert.Equal(
-            DecompressionMethods.GZip | DecompressionMethods.Deflate | DecompressionMethods.Brotli,
-            options.AllowedDecompressionMethods);
-#else
-        Assert.Equal(DecompressionMethods.GZip, options.AllowedDecompressionMethods);
-#endif
+        Assert.Equal(DecompressionMethods.All, options.AllowedDecompressionMethods);
     }
 
     [Theory]

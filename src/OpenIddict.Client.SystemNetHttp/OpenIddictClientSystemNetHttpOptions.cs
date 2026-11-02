@@ -87,18 +87,9 @@ public sealed class OpenIddictClientSystemNetHttpOptions
     /// Note: while HTTP compression is never opted-in by default, encoded responses returned by servers
     /// that enforce content compression are still decoded. This property can be used to exclude specific
     /// algorithms (e.g to mitigate a vulnerability affecting one of the decoders used by the runtime).
-    /// <c>DecompressionMethods.All</c> can be used to allow all the algorithms supported by OpenIddict.
+    /// By default, all the algorithms supported by OpenIddict are allowed.
     /// </remarks>
-    public DecompressionMethods AllowedDecompressionMethods { get; set; }
-#if NET
-        = DecompressionMethods.GZip | DecompressionMethods.Deflate | DecompressionMethods.Brotli;
-#else
-        // Note: on .NET Framework, only GZip is allowed by default, as Deflate and Brotli are not supported:
-        // the HTTP "deflate" content coding requires a zlib-framed stream that can only be decoded using
-        // ZLibStream (which is only available on .NET 6.0 and higher), and BrotliStream is not available.
-        // Explicitly allowing Deflate or Brotli has no effect, as such responses are always rejected.
-        = DecompressionMethods.GZip;
-#endif
+    public DecompressionMethods AllowedDecompressionMethods { get; set; } = DecompressionMethods.All;
 
     /// <summary>
     /// Gets the user-defined actions used to amend the <see cref="HttpClient"/>
