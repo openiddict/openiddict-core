@@ -90,7 +90,7 @@ public sealed class OpenIddictValidationSystemNetHttpConfiguration : IConfigureO
         // Register the user-defined HTTP client actions.
         foreach (var action in settings.HttpClientActions)
         {
-            options.HttpClientActions.Add(action);
+            options.HttpClientActions.Add(client => action(context, client));
         }
 
         options.HttpMessageHandlerBuilderActions.Add(builder =>
@@ -137,7 +137,7 @@ public sealed class OpenIddictValidationSystemNetHttpConfiguration : IConfigureO
         // Register the user-defined HTTP client handler actions.
         foreach (var action in settings.HttpClientHandlerActions)
         {
-            options.HttpMessageHandlerBuilderActions.Add(builder => action(builder.PrimaryHandler as HttpClientHandler
+            options.HttpMessageHandlerBuilderActions.Add(builder => action(context, builder.PrimaryHandler as HttpClientHandler
                 ?? throw new InvalidOperationException(SR.FormatID0373(typeof(HttpClientHandler).FullName))));
         }
     }
