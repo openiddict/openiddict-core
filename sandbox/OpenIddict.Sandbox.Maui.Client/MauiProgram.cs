@@ -54,15 +54,18 @@ public static class MauiProgram
                 // providers that use the user agent as a way to throttle requests (e.g Reddit).
                 options.UseSystemNetHttp()
                        .SetProductInformation(typeof(MauiProgram).Assembly)
-#if IOS
-                       // Warning: server certificate validation is disabled to simplify testing the MAUI
-                       // application with the iOS simulator: in production, it SHOULD NEVER be disabled.
+                       .ConfigureHttpClientHandler(static (context, handler) =>
+                       {
+#if DEBUG && IOS
 #pragma warning disable MA0039
-                       .ConfigureHttpClientHandler("Local", handler => handler.ServerCertificateCustomValidationCallback =
-                           HttpClientHandler.DangerousAcceptAnyServerCertificateValidator)
+                           // Warning: server certificate validation is disabled to simplify testing the MAUI
+                           // application with the iOS simulator: in production, it SHOULD NEVER be disabled.
+                           handler.ServerCertificateCustomValidationCallback = context.Registration.ProviderName is "Local"
+                               ? HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+                               : handler.ServerCertificateCustomValidationCallback;
 #pragma warning restore MA0039
 #endif
-                       ;
+                       });
 
                 // Add a client registration matching the client application definition in the server project.
                 options.AddRegistration(new OpenIddictClientRegistration

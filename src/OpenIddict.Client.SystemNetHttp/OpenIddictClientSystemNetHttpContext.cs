@@ -15,7 +15,6 @@ namespace OpenIddict.Client.SystemNetHttp;
 /// <summary>
 /// Represents the context used by the System.Net.Http integration when creating a new HTTP client.
 /// </summary>
-[EditorBrowsable(EditorBrowsableState.Never)]
 public sealed class OpenIddictClientSystemNetHttpContext
 {
     private static readonly AsyncLocal<OpenIddictClientSystemNetHttpContext?> _current = new();
@@ -29,6 +28,7 @@ public sealed class OpenIddictClientSystemNetHttpContext
     /// <summary>
     /// Gets or sets the ambient context for the current execution flow.
     /// </summary>
+    [EditorBrowsable(EditorBrowsableState.Never)]
     public static OpenIddictClientSystemNetHttpContext? Current
     {
         get => _current.Value;
@@ -45,6 +45,7 @@ public sealed class OpenIddictClientSystemNetHttpContext
     /// </summary>
     /// <param name="context">The client context for which to compute the stable identifier.</param>
     /// <returns>A string representing the stable identifier for the specified context.</returns>
+    [EditorBrowsable(EditorBrowsableState.Never)]
     public static string ComputeStableId(OpenIddictClientSystemNetHttpContext context)
     {
         ArgumentNullException.ThrowIfNull(context);

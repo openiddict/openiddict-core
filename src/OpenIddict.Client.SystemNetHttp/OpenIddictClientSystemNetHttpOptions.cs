@@ -95,11 +95,11 @@ public sealed class OpenIddictClientSystemNetHttpOptions
     /// Gets the user-defined actions used to amend the <see cref="HttpClient"/>
     /// instances created by the OpenIddict client/System.Net.Http integration.
     /// </summary>
-    public List<Action<OpenIddictClientRegistration, HttpClient>> HttpClientActions { get; } = [];
+    public List<Action<OpenIddictClientSystemNetHttpContext, HttpClient>> HttpClientActions { get; } = [];
 
     /// <summary>
     /// Gets the user-defined actions used to amend the <see cref="HttpClientHandler"/>
     /// instances created by the OpenIddict client/System.Net.Http integration.
     /// </summary>
-    public List<Action<OpenIddictClientRegistration, HttpClientHandler>> HttpClientHandlerActions { get; } = [];
+    public List<Action<OpenIddictClientSystemNetHttpContext, HttpClientHandler>> HttpClientHandlerActions { get; } = [];
 }

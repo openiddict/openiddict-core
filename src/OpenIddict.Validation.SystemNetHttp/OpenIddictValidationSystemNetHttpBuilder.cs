@@ -67,7 +67,8 @@ public sealed class OpenIddictValidationSystemNetHttpBuilder
     /// <param name="configuration">The delegate used to configure the <see cref="HttpClient"/>.</param>
     /// <returns>The <see cref="OpenIddictValidationSystemNetHttpBuilder"/> instance.</returns>
     [EditorBrowsable(EditorBrowsableState.Advanced)]
-    public OpenIddictValidationSystemNetHttpBuilder ConfigureHttpClient(Action<HttpClient> configuration)
+    public OpenIddictValidationSystemNetHttpBuilder ConfigureHttpClient(
+        Action<OpenIddictValidationSystemNetHttpContext, HttpClient> configuration)
     {
         ArgumentNullException.ThrowIfNull(configuration);
 
@@ -80,7 +81,8 @@ public sealed class OpenIddictValidationSystemNetHttpBuilder
     /// <param name="configuration">The delegate used to configure the <see cref="HttpClientHandler"/>.</param>
     /// <returns>The <see cref="OpenIddictValidationSystemNetHttpBuilder"/> instance.</returns>
     [EditorBrowsable(EditorBrowsableState.Advanced)]
-    public OpenIddictValidationSystemNetHttpBuilder ConfigureHttpClientHandler(Action<HttpClientHandler> configuration)
+    public OpenIddictValidationSystemNetHttpBuilder ConfigureHttpClientHandler(
+        Action<OpenIddictValidationSystemNetHttpContext, HttpClientHandler> configuration)
     {
         ArgumentNullException.ThrowIfNull(configuration);
 
