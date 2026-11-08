@@ -170,8 +170,8 @@
     <!--
       Note: the following references are exclusively used in the source generators:
     -->
-    <PackageVersion Include="Fluid.Core"                                            Version="3.0.0-preview.868" />
-    <PackageVersion Include="Fluid.SourceGenerator"                                 Version="3.0.0-preview.868" />
+    <PackageVersion Include="Fluid.Core"                                            Version="3.0.0-beta.9"      />
+    <PackageVersion Include="Fluid.SourceGenerator"                                 Version="3.0.0-beta.9"      />
     <PackageVersion Include="Microsoft.Bcl.AsyncInterfaces"                         Version="10.0.14"           />
     <PackageVersion Include="Microsoft.Bcl.Memory"                                  Version="10.0.14"           />
     <PackageVersion Include="Microsoft.Extensions.FileProviders.Abstractions"       Version="10.0.14"           />
