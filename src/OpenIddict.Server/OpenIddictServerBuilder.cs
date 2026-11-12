@@ -508,12 +508,12 @@ public sealed class OpenIddictServerBuilder
         }
 
         // Note: ECDSA algorithms are bound to specific curves and must be treated separately.
-        if (key.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha256))
+        if (key.KeySize is 256 && key.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha256))
         {
             return AddSigningCredentials(new SigningCredentials(key, SecurityAlgorithms.EcdsaSha256));
         }
 
-        if (key.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha384))
+        if (key.KeySize is 384 && key.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha384))
         {
             return AddSigningCredentials(new SigningCredentials(key, SecurityAlgorithms.EcdsaSha384));
         }
