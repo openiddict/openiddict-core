@@ -524,6 +524,7 @@ public class OpenIddictClientService
             DisableUserInfoRetrieval = request.DisableUserInfo,
             DisableUserInfoValidation = request.DisableUserInfo,
             GrantType = request.GrantType,
+            Issuer = request.Issuer,
             ProviderName = request.ProviderName,
             RegistrationId = request.RegistrationId,
             Request = new(),

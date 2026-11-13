@@ -493,6 +493,10 @@ public static partial class OpenIddictClientHandlers
                     return ValueTask.CompletedTask;
                 }
 
+                // Always resolve the token identifier from the claim in case no
+                // token entry is available to restore it from the database.
+                context.TokenId = context.Principal.GetTokenId();
+
                 // In OpenIddict 3.0, the creation date of a token is stored in "oi_crt_dt".
                 // If the claim doesn't exist, try to infer it from the standard "iat" JWT claim.
                 if (!context.Principal.HasClaim(Claims.Private.CreationDate))
