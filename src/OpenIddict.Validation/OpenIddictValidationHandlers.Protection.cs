@@ -440,6 +440,12 @@ public static partial class OpenIddictValidationHandlers
                     return ValueTask.CompletedTask;
                 }
 
+                // Always resolve the authorization/session/token identifiers from the claims
+                // in case no token entry is available to restore them from the database.
+                context.AuthorizationId = context.Principal.GetAuthorizationId();
+                context.SessionId = context.Principal.GetSessionId();
+                context.TokenId = context.Principal.GetTokenId();
+
                 // To reduce the size of tokens, some of the private claims used by OpenIddict
                 // are mapped to their standard equivalent before being removed from the token.
                 // This handler is responsible for adding back the private claims to the principal
