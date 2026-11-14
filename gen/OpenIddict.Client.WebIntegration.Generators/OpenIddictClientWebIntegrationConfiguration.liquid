@@ -241,12 +241,12 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration
                 }
 
                 // Note: ECDSA algorithms are bound to specific curves and must be treated separately.
-                else if (key.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha256))
+                else if (key.KeySize is 256 && key.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha256))
                 {
                     registration.SigningCredentials.Add(new SigningCredentials(key, SecurityAlgorithms.EcdsaSha256));
                 }
 
-                else if (key.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha384))
+                else if (key.KeySize is 384 && key.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha384))
                 {
                     registration.SigningCredentials.Add(new SigningCredentials(key, SecurityAlgorithms.EcdsaSha384));
                 }
@@ -274,12 +274,12 @@ public sealed partial class OpenIddictClientWebIntegrationConfiguration
                 }
 
                 // Note: ECDSA algorithms are bound to specific curves and must be treated separately.
-                else if (settings.{{ setting.property_name }}.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha256))
+                else if (settings.{{ setting.property_name }}.KeySize is 256 && settings.{{ setting.property_name }}.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha256))
                 {
                     registration.SigningCredentials.Add(new SigningCredentials(settings.{{ setting.property_name }}, SecurityAlgorithms.EcdsaSha256));
                 }
 
-                else if (settings.{{ setting.property_name }}.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha384))
+                else if (settings.{{ setting.property_name }}.KeySize is 384 && settings.{{ setting.property_name }}.IsSupportedAlgorithm(SecurityAlgorithms.EcdsaSha384))
                 {
                     registration.SigningCredentials.Add(new SigningCredentials(settings.{{ setting.property_name }}, SecurityAlgorithms.EcdsaSha384));
                 }
