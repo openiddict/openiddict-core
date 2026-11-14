@@ -28,9 +28,16 @@
     <PackageReference Include="System.Security.Cryptography.Xml" />
   </ItemGroup>
 
-  <ItemGroup
-    Condition=" '$(TargetFrameworkIdentifier)' == '.NETFramework' Or '$(TargetFrameworkIdentifier)' == '.NETStandard' ">
+  <ItemGroup Condition=" '$(TargetFrameworkIdentifier)' == '.NETFramework' ">
     <PackageReference Include="Microsoft.AspNetCore.Authentication" />
+
+    <!--
+      Note: the version of the Microsoft.AspNetCore.WebUtilities package that is transitively referenced is known to
+      be affected by a vulnerability (see https://github.com/advisories/GHSA-6527-9fp8-r4x6 for more information).
+      To mitigate this issue, the package is explicitly referenced here to ensure that a fixed version is used.
+    -->
+
+    <PackageReference Include="Microsoft.AspNetCore.WebUtilities" />
   </ItemGroup>
 
   <ItemGroup>
