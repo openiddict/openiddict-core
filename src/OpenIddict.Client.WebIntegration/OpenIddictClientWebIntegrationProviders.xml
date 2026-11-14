@@ -2610,6 +2610,33 @@
   </Provider>
 
   <!--
+                                              ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                                              ██ ███ ██ ▄▄▄██ ▄▄▀█▄ ▄██ ▄▄ █ ▄▄▀██
+                                              ███ █ ███ ▄▄▄██ ▀▀▄██ ███ ██ █ ▀▀ ██
+                                              ███▄▀▄███ ▀▀▀██ ██ █▀ ▀██▄▄ ▀█ ██ ██
+                                              ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  -->
+
+  <Provider Name="Veriqa" Id="7fe75f40-28e8-480d-a5ec-417ca89b339f"
+            Documentation="https://veriqa.app/docs/quickstart/self-hosted">
+    <!--
+      Note: Veriqa is a self-hosted identity provider that doesn't have a generic issuer URI.
+      As such, the complete URI must always be set in the options.
+    -->
+
+    <Environment Issuer="{settings.Issuer}" />
+
+    <Setting PropertyName="Issuer" ParameterName="issuer" Type="Uri" Required="true"
+             Description="The URI used to access the Veriqa server" />
+
+    <Setting PropertyName="SigningCertificate" ParameterName="certificate" Type="SigningCertificate" Required="false"
+             Description="The X.509 signing certificate that will be used to authenticate the client when communicating with backchannel endpoints" />
+
+    <Setting PropertyName="SigningKey" ParameterName="key" Type="SigningKey" Required="false"
+             Description="The signing key that will be used to authenticate the client when communicating with backchannel endpoints" />
+  </Provider>
+
+  <!--
                                                 ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
                                                 ██ ███ █▄ ▄██ ▄▀▄ ██ ▄▄▄██ ▄▄▄ ██
                                                 ███ █ ███ ███ █ █ ██ ▄▄▄██ ███ ██
