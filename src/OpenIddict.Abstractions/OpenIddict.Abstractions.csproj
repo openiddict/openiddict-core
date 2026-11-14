@@ -2,7 +2,6 @@
 
   <PropertyGroup>
     <TargetFrameworks>$(NetFrameworkTargetFrameworks);$(NetCoreTargetFrameworks)</TargetFrameworks>
-    <GenerateResxSourceEmitFormatMethods>true</GenerateResxSourceEmitFormatMethods>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -10,6 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.ResxSourceGenerator" PrivateAssets="all" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.Primitives" />
     <PackageReference Include="Microsoft.IdentityModel.Tokens" />
@@ -27,7 +27,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Update="**\*.resx" GenerateSource="true" GenerateResourcesCodeAsConstants="true" />
+    <EmbeddedResource Update="OpenIddictResources.resx"
+                      AsConstants="true"
+                      ClassName="OpenIddict.Abstractions.OpenIddictResources"
+                      EmitFormatMethods="true"
+                      ManifestResourceName="OpenIddict.Abstractions.OpenIddictResources"
+                      OmitGetResourceString="true"
+                      Public="true" />
   </ItemGroup>
 
   <ItemGroup>

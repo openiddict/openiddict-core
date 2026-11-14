@@ -10,7 +10,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <PackageReference Include="Microsoft.Owin.Testing" />
+    <PackageReference Include="xunit.core" PrivateAssets="all" />
+    <PackageReference Include="xunit.assert" PrivateAssets="all" />
+    <PackageReference Include="xunit.analyzers" PrivateAssets="all" />
+    <PackageReference Include="xunit.runner.visualstudio" PrivateAssets="all" />
   </ItemGroup>
 
   <ItemGroup>
