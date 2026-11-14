@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFrameworks>net10.0-windows7.0</TargetFrameworks>
+    <TargetFrameworks>net11.0-windows7.0</TargetFrameworks>
     <TargetFrameworks Condition=" $([MSBuild]::IsOSPlatform('Windows')) ">$(TargetFrameworks);net48</TargetFrameworks>
     <UseWindowsForms>true</UseWindowsForms>
     <ApplicationManifest>app.manifest</ApplicationManifest>

@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFrameworks>net10.0</TargetFrameworks>
+    <TargetFrameworks>net11.0</TargetFrameworks>
     <TargetFrameworks Condition=" $([MSBuild]::IsOSPlatform('Windows')) ">$(TargetFrameworks);net48</TargetFrameworks>
   </PropertyGroup>
 

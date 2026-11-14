@@ -18,16 +18,16 @@ public partial class MainPage : ContentPage
         InitializeComponent();
     }
 
-    private async void OnLocalLoginButtonClicked(object sender, EventArgs e)
+    private async void OnLocalLoginButtonClicked(object? sender, EventArgs e)
         => await LogInAsync("Local");
 
-    private async void OnLocalLoginWithGitHubButtonClicked(object sender, EventArgs e)
+    private async void OnLocalLoginWithGitHubButtonClicked(object? sender, EventArgs e)
         => await LogInAsync("Local", new(StringComparer.Ordinal)
         {
             [Parameters.IdentityProvider] = Providers.GitHub
         });
 
-    private async void OnLocalLogoutButtonClicked(object sender, EventArgs e)
+    private async void OnLocalLogoutButtonClicked(object? sender, EventArgs e)
         => await LogOutAsync("Local");
 
     private async Task LogInAsync(string provider, Dictionary<string, OpenIddictParameter>? parameters = null)

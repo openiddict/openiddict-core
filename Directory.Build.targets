@@ -34,7 +34,7 @@
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(TargetFrameworkIdentifier)' == '.NETCoreApp' ">
-    <SupportedOSPlatformVersion Condition=" '$(TargetPlatformIdentifier)' == 'Android'     ">21.0</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion Condition=" '$(TargetPlatformIdentifier)' == 'Android'     ">24.0</SupportedOSPlatformVersion>
     <SupportedOSPlatformVersion Condition=" '$(TargetPlatformIdentifier)' == 'iOS'         ">12.2</SupportedOSPlatformVersion>
     <SupportedOSPlatformVersion Condition=" '$(TargetPlatformIdentifier)' == 'MacCatalyst' ">15.0</SupportedOSPlatformVersion>
     <SupportedOSPlatformVersion Condition=" '$(TargetPlatformIdentifier)' == 'macOS'       ">12.0</SupportedOSPlatformVersion>
