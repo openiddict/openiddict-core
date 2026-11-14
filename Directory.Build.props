@@ -108,33 +108,40 @@
     </NetFrameworkTargetFrameworks>
 
     <NetCoreTargetFrameworks Condition=" '$(NetCoreTargetFrameworks)' == '' ">
-      net10.0
+      net10.0;
+      net11.0
     </NetCoreTargetFrameworks>
 
     <NetCoreAndroidTargetFrameworks
       Condition=" '$(NetCoreAndroidTargetFrameworks)' == '' And '$(SupportsAndroidTargeting)' == 'true' ">
-      net10.0-android
+      net10.0-android;
+      net11.0-android
     </NetCoreAndroidTargetFrameworks>
 
     <NetCoreIOSTargetFrameworks
       Condition=" '$(NetCoreIOSTargetFrameworks)' == '' And '$(SupportsIOSTargeting)' == 'true' ">
-      net10.0-ios
+      net10.0-ios;
+      net11.0-ios
     </NetCoreIOSTargetFrameworks>
 
     <NetCoreMacCatalystTargetFrameworks
       Condition=" '$(NetCoreMacCatalystTargetFrameworks)' == '' And '$(SupportsMacCatalystTargeting)' == 'true' ">
-      net10.0-maccatalyst
+      net10.0-maccatalyst;
+      net11.0-maccatalyst
     </NetCoreMacCatalystTargetFrameworks>
 
     <NetCoreMacOSTargetFrameworks
       Condition=" '$(NetCoreMacOSTargetFrameworks)' == '' And '$(SupportsMacOSTargeting)' == 'true' ">
-      net10.0-macos
+      net10.0-macos;
+      net11.0-macos
     </NetCoreMacOSTargetFrameworks>
 
     <NetCoreWindowsTargetFrameworks
       Condition=" '$(NetCoreWindowsTargetFrameworks)' == '' And '$(SupportsWindowsTargeting)' == 'true' ">
       net10.0-windows7.0;
-      net10.0-windows10.0.17763
+      net10.0-windows10.0.17763;
+      net11.0-windows7.0;
+      net11.0-windows10.0.17763
     </NetCoreWindowsTargetFrameworks>
   </PropertyGroup>
 

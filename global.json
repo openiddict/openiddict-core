@@ -1,12 +1,18 @@
 {
   "sdk": {
-    "version": "10.0.403",
+    "version": "11.0.100",
     "allowPrerelease": true,
     "rollForward": "major"
   },
 
   "tools": {
-    "dotnet": "10.0.403"
+    "dotnet": "11.0.100",
+
+    "runtimes": {
+      "aspnetcore": [
+        "10.0.15"
+      ]
+    }
   },
 
   "msbuild-sdks": {

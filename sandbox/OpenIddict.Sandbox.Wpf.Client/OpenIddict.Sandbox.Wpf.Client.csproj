@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFrameworks>net10.0-windows10.0.17763</TargetFrameworks>
+    <TargetFrameworks>net11.0-windows10.0.17763</TargetFrameworks>
     <TargetFrameworks Condition=" $([MSBuild]::IsOSPlatform('Windows')) ">$(TargetFrameworks);net48</TargetFrameworks>
     <UseWPF>true</UseWPF>
     <EnableDefaultApplicationDefinition>false</EnableDefaultApplicationDefinition>
