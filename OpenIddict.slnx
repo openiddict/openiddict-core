@@ -1,11 +1,7 @@
 <Solution>
 
   <Folder Name="/eng/">
-    <File Path="eng/Build.props" />
     <File Path="eng/key.snk" />
-    <File Path="eng/Signing.props" />
-    <File Path="eng/Tools.props" />
-    <File Path="eng/Version.Details.xml" />
     <File Path="eng/Versions.props" />
     <File Path="eng/_._" />
   </Folder>
@@ -18,8 +14,6 @@
     <File Path=".editorconfig" />
     <File Path=".gitattributes" />
     <File Path=".gitignore" />
-    <File Path="Build.cmd" />
-    <File Path="build.sh" />
     <File Path="Directory.Build.props" />
     <File Path="Directory.Build.targets" />
     <File Path="Directory.Packages.props" />
@@ -28,7 +22,6 @@
     <File Path="NuGet.config" />
     <File Path="package-icon.png" />
     <File Path="README.md" />
-    <File Path="WorkloadRollback.json" />
   </Folder>
 
   <Folder Name="/sandbox/">

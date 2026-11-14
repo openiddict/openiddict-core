@@ -5,19 +5,7 @@
     "rollForward": "major"
   },
 
-  "tools": {
-    "dotnet": "11.0.100",
-
-    "runtimes": {
-      "aspnetcore": [
-        "10.0.15"
-      ]
-    }
-  },
-
   "msbuild-sdks": {
-    "Microsoft.DotNet.Arcade.Sdk": "10.0.0-beta.25562.108",
-    "Microsoft.DotNet.Helix.Sdk": "10.0.0-beta.25562.108",
     "MSBuild.SDK.SystemWeb": "4.0.107"
   }
 }
